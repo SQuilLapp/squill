@@ -7,7 +7,7 @@ Depends on: P1-07
 Prove SQLite works under Native AOT and create the report that the other driver cards extend (risk R3).
 
 ## Design decisions (final)
-- `tools/Squill.AotProbe.Sqlite` (Exe, `PublishAot=true`, references `Squill.Data.Sqlite`): opens `:memory:`, creates a table, inserts two rows, reads them through `IDatabaseConnection`/`IResultStream`, prints `OK <rows>` and exits 0, otherwise prints the exception and exits 1.
+- `tools/Squill.AotProbe.Sqlite` (Exe, `PublishAot=true`, references `Squill.Data.Sqlite`): opens `:memory:`, creates a table, inserts two rows, reads them through `IDatabaseConnection`/`IResultReader`, prints `OK <rows>` and exits 0, otherwise prints the exception and exits 1.
 - `docs/poc/aot-drivers.md` with a table `Driver | Package version | AOT publish | Runtime check | Verdict | Caveats`, verdict in {compatible, compatible with caveats, incompatible}. This card adds the SQLite row.
 
 ## Out of scope
