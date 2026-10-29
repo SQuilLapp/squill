@@ -6,7 +6,7 @@ SQL client on .NET 11 (RC3), Native AOT, WinUI 3 / Avalonia. Task cards live in 
 
 - Everything in the repository (code, comments, docs, commit messages) is in **English**.
 - **C# 15** (`LangVersion` is pinned to `15` in `Directory.Build.props`). Follow .NET best practices and the conventions in `docs/tasks/README.md`.
-- **XML documentation on every public and protected type and member** (CS1591 is an error). Write useful `<summary>` text, and `<param>`, `<returns>`, `<exception>` where they add information. Never repeat the member name.
+- **XML documentation on every public and protected type and member** (CS1591 is an error). XML doc also on every member declared `public` inside an `internal` type, and a one-line `<summary>` on every `internal` type (the compiler does not enforce this; check with a grep before each commit). Write useful `<summary>` text, and `<param>`, `<returns>`, `<exception>` where they add information. Never repeat the member name.
 - Warnings are errors, AOT/trim analyzers are on. Never add `NoWarn`, `#pragma warning disable` or an `.editorconfig` exemption to get green. If a card forces a violation, stop and propose a card fix.
 - No reflection, JSON only through source-generated contexts, public API names must satisfy the CA rules (for example no type name ending in `Stream` unless it derives from `Stream`).
 

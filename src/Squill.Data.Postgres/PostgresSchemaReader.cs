@@ -3,6 +3,7 @@ using Squill.Core;
 
 namespace Squill.Data.Postgres;
 
+/// <summary>Reads the schema of a Postgres database into a <see cref="SchemaSnapshot"/>.</summary>
 internal static class PostgresSchemaReader
 {
     private const string UserSchemas = """
@@ -52,6 +53,10 @@ internal static class PostgresSchemaReader
         order by n.nspname, t.relname, c.conname
         """;
 
+    /// <summary>Reads the user-visible schema objects of the connected database.</summary>
+    /// <param name="connection">Open connection to read from.</param>
+    /// <param name="cancellationToken">Token that cancels the queries.</param>
+    /// <returns>The schema snapshot.</returns>
     public static async ValueTask<SchemaSnapshot> ReadAsync(NpgsqlConnection connection, CancellationToken cancellationToken)
     {
         var defaultSchema = await ReadAsync(connection, "select current_schema()", r => r.IsDBNull(0) ? null : r.GetString(0), cancellationToken);

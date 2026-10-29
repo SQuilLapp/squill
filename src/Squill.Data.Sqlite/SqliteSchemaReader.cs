@@ -3,10 +3,15 @@ using Squill.Core;
 
 namespace Squill.Data.Sqlite;
 
+/// <summary>Reads the schema of a SQLite database into a <see cref="SchemaSnapshot"/>.</summary>
 internal static class SqliteSchemaReader
 {
     private const string Schema = "main";
 
+    /// <summary>Reads the user-visible schema objects of the connected database.</summary>
+    /// <param name="connection">Open connection to read from.</param>
+    /// <param name="cancellationToken">Token that cancels the queries.</param>
+    /// <returns>The schema snapshot.</returns>
     public static async ValueTask<SchemaSnapshot> ReadAsync(SqliteConnection connection, CancellationToken cancellationToken)
     {
         var tables = new List<TableInfo>();
