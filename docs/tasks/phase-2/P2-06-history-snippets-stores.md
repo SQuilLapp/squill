@@ -1,6 +1,6 @@
 # P2-06 - Platform: query history and snippet stores
 
-Status: todo
+Status: done
 Depends on: P2-04
 
 ## Goal
@@ -16,8 +16,8 @@ Persist executed queries and named snippets as JSON files.
 - Search (done in view-models), sync, encryption.
 
 ## Tasks
-- [ ] Create types, helper, stores; refactor the profile store onto the helper.
-- [ ] Tests: cap at 5,000, order, clear, snippet CRUD, corrupt file recovery.
+- [x] Create types, helper, stores; refactor the profile store onto the helper.
+- [x] Tests: cap at 5,000, order, clear, snippet CRUD, corrupt file recovery.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
