@@ -92,11 +92,4 @@ public sealed class SqliteDatabaseProviderTests
         await using var connection = await OpenAsync();
         await Assert.ThrowsAsync<SqliteException>(async () => await connection.ExecuteAsync("SELEC nope", [], CancellationToken.None));
     }
-
-    [Fact]
-    public async Task ReadSchemaAsync_BeforeP107_IsNotSupported()
-    {
-        await using var connection = await OpenAsync();
-        await Assert.ThrowsAsync<NotSupportedException>(async () => await connection.ReadSchemaAsync(CancellationToken.None));
-    }
 }

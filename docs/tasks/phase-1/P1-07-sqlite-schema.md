@@ -1,6 +1,6 @@
 # P1-07 - Data.Sqlite: schema reading
 
-Status: todo
+Status: done
 Depends on: P1-06
 
 ## Goal
@@ -15,8 +15,8 @@ Implement `ReadSchemaAsync` for SQLite, producing a `SchemaSnapshot`.
 - Triggers, check constraints, virtual tables.
 
 ## Tasks
-- [ ] Implement the reader in `SqliteSchemaReader` (internal) and wire it to the connection.
-- [ ] Tests on `:memory:` with a schema containing a PK, composite index, unique index, FK, a view, a generated column.
+- [x] Implement the reader in `SqliteSchemaReader` (internal) and wire it to the connection.
+- [x] Tests on `:memory:` with a schema containing a PK, composite index, unique index, FK, a view, a generated column.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

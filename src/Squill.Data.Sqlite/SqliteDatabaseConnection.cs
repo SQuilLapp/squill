@@ -26,7 +26,7 @@ internal sealed class SqliteDatabaseConnection(SqliteConnection connection) : ID
     }
 
     public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>
-        throw new NotSupportedException("P1-07");
+        SqliteSchemaReader.ReadAsync(connection, cancellationToken);
 
     public ValueTask DisposeAsync() => connection.DisposeAsync();
 }
