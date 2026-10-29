@@ -9,4 +9,4 @@ namespace Squill.Core;
     UseStringEnumConverter = true)]
 [JsonSerializable(typeof(ConnectionProfile))]
 [JsonSerializable(typeof(List<ConnectionProfile>))]
-public partial class ProfileJsonContext : JsonSerializerContext;
+public sealed partial class ProfileJsonContext : JsonSerializerContext;
