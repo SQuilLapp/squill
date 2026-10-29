@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Squill.Core/Squill.Core.csproj" />
+    <Project Path="src/Squill.Data/Squill.Data.csproj" />
+    <Project Path="src/Squill.DesignSystem/Squill.DesignSystem.csproj" />
+    <Project Path="src/Squill.Presentation/Squill.Presentation.csproj" />
+    <Project Path="src/Squill.Sql/Squill.Sql.csproj" />
+    <Project Path="tools/Squill.TokenGen/Squill.TokenGen.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Squill.DesignSystem.Tests/Squill.DesignSystem.Tests.csproj" />
+  </Folder>
+</Solution>
