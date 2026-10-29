@@ -1,6 +1,6 @@
 # P1-08 - AOT probe for SQLite and the driver report
 
-Status: todo
+Status: done
 Depends on: P1-07
 
 ## Goal
@@ -14,8 +14,8 @@ Prove SQLite works under Native AOT and create the report that the other driver 
 - Other drivers (P1-09, P1-11, P1-13).
 
 ## Tasks
-- [ ] Create the probe and add it to `Squill.slnx` under `/tools/`.
-- [ ] Publish win-x64, run the produced exe, fill the SQLite row with the real result.
+- [x] Create the probe and add it to `Squill.slnx` under `/tools/`.
+- [x] Publish win-x64, run the produced exe, fill the SQLite row with the real result.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
