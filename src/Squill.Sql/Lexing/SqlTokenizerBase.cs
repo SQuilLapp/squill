@@ -118,7 +118,13 @@ public abstract class SqlTokenizerBase : ISqlTokenizer
         return new Token(kind, pos, end - pos);
     }
 
-    private static Token Quoted(TokenKind kind, string text, int pos, char quote)
+    /// <summary>Reads a quoted run where a doubled quote character is an escape; unterminated runs to the end.</summary>
+    /// <param name="kind">Kind of the token produced.</param>
+    /// <param name="text">The SQL text.</param>
+    /// <param name="pos">Offset of the opening quote.</param>
+    /// <param name="quote">The quote character.</param>
+    /// <returns>The token.</returns>
+    protected static Token Quoted(TokenKind kind, string text, int pos, char quote)
     {
         var i = pos + 1;
         while (i < text.Length)

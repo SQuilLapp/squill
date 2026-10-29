@@ -1,6 +1,6 @@
 # P3-02 - Sql: PostgreSQL and SQLite tokenizers
 
-Status: todo
+Status: done
 Depends on: P3-01
 
 ## Goal
@@ -15,8 +15,8 @@ Dialect-specific lexing for PostgreSQL and SQLite.
 - MySQL and T-SQL (P3-03).
 
 ## Tasks
-- [ ] Implement both tokenizers and keyword sets; extend `SqlTokenizers.For`.
-- [ ] Tests for each special form, unterminated forms, and the fuzz invariant for both dialects.
+- [x] Implement both tokenizers and keyword sets; extend `SqlTokenizers.For`.
+- [x] Tests for each special form, unterminated forms, and the fuzz invariant for both dialects.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
