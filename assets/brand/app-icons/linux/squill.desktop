@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=SQuilL
+Comment=Universal SQL client
+Exec=squill %F
+Icon=squill
+Categories=Development;Database;
+Terminal=false
