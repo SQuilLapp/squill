@@ -1,6 +1,6 @@
 # P3-06 - Sql: syntax tree and expression parser
 
-Status: todo
+Status: done
 Depends on: P3-05
 
 ## Goal
@@ -16,8 +16,8 @@ Error-tolerant expression parsing with source positions.
 - Statements (P3-07, P3-08).
 
 ## Tasks
-- [ ] Create the syntax and parser files.
-- [ ] Tests via `InternalsVisibleTo`: precedence, `a.b.c`, function calls with `DISTINCT`, `CASE`, `IN (1,2)`, `BETWEEN`, incomplete inputs (`a +`, `f(1,`, `a.`) produce diagnostics and no exception; every node range lies inside the input.
+- [x] Create the syntax and parser files.
+- [x] Tests via `InternalsVisibleTo`: precedence, `a.b.c`, function calls with `DISTINCT`, `CASE`, `IN (1,2)`, `BETWEEN`, incomplete inputs (`a +`, `f(1,`, `a.`) produce diagnostics and no exception; every node range lies inside the input.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
