@@ -1,6 +1,6 @@
 # P2-04 - Platform: app paths and JSON profile store
 
-Status: todo
+Status: done
 Depends on: P2-03
 
 ## Goal
@@ -16,8 +16,8 @@ Persist connection profiles with their secrets in the secret store.
 - Encryption of the JSON file (it contains no secrets).
 
 ## Tasks
-- [ ] Implement `AppPaths`, `IProfileStore`, `JsonProfileStore`.
-- [ ] Tests with a temp directory and `InMemorySecretStore`: round trip, update, delete removes secrets, corrupt file recovery, `profiles.json` text contains no password.
+- [x] Implement `AppPaths`, `IProfileStore`, `JsonProfileStore`.
+- [x] Tests with a temp directory and `InMemorySecretStore`: round trip, update, delete removes secrets, corrupt file recovery, `profiles.json` text contains no password.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
