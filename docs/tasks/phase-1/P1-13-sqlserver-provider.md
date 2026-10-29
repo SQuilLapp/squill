@@ -1,6 +1,6 @@
 # P1-13 - Data.SqlServer: provider and AOT probe
 
-Status: todo
+Status: done
 Depends on: P1-12
 
 ## Goal
@@ -18,8 +18,8 @@ SQL Server provider on Microsoft.Data.SqlClient, with an honest AOT verdict (ris
 - Entra/Azure auth, Always Encrypted.
 
 ## Tasks
-- [ ] Create provider, tests, probe; update solution and `Directory.Packages.props`.
-- [ ] Publish the probe, run it against Docker SQL Server if available, write the report row with caveats.
+- [x] Create provider, tests, probe; update solution and `Directory.Packages.props`.
+- [x] Publish the probe, run it against Docker SQL Server if available, write the report row with caveats.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
