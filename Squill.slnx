@@ -13,6 +13,7 @@
     <Project Path="tools/Squill.AotProbe.MySql/Squill.AotProbe.MySql.csproj" />
     <Project Path="tools/Squill.AotProbe.Postgres/Squill.AotProbe.Postgres.csproj" />
     <Project Path="tools/Squill.AotProbe.Sqlite/Squill.AotProbe.Sqlite.csproj" />
+    <Project Path="tools/Squill.AotProbe.SshNet/Squill.AotProbe.SshNet.csproj" />
     <Project Path="tools/Squill.AotProbe.SqlServer/Squill.AotProbe.SqlServer.csproj" />
     <Project Path="tools/Squill.TokenGen/Squill.TokenGen.csproj" />
   </Folder>

@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+    <PackageReference Include="SSH.NET" />
     <ProjectReference Include="..\Squill.Core\Squill.Core.csproj" />
     <InternalsVisibleTo Include="Squill.Platform.Tests" />
   </ItemGroup>
