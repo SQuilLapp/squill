@@ -54,7 +54,7 @@ Depends on: <card ids, ranges allowed>
 | [P2-04](phase-2/P2-04-paths-and-profile-store.md) | Platform: app paths and JSON profile store | P2-03 | done |
 | [P2-05](phase-2/P2-05-ssh-tunnel.md) | Platform: SSH tunnel abstraction and SSH.NET implementation | P2-04 | done |
 | [P2-06](phase-2/P2-06-history-snippets-stores.md) | Platform: query history and snippet stores | P2-04 | done |
-| [P2-07](phase-2/P2-07-settings-store.md) | Platform: application settings store | P2-06 | todo |
+| [P2-07](phase-2/P2-07-settings-store.md) | Platform: application settings store | P2-06 | done |
 | [P3-01](phase-3/P3-01-sql-tokenizer-core.md) | Sql: token model and generic tokenizer | P1-04 | todo |
 | [P3-02](phase-3/P3-02-tokenizers-postgres-sqlite.md) | Sql: PostgreSQL and SQLite tokenizers | P3-01 | todo |
 | [P3-03](phase-3/P3-03-tokenizers-mysql-tsql.md) | Sql: MySQL and T-SQL tokenizers | P3-02 | todo |

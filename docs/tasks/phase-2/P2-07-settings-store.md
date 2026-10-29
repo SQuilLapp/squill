@@ -1,6 +1,6 @@
 # P2-07 - Platform: application settings store
 
-Status: todo
+Status: done
 Depends on: P2-06
 
 ## Goal
@@ -14,8 +14,8 @@ Persist user preferences consumed by the view-models.
 - UI (P4-12).
 
 ## Tasks
-- [ ] Implement the types, store and clamping.
-- [ ] Tests: defaults when missing, round trip, clamping, corrupt file => defaults.
+- [x] Implement the types, store and clamping.
+- [x] Tests: defaults when missing, round trip, clamping, corrupt file => defaults.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
