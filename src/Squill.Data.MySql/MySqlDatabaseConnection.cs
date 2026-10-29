@@ -29,7 +29,7 @@ internal sealed class MySqlDatabaseConnection(MySqlConnection connection) : IDat
 
     /// <inheritdoc />
     public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>
-        throw new NotSupportedException("P1-12");
+        MySqlSchemaReader.ReadAsync(connection, cancellationToken);
 
     /// <inheritdoc />
     public ValueTask DisposeAsync() => connection.DisposeAsync();

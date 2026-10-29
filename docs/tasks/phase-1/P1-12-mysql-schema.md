@@ -1,6 +1,6 @@
 # P1-12 - Data.MySql: schema reading
 
-Status: todo
+Status: done
 Depends on: P1-11
 
 ## Goal
@@ -14,8 +14,8 @@ Implement `ReadSchemaAsync` for MySQL/MariaDB.
 - Routines, events, triggers.
 
 ## Tasks
-- [ ] Implement `MySqlSchemaReader` (internal).
-- [ ] Docker-gated tests: PK, composite unique index, FK, view.
+- [x] Implement `MySqlSchemaReader` (internal).
+- [x] Docker-gated tests: PK, composite unique index, FK, view.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
