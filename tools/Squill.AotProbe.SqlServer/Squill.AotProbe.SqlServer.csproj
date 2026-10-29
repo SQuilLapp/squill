@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <PublishAot>true</PublishAot>
+    <!-- Only project allowed to: the IL2xxx/IL3xxx warnings of Microsoft.Data.SqlClient are reported in docs/poc/aot-drivers.md, not fixed. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Squill.Data.SqlServer\Squill.Data.SqlServer.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>15</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Deterministic>true</Deterministic>
@@ -12,7 +12,11 @@
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
   </PropertyGroup>
   <!-- Libraries must stay AOT-compatible (IL2xxx/IL3xxx become errors via TreatWarningsAsErrors). -->
-  <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
+  <PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
     <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+  <!-- XML docs (CS1591) are required on libraries only: tests and executables expose no API. -->
+  <PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests')) And !$(MSBuildProjectDirectory.StartsWith('$(MSBuildThisFileDirectory)tools'))">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 </Project>

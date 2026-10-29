@@ -7,6 +7,11 @@ namespace Squill.DesignSystem;
 /// <summary>Generates the WinUI 3 and Avalonia resource dictionaries from squill.tokens.json.</summary>
 public static class XamlGenerator
 {
+    /// <summary>Parses the token file.</summary>
+    /// <param name="json">Content of squill.tokens.json.</param>
+    /// <returns>The parsed tokens.</returns>
+    /// <exception cref="JsonException">The text is not valid JSON.</exception>
+    /// <exception cref="KeyNotFoundException">A required token group is missing.</exception>
     // JsonDocument instead of reflection-based binding: stays AOT-safe without a source-generated context.
     public static TokenSet Load(string json)
     {
@@ -29,10 +34,15 @@ public static class XamlGenerator
     private static int Px(JsonElement token) =>
         int.Parse(new string(token.GetProperty("$value").GetString()!.TakeWhile(char.IsDigit).ToArray()), CultureInfo.InvariantCulture);
 
+    /// <summary>Converts a kebab-case name to PascalCase.</summary>
+    /// <param name="kebab">Name whose parts are separated by hyphens, such as <c>accent-hover</c>.</param>
+    /// <returns>The PascalCase name, such as <c>AccentHover</c>.</returns>
     public static string Pascal(string kebab) =>
         string.Concat(kebab.Split('-').Select(p => char.ToUpperInvariant(p[0]) + p[1..]));
 
-    /// <summary>"#RRGGBB" ou "rgba(r,g,b,a)" vers "#AARRGGBB".</summary>
+    /// <summary>Converts a CSS color to the XAML "#AARRGGBB" form.</summary>
+    /// <param name="css">A "#RRGGBB" or "rgba(r,g,b,a)" color.</param>
+    /// <returns>The color as "#AARRGGBB".</returns>
     public static string Argb(string css)
     {
         css = css.Trim();
@@ -42,6 +52,9 @@ public static class XamlGenerator
         return $"#{a:X2}{int.Parse(p[0], CultureInfo.InvariantCulture):X2}{int.Parse(p[1], CultureInfo.InvariantCulture):X2}{int.Parse(p[2], CultureInfo.InvariantCulture):X2}";
     }
 
+    /// <summary>Generates the WinUI 3 resource dictionary.</summary>
+    /// <param name="t">Tokens to emit.</param>
+    /// <returns>The XAML text.</returns>
     // shortcut: no WinUI HighContrast theme, add it with the views (SystemColor* resources).
     public static string WinUi(TokenSet t)
     {
@@ -64,6 +77,9 @@ public static class XamlGenerator
         return sb.ToString();
     }
 
+    /// <summary>Generates the Avalonia resource dictionary.</summary>
+    /// <param name="t">Tokens to emit.</param>
+    /// <returns>The XAML text.</returns>
     public static string Avalonia(TokenSet t)
     {
         var sb = new StringBuilder();
