@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="MySqlConnector" />
+    <ProjectReference Include="..\Squill.Data\Squill.Data.csproj" />
+  </ItemGroup>
+</Project>

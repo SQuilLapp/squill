@@ -1,6 +1,6 @@
 # P1-11 - Data.MySql: provider and AOT probe
 
-Status: todo
+Status: done
 Depends on: P1-10
 
 ## Goal
@@ -17,8 +17,8 @@ MySQL/MariaDB provider on MySqlConnector, proven under Native AOT (risk R3).
 - MariaDB-specific features.
 
 ## Tasks
-- [ ] Create provider, tests, probe; update solution and `Directory.Packages.props`.
-- [ ] Publish the probe; record the verdict.
+- [x] Create provider, tests, probe; update solution and `Directory.Packages.props`.
+- [x] Publish the probe; record the verdict.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
