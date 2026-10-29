@@ -1,6 +1,6 @@
 # P1-10 - Data.Postgres: schema reading
 
-Status: todo
+Status: done
 Depends on: P1-09
 
 ## Goal
@@ -15,8 +15,8 @@ Implement `ReadSchemaAsync` for PostgreSQL.
 - Functions, sequences, triggers.
 
 ## Tasks
-- [ ] Implement `PostgresSchemaReader` (internal).
-- [ ] Docker-gated tests with a schema containing PK, composite index, FK across schemas, view, default expression.
+- [x] Implement `PostgresSchemaReader` (internal).
+- [x] Docker-gated tests with a schema containing PK, composite index, FK across schemas, view, default expression.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

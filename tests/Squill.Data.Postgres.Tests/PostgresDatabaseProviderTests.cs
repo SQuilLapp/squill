@@ -69,11 +69,4 @@ public sealed class PostgresDatabaseProviderTests(PostgresFixture server) : ICla
         await using var connection = await OpenAsync();
         await Assert.ThrowsAsync<PostgresException>(async () => await connection.ExecuteAsync("selec nope", [], CancellationToken.None));
     }
-
-    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
-    public async Task ReadSchemaAsync_BeforeP1_10_ThrowsNotSupported()
-    {
-        await using var connection = await OpenAsync();
-        await Assert.ThrowsAsync<NotSupportedException>(async () => await connection.ReadSchemaAsync(CancellationToken.None));
-    }
 }

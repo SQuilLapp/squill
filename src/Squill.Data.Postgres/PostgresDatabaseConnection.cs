@@ -25,7 +25,7 @@ internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, Np
     }
 
     public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>
-        throw new NotSupportedException("P1-10");
+        PostgresSchemaReader.ReadAsync(connection, cancellationToken);
 
     public async ValueTask DisposeAsync()
     {
