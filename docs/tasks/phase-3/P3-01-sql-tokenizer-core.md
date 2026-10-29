@@ -1,6 +1,6 @@
 # P3-01 - Sql: token model and generic tokenizer
 
-Status: todo
+Status: done
 Depends on: P1-04
 
 ## Goal
@@ -19,8 +19,8 @@ Lossless, never-throwing SQL tokenizer base, plus the ANSI keyword set.
 - Parsing.
 
 ## Tasks
-- [ ] Create the project and types; add both projects to `Squill.slnx`.
-- [ ] Tests: each token kind, unterminated string/comment, contiguity invariant on 50 hand-written inputs and a seeded random-character fuzz (1,000 inputs of 0-200 chars, `new Random(42)`), keyword case-insensitivity.
+- [x] Create the project and types; add both projects to `Squill.slnx`.
+- [x] Tests: each token kind, unterminated string/comment, contiguity invariant on 50 hand-written inputs and a seeded random-character fuzz (1,000 inputs of 0-200 chars, `new Random(42)`), keyword case-insensitivity.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

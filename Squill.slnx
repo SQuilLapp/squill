@@ -24,6 +24,7 @@
     <Project Path="tests/Squill.Data.Postgres.Tests/Squill.Data.Postgres.Tests.csproj" />
     <Project Path="tests/Squill.Data.Sqlite.Tests/Squill.Data.Sqlite.Tests.csproj" />
     <Project Path="tests/Squill.Data.SqlServer.Tests/Squill.Data.SqlServer.Tests.csproj" />
+    <Project Path="tests/Squill.Sql.Tests/Squill.Sql.Tests.csproj" />
     <Project Path="tests/Squill.Platform.Tests/Squill.Platform.Tests.csproj" />
     <Project Path="tests/Squill.DesignSystem.Tests/Squill.DesignSystem.Tests.csproj" />
   </Folder>
