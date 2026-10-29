@@ -1,6 +1,6 @@
 # P1-02 - GitHub Actions CI workflow
 
-Status: todo
+Status: done
 Depends on: P1-01
 
 ## Goal
@@ -17,9 +17,9 @@ Build, test and AOT-publish on every push and pull request so each card stays ve
 - Building the WinUI head (added by P5-08).
 
 ## Tasks
-- [ ] Write the workflow.
-- [ ] Validate YAML syntax locally (`rtk proxy python -c "import yaml,sys;yaml.safe_load(open('.github/workflows/ci.yml'))"`; if PyYAML is missing, re-read the file carefully instead).
-- [ ] Run the same three commands locally for win-x64 to make sure they pass.
+- [x] Write the workflow.
+- [x] Validate YAML syntax locally (`rtk proxy python -c "import yaml,sys;yaml.safe_load(open('.github/workflows/ci.yml'))"`; if PyYAML is missing, re-read the file carefully instead).
+- [x] Run the same three commands locally for win-x64 to make sure they pass.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
