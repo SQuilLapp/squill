@@ -14,7 +14,8 @@ SQL client on .NET 11 (RC3), Native AOT, WinUI 3 / Avalonia. Task cards live in 
 
 - **One branch per phase** (phase 1: `phase-1-foundations`), checked out in `D:\squill`. Never create extra branches or worktrees for cards or sessions; start sub-sessions without a worktree.
 - One card = one commit, **GPG-signed** with the key of adrien.granger@outlook.com (already configured), and **every commit is pushed** (`git push origin <phase branch>`). Never force-push.
-- Never delete a branch or session without being asked.
+- **No `Co-Authored-By` trailer and no "Generated with" line in any commit message or PR description.**
+- Never delete a branch or session without being asked. Never rewrite pushed history without being asked.
 
 ## Shell and processes
 

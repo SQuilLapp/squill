@@ -1,6 +1,6 @@
 # P2-05 - Platform: SSH tunnel abstraction and SSH.NET implementation
 
-Status: todo
+Status: done
 Depends on: P2-04
 
 ## Goal
@@ -17,8 +17,8 @@ Allow providers to reach a database through an SSH jump host (risk R7).
 - Jump host chains, agent forwarding, known-hosts file.
 
 ## Tasks
-- [ ] Create contracts and factory; probe tool; update solution and `Directory.Packages.props`.
-- [ ] Unit tests for validation; publish the probe and record the verdict.
+- [x] Create contracts and factory; probe tool; update solution and `Directory.Packages.props`.
+- [x] Unit tests for validation; publish the probe and record the verdict.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

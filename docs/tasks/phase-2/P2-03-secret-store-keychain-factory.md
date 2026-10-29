@@ -1,6 +1,6 @@
 # P2-03 - Platform: macOS Keychain store and secret store factory
 
-Status: todo
+Status: done
 Depends on: P2-02
 
 ## Goal
@@ -16,8 +16,8 @@ Complete cross-platform secret storage (risk R6, part 3).
 - Fallback encrypted-file store for headless Linux.
 
 ## Tasks
-- [ ] Implement the Keychain store and the factory.
-- [ ] Tests: factory returns `DpapiSecretStore` on Windows (skipped elsewhere) and never throws on the current OS.
+- [x] Implement the Keychain store and the factory.
+- [x] Tests: factory returns `DpapiSecretStore` on Windows (skipped elsewhere) and never throws on the current OS.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

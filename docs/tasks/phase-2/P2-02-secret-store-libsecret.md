@@ -1,6 +1,6 @@
 # P2-02 - Platform: libsecret secret store (Linux)
 
-Status: todo
+Status: done
 Depends on: P2-01
 
 ## Goal
@@ -17,8 +17,8 @@ Store secrets in the freedesktop Secret Service through source-generated P/Invok
 - macOS (P2-03).
 
 ## Tasks
-- [ ] Implement the class and the native bindings.
-- [ ] Tests: on non-Linux the type is not instantiated; a unit test checks the attribute dictionary builder (pure managed helper `LibSecretAttributes.For(key)`). A Linux-only test (skipped elsewhere) performs set/get/delete when `SQUILL_SECRET_SERVICE_TESTS=1`.
+- [x] Implement the class and the native bindings.
+- [x] Tests: on non-Linux the type is not instantiated; a unit test checks the attribute dictionary builder (pure managed helper `LibSecretAttributes.For(key)`). A Linux-only test (skipped elsewhere) performs set/get/delete when `SQUILL_SECRET_SERVICE_TESTS=1`.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

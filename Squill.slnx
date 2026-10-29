@@ -7,11 +7,13 @@
     <Project Path="src/Squill.Data.SqlServer/Squill.Data.SqlServer.csproj" />
     <Project Path="src/Squill.Data.Sqlite/Squill.Data.Sqlite.csproj" />
     <Project Path="src/Squill.DesignSystem/Squill.DesignSystem.csproj" />
+    <Project Path="src/Squill.Platform/Squill.Platform.csproj" />
     <Project Path="src/Squill.Presentation/Squill.Presentation.csproj" />
     <Project Path="src/Squill.Sql/Squill.Sql.csproj" />
     <Project Path="tools/Squill.AotProbe.MySql/Squill.AotProbe.MySql.csproj" />
     <Project Path="tools/Squill.AotProbe.Postgres/Squill.AotProbe.Postgres.csproj" />
     <Project Path="tools/Squill.AotProbe.Sqlite/Squill.AotProbe.Sqlite.csproj" />
+    <Project Path="tools/Squill.AotProbe.SshNet/Squill.AotProbe.SshNet.csproj" />
     <Project Path="tools/Squill.AotProbe.SqlServer/Squill.AotProbe.SqlServer.csproj" />
     <Project Path="tools/Squill.TokenGen/Squill.TokenGen.csproj" />
   </Folder>
@@ -22,6 +24,7 @@
     <Project Path="tests/Squill.Data.Postgres.Tests/Squill.Data.Postgres.Tests.csproj" />
     <Project Path="tests/Squill.Data.Sqlite.Tests/Squill.Data.Sqlite.Tests.csproj" />
     <Project Path="tests/Squill.Data.SqlServer.Tests/Squill.Data.SqlServer.Tests.csproj" />
+    <Project Path="tests/Squill.Platform.Tests/Squill.Platform.Tests.csproj" />
     <Project Path="tests/Squill.DesignSystem.Tests/Squill.DesignSystem.Tests.csproj" />
   </Folder>
 </Solution>

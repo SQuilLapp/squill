@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Required by the LibraryImport source generator (libsecret bindings); the project's own code stays safe. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+    <PackageReference Include="SSH.NET" />
+    <ProjectReference Include="..\Squill.Core\Squill.Core.csproj" />
+    <InternalsVisibleTo Include="Squill.Platform.Tests" />
+  </ItemGroup>
+</Project>
