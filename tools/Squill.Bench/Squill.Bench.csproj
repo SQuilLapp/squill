@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- BenchmarkDotNet relies on reflection and runtime code generation; this tool is never published. -->
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+    <ProjectReference Include="..\..\src\Squill.Core\Squill.Core.csproj" />
+    <ProjectReference Include="..\..\src\Squill.Sql\Squill.Sql.csproj" />
+  </ItemGroup>
+</Project>

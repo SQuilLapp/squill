@@ -1,6 +1,6 @@
 # P3-05 - Sql: tokenizer benchmark and parser ADR
 
-Status: todo
+Status: done
 Depends on: P3-04
 
 ## Goal
@@ -16,9 +16,9 @@ Settle risk R5 with numbers and write ADR 0003.
 - ANTLR prototype.
 
 ## Tasks
-- [ ] Create the benchmark project and add it to `Squill.slnx` under `/tools/`.
-- [ ] Run `rtk dotnet run -c Release --project tools/Squill.Bench -- --job short --filter *Tokenize*` and copy the results table into the ADR.
-- [ ] Write the ADR.
+- [x] Create the benchmark project and add it to `Squill.slnx` under `/tools/`.
+- [x] Run `rtk dotnet run -c Release --project tools/Squill.Bench -- --job short --filter *Tokenize*` and copy the results table into the ADR.
+- [x] Write the ADR.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

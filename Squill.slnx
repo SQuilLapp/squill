@@ -10,6 +10,7 @@
     <Project Path="src/Squill.Platform/Squill.Platform.csproj" />
     <Project Path="src/Squill.Presentation/Squill.Presentation.csproj" />
     <Project Path="src/Squill.Sql/Squill.Sql.csproj" />
+    <Project Path="tools/Squill.Bench/Squill.Bench.csproj" />
     <Project Path="tools/Squill.AotProbe.MySql/Squill.AotProbe.MySql.csproj" />
     <Project Path="tools/Squill.AotProbe.Postgres/Squill.AotProbe.Postgres.csproj" />
     <Project Path="tools/Squill.AotProbe.Sqlite/Squill.AotProbe.Sqlite.csproj" />
