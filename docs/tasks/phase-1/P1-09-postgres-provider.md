@@ -1,6 +1,6 @@
 # P1-09 - Data.Postgres: provider and AOT probe
 
-Status: todo
+Status: done
 Depends on: P1-08
 
 ## Goal
@@ -18,8 +18,8 @@ PostgreSQL provider on Npgsql, proven under Native AOT (risk R3).
 - Plugins (NodaTime, PostGIS, JSON mapping).
 
 ## Tasks
-- [ ] Create provider, tests, probe; add to solution and `Directory.Packages.props`.
-- [ ] Publish the probe; record IL warnings (if any) and the verdict.
+- [x] Create provider, tests, probe; add to solution and `Directory.Packages.props`.
+- [x] Publish the probe; record IL warnings (if any) and the verdict.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
