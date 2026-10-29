@@ -9,6 +9,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Squill.Core.Tests/Squill.Core.Tests.csproj" />
+    <Project Path="tests/Squill.Data.Tests/Squill.Data.Tests.csproj" />
     <Project Path="tests/Squill.DesignSystem.Tests/Squill.DesignSystem.Tests.csproj" />
   </Folder>
 </Solution>

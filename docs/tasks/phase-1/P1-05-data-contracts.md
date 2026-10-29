@@ -1,6 +1,6 @@
 # P1-05 - Data: provider contracts and registry
 
-Status: todo
+Status: done
 Depends on: P1-04
 
 ## Goal
@@ -20,9 +20,9 @@ Define the abstraction every database provider implements, with a fake used by l
 - Connection pooling (providers use their driver's pooling).
 
 ## Tasks
-- [ ] Create the project, the contracts, the registry and the extension.
-- [ ] Add `Squill.Data` and `Squill.Data.Tests` to `Squill.slnx`.
-- [ ] Tests: registry behaviours, `ReadAllAsync` with the fake.
+- [x] Create the project, the contracts, the registry and the extension.
+- [x] Add `Squill.Data` and `Squill.Data.Tests` to `Squill.slnx`.
+- [x] Tests: registry behaviours, `ReadAllAsync` with the fake.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
