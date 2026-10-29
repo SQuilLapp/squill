@@ -15,14 +15,14 @@ internal sealed class FakeDatabaseProvider(DatabaseDialect dialect, IReadOnlyLis
         public string ServerVersion => "fake-1.0";
 
         public ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken) =>
-            ValueTask.FromResult<IResultReader>(new FakeStream(columns, rows));
+            ValueTask.FromResult<IResultReader>(new FakeResultReader(columns, rows));
 
         public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => ValueTask.FromResult(SchemaSnapshot.Empty);
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 
-    internal sealed class FakeStream(IReadOnlyList<ColumnInfo> columns, object?[][] rows) : IResultReader
+    internal sealed class FakeResultReader(IReadOnlyList<ColumnInfo> columns, object?[][] rows) : IResultReader
     {
         private int _next;
 

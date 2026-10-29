@@ -28,7 +28,7 @@ public sealed class ResultReaderExtensionsTests
     [Fact]
     public async Task ReadBatchAsync_AfterEnd_ReturnsNull()
     {
-        await using var stream = new FakeDatabaseProvider.FakeStream(Columns, []);
+        await using var stream = new FakeDatabaseProvider.FakeResultReader(Columns, []);
         Assert.Null(await stream.ReadBatchAsync(5, TestContext.Current.CancellationToken));
     }
 }
