@@ -1,6 +1,6 @@
 # P2-01 - Platform: secret store contract, in-memory and DPAPI stores
 
-Status: todo
+Status: done
 Depends on: P1-03
 
 ## Goal
@@ -17,8 +17,8 @@ Introduce `Squill.Platform` with the secret storage abstraction and the Windows 
 - A factory that picks the store (P2-03).
 
 ## Tasks
-- [ ] Create the project, contracts and stores; add to `Squill.slnx`.
-- [ ] Tests: in-memory behaviours; DPAPI round trip in a temp directory (skipped when not Windows via `[Fact(SkipUnless = ...)]`), file content is not the plaintext.
+- [x] Create the project, contracts and stores; add to `Squill.slnx`.
+- [x] Tests: in-memory behaviours; DPAPI round trip in a temp directory (skipped when not Windows via `[Fact(SkipUnless = ...)]`), file content is not the plaintext.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
