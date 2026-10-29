@@ -29,7 +29,7 @@ internal sealed class SqlServerDatabaseConnection(SqlConnection connection) : ID
 
     /// <inheritdoc />
     public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>
-        throw new NotSupportedException("P1-14");
+        SqlServerSchemaReader.ReadAsync(connection, cancellationToken);
 
     /// <inheritdoc />
     public ValueTask DisposeAsync() => connection.DisposeAsync();

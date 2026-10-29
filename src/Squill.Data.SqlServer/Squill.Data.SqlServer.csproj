@@ -1,5 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <InternalsVisibleTo Include="Squill.Data.SqlServer.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
     <ProjectReference Include="..\Squill.Data\Squill.Data.csproj" />

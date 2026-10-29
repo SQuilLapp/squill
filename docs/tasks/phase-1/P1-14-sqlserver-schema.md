@@ -1,6 +1,6 @@
 # P1-14 - Data.SqlServer: schema reading
 
-Status: todo
+Status: done
 Depends on: P1-13
 
 ## Goal
@@ -14,8 +14,8 @@ Implement `ReadSchemaAsync` for SQL Server.
 - Procedures, functions, triggers.
 
 ## Tasks
-- [ ] Implement `SqlServerSchemaReader` (internal) and the type formatting helper.
-- [ ] Unit tests for the helper; Docker-gated schema tests.
+- [x] Implement `SqlServerSchemaReader` (internal) and the type formatting helper.
+- [x] Unit tests for the helper; Docker-gated schema tests.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
