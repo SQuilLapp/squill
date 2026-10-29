@@ -1,6 +1,6 @@
 # P1-03 - Core: dialects and connection profile model
 
-Status: todo
+Status: done
 Depends on: P1-01
 
 ## Goal
@@ -19,9 +19,9 @@ Define the persisted description of a database connection, with no secret inside
 - Validation rules (P4-03).
 
 ## Tasks
-- [ ] Create the types and `ProfileJsonContext`.
-- [ ] Create `tests/Squill.Core.Tests` and add it to the solution.
-- [ ] Tests: JSON round trip of a profile with SSH settings; serialized text contains no `password` property; `SecretKeys` format.
+- [x] Create the types and `ProfileJsonContext`.
+- [x] Create `tests/Squill.Core.Tests` and add it to the solution.
+- [x] Tests: JSON round trip of a profile with SSH settings; serialized text contains no `password` property; `SecretKeys` format.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

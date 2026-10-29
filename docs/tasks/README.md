@@ -36,7 +36,7 @@ Depends on: <card ids, ranges allowed>
 |---|---|---|---|
 | [P1-01](phase-1/P1-01-central-package-management.md) | Central package management and editorconfig | none | done |
 | [P1-02](phase-1/P1-02-ci-workflow.md) | GitHub Actions CI workflow | P1-01 | done |
-| [P1-03](phase-1/P1-03-core-connection-profile.md) | Core: dialects and connection profile model | P1-01 | todo |
+| [P1-03](phase-1/P1-03-core-connection-profile.md) | Core: dialects and connection profile model | P1-01 | done |
 | [P1-04](phase-1/P1-04-core-result-and-schema-model.md) | Core: column, schema and diagnostic models | P1-03 | todo |
 | [P1-05](phase-1/P1-05-data-contracts.md) | Data: provider contracts and registry | P1-04 | todo |
 | [P1-06](phase-1/P1-06-sqlite-provider.md) | Data.Sqlite: provider (connect, execute, stream) | P1-05 | todo |

@@ -8,6 +8,7 @@
     <Project Path="tools/Squill.TokenGen/Squill.TokenGen.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Squill.Core.Tests/Squill.Core.Tests.csproj" />
     <Project Path="tests/Squill.DesignSystem.Tests/Squill.DesignSystem.Tests.csproj" />
   </Folder>
 </Solution>
