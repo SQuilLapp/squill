@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/Squill.Core/Squill.Core.csproj" />
     <Project Path="src/Squill.Data/Squill.Data.csproj" />
+    <Project Path="src/Squill.Data.Sqlite/Squill.Data.Sqlite.csproj" />
     <Project Path="src/Squill.DesignSystem/Squill.DesignSystem.csproj" />
     <Project Path="src/Squill.Presentation/Squill.Presentation.csproj" />
     <Project Path="src/Squill.Sql/Squill.Sql.csproj" />
@@ -10,6 +11,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Squill.Core.Tests/Squill.Core.Tests.csproj" />
     <Project Path="tests/Squill.Data.Tests/Squill.Data.Tests.csproj" />
+    <Project Path="tests/Squill.Data.Sqlite.Tests/Squill.Data.Sqlite.Tests.csproj" />
     <Project Path="tests/Squill.DesignSystem.Tests/Squill.DesignSystem.Tests.csproj" />
   </Folder>
 </Solution>

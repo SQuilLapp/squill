@@ -1,6 +1,6 @@
 # P1-06 - Data.Sqlite: provider (connect, execute, stream)
 
-Status: todo
+Status: done
 Depends on: P1-05
 
 ## Goal
@@ -18,9 +18,9 @@ First real provider, used as the reference implementation and by most later inte
 - Encryption, extensions, attach.
 
 ## Tasks
-- [ ] Create the project, provider, connection and stream classes.
-- [ ] Add the project and its test project to `Squill.slnx` and `Directory.Packages.props`.
-- [ ] Tests on `:memory:`: create/insert/select with typed values and NULL, parameters, `RecordsAffected` for an insert, batching with `maxRows = 2`, cancellation, error on invalid SQL surfaces `SqliteException`.
+- [x] Create the project, provider, connection and stream classes.
+- [x] Add the project and its test project to `Squill.slnx` and `Directory.Packages.props`.
+- [x] Tests on `:memory:`: create/insert/select with typed values and NULL, parameters, `RecordsAffected` for an insert, batching with `maxRows = 2`, cancellation, error on invalid SQL surfaces `SqliteException`.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
