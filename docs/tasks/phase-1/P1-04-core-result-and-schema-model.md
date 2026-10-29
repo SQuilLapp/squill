@@ -1,6 +1,6 @@
 # P1-04 - Core: column, schema and diagnostic models
 
-Status: todo
+Status: done
 Depends on: P1-03
 
 ## Goal
@@ -18,8 +18,8 @@ Define the shared data shapes used by providers, SQL services and view-models.
 - Any I/O.
 
 ## Tasks
-- [ ] Add the types in `src/Squill.Core/Schema/`, `src/Squill.Core/Results/`, `src/Squill.Core/Text/`.
-- [ ] Tests for `FindTable` (case, default schema, ambiguity) and `TextRange.End`.
+- [x] Add the types in `src/Squill.Core/Schema/`, `src/Squill.Core/Results/`, `src/Squill.Core/Text/`.
+- [x] Tests for `FindTable` (case, default schema, ambiguity) and `TextRange.End`.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
