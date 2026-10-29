@@ -34,7 +34,7 @@ Depends on: <card ids, ranges allowed>
 
 | Card | Title | Depends on | Status |
 |---|---|---|---|
-| [P1-01](phase-1/P1-01-central-package-management.md) | Central package management and editorconfig | none | todo |
+| [P1-01](phase-1/P1-01-central-package-management.md) | Central package management and editorconfig | none | done |
 | [P1-02](phase-1/P1-02-ci-workflow.md) | GitHub Actions CI workflow | P1-01 | todo |
 | [P1-03](phase-1/P1-03-core-connection-profile.md) | Core: dialects and connection profile model | P1-01 | todo |
 | [P1-04](phase-1/P1-04-core-result-and-schema-model.md) | Core: column, schema and diagnostic models | P1-03 | todo |

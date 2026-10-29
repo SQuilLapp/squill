@@ -1,6 +1,6 @@
 # P1-01 - Central package management and editorconfig
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -17,10 +17,10 @@ Pin every NuGet version in one place and set code-style defaults before any pack
 - Changing `Directory.Build.props` or `global.json`.
 
 ## Tasks
-- [ ] Create `Directory.Packages.props` with the three entries.
-- [ ] Strip `Version=` from the test csproj `PackageReference` items.
-- [ ] Add `.editorconfig` and `tests/.editorconfig`; remove `NoWarn` from the test csproj.
-- [ ] Run the build/test commands; fix style violations the new `.editorconfig` surfaces in `src/` and `tools/` (formatting only).
+- [x] Create `Directory.Packages.props` with the three entries.
+- [x] Strip `Version=` from the test csproj `PackageReference` items.
+- [x] Add `.editorconfig` and `tests/.editorconfig`; remove `NoWarn` from the test csproj.
+- [x] Run the build/test commands; fix style violations the new `.editorconfig` surfaces in `src/` and `tools/` (formatting only).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
