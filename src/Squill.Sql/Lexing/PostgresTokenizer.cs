@@ -44,35 +44,6 @@ public sealed class PostgresTokenizer : SqlTokenizerBase
         return token.Length > 0;
     }
 
-    private static int ReadNestedComment(string text, int pos)
-    {
-        var depth = 0;
-        var i = pos;
-        while (i < text.Length)
-        {
-            if (text[i] == '/' && i + 1 < text.Length && text[i + 1] == '*')
-            {
-                depth++;
-                i += 2;
-            }
-            else if (text[i] == '*' && i + 1 < text.Length && text[i + 1] == '/')
-            {
-                depth--;
-                i += 2;
-                if (depth == 0)
-                {
-                    return i;
-                }
-            }
-            else
-            {
-                i++;
-            }
-        }
-
-        return text.Length;
-    }
-
     private static int ReadEscapeString(string text, int quotePos)
     {
         var i = quotePos + 1;

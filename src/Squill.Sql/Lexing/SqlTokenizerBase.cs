@@ -146,6 +146,39 @@ public abstract class SqlTokenizerBase : ISqlTokenizer
         return new Token(kind, pos, text.Length - pos);
     }
 
+    /// <summary>Reads a block comment that nests; unterminated runs to the end.</summary>
+    /// <param name="text">The SQL text.</param>
+    /// <param name="pos">Offset of the opening <c>/*</c>.</param>
+    /// <returns>Offset just past the comment.</returns>
+    protected static int ReadNestedComment(string text, int pos)
+    {
+        var depth = 0;
+        var i = pos;
+        while (i < text.Length)
+        {
+            if (text[i] == '/' && i + 1 < text.Length && text[i + 1] == '*')
+            {
+                depth++;
+                i += 2;
+            }
+            else if (text[i] == '*' && i + 1 < text.Length && text[i + 1] == '/')
+            {
+                depth--;
+                i += 2;
+                if (depth == 0)
+                {
+                    return i;
+                }
+            }
+            else
+            {
+                i++;
+            }
+        }
+
+        return text.Length;
+    }
+
     private static int ReadNumber(string text, int pos)
     {
         var i = SkipDigits(text, pos);

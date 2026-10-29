@@ -1,6 +1,6 @@
 # P3-03 - Sql: MySQL and T-SQL tokenizers
 
-Status: todo
+Status: done
 Depends on: P3-02
 
 ## Goal
@@ -15,8 +15,8 @@ Dialect-specific lexing for MySQL/MariaDB and SQL Server.
 - Statement splitting (P3-04).
 
 ## Tasks
-- [ ] Implement both tokenizers and keyword sets.
-- [ ] Tests per special form + fuzz invariant.
+- [x] Implement both tokenizers and keyword sets.
+- [x] Tests per special form + fuzz invariant.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
