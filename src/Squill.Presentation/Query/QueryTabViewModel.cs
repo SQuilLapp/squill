@@ -10,6 +10,7 @@ using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Analysis;
 using Squill.Sql.Completion;
+using Squill.Sql.Formatting;
 
 namespace Squill.Presentation.Query;
 
@@ -110,6 +111,19 @@ public sealed partial class QueryTabViewModel : ViewModelBase
 
     [RelayCommand(AllowConcurrentExecutions = true)]
     private Task RunAllAsync() => ExecuteAsync(RunTarget.RunAll(_editor, _session.Profile.Dialect));
+
+    [RelayCommand]
+    private async Task FormatDocumentAsync(CancellationToken ct)
+    {
+        var old = _editor.Text;
+        var settings = await _settings.LoadAsync(ct);
+        var formatted = SqlFormatter.Format(old, _session.Profile.Dialect, FormatOptions.Default with { KeywordCase = settings.FormatterKeywordCase });
+        if (formatted == old)
+            return;
+        var caret = _editor.CaretOffset;
+        _editor.Text = formatted;
+        _editor.CaretOffset = (int)((long)caret * formatted.Length / Math.Max(old.Length, 1));
+    }
 
     [RelayCommand]
     private void Cancel() => _cancel?.Invoke();

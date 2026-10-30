@@ -5,12 +5,27 @@ using Squill.Platform.Storage;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Query;
 using Squill.Presentation.Sessions;
+using Squill.Sql.Formatting;
 using Xunit;
 
 namespace Squill.Presentation.Tests.Query;
 
 public sealed class QueryTabViewModelTests
 {
+    [Fact]
+    public async Task FormatDocument_Script_ReplacesTextWithFormatterOutput()
+    {
+        var f = new Fixture("select 1 from t where a=1");
+        f.Editor.CaretOffset = 0;
+
+        await f.Vm.FormatDocumentCommand.ExecuteAsync(null);
+
+        var expected = SqlFormatter.Format("select 1 from t where a=1", DatabaseDialect.PostgreSql, FormatOptions.Default);
+        Assert.Equal(expected, f.Editor.Text);
+        Assert.NotEqual("select 1 from t where a=1", f.Editor.Text);
+        Assert.Equal(0, f.Editor.CaretOffset);
+    }
+
     private static readonly ColumnInfo Col = new("c", "int", typeof(int), true, 0);
 
     private sealed class FakeReader(bool grid, int rows, long affected) : IResultReader
