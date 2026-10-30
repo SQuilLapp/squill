@@ -29,5 +29,6 @@
     <Project Path="tests/Squill.Sql.Tests/Squill.Sql.Tests.csproj" />
     <Project Path="tests/Squill.Platform.Tests/Squill.Platform.Tests.csproj" />
     <Project Path="tests/Squill.DesignSystem.Tests/Squill.DesignSystem.Tests.csproj" />
+    <Project Path="tests/Squill.Presentation.Tests/Squill.Presentation.Tests.csproj" />
   </Folder>
 </Solution>

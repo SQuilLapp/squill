@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>net11.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <ProjectReference Include="..\Squill.Core\Squill.Core.csproj" />
+    <ProjectReference Include="..\Squill.Data\Squill.Data.csproj" />
+    <ProjectReference Include="..\Squill.Sql\Squill.Sql.csproj" />
+    <ProjectReference Include="..\Squill.Platform\Squill.Platform.csproj" />
+    <InternalsVisibleTo Include="Squill.Presentation.Tests" />
+  </ItemGroup>
 </Project>
