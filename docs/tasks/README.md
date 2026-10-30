@@ -80,7 +80,7 @@ Depends on: <card ids, ranges allowed>
 | [P4-08](phase-4/P4-08-query-parameters.md) | Presentation: query parameter prompt | P4-07 | done |
 | [P4-09](phase-4/P4-09-workspace-vm-and-composition.md) | Presentation: workspace view-model and composition root | P4-08, P4-05, P4-03 | done |
 | [P4-10](phase-4/P4-10-history-snippets-vm.md) | Presentation: history and snippets view-models | P4-09 | done |
-| [P4-11](phase-4/P4-11-result-export.md) | Presentation: result export | P4-06 | todo |
+| [P4-11](phase-4/P4-11-result-export.md) | Presentation: result export | P4-06 | done |
 | [P4-12](phase-4/P4-12-settings-vm.md) | Presentation: settings view-model | P4-09 | todo |
 | [P5-01](phase-5/P5-01-avalonia-head-skeleton.md) | Avalonia head: skeleton, tokens and AOT publish | P4-12 | todo |
 | [P5-02](phase-5/P5-02-avalonia-grid-control.md) | Avalonia head: custom-drawn virtualized grid | P5-01 | todo |

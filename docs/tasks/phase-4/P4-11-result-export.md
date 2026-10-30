@@ -1,6 +1,6 @@
 # P4-11 - Presentation: result export
 
-Status: todo
+Status: done
 Depends on: P4-06
 
 ## Goal
@@ -15,8 +15,8 @@ Write a complete result set to CSV or JSON.
 - Excel, clipboard export (P5-06).
 
 ## Tasks
-- [ ] Implement both exporters and the command.
-- [ ] Tests: quoting cases, nulls, dates, bytes, duplicate names, 100,000-row export finishes (no per-row allocation assertion, just completion), incomplete source rejected.
+- [x] Implement both exporters and the command.
+- [x] Tests: quoting cases, nulls, dates, bytes, duplicate names, 100,000-row export finishes (no per-row allocation assertion, just completion), incomplete source rejected.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

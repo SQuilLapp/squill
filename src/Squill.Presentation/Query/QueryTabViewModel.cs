@@ -181,7 +181,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         var dialect = _session.Profile.Dialect;
         if (ParameterScanner.HasPositional(original, dialect))
         {
-            AddResult(ResultViewModel.ForMessage(NextTitle(), "Positional parameters are not supported, use :name"));
+            AddResult(ResultViewModel.ForMessage(NextTitle(), "Positional parameters are not supported, use :name", _dialogs));
             return false;
         }
 
@@ -200,12 +200,12 @@ public sealed partial class QueryTabViewModel : ViewModelBase
                 var affected = reader.RecordsAffected;
                 await reader.DisposeAsync();
                 rows = affected >= 0 ? affected : null;
-                AddResult(ResultViewModel.ForMessage(NextTitle(), affected >= 0 ? $"{affected} row(s) affected" : "Command completed"));
+                AddResult(ResultViewModel.ForMessage(NextTitle(), affected >= 0 ? $"{affected} row(s) affected" : "Command completed", _dialogs));
             }
             else
             {
                 var grid = new StreamingGridDataSource(reader, maxRows, _dispatcher);
-                AddResult(ResultViewModel.ForGrid(NextTitle(), grid));
+                AddResult(ResultViewModel.ForGrid(NextTitle(), grid, _dialogs));
                 await grid.StartAsync(ct);
                 rows = grid.RowCount;
             }
@@ -221,7 +221,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            AddResult(ResultViewModel.ForMessage(NextTitle(), ex.Message));
+            AddResult(ResultViewModel.ForMessage(NextTitle(), ex.Message, _dialogs));
             return false;
         }
         finally
