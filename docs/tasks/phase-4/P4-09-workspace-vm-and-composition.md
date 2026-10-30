@@ -1,6 +1,6 @@
 # P4-09 - Presentation: workspace view-model and composition root
 
-Status: todo
+Status: done
 Depends on: P4-08, P4-05, P4-03
 
 ## Goal
@@ -16,8 +16,8 @@ The shell view-model tying sessions, explorer and tabs together, and the object 
 - History/snippets/settings view-models (P4-10, P4-12).
 
 ## Tasks
-- [ ] Implement the workspace view-model and composition root.
-- [ ] Tests with fakes: connect creates explorer, new/close tab with confirmation, open table runs `SelectTop`, disconnect closes tabs, `AppComposition.Create` with a temp-dir override succeeds (add an optional `AppPaths` parameter for tests).
+- [x] Implement the workspace view-model and composition root.
+- [x] Tests with fakes: connect creates explorer, new/close tab with confirmation, open table runs `SelectTop`, disconnect closes tabs, `AppComposition.Create` with a temp-dir override succeeds (add an optional `AppPaths` parameter for tests).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

@@ -26,6 +26,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     private readonly IDialogService _dialogs;
     private readonly Dictionary<string, ParameterValue> _lastValues = [];
     private Action? _cancel;
+    private string _baselineText;
 
     /// <summary>Creates the tab and wires the editor with the dialect, completion, hover and diagnostics of the session.</summary>
     /// <param name="session">The session the statements run on.</param>
@@ -54,6 +55,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         _settings = settings;
         _dispatcher = dispatcher;
         _dialogs = dialogs;
+        _baselineText = editor.Text;
 
         editor.SetDialect(session.Profile.Dialect);
         editor.SetCompletionProvider(new SessionCompletionProvider(session));
@@ -61,6 +63,12 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         editor.TextChanged += (_, _) => UpdateDiagnostics();
         UpdateDiagnostics();
     }
+
+    /// <summary>Gets the session the statements run on.</summary>
+    public ConnectionSession Session => _session;
+
+    /// <summary>Gets whether the script text changed since the tab was opened or last run.</summary>
+    public bool IsModified => _editor.Text != _baselineText;
 
     /// <summary>Gets or sets the tab title.</summary>
     [ObservableProperty]
@@ -107,6 +115,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     {
         if (IsRunning || statements.Count == 0)
             return;
+        _baselineText = _editor.Text;
         IsRunning = true;
         Results.Clear();
         SelectedResult = null;
