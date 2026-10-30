@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Squill.App.Avalonia/Squill.App.Avalonia.csproj" />
     <Project Path="src/Squill.Core/Squill.Core.csproj" />
     <Project Path="src/Squill.Data/Squill.Data.csproj" />
     <Project Path="src/Squill.Data.MySql/Squill.Data.MySql.csproj" />

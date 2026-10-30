@@ -1,0 +1,9 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Squill.App.Avalonia.MainWindow"
+        Title="SQuilL" Width="1100" Height="700"
+        Icon="avares://Squill.App.Avalonia/Assets/squill.ico"
+        Background="{DynamicResource SquillBgBaseBrush}">
+  <TextBlock Text="SQuilL" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Center"
+             Foreground="{DynamicResource SquillAccentTextBrush}" />
+</Window>
