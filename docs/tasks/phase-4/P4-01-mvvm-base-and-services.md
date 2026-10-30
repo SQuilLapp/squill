@@ -1,6 +1,6 @@
 # P4-01 - Presentation: MVVM base and UI service contracts
 
-Status: todo
+Status: done
 Depends on: P3-15, P2-07, P2-05, P1-14
 
 ## Goal
@@ -16,8 +16,8 @@ Create the UI-agnostic presentation layer foundation. It never references Avalon
 - Concrete view-models.
 
 ## Tasks
-- [ ] Create the project, base types, contracts; add both projects to `Squill.slnx`.
-- [ ] Tests: `ViewModelBase` raises `PropertyChanged`; a sample `[RelayCommand]` async command compiles and runs under `-warnaserror` (keep it as a tiny `TestViewModel` in the test project).
+- [x] Create the project, base types, contracts; add both projects to `Squill.slnx`.
+- [x] Tests: `ViewModelBase` raises `PropertyChanged`; a sample `[RelayCommand]` async command compiles and runs under `-warnaserror` (keep it as a tiny `TestViewModel` in the test project).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

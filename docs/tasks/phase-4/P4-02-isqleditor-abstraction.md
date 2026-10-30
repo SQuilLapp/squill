@@ -1,6 +1,6 @@
 # P4-02 - Presentation: ISqlEditor and run target resolution
 
-Status: todo
+Status: done
 Depends on: P4-01
 
 ## Goal
@@ -15,8 +15,8 @@ The editor abstraction required by ADR 0002 plus a headless stub.
 - Concrete editors (P5-03, P5-09, P5-13).
 
 ## Tasks
-- [ ] Create the interface, stub and `RunTarget`.
-- [ ] Tests for `RunTarget` (selection spanning two statements, caret in the second, caret after the last `;`, empty text) and stub events.
+- [x] Create the interface, stub and `RunTarget`.
+- [x] Tests for `RunTarget` (selection spanning two statements, caret in the second, caret after the last `;`, empty text) and stub events.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

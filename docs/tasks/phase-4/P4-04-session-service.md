@@ -1,6 +1,6 @@
 # P4-04 - Presentation: connection sessions
 
-Status: todo
+Status: done
 Depends on: P4-03, P2-05
 
 ## Goal
@@ -15,8 +15,8 @@ Open a profile into a live session (tunnel + connection + schema).
 - Reconnection, keep-alive.
 
 ## Tasks
-- [ ] Implement both classes.
-- [ ] Tests with fakes (provider from `Squill.Data.Tests` copied as a test double, fake tunnel factory, in-memory store): host rewriting with SSH, disposal order, failure disposes the tunnel.
+- [x] Implement both classes.
+- [x] Tests with fakes (provider from `Squill.Data.Tests` copied as a test double, fake tunnel factory, in-memory store): host rewriting with SSH, disposal order, failure disposes the tunnel.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
