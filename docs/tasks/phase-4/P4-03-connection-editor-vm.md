@@ -1,6 +1,6 @@
 # P4-03 - Presentation: connection list and editor view-models
 
-Status: todo
+Status: done
 Depends on: P4-01, P2-04
 
 ## Goal
@@ -15,8 +15,8 @@ View-models to create, edit, delete and test connection profiles.
 - SSH during Test (the session service of P4-04 handles tunnels).
 
 ## Tasks
-- [ ] Implement both view-models.
-- [ ] Tests with fakes: default port switching, validation per dialect, save passes `null` password when unchanged, delete confirmation, test command success/failure.
+- [x] Implement both view-models.
+- [x] Tests with fakes: default port switching, validation per dialect, save passes `null` password when unchanged, delete confirmation, test command success/failure.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
@@ -24,3 +24,8 @@ View-models to create, edit, delete and test connection profiles.
 
 ## Suggested commit message
 Add connection list and editor view-models
+
+## Implementation notes
+- `ConnectionListViewModel` also takes the `ProviderRegistry` (it builds the editors, which need it).
+- `IDialogService` has no info dialog, so a successful test is reported in `ConnectionEditorViewModel.TestStatus`; failures also go through `ShowErrorAsync`.
+- `LoadSecretsAsync` loads the stored secrets of an edited profile; the list view-model calls it before raising `EditRequested`.
