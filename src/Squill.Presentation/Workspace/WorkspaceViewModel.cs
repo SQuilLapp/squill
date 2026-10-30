@@ -153,6 +153,15 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         await tab.RunCommand.ExecuteAsync(null);
     }
 
+    /// <summary>Opens a new tab on the active session holding the given text, without running it.</summary>
+    /// <param name="sql">Initial script text.</param>
+    /// <returns>The new tab, or <see langword="null"/> when no session is active.</returns>
+    public QueryTabViewModel? OpenInNewTab(string sql)
+    {
+        ArgumentNullException.ThrowIfNull(sql);
+        return ActiveSession is { } session ? AddTab(session, sql) : null;
+    }
+
     private QueryTabViewModel AddTab(ConnectionSession session, string text)
     {
         var editor = _editorFactory();

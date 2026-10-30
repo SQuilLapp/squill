@@ -67,6 +67,9 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     /// <summary>Gets the session the statements run on.</summary>
     public ConnectionSession Session => _session;
 
+    /// <summary>Gets the editor holding the script.</summary>
+    public ISqlEditor Editor => _editor;
+
     /// <summary>Gets whether the script text changed since the tab was opened or last run.</summary>
     public bool IsModified => _editor.Text != _baselineText;
 
