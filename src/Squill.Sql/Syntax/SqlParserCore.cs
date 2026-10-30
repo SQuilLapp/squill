@@ -13,9 +13,19 @@ internal sealed class SqlParserCore
     /// <param name="text">The SQL text.</param>
     /// <param name="dialect">The dialect that selects the tokenizer.</param>
     public SqlParserCore(string text, DatabaseDialect dialect)
+        : this(text, dialect, SqlTokenizers.For(dialect).Tokenize(text))
+    {
+    }
+
+    /// <summary>Reads the given tokens of <paramref name="text"/>, dropping whitespace and comments.</summary>
+    /// <param name="text">The SQL text the tokens come from.</param>
+    /// <param name="dialect">The dialect of the text.</param>
+    /// <param name="tokens">Tokens in source order, typically those of one statement.</param>
+    public SqlParserCore(string text, DatabaseDialect dialect, IEnumerable<Token> tokens)
     {
         Text = text;
-        foreach (var token in SqlTokenizers.For(dialect).Tokenize(text))
+        Dialect = dialect;
+        foreach (var token in tokens)
         {
             if (token.Kind is not (TokenKind.Whitespace or TokenKind.LineComment or TokenKind.BlockComment))
             {
@@ -23,6 +33,9 @@ internal sealed class SqlParserCore
             }
         }
     }
+
+    /// <summary>Gets the dialect of the parsed text.</summary>
+    public DatabaseDialect Dialect { get; }
 
     /// <summary>Gets the parsed text.</summary>
     public string Text { get; }
@@ -134,4 +147,47 @@ internal sealed class SqlParserCore
     /// <summary>Records a zero-length diagnostic where the last consumed token ends.</summary>
     /// <param name="message">The description.</param>
     public void ReportMissing(string message) => Report(LastEnd, 0, message);
+
+    /// <summary>Consumes tokens up to, not including, the <c>)</c> that closes the current level.</summary>
+    public void SkipToCloseParen()
+    {
+        var depth = 0;
+        while (!AtEnd)
+        {
+            var token = Peek();
+            if (IsPunct(token, '('))
+            {
+                depth++;
+            }
+            else if (IsPunct(token, ')') && depth-- == 0)
+            {
+                return;
+            }
+
+            Next();
+        }
+    }
+
+    /// <summary>Gets the name an identifier token stands for, without its quotes.</summary>
+    /// <param name="token">An identifier or quoted identifier token.</param>
+    /// <returns>The unquoted, unescaped name.</returns>
+    public string NameOf(Token token)
+    {
+        var text = TextOf(token);
+        if (token.Kind != TokenKind.QuotedIdentifier || text.Length == 0)
+        {
+            return text;
+        }
+
+        var open = text[0];
+        var close = open == '[' ? ']' : open;
+        if (open is not ('"' or '`' or '['))
+        {
+            return text;
+        }
+
+        var terminated = text.Length >= 2 && text[^1] == close;
+        var inner = text[1..(terminated ? ^1 : text.Length)];
+        return inner.Replace(new string(close, 2), close.ToString());
+    }
 }

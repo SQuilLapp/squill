@@ -101,10 +101,10 @@ public sealed record ParenExpr(Expression Inner, int Start, int Length) : Expres
 public sealed record ListExpr(IReadOnlyList<Expression> Items, int Start, int Length) : Expression(Start, Length);
 
 /// <summary>A parenthesized query used as a value.</summary>
-/// <param name="Query">The query node.</param>
+/// <param name="Query">The query.</param>
 /// <param name="Start">Zero-based offset of the first character.</param>
 /// <param name="Length">Number of characters.</param>
-public sealed record SubqueryExpr(SyntaxNode Query, int Start, int Length) : Expression(Start, Length);
+public sealed record SubqueryExpr(Statement Query, int Start, int Length) : Expression(Start, Length);
 
 /// <summary>Placeholder for input that could not be parsed; empty when something is missing.</summary>
 /// <param name="Start">Zero-based offset of the first character.</param>

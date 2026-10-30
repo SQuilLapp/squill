@@ -1,6 +1,6 @@
 # P3-07 - Sql: SELECT statement parser
 
-Status: todo
+Status: done
 Depends on: P3-06
 
 ## Goal
@@ -16,8 +16,8 @@ Parse queries into a tree sufficient for scope analysis, completion and diagnost
 - INSERT/UPDATE/DELETE/DDL (P3-08).
 
 ## Tasks
-- [ ] Implement the select parser.
-- [ ] Tests: CTEs, joins with aliases, subquery in FROM and in WHERE, UNION, T-SQL TOP vs LIMIT, incomplete statements for each tolerance case, node ranges.
+- [x] Implement the select parser.
+- [x] Tests: CTEs, joins with aliases, subquery in FROM and in WHERE, UNION, T-SQL TOP vs LIMIT, incomplete statements for each tolerance case, node ranges.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

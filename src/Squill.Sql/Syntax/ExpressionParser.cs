@@ -17,7 +17,7 @@ internal sealed class ExpressionParser(SqlParserCore core)
     private const int Postfix = 9;
 
     /// <summary>Keywords that end an expression (clause starts) or are operators, so never begin an operand.</summary>
-    private static readonly FrozenSet<string> Boundary = new[]
+    internal static readonly FrozenSet<string> Boundary = new[]
     {
         "SELECT", "FROM", "WHERE", "GROUP", "HAVING", "ORDER", "BY", "LIMIT", "OFFSET", "UNION", "INTERSECT", "EXCEPT",
         "JOIN", "INNER", "OUTER", "CROSS", "FULL", "NATURAL", "LEFT", "RIGHT", "ON", "USING", "SET", "VALUES", "INTO",
@@ -47,6 +47,10 @@ internal sealed class ExpressionParser(SqlParserCore core)
     /// <summary>Parses one expression at the cursor and stops before a token that cannot continue it.</summary>
     /// <returns>The expression tree; an <see cref="ErrorNode"/> where input is missing or invalid.</returns>
     public Expression ParseExpression() => ParseExpression(Or);
+
+    /// <summary>Parses a single operand (literal, name, call, parenthesized expression) without any binary operator.</summary>
+    /// <returns>The operand.</returns>
+    public Expression ParseOperand() => ParsePrefix();
 
     private Expression ParseExpression(int minPrecedence)
     {
@@ -331,11 +335,7 @@ internal sealed class ExpressionParser(SqlParserCore core)
 
         if (core.IsWord(core.Peek(), "SELECT") || core.IsWord(core.Peek(), "WITH"))
         {
-            // shortcut: the query is skipped as an opaque node, P3-07 replaces it with the SELECT parser
-            var queryStart = core.Peek().Start;
-            SkipToCloseParen();
-            var query = new ErrorNode(queryStart, core.LastEnd - queryStart);
-            core.Expect(')');
+            var query = new SelectParser(core).ParseParenthesizedQuery();
             return new SubqueryExpr(query, open.Start, core.LastEnd - open.Start);
         }
 
@@ -426,50 +426,12 @@ internal sealed class ExpressionParser(SqlParserCore core)
 
         if (core.MatchPunct('('))
         {
-            SkipToCloseParen();
+            core.SkipToCloseParen();
             core.Expect(')');
         }
 
         return core.Text[first.Start..core.LastEnd];
     }
 
-    /// <summary>Consumes tokens up to, not including, the <c>)</c> that closes the current level.</summary>
-    private void SkipToCloseParen()
-    {
-        var depth = 0;
-        while (!core.AtEnd)
-        {
-            var token = core.Peek();
-            if (core.IsPunct(token, '('))
-            {
-                depth++;
-            }
-            else if (core.IsPunct(token, ')') && depth-- == 0)
-            {
-                return;
-            }
-
-            core.Next();
-        }
-    }
-
-    private string NameOf(Token token)
-    {
-        var text = core.TextOf(token);
-        if (token.Kind != TokenKind.QuotedIdentifier || text.Length == 0)
-        {
-            return text;
-        }
-
-        var open = text[0];
-        var close = open == '[' ? ']' : open;
-        if (open is not ('"' or '`' or '['))
-        {
-            return text;
-        }
-
-        var terminated = text.Length >= 2 && text[^1] == close;
-        var inner = text[1..(terminated ? ^1 : text.Length)];
-        return inner.Replace(new string(close, 2), close.ToString());
-    }
+    private string NameOf(Token token) => core.NameOf(token);
 }
