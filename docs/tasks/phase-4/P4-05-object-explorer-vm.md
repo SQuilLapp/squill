@@ -1,6 +1,6 @@
 # P4-05 - Presentation: object explorer view-model
 
-Status: todo
+Status: done
 Depends on: P4-04
 
 ## Goal
@@ -15,8 +15,8 @@ A tree of schemas, tables, views and columns built from the session's schema, wi
 - Context menus, DDL scripting.
 
 ## Tasks
-- [ ] Implement the view-model and `SqlSnippets`.
-- [ ] Tests: single vs multiple schemas, filter behaviour, quoting with embedded quotes, `SelectTop` per dialect, refresh rebuilds.
+- [x] Implement the view-model and `SqlSnippets`.
+- [x] Tests: single vs multiple schemas, filter behaviour, quoting with embedded quotes, `SelectTop` per dialect, refresh rebuilds.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
