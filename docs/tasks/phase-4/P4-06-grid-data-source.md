@@ -1,6 +1,6 @@
 # P4-06 - Presentation: streaming grid data source and cell formatting
 
-Status: todo
+Status: done
 Depends on: P4-04
 
 ## Goal
@@ -16,8 +16,8 @@ Feed result rows to a virtualizing grid without copying them (risk R4, data side
 - The control (P5-02).
 
 ## Tasks
-- [ ] Implement the data source and formatter.
-- [ ] Tests with a fake stream: 10,000 rows across batches, truncation at `maxRows`, cancellation mid-stream, `Changed` throttling (use a fake clock-free assertion: count <= rows/1000 + 2), formatter table.
+- [x] Implement the data source and formatter.
+- [x] Tests with a fake stream: 10,000 rows across batches, truncation at `maxRows`, cancellation mid-stream, `Changed` throttling (use a fake clock-free assertion: count <= rows/1000 + 2), formatter table.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
