@@ -1,6 +1,6 @@
 # P3-09 - Sql: scope analysis at a caret position
 
-Status: todo
+Status: done
 Depends on: P3-08
 
 ## Goal
@@ -16,8 +16,8 @@ Tell completion and diagnostics which tables, aliases and CTEs are visible at an
 - Schema lookups (P3-11).
 
 ## Tasks
-- [ ] Implement the resolver.
-- [ ] Tests: alias visibility, joins, CTE and derived table columns, correlated subquery, clause detection for each `ClauseKind`, incomplete statements.
+- [x] Implement the resolver.
+- [x] Tests: alias visibility, joins, CTE and derived table columns, correlated subquery, clause detection for each `ClauseKind`, incomplete statements.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

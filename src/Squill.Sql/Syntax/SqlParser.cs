@@ -25,6 +25,6 @@ public static class SqlParser
             diagnostics.AddRange(core.Diagnostics);
         }
 
-        return new SqlScript(statements, diagnostics);
+        return new SqlScript(statements, diagnostics) { Text = text, Dialect = dialect };
     }
 }
