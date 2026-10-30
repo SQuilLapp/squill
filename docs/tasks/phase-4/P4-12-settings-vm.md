@@ -1,6 +1,6 @@
 # P4-12 - Presentation: settings view-model
 
-Status: todo
+Status: done
 Depends on: P4-09
 
 ## Goal
@@ -14,8 +14,8 @@ Expose preferences to the UI and apply them live.
 - Settings window UI (P5-07).
 
 ## Tasks
-- [ ] Implement the view-model and `FormatDocumentCommand`.
-- [ ] Tests: load/save round trip with the in-memory store, clamping reaches the UI, format command output equals `SqlFormatter` output.
+- [x] Implement the view-model and `FormatDocumentCommand`.
+- [x] Tests: load/save round trip with the in-memory store, clamping reaches the UI, format command output equals `SqlFormatter` output.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

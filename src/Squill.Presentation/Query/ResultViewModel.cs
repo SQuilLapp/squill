@@ -1,12 +1,16 @@
+using CommunityToolkit.Mvvm.Input;
 using Squill.Presentation.Results;
 
 namespace Squill.Presentation.Query;
 
 /// <summary>One result of a run: either a grid of rows or a message.</summary>
-public sealed class ResultViewModel : ViewModelBase
+public sealed partial class ResultViewModel : ViewModelBase
 {
-    private ResultViewModel(ResultKind kind, string title, StreamingGridDataSource? grid, string text)
+    private readonly IDialogService _dialogs;
+
+    private ResultViewModel(ResultKind kind, string title, StreamingGridDataSource? grid, string text, IDialogService dialogs)
     {
+        _dialogs = dialogs;
         Kind = kind;
         Title = title;
         Grid = grid;
@@ -25,7 +29,27 @@ public sealed class ResultViewModel : ViewModelBase
     /// <summary>Gets the text of a <see cref="ResultKind.Message"/> result, otherwise an empty string.</summary>
     public string Text { get; }
 
-    internal static ResultViewModel ForGrid(string title, StreamingGridDataSource grid) => new(ResultKind.Grid, title, grid, "");
+    internal static ResultViewModel ForGrid(string title, StreamingGridDataSource grid, IDialogService dialogs) => new(ResultKind.Grid, title, grid, "", dialogs);
 
-    internal static ResultViewModel ForMessage(string title, string text) => new(ResultKind.Message, title, null, text);
+    internal static ResultViewModel ForMessage(string title, string text, IDialogService dialogs) => new(ResultKind.Message, title, null, text, dialogs);
+
+    [RelayCommand]
+    private async Task ExportAsync(IResultExporter exporter)
+    {
+        ArgumentNullException.ThrowIfNull(exporter);
+        if (Grid is null)
+            return;
+        try
+        {
+            var path = await _dialogs.PickSaveFileAsync(Title, exporter.FileExtension);
+            if (path is null)
+                return;
+            await using var file = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            await exporter.ExportAsync(Grid, file, CancellationToken.None);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            await _dialogs.ShowErrorAsync("Export failed", ex.Message);
+        }
+    }
 }

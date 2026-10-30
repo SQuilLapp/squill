@@ -142,6 +142,8 @@ public sealed class WorkspaceViewModelTests
             var services = AppComposition.Create(new Platform(new ProviderRegistry(), _dialogs), new AppPaths(dir));
 
             Assert.NotNull(services.Workspace.ConnectionList);
+            Assert.NotNull(services.History);
+            Assert.NotNull(services.Snippets);
         }
         finally
         {

@@ -7,6 +7,7 @@ using Squill.Platform.Ssh;
 using Squill.Platform.Storage;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Editor;
+using Squill.Presentation.Panels;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Workspace;
 
@@ -30,7 +31,9 @@ public interface IPlatformServices
 
 /// <summary>The root view-models built by <see cref="AppComposition"/>.</summary>
 /// <param name="Workspace">The shell view-model.</param>
-public sealed record AppServices(WorkspaceViewModel Workspace);
+/// <param name="History">The query history panel.</param>
+/// <param name="Snippets">The snippets panel.</param>
+public sealed record AppServices(WorkspaceViewModel Workspace, HistoryViewModel History, SnippetsViewModel Snippets);
 
 /// <summary>Builds the object graph shared by all heads.</summary>
 public static class AppComposition
@@ -48,7 +51,11 @@ public static class AppComposition
         var settings = new JsonSettingsStore(paths);
         var sessions = new SessionManager(platform.Providers, profiles, new SshNetTunnelFactory());
         var list = new ConnectionListViewModel(profiles, platform.Providers, platform.Dialogs);
-        return new AppServices(new WorkspaceViewModel(
-            sessions, list, history, settings, platform.Dispatcher, platform.Dialogs, platform.EditorFactory));
+        var workspace = new WorkspaceViewModel(
+            sessions, list, history, settings, platform.Dispatcher, platform.Dialogs, platform.EditorFactory);
+        return new AppServices(
+            workspace,
+            new HistoryViewModel(history, workspace, platform.Dialogs),
+            new SnippetsViewModel(new JsonSnippetStore(paths), workspace, platform.Dialogs));
     }
 }
