@@ -1,6 +1,6 @@
 # P3-11 - Sql: table and column completion
 
-Status: todo
+Status: done
 Depends on: P3-10
 
 ## Goal
@@ -16,8 +16,8 @@ Complete tables, columns and aliases from the loaded `SchemaSnapshot`.
 - Function completion (P3-13).
 
 ## Tasks
-- [ ] Implement both providers and the quoting helper.
-- [ ] Tests with a hand-built `SchemaSnapshot`: each context above, aliases, CTE columns, qualified access, quoting per dialect.
+- [x] Implement both providers and the quoting helper.
+- [x] Tests with a hand-built `SchemaSnapshot`: each context above, aliases, CTE columns, qualified access, quoting per dialect.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
