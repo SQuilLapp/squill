@@ -218,11 +218,13 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         _editor.SetDiagnostics(SqlDiagnosticsProvider.GetDiagnostics(
             new SqlRequest(_editor.Text, _editor.CaretOffset, _session.Profile.Dialect, _session.Schema)));
 
+    /// <summary>Completes keywords and schema objects against the schema of the tab's current session.</summary>
     private sealed class SessionCompletionProvider(ConnectionSession session) : ISqlCompletionProvider
     {
         private static readonly CompositeCompletionProvider Inner =
             new(new KeywordCompletionProvider(), new SchemaCompletionProvider());
 
+        /// <inheritdoc />
         public IReadOnlyList<CompletionItem> GetCompletions(SqlRequest request) =>
             Inner.GetCompletions(request with { Schema = session.Schema });
     }
