@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Squill.App.Avalonia.Bench;
 using Squill.App.Avalonia.Services;
 using Squill.Data;
 using Squill.Data.MySql;
@@ -33,7 +34,7 @@ public sealed partial class App : Application
             providers.Register(new SqlServerDatabaseProvider());
             var platform = new AvaloniaPlatformServices(providers, () => new StubSqlEditor());
             Services = AppComposition.Create(platform);
-            desktop.MainWindow = new MainWindow();
+            desktop.MainWindow = GridBench.IsRequested(desktop.Args) ? GridBench.Start(desktop) : new MainWindow();
         }
 
         base.OnFrameworkInitializationCompleted();
