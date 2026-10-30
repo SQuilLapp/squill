@@ -1,6 +1,6 @@
 # P4-07 - Presentation: query tab and results view-models
 
-Status: todo
+Status: done
 Depends on: P4-02, P4-06, P2-06
 
 ## Goal
@@ -17,8 +17,8 @@ Run statements from an editor and expose results and messages.
 - Result export (P4-11).
 
 ## Tasks
-- [ ] Implement the view-models.
-- [ ] Tests with a fake provider/session: single statement, script of 3 statements, error in the second, cancel, history entries, DML message text, re-entrancy.
+- [x] Implement the view-models.
+- [x] Tests with a fake provider/session: single statement, script of 3 statements, error in the second, cancel, history entries, DML message text, re-entrancy.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
