@@ -1,3 +1,5 @@
+using Squill.Presentation.Query;
+
 namespace Squill.Presentation;
 
 /// <summary>Modal dialogs that view-models request without knowing the UI framework.</summary>
@@ -26,4 +28,12 @@ public interface IDialogService
     /// <param name="title">Dialog title.</param>
     /// <param name="message">Error text.</param>
     ValueTask ShowErrorAsync(string title, string message);
+
+    /// <summary>Asks the user for the values of named statement parameters.</summary>
+    /// <param name="names">Parameter names without sigil.</param>
+    /// <param name="defaults">Values entered the last time, to offer as defaults; may be empty.</param>
+    /// <returns>One value per name, or <see langword="null"/> when cancelled.</returns>
+    ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(
+        IReadOnlyList<string> names,
+        IReadOnlyDictionary<string, ParameterValue> defaults);
 }

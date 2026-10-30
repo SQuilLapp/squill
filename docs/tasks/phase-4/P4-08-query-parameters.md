@@ -1,6 +1,6 @@
 # P4-08 - Presentation: query parameter prompt
 
-Status: todo
+Status: done
 Depends on: P4-07
 
 ## Goal
@@ -15,8 +15,8 @@ Detect parameters in the statement to run and bind values asked from the user.
 - Typed parameter editors, parameter files.
 
 ## Tasks
-- [ ] Implement scanner, dialog method, tab integration.
-- [ ] Tests: scanner per dialect (strings/comments ignored), rewriting, cancel, remembered defaults.
+- [x] Implement scanner, dialog method, tab integration.
+- [x] Tests: scanner per dialect (strings/comments ignored), rewriting, cancel, remembered defaults.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

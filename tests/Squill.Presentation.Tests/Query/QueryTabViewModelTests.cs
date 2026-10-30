@@ -39,6 +39,7 @@ public sealed class QueryTabViewModelTests
     private sealed class FakeConnection : IDatabaseConnection
     {
         public List<string> Executed { get; } = [];
+        public List<IReadOnlyList<QueryParameter>> Bound { get; } = [];
         public List<FakeReader> Readers { get; } = [];
         public Func<string, CancellationToken, Task>? Gate { get; set; }
         public int SchemaReads { get; private set; }
@@ -47,6 +48,7 @@ public sealed class QueryTabViewModelTests
         public async ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken)
         {
             Executed.Add(sql);
+            Bound.Add(parameters);
             if (Gate is not null)
                 await Gate(sql, cancellationToken);
             if (sql.Contains("boom", StringComparison.Ordinal))
@@ -91,17 +93,18 @@ public sealed class QueryTabViewModelTests
 
     private sealed class Fixture
     {
-        public Fixture(string script)
+        public Fixture(string script, DatabaseDialect dialect = DatabaseDialect.PostgreSql)
         {
             Connection = new FakeConnection();
             Editor = new StubSqlEditor { Text = script };
             var session = new ConnectionSession(
-                new ConnectionProfile(Guid.NewGuid(), "p", DatabaseDialect.PostgreSql, "h", 1, "d", "u", null, null),
+                new ConnectionProfile(Guid.NewGuid(), "p", dialect, "h", 1, "d", "u", null, null),
                 Connection, SchemaSnapshot.Empty, null);
-            Vm = new QueryTabViewModel(session, Editor, History, new FakeSettings(), new ImmediateDispatcher(), new FakeDialogService());
+            Vm = new QueryTabViewModel(session, Editor, History, new FakeSettings(), new ImmediateDispatcher(), Dialogs);
         }
 
         public FakeConnection Connection { get; }
+        public FakeDialogService Dialogs { get; } = new();
         public StubSqlEditor Editor { get; }
         public FakeHistory History { get; } = new();
         public QueryTabViewModel Vm { get; }
@@ -250,5 +253,70 @@ public sealed class QueryTabViewModelTests
         Assert.Equal(DatabaseDialect.PostgreSql, f.Editor.Dialect);
         Assert.NotNull(f.Editor.CompletionProvider);
         Assert.NotNull(f.Editor.HoverProvider);
+    }
+
+    private static IReadOnlyList<ParameterValue> Values(IReadOnlyList<string> names, string text) =>
+        [.. names.Select(n => new ParameterValue(n, text, false))];
+
+    [Fact]
+    public async Task Run_NamedParameters_PromptsOnceAndBindsRewrittenSql()
+    {
+        var f = new Fixture("SELECT :a, $b; SELECT :a;", DatabaseDialect.Sqlite);
+        f.Dialogs.ParametersResult = (names, _) => [.. Values(names, "x").Where(v => v.Name != "b"), new("b", null, true)];
+
+        await f.Vm.RunAllCommand.ExecuteAsync(null);
+
+        Assert.Equal(["SELECT @a, @b;", "SELECT @a;"], f.Connection.Executed);
+        Assert.Single(f.Dialogs.ParameterPrompts);
+        Assert.Equal([new("a", "x"), new("b", null)], f.Connection.Bound[0]);
+        Assert.Equal([new("a", "x")], f.Connection.Bound[1]);
+        Assert.Equal("SELECT :a, $b;", f.History.Entries[0].Sql);
+    }
+
+    [Fact]
+    public async Task Run_PromptCancelled_RunsNothing()
+    {
+        var f = new Fixture("SELECT :a;", DatabaseDialect.Sqlite);
+
+        await f.Vm.RunCommand.ExecuteAsync(null);
+
+        Assert.Empty(f.Connection.Executed);
+        Assert.Empty(f.Vm.Results);
+        Assert.Equal("Cancelled", f.Vm.StatusText);
+        Assert.False(f.Vm.IsRunning);
+    }
+
+    [Fact]
+    public async Task Run_SecondTime_OffersLastValuesAsDefaults()
+    {
+        var f = new Fixture("SELECT :a;", DatabaseDialect.Sqlite);
+        f.Dialogs.ParametersResult = (names, _) => Values(names, "x");
+
+        await f.Vm.RunCommand.ExecuteAsync(null);
+        await f.Vm.RunCommand.ExecuteAsync(null);
+
+        Assert.Empty(f.Dialogs.ParameterPrompts[0]);
+        Assert.Equal("x", f.Dialogs.ParameterPrompts[1]["a"].Text);
+    }
+
+    [Fact]
+    public async Task Run_NoParameters_DoesNotPrompt()
+    {
+        var f = new Fixture("SELECT 1;", DatabaseDialect.Sqlite);
+
+        await f.Vm.RunCommand.ExecuteAsync(null);
+
+        Assert.Empty(f.Dialogs.ParameterPrompts);
+    }
+
+    [Fact]
+    public async Task Run_PositionalParameter_ShowsMessageAndSkipsExecution()
+    {
+        var f = new Fixture("SELECT ?;", DatabaseDialect.Sqlite);
+
+        await f.Vm.RunCommand.ExecuteAsync(null);
+
+        Assert.Empty(f.Connection.Executed);
+        Assert.Equal("Positional parameters are not supported, use :name", Assert.Single(f.Vm.Results).Text);
     }
 }

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Squill.Data;
 using Squill.Platform.Settings;
 using Squill.Platform.Storage;
 using Squill.Presentation.Editor;
@@ -23,6 +24,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     private readonly ISettingsStore _settings;
     private readonly IUiDispatcher _dispatcher;
     private readonly IDialogService _dialogs;
+    private readonly Dictionary<string, ParameterValue> _lastValues = [];
     private Action? _cancel;
 
     /// <summary>Creates the tab and wires the editor with the dialect, completion, hover and diagnostics of the session.</summary>
@@ -115,10 +117,13 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         try
         {
             var maxRows = (await _settings.LoadAsync(cts.Token)).MaxGridRows;
+            var values = await PromptValuesAsync(statements);
+            if (values is null)
+                throw new OperationCanceledException();
             var completed = 0;
             foreach (var sql in statements)
             {
-                if (!await RunStatementAsync(sql, maxRows, cts.Token))
+                if (!await RunStatementAsync(sql, maxRows, values, cts.Token))
                     break;
                 completed++;
             }
@@ -139,14 +144,45 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         }
     }
 
-    private async Task<bool> RunStatementAsync(string sql, int maxRows, CancellationToken ct)
+    private async Task<Dictionary<string, ParameterValue>?> PromptValuesAsync(IReadOnlyList<string> statements)
     {
+        var dialect = _session.Profile.Dialect;
+        List<string> names = [];
+        foreach (var name in statements.SelectMany(s => ParameterScanner.Scan(s, dialect)))
+        {
+            if (!names.Contains(name))
+                names.Add(name);
+        }
+
+        if (names.Count == 0)
+            return [];
+        var entered = await _dialogs.PromptParametersAsync(names, _lastValues);
+        if (entered is null)
+            return null;
+        foreach (var value in entered)
+            _lastValues[value.Name] = value;
+        return entered.ToDictionary(v => v.Name);
+    }
+
+    private async Task<bool> RunStatementAsync(string original, int maxRows, Dictionary<string, ParameterValue> values, CancellationToken ct)
+    {
+        var dialect = _session.Profile.Dialect;
+        if (ParameterScanner.HasPositional(original, dialect))
+        {
+            AddResult(ResultViewModel.ForMessage(NextTitle(), "Positional parameters are not supported, use :name"));
+            return false;
+        }
+
+        var sql = ParameterScanner.Rewrite(original, dialect);
+        List<QueryParameter> parameters = [];
+        foreach (var name in ParameterScanner.Scan(original, dialect))
+            parameters.Add(new QueryParameter(name, values.TryGetValue(name, out var v) && !v.IsNull ? v.Text : null));
         var clock = Stopwatch.StartNew();
         long? rows = null;
         var succeeded = false;
         try
         {
-            var reader = await _session.Connection.ExecuteAsync(sql, [], ct);
+            var reader = await _session.Connection.ExecuteAsync(sql, parameters, ct);
             if (reader.Columns.Count == 0)
             {
                 var affected = reader.RecordsAffected;
@@ -163,7 +199,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             }
 
             succeeded = true;
-            if (IsSchemaChange(sql))
+            if (IsSchemaChange(original))
                 await RefreshAfterSchemaChangeAsync();
             return true;
         }
@@ -178,7 +214,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         }
         finally
         {
-            await _history.AppendAsync(new HistoryEntry(DateTimeOffset.UtcNow, _session.Profile.Id, sql, succeeded, rows, clock.Elapsed), CancellationToken.None);
+            await _history.AppendAsync(new HistoryEntry(DateTimeOffset.UtcNow, _session.Profile.Id, original, succeeded, rows, clock.Elapsed), CancellationToken.None);
         }
     }
 
