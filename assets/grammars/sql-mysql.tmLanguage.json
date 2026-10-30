@@ -1,0 +1,68 @@
+{
+  "name": "SQL (mysql)",
+  "scopeName": "source.sql.mysql",
+  "patterns": [
+    {
+      "name": "comment.line.double-dash.sql",
+      "match": "(--|#).*$"
+    },
+    {
+      "name": "comment.block.sql",
+      "begin": "/\\*",
+      "end": "\\*/"
+    },
+    {
+      "name": "string.quoted.single.sql",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql",
+          "match": "\\\\.|''"
+        }
+      ]
+    },
+    {
+      "name": "string.quoted.double.sql",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql",
+          "match": "\\\\.|\"\""
+        }
+      ]
+    },
+    {
+      "name": "variable.other.quoted.sql",
+      "begin": "`",
+      "end": "`",
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql",
+          "match": "``"
+        }
+      ]
+    },
+    {
+      "name": "variable.parameter.sql",
+      "match": "\\?|@@?[A-Za-z_][A-Za-z0-9_$]*"
+    },
+    {
+      "name": "constant.numeric.sql",
+      "match": "\\b\\d+(\\.\\d*)?([eE][+-]?\\d+)?\\b|\\.\\d+([eE][+-]?\\d+)?\\b"
+    },
+    {
+      "name": "support.function.sql",
+      "match": "(?i)\\b(ABS|CHAR_LENGTH|COALESCE|CONCAT|DATE_ADD|DATE_FORMAT|GROUP_CONCAT|IF|IFNULL|JSON_EXTRACT|LENGTH|LOWER|NOW|NULLIF|ROUND|STR_TO_DATE|UPPER)\\b(?=\\s*\\()"
+    },
+    {
+      "name": "keyword.control.sql",
+      "match": "(?i)\\b(ADD|ALL|ALTER|ANALYZE|AND|ANY|AS|ASC|AUTO_INCREMENT|AVG|BEGIN|BETWEEN|BIGINT|BINARY|BOOLEAN|BOTH|BY|CASCADE|CASE|CAST|CHANGE|CHAR|CHECK|COLLATE|COLUMN|COMMIT|CONSTRAINT|COUNT|CREATE|CROSS|CURRENT|CURRENT_DATE|CURRENT_TIME|CURRENT_TIMESTAMP|CURSOR|DATABASES|DATE|DAY|DECIMAL|DECLARE|DEFAULT|DELAYED|DELETE|DESC|DESCRIBE|DISTINCT|DISTINCTROW|DIV|DOUBLE|DROP|DUAL|ELSE|END|ESCAPE|EXCEPT|EXEC|EXECUTE|EXISTS|EXPLAIN|EXTRACT|FALSE|FETCH|FILTER|FLOAT|FOLLOWING|FOR|FORCE|FOREIGN|FROM|FULL|FULLTEXT|GRANT|GROUP|HAVING|HIGH_PRIORITY|HOUR|IGNORE|ILIKE|IN|INDEX|INNER|INSERT|INT|INTEGER|INTERSECT|INTERVAL|INTO|IS|JOIN|KEY|KEYS|KILL|LEADING|LEFT|LIKE|LIMIT|LOCAL|LOCK|LOW_PRIORITY|MAX|MIN|MINUTE|MOD|MONTH|NATURAL|NEXT|NO|NOT|NULL|NUMERIC|OFFSET|ON|ONLY|OPTIMIZE|OR|ORDER|OUTER|OVER|PARTITION|PRECEDING|PRECISION|PRIMARY|RANGE|REAL|RECURSIVE|REFERENCES|REGEXP|RENAME|REPLACE|RESTRICT|REVOKE|RIGHT|RLIKE|ROLLBACK|ROW|ROWS|SECOND|SELECT|SET|SHOW|SMALLINT|SOME|STRAIGHT_JOIN|SUBSTRING|SUM|TABLE|THEN|TIME|TIMESTAMP|TO|TOP|TRAILING|TRIGGER|TRIM|TRUE|UNBOUNDED|UNION|UNIQUE|UNLOCK|UNSIGNED|UPDATE|USE|USING|VALUES|VARCHAR|VIEW|WHEN|WHERE|WINDOW|WITH|YEAR|ZEROFILL|ZONE)\\b"
+    },
+    {
+      "name": "keyword.operator.sql",
+      "match": "<=|>=|<>|!=|\\|\\||[-+*/%=<>]"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # P3-13 - Sql: function catalog, function completion and signature help
 
-Status: todo
+Status: done
 Depends on: P3-12
 
 ## Goal
@@ -15,8 +15,8 @@ Built-in function metadata per dialect with completion and signature help.
 - User-defined functions from the database.
 
 ## Tasks
-- [ ] Create the catalog files and providers.
-- [ ] Tests: each provider, nested calls, strings with commas, unknown function => null.
+- [x] Create the catalog files and providers.
+- [x] Tests: each provider, nested calls, strings with commas, unknown function => null.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

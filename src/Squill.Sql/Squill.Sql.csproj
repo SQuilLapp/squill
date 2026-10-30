@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Squill.Core\Squill.Core.csproj" />
+    <InternalsVisibleTo Include="Squill.Sql.Tests" />
+  </ItemGroup>
+
 </Project>

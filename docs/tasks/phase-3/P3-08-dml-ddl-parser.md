@@ -1,6 +1,6 @@
 # P3-08 - Sql: INSERT, UPDATE, DELETE and CREATE TABLE parsers
 
-Status: todo
+Status: done
 Depends on: P3-07
 
 ## Goal
@@ -15,8 +15,8 @@ Cover the remaining statements whose table references matter to scope, hover and
 - Semantic checks (P3-12).
 
 ## Tasks
-- [ ] Implement the parsers and wire them in `SqlParser.Parse`.
-- [ ] Tests per statement and dialect variants listed above, plus incomplete forms (`insert into t (`, `update t set`, `delete from`).
+- [x] Implement the parsers and wire them in `SqlParser.Parse`.
+- [x] Tests per statement and dialect variants listed above, plus incomplete forms (`insert into t (`, `update t set`, `delete from`).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

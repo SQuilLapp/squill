@@ -1,6 +1,6 @@
 # P3-04 - Sql: statement splitter and run-under-cursor
 
-Status: todo
+Status: done
 Depends on: P3-03
 
 ## Goal
@@ -16,8 +16,8 @@ Split scripts into statements and find the statement at a caret offset.
 - Parsing semantics.
 
 ## Tasks
-- [ ] Implement the splitter.
-- [ ] Tests: plain scripts, `;` in strings/comments, Postgres `$$` function body, T-SQL `GO`, MySQL `DELIMITER //` procedure, SQLite `CREATE TRIGGER ... BEGIN ...; ...; END;`, caret positions (start, end, between statements, empty text).
+- [x] Implement the splitter.
+- [x] Tests: plain scripts, `;` in strings/comments, Postgres `$$` function body, T-SQL `GO`, MySQL `DELIMITER //` procedure, SQLite `CREATE TRIGGER ... BEGIN ...; ...; END;`, caret positions (start, end, between statements, empty text).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
