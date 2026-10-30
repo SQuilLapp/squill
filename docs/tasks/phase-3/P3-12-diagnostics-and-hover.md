@@ -1,6 +1,6 @@
 # P3-12 - Sql: diagnostics and hover
 
-Status: todo
+Status: done
 Depends on: P3-11
 
 ## Goal
@@ -15,8 +15,8 @@ Surface parse errors and unknown objects, and describe objects on hover.
 - Semantic type checking.
 
 ## Tasks
-- [ ] Implement both providers.
-- [ ] Tests: syntax error reporting, unknown table/column, CTE not flagged, hover on table and column, no schema => only syntax diagnostics.
+- [x] Implement both providers.
+- [x] Tests: syntax error reporting, unknown table/column, CTE not flagged, hover on table and column, no schema => only syntax diagnostics.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

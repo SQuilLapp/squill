@@ -119,7 +119,7 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
     }
 
     /// <summary>Tells whether a source is the target of the qualifiers written before the caret (none: every source).</summary>
-    private static bool Matches(VisibleSource source, List<string> qualifiers)
+    internal static bool Matches(VisibleSource source, List<string> qualifiers)
     {
         if (qualifiers.Count == 0)
         {
@@ -136,7 +136,7 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
             && (qualifiers.Count == 1 || string.Equals(source.Schema, qualifiers[^2], StringComparison.OrdinalIgnoreCase));
     }
 
-    private static List<(string Name, string? Type)> ColumnsOf(SchemaSnapshot schema, VisibleSource source)
+    internal static List<(string Name, string? Type)> ColumnsOf(SchemaSnapshot schema, VisibleSource source)
     {
         if (source.DerivedColumns is { } derived)
         {
