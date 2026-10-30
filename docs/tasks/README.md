@@ -68,7 +68,7 @@ Depends on: <card ids, ranges allowed>
 | [P3-11](phase-3/P3-11-schema-completion.md) | Sql: table and column completion | P3-10 | done |
 | [P3-12](phase-3/P3-12-diagnostics-and-hover.md) | Sql: diagnostics and hover | P3-11 | done |
 | [P3-13](phase-3/P3-13-functions-and-signature-help.md) | Sql: function catalog, function completion and signature help | P3-12 | done |
-| [P3-14](phase-3/P3-14-formatter.md) | Sql: formatter | P3-13, P2-07 | todo |
+| [P3-14](phase-3/P3-14-formatter.md) | Sql: formatter | P3-13, P2-07 | done |
 | [P3-15](phase-3/P3-15-highlighter-and-grammars.md) | Sql: highlighter and TextMate grammars | P3-14 | todo |
 | [P4-01](phase-4/P4-01-mvvm-base-and-services.md) | Presentation: MVVM base and UI service contracts | P3-15, P2-07, P2-05, P1-14 | todo |
 | [P4-02](phase-4/P4-02-isqleditor-abstraction.md) | Presentation: ISqlEditor and run target resolution | P4-01 | todo |

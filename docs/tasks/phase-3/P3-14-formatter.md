@@ -1,6 +1,6 @@
 # P3-14 - Sql: formatter
 
-Status: todo
+Status: done
 Depends on: P3-13, P2-07
 
 ## Goal
@@ -16,8 +16,8 @@ Deterministic, idempotent SQL formatting.
 - Range formatting, line width wrapping, per-clause options.
 
 ## Tasks
-- [ ] Implement the formatter.
-- [ ] Tests: golden inputs/outputs for select/join/subquery/cte/insert/update, comments, strings with keywords inside, case options, idempotency on all golden outputs, each dialect's quoting.
+- [x] Implement the formatter.
+- [x] Tests: golden inputs/outputs for select/join/subquery/cte/insert/update, comments, strings with keywords inside, case options, idempotency on all golden outputs, each dialect's quoting.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
