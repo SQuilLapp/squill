@@ -1,6 +1,6 @@
 # P3-10 - Sql: completion contracts and keyword completion
 
-Status: todo
+Status: done
 Depends on: P3-09
 
 ## Goal
@@ -16,8 +16,8 @@ LSP-shaped completion types and the first provider (keywords by clause).
 - Schema-aware items (P3-11).
 
 ## Tasks
-- [ ] Create the types and the provider.
-- [ ] Tests: replace range, clause-dependent keyword sets, dialect-specific items (`TOP` only for T-SQL, `RETURNING` only for Postgres), filter helper.
+- [x] Create the types and the provider.
+- [x] Tests: replace range, clause-dependent keyword sets, dialect-specific items (`TOP` only for T-SQL, `RETURNING` only for Postgres), filter helper.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
