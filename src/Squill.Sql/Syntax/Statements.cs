@@ -5,10 +5,11 @@ namespace Squill.Sql.Syntax;
 /// <param name="Length">Number of characters.</param>
 public abstract record Statement(int Start, int Length) : SyntaxNode(Start, Length);
 
-/// <summary>A statement that is not parsed (yet); only its span is known.</summary>
+/// <summary>A statement that is not parsed; only its span and first word are known.</summary>
+/// <param name="FirstKeyword">The first word as written, or <see langword="null"/> when there is none.</param>
 /// <param name="Start">Zero-based offset of the first character.</param>
 /// <param name="Length">Number of characters.</param>
-public sealed record UnknownStatement(int Start, int Length) : Statement(Start, Length);
+public sealed record UnknownStatement(string? FirstKeyword, int Start, int Length) : Statement(Start, Length);
 
 /// <summary>A <c>SELECT</c> query with its optional <c>WITH</c> prefix.</summary>
 /// <param name="Ctes">The common table expressions, in declaration order.</param>
@@ -136,3 +137,57 @@ public enum JoinKind
 /// <param name="Length">Number of characters.</param>
 public sealed record JoinSource(TableSource Left, JoinKind Kind, TableSource Right, Expression? On, int Start, int Length)
     : TableSource(Start, Length);
+
+/// <summary>An <c>INSERT</c> statement.</summary>
+/// <param name="Target">The table written to.</param>
+/// <param name="Columns">The listed column names, empty when none.</param>
+/// <param name="Source">A <see cref="ValuesStatement"/> or a query; <see langword="null"/> for <c>DEFAULT VALUES</c> or when missing.</param>
+/// <param name="Start">Zero-based offset of the first character.</param>
+/// <param name="Length">Number of characters.</param>
+public sealed record InsertStatement(TableRef Target, IReadOnlyList<string> Columns, Statement? Source, int Start, int Length)
+    : Statement(Start, Length);
+
+/// <summary>A <c>VALUES</c> list of rows.</summary>
+/// <param name="Rows">The rows, each a list of expressions.</param>
+/// <param name="Start">Zero-based offset of the first character.</param>
+/// <param name="Length">Number of characters.</param>
+public sealed record ValuesStatement(IReadOnlyList<IReadOnlyList<Expression>> Rows, int Start, int Length) : Statement(Start, Length);
+
+/// <summary>One <c>column = value</c> entry of an <c>UPDATE ... SET</c>.</summary>
+/// <param name="Column">The column name (last part when qualified).</param>
+/// <param name="Value">The assigned expression.</param>
+/// <param name="Start">Zero-based offset of the first character.</param>
+/// <param name="Length">Number of characters.</param>
+public sealed record Assignment(string Column, Expression Value, int Start, int Length) : SyntaxNode(Start, Length);
+
+/// <summary>An <c>UPDATE</c> statement.</summary>
+/// <param name="Target">The table updated.</param>
+/// <param name="Set">The assignments.</param>
+/// <param name="From">The <c>FROM</c> source, or <see langword="null"/>.</param>
+/// <param name="Where">The <c>WHERE</c> condition.</param>
+/// <param name="Start">Zero-based offset of the first character.</param>
+/// <param name="Length">Number of characters.</param>
+public sealed record UpdateStatement(TableRef Target, IReadOnlyList<Assignment> Set, TableSource? From, Expression? Where, int Start, int Length)
+    : Statement(Start, Length);
+
+/// <summary>A <c>DELETE</c> statement.</summary>
+/// <param name="Target">The table deleted from.</param>
+/// <param name="From">The T-SQL <c>FROM</c> source, or <see langword="null"/>.</param>
+/// <param name="Where">The <c>WHERE</c> condition.</param>
+/// <param name="Start">Zero-based offset of the first character.</param>
+/// <param name="Length">Number of characters.</param>
+public sealed record DeleteStatement(TableRef Target, TableSource? From, Expression? Where, int Start, int Length) : Statement(Start, Length);
+
+/// <summary>One column of a <c>CREATE TABLE</c>.</summary>
+/// <param name="Name">The column name.</param>
+/// <param name="TypeName">The type as written, arguments included; empty when missing.</param>
+/// <param name="Start">Zero-based offset of the first character.</param>
+/// <param name="Length">Number of characters.</param>
+public sealed record ColumnDef(string Name, string TypeName, int Start, int Length) : SyntaxNode(Start, Length);
+
+/// <summary>A <c>CREATE TABLE</c> statement.</summary>
+/// <param name="Name">The table created.</param>
+/// <param name="Columns">The column definitions; table constraints are not listed.</param>
+/// <param name="Start">Zero-based offset of the first character.</param>
+/// <param name="Length">Number of characters.</param>
+public sealed record CreateTableStatement(TableRef Name, IReadOnlyList<ColumnDef> Columns, int Start, int Length) : Statement(Start, Length);

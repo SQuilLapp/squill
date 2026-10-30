@@ -17,7 +17,7 @@ internal sealed class SelectParser(SqlParserCore core)
         if (!(core.IsWord(first, "SELECT") || core.IsWord(first, "WITH") || core.IsPunct(first, '(')))
         {
             SkipRest();
-            return new UnknownStatement(first.Start, Math.Max(0, core.LastEnd - first.Start));
+            return new UnknownStatement(null, first.Start, Math.Max(0, core.LastEnd - first.Start));
         }
 
         var result = ParseQuery();
@@ -56,7 +56,9 @@ internal sealed class SelectParser(SqlParserCore core)
         }
     }
 
-    private Statement ParseQuery()
+    /// <summary>Parses a query (with its <c>WITH</c> prefix) and stops after it.</summary>
+    /// <returns>The query node.</returns>
+    public Statement ParseQuery()
     {
         var start = core.Peek().Start;
         var ctes = new List<CommonTableExpr>();
@@ -126,7 +128,7 @@ internal sealed class SelectParser(SqlParserCore core)
         else
         {
             core.ReportMissing("Expected '('");
-            query = new UnknownStatement(core.LastEnd, 0);
+            query = new UnknownStatement(null, core.LastEnd, 0);
         }
 
         return new CommonTableExpr(name, columns, query, start, core.LastEnd - start);
@@ -181,7 +183,7 @@ internal sealed class SelectParser(SqlParserCore core)
         }
 
         core.ReportMissing("Expected SELECT");
-        return new UnknownStatement(core.LastEnd, 0);
+        return new UnknownStatement(null, core.LastEnd, 0);
     }
 
     private SelectStatement ParseSelect()
@@ -340,7 +342,7 @@ internal sealed class SelectParser(SqlParserCore core)
     }
 
     /// <summary>Reads <c>[AS] alias</c>; a bare alias must be an identifier so clause keywords are never taken.</summary>
-    private string? ParseAlias(bool allowStringAfterAs)
+    internal string? ParseAlias(bool allowStringAfterAs)
     {
         var token = core.Peek();
         if (core.Match("AS"))
@@ -365,7 +367,9 @@ internal sealed class SelectParser(SqlParserCore core)
         return token.Kind == TokenKind.StringLiteral && text.Length >= 2 ? text[1..^1] : text;
     }
 
-    private TableSource ParseFrom()
+    /// <summary>Parses a table source with its joins.</summary>
+    /// <returns>The source node.</returns>
+    public TableSource ParseFrom()
     {
         var left = ParsePrimarySource();
         while (true)
@@ -457,6 +461,16 @@ internal sealed class SelectParser(SqlParserCore core)
             return inner;
         }
 
+        return ParseNamedTable(allowCall: true, allowAlias: true);
+    }
+
+    /// <summary>Parses <c>[schema.]name [[AS] alias]</c>; the name is empty (with a diagnostic) when missing.</summary>
+    /// <param name="allowCall">Whether a following parenthesized list is a table function call to skip.</param>
+    /// <param name="allowAlias">Whether an alias may follow.</param>
+    /// <returns>The table reference.</returns>
+    public TableRef ParseNamedTable(bool allowCall, bool allowAlias)
+    {
+        var first = core.Peek();
         var parts = new List<string>();
         while (true)
         {
@@ -480,7 +494,7 @@ internal sealed class SelectParser(SqlParserCore core)
             }
         }
 
-        if (parts[^1].Length > 0 && core.IsPunct(core.Peek(), '('))
+        if (allowCall && parts[^1].Length > 0 && core.IsPunct(core.Peek(), '('))
         {
             // table-valued function call: arguments are not analyzed
             core.Next();
@@ -488,7 +502,7 @@ internal sealed class SelectParser(SqlParserCore core)
             core.Expect(')');
         }
 
-        var alias = parts[^1].Length > 0 ? ParseAlias(allowStringAfterAs: false) : null;
+        var alias = allowAlias && parts[^1].Length > 0 ? ParseAlias(allowStringAfterAs: false) : null;
         var start = parts.Count == 1 && parts[0].Length == 0 ? core.LastEnd : first.Start;
         return new TableRef(parts.Count > 1 ? parts[^2] : null, parts[^1], alias, start, core.LastEnd - start);
     }

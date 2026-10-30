@@ -215,7 +215,7 @@ public sealed class SelectParserTests
         var script = SqlParser.Parse(sql, DatabaseDialect.PostgreSql);
         Assert.Equal(3, script.Statements.Count);
         Assert.Equal(sql.IndexOf("select a", StringComparison.Ordinal), script.Statements[1].Start);
-        Assert.IsType<UnknownStatement>(script.Statements[2]);
+        Assert.IsType<UpdateStatement>(script.Statements[2]);
         Assert.Empty(script.Diagnostics);
     }
 }
