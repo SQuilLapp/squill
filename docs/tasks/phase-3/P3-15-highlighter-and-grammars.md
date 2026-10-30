@@ -1,6 +1,6 @@
 # P3-15 - Sql: highlighter and TextMate grammars
 
-Status: todo
+Status: done
 Depends on: P3-14
 
 ## Goal
@@ -16,9 +16,9 @@ Syntax highlighting for the AvaloniaEdit interim and SQL TextMate grammars for L
 - Registering grammars in LoomEditor (P5-13).
 
 ## Tasks
-- [ ] Implement highlighter and generator; create the tool and add it to the solution.
-- [ ] Run the tool and commit the four grammar files.
-- [ ] Tests for classification per dialect and for the grammar/file equality.
+- [x] Implement highlighter and generator; create the tool and add it to the solution.
+- [x] Run the tool and commit the four grammar files.
+- [x] Tests for classification per dialect and for the grammar/file equality.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

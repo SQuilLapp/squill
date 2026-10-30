@@ -1,0 +1,73 @@
+{
+  "name": "SQL (sqlite)",
+  "scopeName": "source.sql.sqlite",
+  "patterns": [
+    {
+      "name": "comment.line.double-dash.sql",
+      "match": "--.*$"
+    },
+    {
+      "name": "comment.block.sql",
+      "begin": "/\\*",
+      "end": "\\*/"
+    },
+    {
+      "name": "string.quoted.single.sql",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql",
+          "match": "''"
+        }
+      ]
+    },
+    {
+      "name": "variable.other.quoted.sql",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql",
+          "match": "\"\""
+        }
+      ]
+    },
+    {
+      "name": "variable.other.quoted.sql",
+      "begin": "`",
+      "end": "`",
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql",
+          "match": "``"
+        }
+      ]
+    },
+    {
+      "name": "variable.other.quoted.sql",
+      "begin": "\\[",
+      "end": "\\]"
+    },
+    {
+      "name": "variable.parameter.sql",
+      "match": "\\?\\d*|[:@$][A-Za-z_][A-Za-z0-9_]*"
+    },
+    {
+      "name": "constant.numeric.sql",
+      "match": "\\b\\d+(\\.\\d*)?([eE][+-]?\\d+)?\\b|\\.\\d+([eE][+-]?\\d+)?\\b"
+    },
+    {
+      "name": "support.function.sql",
+      "match": "(?i)\\b(ABS|COALESCE|DATETIME|GROUP_CONCAT|IFNULL|INSTR|JSON_EXTRACT|LENGTH|LOWER|NULLIF|RANDOM|ROUND|STRFTIME|SUBSTR|TYPEOF|UPPER)\\b(?=\\s*\\()"
+    },
+    {
+      "name": "keyword.control.sql",
+      "match": "(?i)\\b(ABORT|ADD|ALL|ALTER|AND|ANY|AS|ASC|ATTACH|AUTOINCREMENT|AVG|BEGIN|BETWEEN|BIGINT|BOOLEAN|BOTH|BY|CASCADE|CASE|CAST|CHAR|CHECK|COLLATE|COLUMN|COMMIT|CONFLICT|CONSTRAINT|COUNT|CREATE|CROSS|CURRENT|CURRENT_DATE|CURRENT_TIME|CURRENT_TIMESTAMP|CURSOR|DATABASE|DATE|DAY|DECIMAL|DECLARE|DEFAULT|DELETE|DESC|DETACH|DISTINCT|DOUBLE|DROP|ELSE|END|ESCAPE|EXCEPT|EXEC|EXECUTE|EXISTS|EXPLAIN|EXTRACT|FAIL|FALSE|FETCH|FILTER|FLOAT|FOLLOWING|FOR|FOREIGN|FROM|FULL|GLOB|GRANT|GROUP|HAVING|HOUR|IGNORE|IN|INDEX|INNER|INSERT|INT|INTEGER|INTERSECT|INTERVAL|INTO|IS|ISNULL|JOIN|KEY|LEADING|LEFT|LIKE|LIMIT|LOCAL|MAX|MIN|MINUTE|MONTH|NATURAL|NEXT|NO|NOT|NOTHING|NOTNULL|NULL|NUMERIC|OFFSET|ON|ONLY|OR|ORDER|OUTER|OVER|PARTITION|PRAGMA|PRECEDING|PRECISION|PRIMARY|RANGE|REAL|RECURSIVE|REFERENCES|REGEXP|REINDEX|RELEASE|REPLACE|RESTRICT|RETURNING|REVOKE|RIGHT|ROLLBACK|ROW|ROWID|ROWS|SAVEPOINT|SECOND|SELECT|SET|SMALLINT|SOME|STRICT|SUBSTRING|SUM|TABLE|TEMP|TEMPORARY|THEN|TIME|TIMESTAMP|TO|TOP|TRAILING|TRIGGER|TRIM|TRUE|UNBOUNDED|UNION|UNIQUE|UPDATE|USING|VACUUM|VALUES|VARCHAR|VIEW|VIRTUAL|WHEN|WHERE|WINDOW|WITH|WITHOUT|YEAR|ZONE)\\b"
+    },
+    {
+      "name": "keyword.operator.sql",
+      "match": "<=|>=|<>|!=|\\|\\||[-+*/%=<>]"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "name": "SQL (tsql)",
+  "scopeName": "source.sql.tsql",
+  "patterns": [
+    {
+      "name": "comment.line.double-dash.sql",
+      "match": "--.*$"
+    },
+    {
+      "name": "comment.block.sql",
+      "begin": "/\\*",
+      "end": "\\*/"
+    },
+    {
+      "name": "string.quoted.single.sql",
+      "begin": "[Nn]?'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql",
+          "match": "''"
+        }
+      ]
+    },
+    {
+      "name": "variable.other.quoted.sql",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql",
+          "match": "\"\""
+        }
+      ]
+    },
+    {
+      "name": "variable.other.quoted.sql",
+      "begin": "\\[",
+      "end": "\\]",
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql",
+          "match": "\\]\\]"
+        }
+      ]
+    },
+    {
+      "name": "variable.parameter.sql",
+      "match": "@[A-Za-z_][A-Za-z0-9_$#]*"
+    },
+    {
+      "name": "constant.numeric.sql",
+      "match": "\\b\\d+(\\.\\d*)?([eE][+-]?\\d+)?\\b|\\.\\d+([eE][+-]?\\d+)?\\b"
+    },
+    {
+      "name": "support.function.sql",
+      "match": "(?i)\\b(ABS|CHARINDEX|COALESCE|CONVERT|DATEADD|DATEDIFF|DATEPART|FORMAT|GETDATE|ISNULL|LEN|LOWER|NEWID|NULLIF|REPLACE|ROUND|STRING_AGG|UPPER)\\b(?=\\s*\\()"
+    },
+    {
+      "name": "keyword.control.sql",
+      "match": "(?i)\\b(ADD|ALL|ALTER|AND|ANY|APPLY|AS|ASC|AVG|BACKUP|BEGIN|BETWEEN|BIGINT|BOOLEAN|BOTH|BREAK|BROWSE|BULK|BY|CASCADE|CASE|CAST|CHAR|CHECK|CHECKPOINT|CLUSTERED|COLLATE|COLUMN|COMMIT|COMPUTE|CONSTRAINT|CONTAINS|CONTINUE|COUNT|CREATE|CROSS|CURRENT|CURRENT_DATE|CURRENT_TIME|CURRENT_TIMESTAMP|CURSOR|DATE|DAY|DBCC|DECIMAL|DECLARE|DEFAULT|DELETE|DENY|DESC|DISK|DISTINCT|DOUBLE|DROP|DUMP|ELSE|END|ESCAPE|EXCEPT|EXEC|EXECUTE|EXISTS|EXTRACT|FALSE|FETCH|FILE|FILTER|FLOAT|FOLLOWING|FOR|FOREIGN|FREETEXT|FROM|FULL|GOTO|GRANT|GROUP|HAVING|HOLDLOCK|HOUR|IDENTITY|IDENTITYCOL|IDENTITY_INSERT|IN|INDEX|INNER|INSERT|INT|INTEGER|INTERSECT|INTERVAL|INTO|IS|JOIN|KEY|KILL|LEADING|LEFT|LIKE|LIMIT|LINENO|LOAD|LOCAL|MAX|MERGE|MIN|MINUTE|MONTH|NATURAL|NEXT|NO|NOCHECK|NOLOCK|NONCLUSTERED|NOT|NULL|NUMERIC|OFFSET|OFFSETS|ON|ONLY|OPENDATASOURCE|OPENQUERY|OPENROWSET|OPENXML|OR|ORDER|OUTER|OUTPUT|OVER|PARTITION|PERCENT|PIVOT|PLAN|PRECEDING|PRECISION|PRIMARY|PRINT|PROC|PROCEDURE|RAISERROR|RANGE|READTEXT|REAL|RECONFIGURE|RECURSIVE|REFERENCES|REPLICATION|RESTRICT|RETURN|REVERT|REVOKE|RIGHT|ROLLBACK|ROW|ROWCOUNT|ROWGUIDCOL|ROWS|RULE|SAVE|SECOND|SELECT|SET|SETUSER|SHUTDOWN|SMALLINT|SOME|STATISTICS|SUBSTRING|SUM|TABLE|TABLESAMPLE|TEXTSIZE|THEN|THROW|TIME|TIMESTAMP|TO|TOP|TRAILING|TRAN|TRIGGER|TRIM|TRUE|TRY_CONVERT|TSEQUAL|UNBOUNDED|UNION|UNIQUE|UNPIVOT|UPDATE|UPDATETEXT|USE|USING|VALUES|VARCHAR|VIEW|WAITFOR|WHEN|WHERE|WHILE|WINDOW|WITH|WRITETEXT|YEAR|ZONE)\\b"
+    },
+    {
+      "name": "keyword.operator.sql",
+      "match": "<=|>=|<>|!=|\\|\\||[-+*/%=<>]"
+    }
+  ]
+}
