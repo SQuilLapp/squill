@@ -7,7 +7,7 @@ using Squill.Data.Sqlite;
 using Squill.Data.SqlServer;
 using Squill.Platform;
 using Squill.Presentation;
-using Squill.Presentation.Editor;
+using Squill.App.WinUI.Editors;
 
 namespace Squill.App.WinUI;
 
@@ -30,7 +30,7 @@ public sealed partial class App : Application
         providers.Register(new PostgresDatabaseProvider());
         providers.Register(new MySqlDatabaseProvider());
         providers.Register(new SqlServerDatabaseProvider());
-        var platform = new WinUiPlatformServices(providers, () => new StubSqlEditor());
+        var platform = new WinUiPlatformServices(providers, () => new PlainSqlEditor());
         // SQUILL_DATA_DIR redirects profiles, settings and history (used to run against a throwaway data directory).
         var dataDir = Environment.GetEnvironmentVariable("SQUILL_DATA_DIR");
         Services = AppComposition.Create(platform, new AppPaths(string.IsNullOrEmpty(dataDir) ? null : dataDir));
