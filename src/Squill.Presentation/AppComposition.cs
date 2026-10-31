@@ -10,6 +10,7 @@ using Squill.Presentation.Editor;
 using Squill.Presentation.Panels;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Settings;
+using Squill.Presentation.Terminal;
 using Squill.Presentation.Workspace;
 
 namespace Squill.Presentation;
@@ -28,6 +29,9 @@ public interface IPlatformServices
 
     /// <summary>Gets the registry the head filled with the database providers it ships.</summary>
     ProviderRegistry Providers { get; }
+
+    /// <summary>Gets the factory creating the head's terminal host, or <see langword="null"/> when the head has no terminal tabs.</summary>
+    Func<ITerminalHost>? TerminalHostFactory => null;
 }
 
 /// <summary>The root view-models built by <see cref="AppComposition"/>.</summary>
@@ -54,7 +58,8 @@ public static class AppComposition
         var sessions = new SessionManager(platform.Providers, profiles, new SshNetTunnelFactory());
         var list = new ConnectionListViewModel(profiles, platform.Providers, platform.Dialogs);
         var workspace = new WorkspaceViewModel(
-            sessions, list, history, settings, platform.Dispatcher, platform.Dialogs, platform.EditorFactory);
+            sessions, list, history, settings, platform.Dispatcher, platform.Dialogs, platform.EditorFactory,
+            profiles, platform.TerminalHostFactory);
         return new AppServices(
             workspace,
             new HistoryViewModel(history, workspace, platform.Dialogs),

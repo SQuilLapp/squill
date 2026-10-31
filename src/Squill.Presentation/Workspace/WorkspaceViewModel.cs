@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
+using Squill.Platform.Profiles;
 using Squill.Platform.Settings;
 using Squill.Platform.Storage;
 using Squill.Presentation.Connections;
@@ -9,6 +10,7 @@ using Squill.Presentation.Editor;
 using Squill.Presentation.Explorer;
 using Squill.Presentation.Query;
 using Squill.Presentation.Sessions;
+using Squill.Presentation.Terminal;
 
 namespace Squill.Presentation.Workspace;
 
@@ -21,6 +23,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     private readonly IUiDispatcher _dispatcher;
     private readonly IDialogService _dialogs;
     private readonly Func<ISqlEditor> _editorFactory;
+    private readonly IProfileStore _profiles;
+    private readonly Func<ITerminalHost>? _terminalHostFactory;
+    private readonly Func<string, string?> _findOnPath;
     private readonly Dictionary<ConnectionSession, int> _tabCounters = [];
 
     /// <summary>Creates the workspace.</summary>
@@ -31,6 +36,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     /// <param name="dispatcher">Handed to every query tab.</param>
     /// <param name="dialogs">Used for confirmations and errors, and handed to every query tab.</param>
     /// <param name="editorFactory">Creates the head's editor for a new tab.</param>
+    /// <param name="profiles">Source of the database password handed to CLI terminals.</param>
+    /// <param name="terminalHostFactory">Creates the head's terminal host; <see langword="null"/> when the head has no terminal.</param>
+    /// <param name="findOnPath">Resolves CLI executables; <see langword="null"/> searches the <c>PATH</c>.</param>
     public WorkspaceViewModel(
         SessionManager manager,
         ConnectionListViewModel connectionList,
@@ -38,7 +46,10 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         ISettingsStore settings,
         IUiDispatcher dispatcher,
         IDialogService dialogs,
-        Func<ISqlEditor> editorFactory)
+        Func<ISqlEditor> editorFactory,
+        IProfileStore profiles,
+        Func<ITerminalHost>? terminalHostFactory = null,
+        Func<string, string?>? findOnPath = null)
     {
         ArgumentNullException.ThrowIfNull(manager);
         ArgumentNullException.ThrowIfNull(connectionList);
@@ -47,6 +58,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         ArgumentNullException.ThrowIfNull(dispatcher);
         ArgumentNullException.ThrowIfNull(dialogs);
         ArgumentNullException.ThrowIfNull(editorFactory);
+        ArgumentNullException.ThrowIfNull(profiles);
         _manager = manager;
         ConnectionList = connectionList;
         _history = history;
@@ -54,6 +66,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         _dispatcher = dispatcher;
         _dialogs = dialogs;
         _editorFactory = editorFactory;
+        _profiles = profiles;
+        _terminalHostFactory = terminalHostFactory;
+        _findOnPath = findOnPath ?? TerminalLauncher.FindOnPath;
     }
 
     /// <summary>Gets the saved connections.</summary>
@@ -64,6 +79,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
 
     /// <summary>Gets the open query tabs of all sessions.</summary>
     public ObservableCollection<QueryTabViewModel> Tabs { get; } = [];
+
+    /// <summary>Gets the open terminal tabs.</summary>
+    public ObservableCollection<TerminalTabViewModel> Terminals { get; } = [];
 
     /// <summary>Gets or sets the session shown in the explorer and used by new tabs.</summary>
     [ObservableProperty]
@@ -151,6 +169,42 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
             return;
         var tab = AddTab(session, SqlSnippets.SelectTop(table, session.Profile.Dialect));
         await tab.RunCommand.ExecuteAsync(null);
+    }
+
+    [RelayCommand]
+    private async Task NewTerminalAsync(ConnectionProfile? profile, CancellationToken ct)
+    {
+        if (_terminalHostFactory is null)
+        {
+            await _dialogs.ShowErrorAsync("Terminal", "This build has no terminal support.");
+            return;
+        }
+        var launch = TerminalLauncher.LocalShell();
+        string? reason = null;
+        if (profile is not null)
+        {
+            var password = await _profiles.GetPasswordAsync(profile.Id, ct);
+            var cli = TerminalLauncher.ForProfile(profile, password, _findOnPath, out reason);
+            if (cli is null)
+            {
+                await _dialogs.ShowErrorAsync("Terminal", reason ?? "The terminal could not be started.");
+                return;
+            }
+            launch = cli;
+        }
+        var tab = new TerminalTabViewModel(_terminalHostFactory(), launch);
+        if (profile is not null)
+            tab.Title = $"{profile.Name} ({tab.Title})";
+        Terminals.Add(tab);
+        tab.StartCommand.Execute(null);
+    }
+
+    [RelayCommand]
+    private void CloseTerminal(TerminalTabViewModel? terminal)
+    {
+        if (terminal is null || !Terminals.Remove(terminal))
+            return;
+        terminal.Dispose();
     }
 
     /// <summary>Opens a new tab on the active session holding the given text, without running it.</summary>
