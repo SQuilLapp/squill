@@ -32,7 +32,7 @@ public sealed partial class App : Application
             providers.Register(new PostgresDatabaseProvider());
             providers.Register(new MySqlDatabaseProvider());
             providers.Register(new SqlServerDatabaseProvider());
-            var platform = new AvaloniaPlatformServices(providers, () => new StubSqlEditor());
+            var platform = new AvaloniaPlatformServices(providers, () => new Editors.AvaloniaSqlEditor());
             Services = AppComposition.Create(platform);
             desktop.MainWindow = GridBench.IsRequested(desktop.Args) ? GridBench.Start(desktop) : new MainWindow();
         }

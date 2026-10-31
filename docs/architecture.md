@@ -9,7 +9,7 @@
 | Package | Version | Notes |
 |---|---|---|
 | Avalonia | 12.1.4 | AOT to validate |
-| AvaloniaEdit | 0.10.12 (id `AvaloniaEdit`) | Old: check the fork/id compatible with Avalonia 12 |
+| AvaloniaEdit | 12.0.0 (id `Avalonia.AvaloniaEdit`) | Restores and publishes under Avalonia 12.1.4 AOT; tests use Avalonia.Headless 12.1.4 (Avalonia.Headless.XUnit targets a newer xunit.v3 than 4.0.2) |
 | Microsoft.WindowsAppSDK | 2.6.4 | WinUI 3 AOT to prove |
 | CommunityToolkit.Mvvm | 8.4.2 | |
 | Npgsql | 10.0.3 | `NpgsqlSlimDataSourceBuilder` |
