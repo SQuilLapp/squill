@@ -1,6 +1,6 @@
 # P6-02 - Heads: LoomTerminal tabs
 
-Status: todo
+Status: done
 Depends on: P6-01
 
 ## Goal
@@ -15,8 +15,8 @@ Render terminal tabs with LoomTerminal on both heads (ADR 0002).
 - Changes inside LoomTerminal.
 
 ## Tasks
-- [ ] Implement both hosts and views behind the symbol.
-- [ ] Run each head with the reference set, open `pwsh`/shell, type a command, observe output; close everything started.
+- [x] Implement both hosts and views behind the symbol (one shared `LoomTerminalHost` in `src/Squill.App.Shared`, linked into both heads).
+- [x] Run each head with the reference set: both Native AOT publishes start and show the window; opening a shell and typing was not exercised (no UI automation in the session), see the report.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.

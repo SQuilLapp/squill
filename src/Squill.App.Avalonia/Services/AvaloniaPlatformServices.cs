@@ -1,6 +1,7 @@
 using Squill.Data;
 using Squill.Presentation;
 using Squill.Presentation.Editor;
+using Squill.Presentation.Terminal;
 
 namespace Squill.App.Avalonia.Services;
 
@@ -18,4 +19,9 @@ internal sealed class AvaloniaPlatformServices(ProviderRegistry providers, Func<
 
     /// <inheritdoc />
     public ProviderRegistry Providers { get; } = providers;
+
+#if SQUILL_LOOMTERMINAL
+    /// <inheritdoc />
+    public Func<ITerminalHost>? TerminalHostFactory { get; } = () => new LoomTerminalHost();
+#endif
 }

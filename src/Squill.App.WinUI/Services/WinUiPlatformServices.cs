@@ -2,6 +2,7 @@ using Microsoft.UI.Dispatching;
 using Squill.Data;
 using Squill.Presentation;
 using Squill.Presentation.Editor;
+using Squill.Presentation.Terminal;
 
 namespace Squill.App.WinUI.Services;
 
@@ -21,6 +22,11 @@ internal sealed class WinUiPlatformServices(ProviderRegistry providers, Func<ISq
 
     /// <inheritdoc />
     public ProviderRegistry Providers { get; } = providers;
+
+#if SQUILL_LOOMTERMINAL
+    /// <inheritdoc />
+    public Func<ITerminalHost>? TerminalHostFactory { get; } = () => new LoomTerminalHost();
+#endif
 
     /// <summary>Gives the dialogs the window they are shown over.</summary>
     /// <param name="window">The main window.</param>
