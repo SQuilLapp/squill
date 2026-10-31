@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Squill.Presentation.Results;
 
@@ -31,11 +32,13 @@ public sealed class DataGridCanvas : Control
     private double _resizeStartX;
     private double _resizeStartWidth;
     private GridBrushes? _brushes;
+    private bool _selecting;
 
     /// <summary>Creates the canvas, reading the row height from the token resources.</summary>
     public DataGridCanvas()
     {
         ClipToBounds = true;
+        Focusable = true;
         ActualThemeVariantChanged += (_, _) =>
         {
             _brushes = null;
@@ -54,6 +57,9 @@ public sealed class DataGridCanvas : Control
         get => GetValue(DataSourceProperty);
         set => SetValue(DataSourceProperty, value);
     }
+
+    /// <summary>Gets the current selection.</summary>
+    public GridSelection Selection { get; } = new();
 
     /// <summary>Gets the geometry helper (read-only use).</summary>
     public GridLayout Layout => _layout;
@@ -101,6 +107,7 @@ public sealed class DataGridCanvas : Control
                 _source.Changed += OnSourceChanged;
             }
 
+            Selection.Clear();
             _userResized = false;
             _measuredRows = -1;
             MeasureColumns();
@@ -138,12 +145,22 @@ public sealed class DataGridCanvas : Control
                     for (var row = firstRow; row < endRow; row++)
                     {
                         var top = headerHeight + (row * rowHeight) - _scrollY;
+                        if (Selection.Contains(row, col, source.RowCount))
+                        {
+                            context.FillRectangle(b.Selection, new Rect(left, top, colWidth, rowHeight));
+                        }
+
                         var value = CellFormatter.Format(source.GetCell(row, col), info);
                         var text = _text.Get(value ?? "NULL", value is null ? b.Muted : b.Text, _typeface, _fontSize);
                         context.DrawText(text, new Point(left + CellPadding, top + ((rowHeight - text.Height) / 2)));
                     }
 
                     context.FillRectangle(b.Raised, new Rect(left, 0, colWidth, headerHeight));
+                    if (Selection.ContainsColumn(col))
+                    {
+                        context.FillRectangle(b.Selection, new Rect(left, 0, colWidth, headerHeight));
+                    }
+
                     var header = _text.Get(info.Name, b.HeaderText, _typeface, _fontSize);
                     context.DrawText(header, new Point(left + CellPadding, (headerHeight - header.Height) / 2));
                 }
@@ -183,8 +200,13 @@ public sealed class DataGridCanvas : Control
     {
         base.OnPointerPressed(e);
         var point = e.GetPosition(this);
+        Focus();
+        var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
         if (point.Y > _layout.HeaderHeight)
         {
+            SelectAt(point, shift);
+            _selecting = true;
+            e.Pointer.Capture(this);
             return;
         }
 
@@ -196,6 +218,14 @@ public sealed class DataGridCanvas : Control
             _resizeStartWidth = _layout.ColumnWidth(column);
             e.Pointer.Capture(this);
             e.Handled = true;
+            return;
+        }
+
+        var clicked = _layout.ColumnAt(point.X + _scrollX);
+        if (clicked >= 0)
+        {
+            Selection.SelectColumn(clicked, shift);
+            InvalidateVisual();
         }
     }
 
@@ -204,6 +234,12 @@ public sealed class DataGridCanvas : Control
     {
         base.OnPointerMoved(e);
         var point = e.GetPosition(this);
+        if (_selecting)
+        {
+            SelectAt(point, true);
+            return;
+        }
+
         if (_resizeColumn >= 0)
         {
             _layout.SetColumnWidth(_resizeColumn, _resizeStartWidth + point.X - _resizeStartX);
@@ -222,11 +258,107 @@ public sealed class DataGridCanvas : Control
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
+        if (_selecting)
+        {
+            _selecting = false;
+            e.Pointer.Capture(null);
+        }
+
         if (_resizeColumn >= 0)
         {
             _resizeColumn = -1;
             e.Pointer.Capture(null);
         }
+    }
+
+    /// <inheritdoc />
+    protected override async void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        var source = _source;
+        if (source is null)
+        {
+            return;
+        }
+
+        var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
+        var page = Math.Max(1, (long)(BodyHeight / _layout.RowHeight) - 1);
+        var rows = source.RowCount;
+        var cols = source.Columns.Count;
+        switch (e.Key)
+        {
+            case Key.A when ctrl:
+                Selection.SelectAll(rows, cols);
+                break;
+            case Key.C when ctrl:
+                if (Selection.HasSelection && TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+                {
+                    await clipboard.SetTextAsync(Selection.ToTsv(source));
+                }
+
+                e.Handled = true;
+                return;
+            case Key.Up:
+                Selection.Move(-1, 0, rows, cols, shift);
+                break;
+            case Key.Down:
+                Selection.Move(1, 0, rows, cols, shift);
+                break;
+            case Key.Left:
+                Selection.Move(0, -1, rows, cols, shift);
+                break;
+            case Key.Right:
+                Selection.Move(0, 1, rows, cols, shift);
+                break;
+            case Key.PageUp:
+                Selection.Move(-page, 0, rows, cols, shift);
+                break;
+            case Key.PageDown:
+                Selection.Move(page, 0, rows, cols, shift);
+                break;
+            case Key.Home:
+                Selection.Move(ctrl ? -rows : 0, -cols, rows, cols, shift);
+                break;
+            case Key.End:
+                Selection.Move(ctrl ? rows : 0, cols, rows, cols, shift);
+                break;
+            default:
+                return;
+        }
+
+        e.Handled = true;
+        EnsureVisible(Selection.ActiveRow, Selection.ActiveColumn);
+        InvalidateVisual();
+    }
+
+    private void SelectAt(Point point, bool extend)
+    {
+        var source = _source;
+        if (source is null || source.RowCount == 0 || source.Columns.Count == 0)
+        {
+            return;
+        }
+
+        var column = _layout.ColumnAt(point.X + _scrollX);
+        if (column < 0)
+        {
+            column = point.X + _scrollX < 0 ? 0 : source.Columns.Count - 1;
+        }
+
+        var row = Math.Clamp((long)((point.Y - _layout.HeaderHeight + _scrollY) / _layout.RowHeight), 0, source.RowCount - 1);
+        Selection.SelectCell(row, column, extend);
+        InvalidateVisual();
+    }
+
+    private void EnsureVisible(long row, int column)
+    {
+        var top = row * _layout.RowHeight;
+        var y = top < _scrollY ? top : top + _layout.RowHeight > _scrollY + BodyHeight ? top + _layout.RowHeight - BodyHeight : _scrollY;
+        var left = _layout.ColumnLeft(column);
+        var right = left + _layout.ColumnWidth(column);
+        var x = left < _scrollX ? left : right > _scrollX + Bounds.Width ? right - Bounds.Width : _scrollX;
+        SetScroll(x, y);
     }
 
     private void OnSourceChanged(object? sender, EventArgs e)
@@ -290,7 +422,8 @@ public sealed class DataGridCanvas : Control
         ResolveBrush("SquillFg2Brush"),
         ResolveBrush("SquillFg3Brush"),
         new Pen(ResolveBrush("SquillBorderBrush")),
-        new Pen(ResolveBrush("SquillBorderSubtleBrush")));
+        new Pen(ResolveBrush("SquillBorderSubtleBrush")),
+        ResolveBrush("SquillSelectionBrush"));
 
     private IBrush ResolveBrush(string key) =>
         this.TryFindResource(key, ActualThemeVariant, out var value) && value is IBrush brush ? brush : FallbackBrush;
@@ -300,5 +433,5 @@ public sealed class DataGridCanvas : Control
 
     private static readonly IBrush FallbackBrush = Brushes.Gray;
 
-    private sealed record GridBrushes(IBrush Surface, IBrush Raised, IBrush Text, IBrush HeaderText, IBrush Muted, Pen Border, Pen BorderSubtle);
+    private sealed record GridBrushes(IBrush Surface, IBrush Raised, IBrush Text, IBrush HeaderText, IBrush Muted, Pen Border, Pen BorderSubtle, IBrush Selection);
 }

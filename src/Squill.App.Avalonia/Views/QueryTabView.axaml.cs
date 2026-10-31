@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Squill.Presentation.Results;
 using Squill.App.Avalonia.Editors;
 using Squill.Presentation.Query;
 
@@ -48,5 +50,11 @@ public sealed partial class QueryTabView : UserControl
         ResultGrid.IsVisible = result?.Kind == ResultKind.Grid;
         Message.IsVisible = result?.Kind == ResultKind.Message;
         Message.Text = result?.Text;
+        Empty.IsVisible = result is null;
+        ExportCsv.IsEnabled = ExportJson.IsEnabled = result?.Kind == ResultKind.Grid;
     }
+
+    private void OnExportCsv(object? sender, RoutedEventArgs e) => _tab?.SelectedResult?.ExportCommand.Execute(new CsvResultExporter());
+
+    private void OnExportJson(object? sender, RoutedEventArgs e) => _tab?.SelectedResult?.ExportCommand.Execute(new JsonResultExporter());
 }

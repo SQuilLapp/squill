@@ -8,10 +8,33 @@
     <Border Name="EditorHost" Background="{DynamicResource SquillBgBaseBrush}" />
     <GridSplitter Grid.Row="1" Height="4" Background="{DynamicResource SquillBorderBrush}"
                   ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" />
-    <Grid Grid.Row="2" Background="{DynamicResource SquillBgBaseBrush}">
-      <c:DataGridView Name="ResultGrid" />
-      <TextBlock Name="Message" Margin="12" TextWrapping="Wrap" IsVisible="False"
-                 Foreground="{DynamicResource SquillFgBrush}" />
+    <Grid Grid.Row="2" RowDefinitions="Auto,Auto,*" Background="{DynamicResource SquillBgBaseBrush}">
+      <Grid ColumnDefinitions="*,Auto" Background="{DynamicResource SquillBgRaisedBrush}">
+        <ListBox Name="ResultTabs" ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedResult}">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="q:ResultViewModel">
+              <TextBlock Text="{Binding Header}" />
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" Margin="4">
+          <Button Name="ExportCsv" Content="Export CSV" Click="OnExportCsv" />
+          <Button Name="ExportJson" Content="Export JSON" Click="OnExportJson" />
+        </StackPanel>
+      </Grid>
+      <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="2" IsVisible="{Binding IsRunning}" />
+      <Grid Grid.Row="2">
+        <c:DataGridView Name="ResultGrid" />
+        <TextBlock Name="Message" Margin="12" TextWrapping="Wrap" IsVisible="False"
+                   Foreground="{DynamicResource SquillFgBrush}" />
+        <TextBlock Name="Empty" Margin="12" Text="Run a query to see results here."
+                   Foreground="{DynamicResource SquillFg3Brush}" />
+      </Grid>
     </Grid>
   </Grid>
 </UserControl>

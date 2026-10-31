@@ -1,6 +1,6 @@
 # P5-06 - Avalonia head: results panel, selection, copy and export
 
-Status: todo
+Status: done
 Depends on: P5-05, P4-11
 
 ## Goal
@@ -15,8 +15,8 @@ Complete the results area.
 - Cell editing, sorting, filtering.
 
 ## Tasks
-- [ ] Implement the panel, `GridSelection`, copy and export wiring.
-- [ ] Tests: `GridSelection` rectangle/column/all/extend/move; TSV text for a small data source.
+- [x] Implement the panel, `GridSelection`, copy and export wiring.
+- [x] Tests: `GridSelection` rectangle/column/all/extend/move; TSV text for a small data source.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
