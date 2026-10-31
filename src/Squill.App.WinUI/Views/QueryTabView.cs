@@ -77,7 +77,7 @@ public sealed partial class QueryTabView : UserControl
         {
             tab.PropertyChanged += OnTabPropertyChanged;
             tab.Results.CollectionChanged += OnResultsChanged;
-            _editorHost.Child = (tab.Editor as PlainSqlEditor)?.Control;
+            _editorHost.Child = (tab.Editor as IEditorControl)?.Control;
         }
 
         RebuildResultTabs();

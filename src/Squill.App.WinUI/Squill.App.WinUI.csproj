@@ -27,6 +27,15 @@
     <ProjectReference Include="..\Squill.Data.Sqlite\Squill.Data.Sqlite.csproj" />
     <Content Include="..\..\assets\brand\app-icons\windows\squill.ico" Link="Assets\squill.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <!-- Optional LoomEditor (ADR 0002): set LoomEditorPath in the git-ignored Directory.Build.local.props. Without it the head uses PlainSqlEditor. -->
+  <PropertyGroup Condition="'$(LoomEditorPath)' != ''">
+    <DefineConstants>$(DefineConstants);SQUILL_LOOMEDITOR</DefineConstants>
+    <!-- LoomEditor targets the 26100 Windows SDK; a project cannot reference a higher Windows TFM. -->
+    <TargetFramework>net11.0-windows10.0.26100.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(LoomEditorPath)' != ''">
+    <ProjectReference Include="$(LoomEditorPath)\src\LoomEditor.WinUI\LoomEditor.WinUI.csproj" />
+  </ItemGroup>
   <!-- Native AOT publish leaves the app's own resource index and compiled XAML out of the publish folder (the window then fails to load). Remove when fixed. -->
   <Target Name="CopyXamlResourcesToPublish" AfterTargets="Publish">
     <ItemGroup>

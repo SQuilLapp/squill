@@ -1,6 +1,6 @@
 # P5-13 - WinUI head: LoomEditor integration
 
-Status: todo
+Status: done
 Depends on: P5-12, P3-15
 
 ## Goal
@@ -16,8 +16,8 @@ Replace the plain editor with LoomEditor when available (ADR 0002, risk R1) and 
 - Changes inside LoomEditor itself (file requests in `docs/poc/editor.md` instead).
 
 ## Tasks
-- [ ] Wire the optional reference and the editor adapter.
-- [ ] Run `--editor-demo`, write `docs/poc/editor.md` with numbers and the list of missing LoomEditor APIs.
+- [x] Wire the optional reference and the editor adapter.
+- [x] Run `--editor-demo`, write `docs/poc/editor.md` with numbers and the list of missing LoomEditor APIs.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.

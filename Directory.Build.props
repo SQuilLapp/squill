@@ -19,4 +19,6 @@
   <PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests')) And !$(MSBuildProjectDirectory.StartsWith('$(MSBuildThisFileDirectory)tools'))">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+  <!-- Machine-specific settings (for example LoomEditorPath); git-ignored. -->
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.local.props" Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.local.props')" />
 </Project>

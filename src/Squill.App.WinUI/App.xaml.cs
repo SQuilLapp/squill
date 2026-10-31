@@ -33,12 +33,21 @@ public sealed partial class App : Application
             return;
         }
 
+#if SQUILL_LOOMEDITOR
+        if (EditorDemo.IsRequested())
+        {
+            _window = EditorDemo.Start();
+            _window.Activate();
+            return;
+        }
+#endif
+
         var providers = new ProviderRegistry();
         providers.Register(new SqliteDatabaseProvider());
         providers.Register(new PostgresDatabaseProvider());
         providers.Register(new MySqlDatabaseProvider());
         providers.Register(new SqlServerDatabaseProvider());
-        var platform = new WinUiPlatformServices(providers, () => new PlainSqlEditor());
+        var platform = new WinUiPlatformServices(providers, EditorFactory.Create);
         // SQUILL_DATA_DIR redirects profiles, settings and history (used to run against a throwaway data directory).
         var dataDir = Environment.GetEnvironmentVariable("SQUILL_DATA_DIR");
         var paths = new AppPaths(string.IsNullOrEmpty(dataDir) ? null : dataDir);

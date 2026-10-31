@@ -14,7 +14,7 @@ namespace Squill.App.WinUI.Editors;
 /// Interim <see cref="ISqlEditor"/> over a multi-line <see cref="TextBox"/>: no highlighting, completion in a popup,
 /// diagnostics as a count. It stays as the fallback when LoomEditor is not available.
 /// </summary>
-public sealed class PlainSqlEditor : ISqlEditor
+public sealed class PlainSqlEditor : ISqlEditor, IEditorControl
 {
     private const double LineHeight = 20;
     private const double CharWidth = 8;
