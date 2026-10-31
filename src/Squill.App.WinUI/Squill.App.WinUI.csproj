@@ -10,6 +10,7 @@
     <PublishAot>true</PublishAot>
     <!-- Lets the CsWinRT generator emit the marshalling code of generic collections (ObservableCollection) passed to XAML under Native AOT. -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <!-- Remove when fixed: without it the Windows App SDK build fails with WMC1007 under Native AOT. -->
     <UseOptimizedPublish>false</UseOptimizedPublish>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
@@ -20,6 +21,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
+    <PackageReference Include="Velopack" />
     <ProjectReference Include="..\Squill.Presentation\Squill.Presentation.csproj" />
     <ProjectReference Include="..\Squill.Data.MySql\Squill.Data.MySql.csproj" />
     <ProjectReference Include="..\Squill.Data.Postgres\Squill.Data.Postgres.csproj" />
