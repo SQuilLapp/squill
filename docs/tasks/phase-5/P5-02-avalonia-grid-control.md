@@ -1,6 +1,6 @@
 # P5-02 - Avalonia head: custom-drawn virtualized grid
 
-Status: todo
+Status: done
 Depends on: P5-01
 
 ## Goal
@@ -17,8 +17,8 @@ A grid control that draws only visible cells and stays smooth on 1,000,000 rows 
 - Sorting.
 
 ## Tasks
-- [ ] Create `GridLayout` (pure), the control, the wrapper, the bench flag; add the test project.
-- [ ] Run the bench against the AOT-published exe and write `docs/poc/grid.md`.
+- [x] Create `GridLayout` (pure), the control, the wrapper, the bench flag; add the test project.
+- [x] Run the bench against the AOT-published exe and write `docs/poc/grid.md`.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

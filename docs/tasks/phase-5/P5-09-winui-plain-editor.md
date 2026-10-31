@@ -1,6 +1,6 @@
 # P5-09 - WinUI head: plain-text SQL editor
 
-Status: todo
+Status: done
 Depends on: P5-08
 
 ## Goal
@@ -14,8 +14,8 @@ The interim `ISqlEditor` for WinUI until LoomEditor is integrated (ADR 0002, spi
 - Highlighting (LoomEditor).
 
 ## Tasks
-- [ ] Implement the editor.
-- [ ] Verify manually by running the app (no WinUI test project exists; logic worth testing belongs in `Squill.Presentation`).
+- [x] Implement the editor.
+- [x] Verify manually by running the app (no WinUI test project exists; logic worth testing belongs in `Squill.Presentation`).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.
@@ -24,3 +24,8 @@ The interim `ISqlEditor` for WinUI until LoomEditor is integrated (ADR 0002, spi
 
 ## Suggested commit message
 Add WinUI plain-text SQL editor
+
+## Notes
+- `PlainSqlEditor` is not hosted in a view yet (P5-11), so the manual check was limited to a temporary build that set it as the window content: the Native AOT exe started, stayed responsive and was stopped; typing, selection and the completion popup could not be driven from here and need a look once P5-11 hosts the editor.
+- `Text` maps the `TextBox` line break (`\r`) to `\n`, offsets are unchanged. The popup position ignores scrolling.
+- A second `dotnet publish` into an existing publish folder fails in `CopyXamlResourcesToPublish` (its `**\*.xbf` glob also matches `publish\`); delete `bin\...\publish` before republishing. Pre-existing from P5-08.

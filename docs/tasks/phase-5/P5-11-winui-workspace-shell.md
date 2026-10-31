@@ -1,6 +1,6 @@
 # P5-11 - WinUI head: workspace shell and connections
 
-Status: todo
+Status: done
 Depends on: P5-10
 
 ## Goal
@@ -15,8 +15,8 @@ The WinUI equivalent of P5-04 and P5-05.
 - Selection/copy/export, history/snippets/settings (P5-12).
 
 ## Tasks
-- [ ] Implement views, dialogs and shortcuts.
-- [ ] Run the AOT exe against a SQLite profile, run `select 1`, describe/screenshot the result in the report, close the app.
+- [x] Implement views, dialogs and shortcuts.
+- [x] Run the AOT exe against a SQLite profile, run `select 1`, describe/screenshot the result in the report, close the app.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.
@@ -27,3 +27,8 @@ The WinUI equivalent of P5-04 and P5-05.
 
 ## Suggested commit message
 Add WinUI workspace shell and connection dialog
+
+## Report
+- Ran the published AOT exe with `SQUILL_DATA_DIR` on a SQLite profile: double-click connected (status bar `Local SQLite 3.53.4`), typed `select 1 as one`, F5: the Win2D grid showed column `one` with row `1`, status `Completed 1 statement(s) in 0,003 s`. Screenshot taken from the running window; app closed.
+- Deviations: views are mostly code-built (only `MainWindow` and `SidebarView` have XAML; the explorer template uses `x:Bind`), a small custom `Splitter` replaces the toolkit sizer, and the connection editor is a code-built `ContentDialog` (lambda bindings, no reflection). No connected-profile dot in the list; no file pickers in the dialog (P5-12).
+- Native AOT needed `AllowUnsafeBlocks` in the head csproj so CsWinRT generates the marshalling of `ObservableCollection<T>` given to `ItemsSource` (otherwise a crash at launch), and the publish copy target now excludes the publish folder itself.

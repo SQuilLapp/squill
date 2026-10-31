@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <PublishAot>true</PublishAot>
+    <UseOptimizedPublish>false</UseOptimizedPublish>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- Package-level trim/AOT warnings of Microsoft.Data.SqlClient (docs/poc/aot-drivers.md); Squill code stays warning-free. -->
+    <WarningsNotAsErrors>IL2104;IL3053</WarningsNotAsErrors>
+    <ApplicationIcon>..\..\assets\brand\app-icons\windows\squill.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.AvaloniaEdit" />
+    <ProjectReference Include="..\Squill.Presentation\Squill.Presentation.csproj" />
+    <ProjectReference Include="..\Squill.Data.MySql\Squill.Data.MySql.csproj" />
+    <ProjectReference Include="..\Squill.Data.Postgres\Squill.Data.Postgres.csproj" />
+    <ProjectReference Include="..\Squill.Data.SqlServer\Squill.Data.SqlServer.csproj" />
+    <ProjectReference Include="..\Squill.Data.Sqlite\Squill.Data.Sqlite.csproj" />
+    <AvaloniaResource Include="..\..\assets\brand\app-icons\windows\squill.ico" Link="Assets\squill.ico" />
+  </ItemGroup>
+</Project>

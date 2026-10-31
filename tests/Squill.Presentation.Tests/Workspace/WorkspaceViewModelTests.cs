@@ -144,6 +144,7 @@ public sealed class WorkspaceViewModelTests
             Assert.NotNull(services.Workspace.ConnectionList);
             Assert.NotNull(services.History);
             Assert.NotNull(services.Snippets);
+            Assert.NotNull(services.Settings);
         }
         finally
         {

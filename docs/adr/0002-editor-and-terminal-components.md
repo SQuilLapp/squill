@@ -26,6 +26,8 @@ SQuilL needs a SQL editor (the riskiest component, R1) and, where useful, a term
 - Run-under-cursor and query parameters are SQuilL UI features built on the editor's selection/caret API; confirm nothing extra is needed from LoomEditor.
 - Signature help and formatting provider interfaces in LoomEditor (absent today); external grammar registration.
 
+- P5-13 result (details and numbers in `docs/poc/editor.md`): completion, hover and markers work through LoomEditor's public providers; external grammar registration is not public, so SQL highlighting uses `SqlHighlighter` decorations of the viewport; signature help is deferred and formatting is not wired (no provider interface or `FormatDocumentCommand` in LoomEditor).
+
 ## Consequences
 - R1 changes from "build an editor" to "integrate and extend LoomEditor", gated by its phases 4-5; a SQuilL-side spike (plain-text editor in a WinUI shell with a stub `ISqlEditor`) can start now.
 - Interface-first: `ISqlEditor` lets the WinUI head swap implementations and lets tests run headless.

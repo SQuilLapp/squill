@@ -1,6 +1,6 @@
 # P5-03 - Avalonia head: SQL editor on AvaloniaEdit
 
-Status: todo
+Status: done
 Depends on: P5-02
 
 ## Goal
@@ -15,8 +15,8 @@ The interim editor for macOS/Linux (ADR 0002, point 1).
 - Folding, find/replace UI, multi-caret.
 
 ## Tasks
-- [ ] Implement the editor (or the fallback) and register it in the composition.
-- [ ] Headless test: set text, verify `Text`, `CaretOffset`, `Selection` mapping, and that a completion request is made for `select * from ` with a fake provider.
+- [x] Implement the editor (or the fallback) and register it in the composition.
+- [x] Headless test: set text, verify `Text`, `CaretOffset`, `Selection` mapping, and that a completion request is made for `select * from ` with a fake provider.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

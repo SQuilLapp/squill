@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ex="using:Squill.Presentation.Explorer"
+             xmlns:v="using:Squill.App.Avalonia.Views"
+             x:Class="Squill.App.Avalonia.Views.ObjectExplorerView"
+             x:DataType="ex:ObjectExplorerViewModel">
+  <Grid RowDefinitions="Auto,*">
+    <TextBox Text="{Binding FilterText, Mode=TwoWay}" PlaceholderText="Filter" Margin="6,0,6,4"
+             MinHeight="{DynamicResource SquillControlHeightStandard}" />
+    <TreeView Grid.Row="1" Name="Tree" ItemsSource="{Binding Roots}" Background="Transparent"
+              DoubleTapped="OnTreeDoubleTapped">
+      <TreeView.Styles>
+        <Style Selector="TreeViewItem" x:DataType="ex:ExplorerNode">
+          <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+          <Setter Property="IsVisible" Value="{Binding IsVisible}" />
+        </Style>
+      </TreeView.Styles>
+      <TreeView.ItemTemplate>
+        <TreeDataTemplate x:DataType="ex:ExplorerNode" ItemsSource="{Binding Children}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.Glyph}}"
+                       Foreground="{DynamicResource SquillAccentTextBrush}" Width="16" />
+            <TextBlock Text="{Binding Title}" Foreground="{DynamicResource SquillFgBrush}" />
+            <TextBlock Text="{Binding Detail}" Foreground="{DynamicResource SquillFgDisabledBrush}" />
+          </StackPanel>
+        </TreeDataTemplate>
+      </TreeView.ItemTemplate>
+    </TreeView>
+  </Grid>
+</UserControl>

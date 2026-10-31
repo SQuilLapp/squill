@@ -1,0 +1,122 @@
+<!-- Generated from tokens/squill.tokens.json - do not edit -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="SquillBgBaseBrush" Color="#FF0F1013"/>
+      <SolidColorBrush x:Key="SquillBgSurfaceBrush" Color="#FF15161A"/>
+      <SolidColorBrush x:Key="SquillBgRaisedBrush" Color="#FF1A1B20"/>
+      <SolidColorBrush x:Key="SquillBgOverlayBrush" Color="#FF22232A"/>
+      <SolidColorBrush x:Key="SquillBgHoverBrush" Color="#0FEBEEFF"/>
+      <SolidColorBrush x:Key="SquillBgActiveBrush" Color="#1AEBEEFF"/>
+      <SolidColorBrush x:Key="SquillBorderSubtleBrush" Color="#FF25262D"/>
+      <SolidColorBrush x:Key="SquillBorderBrush" Color="#FF31333B"/>
+      <SolidColorBrush x:Key="SquillBorderStrongBrush" Color="#FF454852"/>
+      <SolidColorBrush x:Key="SquillFgBrush" Color="#FFE8E9EE"/>
+      <SolidColorBrush x:Key="SquillFg2Brush" Color="#FFAEB0BC"/>
+      <SolidColorBrush x:Key="SquillFg3Brush" Color="#FF878A97"/>
+      <SolidColorBrush x:Key="SquillFgDisabledBrush" Color="#FF585B66"/>
+      <SolidColorBrush x:Key="SquillAccentBrush" Color="#FF9488F5"/>
+      <SolidColorBrush x:Key="SquillAccentHoverBrush" Color="#FFA99FF8"/>
+      <SolidColorBrush x:Key="SquillAccentPressedBrush" Color="#FF8174EC"/>
+      <SolidColorBrush x:Key="SquillOnAccentBrush" Color="#FF0F1013"/>
+      <SolidColorBrush x:Key="SquillAccentTextBrush" Color="#FFABA2FA"/>
+      <SolidColorBrush x:Key="SquillAccentSoftBrush" Color="#299488F5"/>
+      <SolidColorBrush x:Key="SquillAccentLineBrush" Color="#809488F5"/>
+      <SolidColorBrush x:Key="SquillSelectionBrush" Color="#3D9488F5"/>
+      <SolidColorBrush x:Key="SquillFocusBrush" Color="#FFABA2FA"/>
+      <SolidColorBrush x:Key="SquillSuccessBrush" Color="#FF4FBF86"/>
+      <SolidColorBrush x:Key="SquillWarningBrush" Color="#FFF09A4A"/>
+      <SolidColorBrush x:Key="SquillDangerBrush" Color="#FFF26D63"/>
+      <SolidColorBrush x:Key="SquillInfoBrush" Color="#FF62A9F2"/>
+      <SolidColorBrush x:Key="SquillSuccessSoftBrush" Color="#244FBF86"/>
+      <SolidColorBrush x:Key="SquillWarningSoftBrush" Color="#24F09A4A"/>
+      <SolidColorBrush x:Key="SquillDangerSoftBrush" Color="#24F26D63"/>
+      <SolidColorBrush x:Key="SquillInfoSoftBrush" Color="#2462A9F2"/>
+      <SolidColorBrush x:Key="SquillEnvProdBrush" Color="#FFF26D63"/>
+      <SolidColorBrush x:Key="SquillEnvStagingBrush" Color="#FFF09A4A"/>
+      <SolidColorBrush x:Key="SquillEnvDevBrush" Color="#FF4FBF86"/>
+      <SolidColorBrush x:Key="SquillEnvLocalBrush" Color="#FF878A97"/>
+      <SolidColorBrush x:Key="SquillOnEnvProdBrush" Color="#FF0F1013"/>
+      <SolidColorBrush x:Key="SquillOnEnvStagingBrush" Color="#FF0F1013"/>
+      <SolidColorBrush x:Key="SquillOnEnvDevBrush" Color="#FF0B1A10"/>
+      <SolidColorBrush x:Key="SquillOnEnvLocalBrush" Color="#FF0F1013"/>
+      <SolidColorBrush x:Key="SquillCellNullBrush" Color="#FF737684"/>
+      <SolidColorBrush x:Key="SquillCellModifiedBrush" Color="#2962A9F2"/>
+      <SolidColorBrush x:Key="SquillCellAddedBrush" Color="#244FBF86"/>
+      <SolidColorBrush x:Key="SquillCellDeletedBrush" Color="#24F26D63"/>
+      <SolidColorBrush x:Key="SquillSynKeywordBrush" Color="#FFB3A8FA"/>
+      <SolidColorBrush x:Key="SquillSynFunctionBrush" Color="#FF82B8EE"/>
+      <SolidColorBrush x:Key="SquillSynStringBrush" Color="#FF9FCF7E"/>
+      <SolidColorBrush x:Key="SquillSynNumberBrush" Color="#FFE5B567"/>
+      <SolidColorBrush x:Key="SquillSynCommentBrush" Color="#FF858896"/>
+      <SolidColorBrush x:Key="SquillSynTypeBrush" Color="#FF6CCBC2"/>
+      <SolidColorBrush x:Key="SquillSynOperatorBrush" Color="#FFAEB0BC"/>
+      <SolidColorBrush x:Key="SquillSynParamBrush" Color="#FFF2A274"/>
+      <SolidColorBrush x:Key="SquillSynIdentBrush" Color="#FFE8E9EE"/>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="SquillBgBaseBrush" Color="#FFF1F2F5"/>
+      <SolidColorBrush x:Key="SquillBgSurfaceBrush" Color="#FFF8F9FB"/>
+      <SolidColorBrush x:Key="SquillBgRaisedBrush" Color="#FFFFFFFF"/>
+      <SolidColorBrush x:Key="SquillBgOverlayBrush" Color="#FFFFFFFF"/>
+      <SolidColorBrush x:Key="SquillBgHoverBrush" Color="#0D141628"/>
+      <SolidColorBrush x:Key="SquillBgActiveBrush" Color="#17141628"/>
+      <SolidColorBrush x:Key="SquillBorderSubtleBrush" Color="#FFE5E6EB"/>
+      <SolidColorBrush x:Key="SquillBorderBrush" Color="#FFD3D5DD"/>
+      <SolidColorBrush x:Key="SquillBorderStrongBrush" Color="#FFB8BBC6"/>
+      <SolidColorBrush x:Key="SquillFgBrush" Color="#FF16171C"/>
+      <SolidColorBrush x:Key="SquillFg2Brush" Color="#FF4C4F5C"/>
+      <SolidColorBrush x:Key="SquillFg3Brush" Color="#FF626574"/>
+      <SolidColorBrush x:Key="SquillFgDisabledBrush" Color="#FFA2A5B1"/>
+      <SolidColorBrush x:Key="SquillAccentBrush" Color="#FF5B4CD6"/>
+      <SolidColorBrush x:Key="SquillAccentHoverBrush" Color="#FF6A5CE0"/>
+      <SolidColorBrush x:Key="SquillAccentPressedBrush" Color="#FF4C3EC4"/>
+      <SolidColorBrush x:Key="SquillOnAccentBrush" Color="#FFFFFFFF"/>
+      <SolidColorBrush x:Key="SquillAccentTextBrush" Color="#FF4E3FC9"/>
+      <SolidColorBrush x:Key="SquillAccentSoftBrush" Color="#1F5B4CD6"/>
+      <SolidColorBrush x:Key="SquillAccentLineBrush" Color="#735B4CD6"/>
+      <SolidColorBrush x:Key="SquillSelectionBrush" Color="#2E5B4CD6"/>
+      <SolidColorBrush x:Key="SquillFocusBrush" Color="#FF5B4CD6"/>
+      <SolidColorBrush x:Key="SquillSuccessBrush" Color="#FF1F7A4D"/>
+      <SolidColorBrush x:Key="SquillWarningBrush" Color="#FFB4580C"/>
+      <SolidColorBrush x:Key="SquillDangerBrush" Color="#FFC93A31"/>
+      <SolidColorBrush x:Key="SquillInfoBrush" Color="#FF1F68BF"/>
+      <SolidColorBrush x:Key="SquillSuccessSoftBrush" Color="#1A1F7A4D"/>
+      <SolidColorBrush x:Key="SquillWarningSoftBrush" Color="#1AB4580C"/>
+      <SolidColorBrush x:Key="SquillDangerSoftBrush" Color="#1AC93A31"/>
+      <SolidColorBrush x:Key="SquillInfoSoftBrush" Color="#1A1F68BF"/>
+      <SolidColorBrush x:Key="SquillEnvProdBrush" Color="#FFD93A30"/>
+      <SolidColorBrush x:Key="SquillEnvStagingBrush" Color="#FFC9620E"/>
+      <SolidColorBrush x:Key="SquillEnvDevBrush" Color="#FF267A45"/>
+      <SolidColorBrush x:Key="SquillEnvLocalBrush" Color="#FF737684"/>
+      <SolidColorBrush x:Key="SquillOnEnvProdBrush" Color="#FFFFFFFF"/>
+      <SolidColorBrush x:Key="SquillOnEnvStagingBrush" Color="#FF0F1013"/>
+      <SolidColorBrush x:Key="SquillOnEnvDevBrush" Color="#FFFFFFFF"/>
+      <SolidColorBrush x:Key="SquillOnEnvLocalBrush" Color="#FFFFFFFF"/>
+      <SolidColorBrush x:Key="SquillCellNullBrush" Color="#FF8A8D99"/>
+      <SolidColorBrush x:Key="SquillCellModifiedBrush" Color="#1F1F68BF"/>
+      <SolidColorBrush x:Key="SquillCellAddedBrush" Color="#1A1F7A4D"/>
+      <SolidColorBrush x:Key="SquillCellDeletedBrush" Color="#1AC93A31"/>
+      <SolidColorBrush x:Key="SquillSynKeywordBrush" Color="#FF5440C0"/>
+      <SolidColorBrush x:Key="SquillSynFunctionBrush" Color="#FF1D5FA8"/>
+      <SolidColorBrush x:Key="SquillSynStringBrush" Color="#FF3A7A25"/>
+      <SolidColorBrush x:Key="SquillSynNumberBrush" Color="#FF9A5B00"/>
+      <SolidColorBrush x:Key="SquillSynCommentBrush" Color="#FF6E7180"/>
+      <SolidColorBrush x:Key="SquillSynTypeBrush" Color="#FF0E736C"/>
+      <SolidColorBrush x:Key="SquillSynOperatorBrush" Color="#FF4C4F5C"/>
+      <SolidColorBrush x:Key="SquillSynParamBrush" Color="#FFB4580C"/>
+      <SolidColorBrush x:Key="SquillSynIdentBrush" Color="#FF16171C"/>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+  <x:Double x:Key="SquillRowHeightCompact">22</x:Double>
+  <x:Double x:Key="SquillRowHeightStandard">26</x:Double>
+  <x:Double x:Key="SquillRowHeightComfortable">32</x:Double>
+  <x:Double x:Key="SquillControlHeightCompact">24</x:Double>
+  <x:Double x:Key="SquillControlHeightStandard">28</x:Double>
+  <x:Double x:Key="SquillControlHeightComfortable">32</x:Double>
+  <CornerRadius x:Key="SquillRadiusXs">2</CornerRadius>
+  <CornerRadius x:Key="SquillRadiusSm">4</CornerRadius>
+  <CornerRadius x:Key="SquillRadiusMd">6</CornerRadius>
+  <CornerRadius x:Key="SquillRadiusLg">8</CornerRadius>
+  <CornerRadius x:Key="SquillRadiusXl">12</CornerRadius>
+</ResourceDictionary>

@@ -1,6 +1,6 @@
 # P5-08 - WinUI head: skeleton and Native AOT publish
 
-Status: todo
+Status: done
 Depends on: P5-07
 
 ## Goal
@@ -16,8 +16,8 @@ Prove WinUI 3 under Native AOT on win-x64 with the generated tokens (risk R2).
 - Real screens (P5-11+).
 
 ## Tasks
-- [ ] Create the project, solution file, tokens, window, services; update CI.
-- [ ] Publish win-x64, start the exe, confirm the window, stop it.
+- [x] Create the project, solution file, tokens, window, services; update CI.
+- [x] Publish win-x64, start the exe, confirm the window, stop it.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.
@@ -28,3 +28,9 @@ Prove WinUI 3 under Native AOT on win-x64 with the generated tokens (risk R2).
 
 ## Suggested commit message
 Add WinUI head skeleton with Native AOT publish
+
+## Notes
+- `Microsoft.WindowsAppSDK` 2.6.4 supports `net11.0-windows10.0.19041.0`; the version is pinned in `Directory.Packages.props`.
+- Native AOT publish omits `Squill.App.WinUI.pri` and the compiled `.xbf` files (the exe crashed at start in `Microsoft.UI.Xaml.dll`); the csproj copies them into the publish folder in a target marked "remove when fixed".
+- CsWinRT1032 forbids collection expressions targeting `IReadOnlyList<T>` in the WinUI head: use `.ToArray()`.
+- Tests: `Squill.App.WinUI.Tests` checks the committed `SquillTokens.xaml` against the generator.

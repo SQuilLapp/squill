@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Presentation.Results;
 
@@ -15,7 +16,14 @@ public sealed partial class ResultViewModel : ViewModelBase
         Title = title;
         Grid = grid;
         Text = text;
+        Header = title;
+        if (grid is not null)
+            grid.Changed += (_, _) => Header = $"{Title} ({grid.RowCount:N0}{(grid.IsTruncated ? "+" : "")} rows)";
     }
+
+    /// <summary>Gets the tab header: the title, then the loaded row count and a <c>+</c> when the row limit truncated the result.</summary>
+    [ObservableProperty]
+    public partial string Header { get; private set; }
 
     /// <summary>Gets whether this result is a grid or a message.</summary>
     public ResultKind Kind { get; }

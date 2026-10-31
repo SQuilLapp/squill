@@ -1,0 +1,22 @@
+<UserControl x:Class="Squill.App.WinUI.Views.HistoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:st="using:Squill.Platform.Storage"
+             xmlns:v="using:Squill.App.WinUI.Views">
+  <Grid RowDefinitions="Auto,*">
+    <Grid ColumnDefinitions="*,Auto" Margin="6">
+      <TextBox x:Name="FilterBox" PlaceholderText="Filter history" TextChanged="OnFilterChanged" />
+      <Button Grid.Column="1" Margin="6,0,0,0" Content="Clear" Click="OnClearClicked" />
+    </Grid>
+    <ListView x:Name="List" Grid.Row="1" SelectionMode="Single" DoubleTapped="OnDoubleTapped">
+      <ListView.ItemTemplate>
+        <DataTemplate x:DataType="st:HistoryEntry">
+          <StackPanel Spacing="2">
+            <TextBlock Text="{x:Bind Sql}" MaxLines="2" TextTrimming="CharacterEllipsis" Foreground="{ThemeResource SquillFgBrush}" />
+            <TextBlock Text="{x:Bind v:HistoryFormat.Detail((st:HistoryEntry))}" Foreground="{ThemeResource SquillFg3Brush}" />
+          </StackPanel>
+        </DataTemplate>
+      </ListView.ItemTemplate>
+    </ListView>
+  </Grid>
+</UserControl>

@@ -1,0 +1,27 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:se="using:Squill.Presentation.Settings"
+        xmlns:ps="using:Squill.Platform.Settings"
+        x:Class="Squill.App.Avalonia.Views.SettingsWindow"
+        x:DataType="se:SettingsViewModel"
+        Title="Settings" Width="360" SizeToContent="Height" CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SquillBgSurfaceBrush}">
+  <StackPanel Margin="16" Spacing="6">
+    <TextBlock Text="Theme" Foreground="{DynamicResource SquillFg2Brush}" />
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <RadioButton Name="ThemeSystem" GroupName="Theme" Content="System" Tag="{x:Static ps:ThemeMode.System}" IsCheckedChanged="OnThemeChecked"
+                   IsChecked="{Binding Theme, Mode=OneWay, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static ps:ThemeMode.System}}" />
+      <RadioButton Name="ThemeLight" GroupName="Theme" Content="Light" Tag="{x:Static ps:ThemeMode.Light}" IsCheckedChanged="OnThemeChecked"
+                   IsChecked="{Binding Theme, Mode=OneWay, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static ps:ThemeMode.Light}}" />
+      <RadioButton Name="ThemeDark" GroupName="Theme" Content="Dark" Tag="{x:Static ps:ThemeMode.Dark}" IsCheckedChanged="OnThemeChecked"
+                   IsChecked="{Binding Theme, Mode=OneWay, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static ps:ThemeMode.Dark}}" />
+    </StackPanel>
+    <TextBlock Text="Editor font size" Foreground="{DynamicResource SquillFg2Brush}" />
+    <NumericUpDown Name="FontSizeBox" Minimum="8" Maximum="32" Increment="1" FormatString="0" Value="{Binding EditorFontSize, Mode=TwoWay}" />
+    <TextBlock Text="Maximum grid rows" Foreground="{DynamicResource SquillFg2Brush}" />
+    <NumericUpDown Name="MaxRowsBox" Minimum="1000" Maximum="10000000" Increment="1000" FormatString="0" Value="{Binding MaxGridRows, Mode=TwoWay}" />
+    <TextBlock Text="Formatter keyword case" Foreground="{DynamicResource SquillFg2Brush}" />
+    <ComboBox Name="KeywordCaseBox" HorizontalAlignment="Stretch" SelectedItem="{Binding FormatterKeywordCase, Mode=TwoWay}" />
+  </StackPanel>
+</Window>

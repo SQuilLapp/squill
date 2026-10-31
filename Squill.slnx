@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Squill.App.Avalonia/Squill.App.Avalonia.csproj" />
     <Project Path="src/Squill.Core/Squill.Core.csproj" />
     <Project Path="src/Squill.Data/Squill.Data.csproj" />
     <Project Path="src/Squill.Data.MySql/Squill.Data.MySql.csproj" />
@@ -20,6 +21,7 @@
     <Project Path="tools/Squill.TokenGen/Squill.TokenGen.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Squill.App.Avalonia.Tests/Squill.App.Avalonia.Tests.csproj" />
     <Project Path="tests/Squill.Core.Tests/Squill.Core.Tests.csproj" />
     <Project Path="tests/Squill.Data.Tests/Squill.Data.Tests.csproj" />
     <Project Path="tests/Squill.Data.MySql.Tests/Squill.Data.MySql.Tests.csproj" />

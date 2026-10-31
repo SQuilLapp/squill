@@ -1,6 +1,6 @@
 # P5-01 - Avalonia head: skeleton, tokens and AOT publish
 
-Status: todo
+Status: done
 Depends on: P4-12
 
 ## Goal
@@ -12,13 +12,14 @@ A runnable Avalonia app using the generated design tokens, published with Native
 - `MainWindow` shows only the app name using a token brush. Window icon from `assets/brand/app-icons/windows/squill.ico` linked into the project.
 - `AvaloniaDispatcher : IUiDispatcher` (via `Dispatcher.UIThread`) and `AvaloniaDialogService : IDialogService` (message boxes implemented with simple modal `Window`s) in `Services/`; the composition is created in `App.OnFrameworkInitializationCompleted` (`ProviderRegistry` with the four providers registered, `EditorFactory` = `() => new StubSqlEditor()` for now).
 - If AOT publish raises IL warnings from Avalonia itself, STOP and report the warning IDs; do not suppress.
+- Deviation: `UseOptimizedPublish=false` in the csproj. The .NET 11 optimized AOT publish path skips the Avalonia XAML compilation output (the published exe crashed with "No precompiled XAML found"). Also `GenerateDocumentationFile=false` (the executable exposes no API). The ILC `UnmanagedCallersOnly ... non-blittable` notes come from Avalonia.Win32 (no IL2xxx/IL3xxx IDs).
 
 ## Out of scope
 - Real screens (P5-04+).
 
 ## Tasks
-- [ ] Create the project, generated tokens, window, services and composition; add to `Squill.slnx`.
-- [ ] Publish win-x64; start the exe, confirm the window opens, then close it (kill the process if needed).
+- [x] Create the project, generated tokens, window, services and composition; add to `Squill.slnx`.
+- [x] Publish win-x64; start the exe, confirm the window opens, then close it (kill the process if needed).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

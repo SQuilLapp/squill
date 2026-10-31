@@ -1,0 +1,38 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Squill.App.WinUI/Squill.App.WinUI.csproj" />
+    <Project Path="src/Squill.App.Avalonia/Squill.App.Avalonia.csproj" />
+    <Project Path="src/Squill.Core/Squill.Core.csproj" />
+    <Project Path="src/Squill.Data/Squill.Data.csproj" />
+    <Project Path="src/Squill.Data.MySql/Squill.Data.MySql.csproj" />
+    <Project Path="src/Squill.Data.Postgres/Squill.Data.Postgres.csproj" />
+    <Project Path="src/Squill.Data.SqlServer/Squill.Data.SqlServer.csproj" />
+    <Project Path="src/Squill.Data.Sqlite/Squill.Data.Sqlite.csproj" />
+    <Project Path="src/Squill.DesignSystem/Squill.DesignSystem.csproj" />
+    <Project Path="src/Squill.Platform/Squill.Platform.csproj" />
+    <Project Path="src/Squill.Presentation/Squill.Presentation.csproj" />
+    <Project Path="src/Squill.Sql/Squill.Sql.csproj" />
+    <Project Path="tools/Squill.Bench/Squill.Bench.csproj" />
+    <Project Path="tools/Squill.AotProbe.MySql/Squill.AotProbe.MySql.csproj" />
+    <Project Path="tools/Squill.AotProbe.Postgres/Squill.AotProbe.Postgres.csproj" />
+    <Project Path="tools/Squill.AotProbe.Sqlite/Squill.AotProbe.Sqlite.csproj" />
+    <Project Path="tools/Squill.AotProbe.SshNet/Squill.AotProbe.SshNet.csproj" />
+    <Project Path="tools/Squill.AotProbe.SqlServer/Squill.AotProbe.SqlServer.csproj" />
+    <Project Path="tools/Squill.GrammarGen/Squill.GrammarGen.csproj" />
+    <Project Path="tools/Squill.TokenGen/Squill.TokenGen.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Squill.App.WinUI.Tests/Squill.App.WinUI.Tests.csproj" />
+    <Project Path="tests/Squill.App.Avalonia.Tests/Squill.App.Avalonia.Tests.csproj" />
+    <Project Path="tests/Squill.Core.Tests/Squill.Core.Tests.csproj" />
+    <Project Path="tests/Squill.Data.Tests/Squill.Data.Tests.csproj" />
+    <Project Path="tests/Squill.Data.MySql.Tests/Squill.Data.MySql.Tests.csproj" />
+    <Project Path="tests/Squill.Data.Postgres.Tests/Squill.Data.Postgres.Tests.csproj" />
+    <Project Path="tests/Squill.Data.Sqlite.Tests/Squill.Data.Sqlite.Tests.csproj" />
+    <Project Path="tests/Squill.Data.SqlServer.Tests/Squill.Data.SqlServer.Tests.csproj" />
+    <Project Path="tests/Squill.Sql.Tests/Squill.Sql.Tests.csproj" />
+    <Project Path="tests/Squill.Platform.Tests/Squill.Platform.Tests.csproj" />
+    <Project Path="tests/Squill.DesignSystem.Tests/Squill.DesignSystem.Tests.csproj" />
+    <Project Path="tests/Squill.Presentation.Tests/Squill.Presentation.Tests.csproj" />
+  </Folder>
+</Solution>

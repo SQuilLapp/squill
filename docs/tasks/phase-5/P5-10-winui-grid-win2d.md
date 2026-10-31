@@ -1,6 +1,6 @@
 # P5-10 - WinUI head: custom-drawn grid on Win2D
 
-Status: todo
+Status: done
 Depends on: P5-09
 
 ## Goal
@@ -15,8 +15,8 @@ The WinUI counterpart of P5-02 with the same budget (risk R4).
 - Selection/copy (P5-12).
 
 ## Tasks
-- [ ] Move `GridLayout` and its tests to Presentation; implement the control and bench.
-- [ ] Run the bench on the AOT-published exe.
+- [x] Move `GridLayout` and its tests to Presentation; implement the control and bench.
+- [x] Run the bench on the AOT-published exe.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.
