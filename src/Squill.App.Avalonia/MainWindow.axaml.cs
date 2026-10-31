@@ -7,6 +7,7 @@ using Squill.App.Avalonia.Views;
 using Squill.Presentation;
 using Squill.Presentation.Query;
 using Squill.Presentation.Settings;
+using Squill.Presentation.Terminal;
 using Squill.Presentation.Workspace;
 
 namespace Squill.App.Avalonia;
@@ -29,6 +30,13 @@ public sealed partial class MainWindow : Window
     public void Attach(AppServices services, string dataDirectory)
     {
         Sidebar.Attach(services.History, services.Snippets);
+        AttachTerminals(services.Workspace);
+        services.Workspace.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(WorkspaceViewModel.ActiveTab))
+                ShowQueryArea();
+        };
+        QueryStrip.AddHandler(PointerPressedEvent, (_, _) => ShowQueryArea(), RoutingStrategies.Tunnel);
         Status.DataDirectory = dataDirectory;
         _settings = services.Settings;
         _settings.PropertyChanged += OnSettingsPropertyChanged;
@@ -48,6 +56,24 @@ public sealed partial class MainWindow : Window
     }
 
     private void OnSettingsClicked(object? sender, RoutedEventArgs e) => OpenSettings();
+
+    private void ShowQueryArea()
+    {
+        TerminalArea.IsVisible = false;
+        TerminalStrip.SelectedItem = null;
+    }
+
+    private void OnTerminalSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (TerminalStrip.SelectedItem is TerminalTabViewModel terminal)
+            ShowTerminal(terminal);
+    }
+
+    private void OnCloseTerminalClicked(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is WorkspaceViewModel workspace && (sender as Control)?.DataContext is TerminalTabViewModel terminal)
+            workspace.CloseTerminalCommand.Execute(terminal);
+    }
 
     private void OnCloseTabClicked(object? sender, RoutedEventArgs e)
     {
