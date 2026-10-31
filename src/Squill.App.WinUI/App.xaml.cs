@@ -41,11 +41,12 @@ public sealed partial class App : Application
         var platform = new WinUiPlatformServices(providers, () => new PlainSqlEditor());
         // SQUILL_DATA_DIR redirects profiles, settings and history (used to run against a throwaway data directory).
         var dataDir = Environment.GetEnvironmentVariable("SQUILL_DATA_DIR");
-        Services = AppComposition.Create(platform, new AppPaths(string.IsNullOrEmpty(dataDir) ? null : dataDir));
+        var paths = new AppPaths(string.IsNullOrEmpty(dataDir) ? null : dataDir);
+        Services = AppComposition.Create(platform, paths);
         var main = new MainWindow();
         _window = main;
         platform.AttachWindow(main);
-        main.Attach(Services);
+        main.Attach(Services, paths.DataDirectory);
         _window.Activate();
     }
 }

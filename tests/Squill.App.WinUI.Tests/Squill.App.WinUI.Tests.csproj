@@ -14,6 +14,10 @@
     <Content Include="..\..\src\Squill.App.WinUI\MainWindow.xaml.cs" Link="Xaml\MainWindow.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\SidebarView.xaml" Link="Xaml\SidebarView.xaml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\SidebarView.xaml.cs" Link="Xaml\SidebarView.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\HistoryView.xaml" Link="Xaml\HistoryView.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\HistoryView.xaml.cs" Link="Xaml\HistoryView.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\SnippetsView.xaml" Link="Xaml\SnippetsView.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\SnippetsView.xaml.cs" Link="Xaml\SnippetsView.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Styles\SquillTokens.xaml" Link="SquillTokens.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

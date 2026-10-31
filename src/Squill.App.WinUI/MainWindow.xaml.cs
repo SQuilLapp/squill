@@ -9,7 +9,9 @@ using Squill.Platform.Settings;
 using Squill.Presentation;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Query;
+using Squill.Presentation.Settings;
 using Squill.Presentation.Workspace;
+using Windows.System;
 
 namespace Squill.App.WinUI;
 
@@ -18,6 +20,7 @@ public sealed partial class MainWindow : Window
 {
     private readonly Dictionary<QueryTabViewModel, TabViewItem> _items = [];
     private WorkspaceViewModel? _workspace;
+    private SettingsViewModel? _settings;
     private bool _syncing;
 
     /// <summary>Initializes the window and sets its icon.</summary>
@@ -33,20 +36,34 @@ public sealed partial class MainWindow : Window
 
     /// <summary>Connects the window to the shared view-models and loads the saved connections and settings.</summary>
     /// <param name="services">The shared root view-models.</param>
-    public void Attach(AppServices services)
+    /// <param name="dataDirectory">The directory holding profiles, settings and history, opened from the status bar.</param>
+    public void Attach(AppServices services, string dataDirectory)
     {
         _workspace = services.Workspace;
+        _settings = services.Settings;
+        Root.KeyboardAccelerators.Add(SettingsAccelerator());
         services.Settings.ThemeChanged += (_, _) => ApplyTheme(services.Settings.Theme);
         services.Settings.LoadCommand.Execute(null);
         services.Workspace.ConnectionList.LoadCommand.Execute(null);
         services.Workspace.ConnectionList.EditRequested += OnEditRequested;
         services.Workspace.Tabs.CollectionChanged += OnTabsChanged;
         services.Workspace.PropertyChanged += OnWorkspaceChanged;
-        Sidebar.Attach(services.Workspace);
-        Status.Attach(services.Workspace);
+        Sidebar.Attach(services.Workspace, services.History, services.Snippets);
+        Status.Attach(services.Workspace, dataDirectory);
     }
 
     private WorkspaceViewModel Workspace => _workspace!;
+
+    // XAML has no name for the comma key, so Ctrl+, is built from its virtual-key code (VK_OEM_COMMA).
+    private KeyboardAccelerator SettingsAccelerator()
+    {
+        var accelerator = new KeyboardAccelerator { Key = (VirtualKey)188, Modifiers = VirtualKeyModifiers.Control };
+        accelerator.Invoked += (_, args) => Accelerate(args, () => OnSettingsClicked(null!, null!));
+        return accelerator;
+    }
+
+    private async void OnSettingsClicked(object sender, RoutedEventArgs e) =>
+        await new SettingsDialog(_settings!, Root.XamlRoot, Root.RequestedTheme).ShowAsync();
 
     private void ApplyTheme(ThemeMode mode) => Root.RequestedTheme = mode switch
     {

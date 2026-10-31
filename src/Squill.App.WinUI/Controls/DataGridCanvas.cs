@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Squill.Presentation.Results;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
@@ -33,6 +34,7 @@ public sealed partial class DataGridCanvas : Grid
     private int _resizeColumn = -1;
     private double _resizeStartX;
     private double _resizeStartWidth;
+    private bool _selecting;
 
     /// <summary>Creates the canvas, reading the row height from the token resources.</summary>
     public DataGridCanvas()
@@ -47,6 +49,8 @@ public sealed partial class DataGridCanvas : Grid
         _canvas.PointerPressed += OnPointerPressed;
         _canvas.PointerMoved += OnPointerMoved;
         _canvas.PointerReleased += OnPointerReleased;
+        _canvas.IsTabStop = true;
+        _canvas.KeyDown += OnKeyDown;
         _canvas.ActualThemeChanged += (_, _) =>
         {
             _colors = null;
@@ -79,6 +83,7 @@ public sealed partial class DataGridCanvas : Grid
                 _source.Changed += OnSourceChanged;
             }
 
+            Selection.Clear();
             _userResized = false;
             _needsMeasure = true;
             _layout.SetColumnWidths([]);
@@ -86,6 +91,9 @@ public sealed partial class DataGridCanvas : Grid
             _canvas.Invalidate();
         }
     }
+
+    /// <summary>Gets the current selection.</summary>
+    public GridSelection Selection { get; } = new();
 
     /// <summary>Gets the geometry helper (read-only use).</summary>
     public GridLayout Layout => _layout;
@@ -171,10 +179,20 @@ public sealed partial class DataGridCanvas : Grid
             {
                 var top = (float)(headerHeight + (row * rowHeight) - _scrollY);
                 var value = CellFormatter.Format(source.GetCell(row, col), info);
+                if (Selection.Contains(row, col, source.RowCount))
+                {
+                    ds.FillRectangle(left, top, colWidth, rowHeight, c.Selection);
+                }
+
                 DrawText(ds, value ?? "NULL", left, top, rowHeight, value is null ? c.Muted : c.Text);
             }
 
             ds.FillRectangle(left, 0, colWidth, headerHeight, c.Raised);
+            if (Selection.ContainsColumn(col))
+            {
+                ds.FillRectangle(left, 0, colWidth, headerHeight, c.Selection);
+            }
+
             DrawText(ds, info.Name, left, 0, headerHeight, c.HeaderText);
         }
 
@@ -280,7 +298,28 @@ public sealed partial class DataGridCanvas : Grid
             _resizeStartWidth = _layout.ColumnWidth(column);
             _canvas.CapturePointer(e.Pointer);
             e.Handled = true;
+            return;
         }
+
+        _canvas.Focus(FocusState.Pointer);
+        var shift = e.KeyModifiers.HasFlag(VirtualKeyModifiers.Shift);
+        if (point.Y <= _layout.HeaderHeight)
+        {
+            var clicked = _layout.ColumnAt(point.X + _scrollX);
+            if (clicked >= 0)
+            {
+                Selection.SelectColumn(clicked, shift);
+                _canvas.Invalidate();
+            }
+        }
+        else
+        {
+            SelectAt(point, shift);
+            _selecting = true;
+            _canvas.CapturePointer(e.Pointer);
+        }
+
+        e.Handled = true;
     }
 
     private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
@@ -295,17 +334,114 @@ public sealed partial class DataGridCanvas : Grid
             return;
         }
 
+        if (_selecting)
+        {
+            SelectAt(point, true);
+            return;
+        }
+
         var onHandle = point.Y <= _layout.HeaderHeight && _layout.ResizeHandleAt(point.X, _scrollX, ResizeTolerance) >= 0;
         ProtectedCursor = onHandle ? InputSystemCursor.Create(InputSystemCursorShape.SizeWestEast) : null;
     }
 
     private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
     {
-        if (_resizeColumn >= 0)
+        if (_resizeColumn >= 0 || _selecting)
         {
             _resizeColumn = -1;
+            _selecting = false;
             _canvas.ReleasePointerCapture(e.Pointer);
         }
+    }
+
+    private void OnKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (_source is not { } source)
+        {
+            return;
+        }
+
+        var ctrl = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+        var shift = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+        if (ctrl && e.Key == VirtualKey.C)
+        {
+            if (Selection.HasSelection)
+            {
+                var package = new DataPackage();
+                package.SetText(Selection.ToTsv(source));
+                Clipboard.SetContent(package);
+            }
+        }
+        else if (!ApplyKey(e.Key, ctrl, shift, source))
+        {
+            return;
+        }
+
+        e.Handled = true;
+        EnsureVisible(Selection.ActiveRow, Selection.ActiveColumn);
+        _canvas.Invalidate();
+    }
+
+    private bool ApplyKey(VirtualKey key, bool ctrl, bool shift, IGridDataSource source)
+    {
+        var rows = source.RowCount;
+        var cols = source.Columns.Count;
+        var page = Math.Max(1, (long)(BodyHeight / _layout.RowHeight) - 1);
+        (long Rows, long Cols)? delta = key switch
+        {
+            VirtualKey.Up => (-1, 0),
+            VirtualKey.Down => (1, 0),
+            VirtualKey.Left => (0, -1),
+            VirtualKey.Right => (0, 1),
+            VirtualKey.PageUp => (-page, 0),
+            VirtualKey.PageDown => (page, 0),
+            VirtualKey.Home => (ctrl ? -rows : 0, -cols),
+            VirtualKey.End => (ctrl ? rows : 0, cols),
+            _ => null,
+        };
+        if (delta is { } d)
+        {
+            Selection.Move(d.Rows, d.Cols, rows, cols, shift);
+            return true;
+        }
+
+        if (ctrl && key == VirtualKey.A)
+        {
+            Selection.SelectAll(rows, cols);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void SelectAt(Point point, bool extend)
+    {
+        var source = _source;
+        if (source is null || source.RowCount == 0 || source.Columns.Count == 0)
+        {
+            return;
+        }
+
+        var column = _layout.ColumnAt(point.X + _scrollX);
+        if (column < 0)
+        {
+            column = point.X + _scrollX < 0 ? 0 : source.Columns.Count - 1;
+        }
+
+        var row = Math.Clamp((long)((point.Y - _layout.HeaderHeight + _scrollY) / _layout.RowHeight), 0, source.RowCount - 1);
+        Selection.SelectCell(row, column, extend);
+        _canvas.Invalidate();
+    }
+
+    private void EnsureVisible(long row, int column)
+    {
+        var top = row * _layout.RowHeight;
+        var y = top < _scrollY ? top : top + _layout.RowHeight > _scrollY + BodyHeight ? top + _layout.RowHeight - BodyHeight : _scrollY;
+        var left = _layout.ColumnLeft(column);
+        var right = left + _layout.ColumnWidth(column);
+        var width = _canvas.ActualWidth;
+        var x = left < _scrollX ? left : right > _scrollX + width ? right - width : _scrollX;
+        SetScroll(x, y);
     }
 
     private GridColors ResolveColors()
@@ -320,7 +456,8 @@ public sealed partial class DataGridCanvas : Grid
             Get("SquillFg2Color"),
             Get("SquillFg3Color"),
             Get("SquillBorderColor"),
-            Get("SquillBorderSubtleColor"));
+            Get("SquillBorderSubtleColor"),
+            Get("SquillSelectionColor"));
     }
 
     private static object? FindMerged(ResourceDictionary dictionary, string key)
@@ -344,5 +481,5 @@ public sealed partial class DataGridCanvas : Grid
         return dictionary.MergedDictionaries.Select(merged => FindThemeDictionary(merged, key)).FirstOrDefault(found => found is not null);
     }
 
-    private sealed record GridColors(Color Surface, Color Raised, Color Text, Color HeaderText, Color Muted, Color Border, Color BorderSubtle);
+    private sealed record GridColors(Color Surface, Color Raised, Color Text, Color HeaderText, Color Muted, Color Border, Color BorderSubtle, Color Selection);
 }

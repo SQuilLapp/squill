@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Squill.Presentation.Query;
 using Squill.Presentation.Workspace;
+using Windows.System;
 
 namespace Squill.App.WinUI.Views;
 
@@ -15,7 +16,9 @@ public sealed partial class StatusBar : UserControl
     private readonly TextBlock _version = new() { Margin = new Thickness(0, 0, 12, 0), Foreground = Brush("SquillFgDisabledBrush") };
     private readonly TextBlock _status = new() { Margin = new Thickness(0, 0, 12, 0), Foreground = Brush("SquillFgBrush") };
     private readonly TextBlock _elapsed = new() { Foreground = Brush("SquillFgDisabledBrush") };
+    private readonly HyperlinkButton _dataFolder = new() { Content = "Data folder", Padding = new Thickness(0) };
     private WorkspaceViewModel? _workspace;
+    private string? _dataDirectory;
     private QueryTabViewModel? _tab;
 
     /// <summary>Creates the view.</summary>
@@ -28,15 +31,29 @@ public sealed partial class StatusBar : UserControl
             BorderBrush = Brush("SquillBorderSubtleBrush"),
             BorderThickness = new Thickness(0, 1, 0, 0),
             Padding = new Thickness(8, 2, 8, 2),
-            Child = new StackPanel { Orientation = Orientation.Horizontal, Children = { _connection, _version, _status, _elapsed } },
+            Child = new Grid
+            {
+                ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Auto }, new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } },
+                Children = { new StackPanel { Orientation = Orientation.Horizontal, Children = { _connection, _version, _status, _elapsed } }, _dataFolder },
+            },
+        };
+        Grid.SetColumn(_dataFolder, 2);
+        _dataFolder.Click += async (_, _) =>
+        {
+            if (_dataDirectory is null)
+                return;
+            Directory.CreateDirectory(_dataDirectory);
+            await Launcher.LaunchFolderPathAsync(_dataDirectory);
         };
     }
 
     /// <summary>Connects the bar to the workspace it describes.</summary>
     /// <param name="workspace">The workspace view-model.</param>
-    public void Attach(WorkspaceViewModel workspace)
+    /// <param name="dataDirectory">The directory the "Data folder" link opens in the file manager.</param>
+    public void Attach(WorkspaceViewModel workspace, string dataDirectory)
     {
         _workspace = workspace;
+        _dataDirectory = dataDirectory;
         workspace.PropertyChanged += OnWorkspaceChanged;
         Refresh();
     }

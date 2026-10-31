@@ -1,7 +1,6 @@
 using System.Text;
-using Squill.Presentation.Results;
 
-namespace Squill.App.Avalonia.Controls;
+namespace Squill.Presentation.Results;
 
 /// <summary>Cell, rectangle or whole-column selection of a grid, independent of any UI.</summary>
 public sealed class GridSelection

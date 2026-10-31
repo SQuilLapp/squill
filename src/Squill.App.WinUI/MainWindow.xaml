@@ -29,6 +29,7 @@
       <Button Content="Format" ToolTipService.ToolTip="Ctrl+Shift+F" Click="OnFormatClicked" />
       <Button Content="New tab" ToolTipService.ToolTip="Ctrl+T" Click="OnNewTabClicked" />
       <Button Content="Close tab" ToolTipService.ToolTip="Ctrl+W" Click="OnCloseTabClicked" />
+      <Button Content="Settings" ToolTipService.ToolTip="Ctrl+," Click="OnSettingsClicked" />
     </StackPanel>
     <v:SidebarView x:Name="Sidebar" Grid.Row="1" />
     <Grid Grid.Row="1" Grid.Column="2">

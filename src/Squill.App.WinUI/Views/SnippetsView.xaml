@@ -1,0 +1,22 @@
+<UserControl x:Class="Squill.App.WinUI.Views.SnippetsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:st="using:Squill.Platform.Storage">
+  <Grid RowDefinitions="Auto,*">
+    <Button Margin="6" Content="Save current" Click="OnSaveClicked" />
+    <ListView x:Name="List" Grid.Row="1" SelectionMode="Single" DoubleTapped="OnDoubleTapped">
+      <ListView.ItemTemplate>
+        <DataTemplate x:DataType="st:Snippet">
+          <TextBlock Text="{x:Bind Name}" Foreground="{ThemeResource SquillFgBrush}" />
+        </DataTemplate>
+      </ListView.ItemTemplate>
+      <ListView.ContextFlyout>
+        <MenuFlyout>
+          <MenuFlyoutItem Text="Insert" Click="OnInsertClicked" />
+          <MenuFlyoutItem Text="Rename" Click="OnRenameClicked" />
+          <MenuFlyoutItem Text="Delete" Click="OnDeleteClicked" />
+        </MenuFlyout>
+      </ListView.ContextFlyout>
+    </ListView>
+  </Grid>
+</UserControl>

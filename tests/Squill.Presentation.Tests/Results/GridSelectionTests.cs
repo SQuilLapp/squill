@@ -1,9 +1,8 @@
-using Squill.App.Avalonia.Controls;
 using Squill.Core;
 using Squill.Presentation.Results;
 using Xunit;
 
-namespace Squill.App.Avalonia.Tests;
+namespace Squill.Presentation.Tests.Results;
 
 public sealed class GridSelectionTests
 {

@@ -2,6 +2,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Squill.Presentation;
 using Squill.Presentation.Query;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
 
 namespace Squill.App.WinUI.Services;
 
@@ -26,9 +28,17 @@ internal sealed class WinUiDialogService : IDialogService
     }
 
     /// <inheritdoc />
-    public ValueTask<string?> PickSaveFileAsync(string suggestedName, string extension) =>
-        // Real file pickers arrive with the results panel (P5-12).
-        ValueTask.FromResult<string?>(null);
+    public async ValueTask<string?> PickSaveFileAsync(string suggestedName, string extension)
+    {
+        if (_window is null)
+            return null;
+        var picker = new FileSavePicker { SuggestedFileName = suggestedName };
+        picker.FileTypeChoices.Add(extension.ToUpperInvariant(), [$".{extension}"]);
+        // An unpackaged app must tell the picker which window owns it.
+        InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(_window));
+        var file = await picker.PickSaveFileAsync();
+        return file?.Path;
+    }
 
     /// <inheritdoc />
     public async ValueTask ShowErrorAsync(string title, string message) =>
