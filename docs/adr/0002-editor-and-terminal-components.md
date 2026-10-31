@@ -32,3 +32,4 @@ SQuilL needs a SQL editor (the riskiest component, R1) and, where useful, a term
 ## Consequences
 - R1 changes from "build an editor" to "integrate and extend LoomEditor", gated by its phases 4-5; a SQuilL-side spike (plain-text editor in a WinUI shell with a stub `ISqlEditor`) can start now.
 - Interface-first: `ISqlEditor` lets the WinUI head swap implementations and lets tests run headless.
+- Terminal NuGet: the WinUI head references the published `LoomTerminal.WinUI` package (`0.1.0-alpha.2`, central version in `Directory.Packages.props`) and always compiles the terminal tabs, so the head always targets the 26100 Windows SDK. `LoomTerminal.Avalonia` is not packable yet, so the Avalonia head keeps the optional `LoomTerminalPath` project reference.

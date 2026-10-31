@@ -36,18 +36,18 @@
   <ItemGroup Condition="'$(LoomEditorPath)' != ''">
     <ProjectReference Include="$(LoomEditorPath)\src\LoomEditor.WinUI\LoomEditor.WinUI.csproj" />
   </ItemGroup>
-  <!-- Optional LoomTerminal (ADR 0002): set LoomTerminalPath in the git-ignored Directory.Build.local.props. Without it the head has no terminal tabs. -->
-  <PropertyGroup Condition="'$(LoomTerminalPath)' != ''">
+  <!-- LoomTerminal (ADR 0002) comes from NuGet; it targets the 26100 Windows SDK. -->
+  <PropertyGroup>
     <DefineConstants>$(DefineConstants);SQUILL_LOOMTERMINAL</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition="'$(LoomTerminalPath)' != ''">
-    <ProjectReference Include="$(LoomTerminalPath)\src\LoomTerminal.WinUI\LoomTerminal.WinUI.csproj" />
+  <ItemGroup>
+    <PackageReference Include="LoomTerminal.WinUI" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Squill.App.Shared\LoomTerminalHost.cs" Link="Terminal\LoomTerminalHost.cs" />
   </ItemGroup>
   <!-- LoomEditor and LoomTerminal target the 26100 Windows SDK; a project cannot reference a higher Windows TFM. -->
-  <PropertyGroup Condition="'$(LoomEditorPath)' != '' Or '$(LoomTerminalPath)' != ''">
+  <PropertyGroup>
     <TargetFramework>net11.0-windows10.0.26100.0</TargetFramework>
   </PropertyGroup>
   <!-- Native AOT publish leaves the app's own resource index and compiled XAML out of the publish folder (the window then fails to load). Remove when fixed. -->

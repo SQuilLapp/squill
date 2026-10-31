@@ -61,7 +61,7 @@ The `release` GitHub workflow (`.github/workflows/release.yml`) runs the same sc
 
 ### Optional LoomEditor and LoomTerminal
 
-SQuilL can use the author's [LoomEditor](docs/adr/0002-editor-and-terminal-components.md) (SQL editor, WinUI head) and LoomTerminal (terminal tabs, both heads) from local checkouts. Create the git-ignored `Directory.Build.local.props` at the repository root:
+The WinUI head gets its terminal tabs from the [`LoomTerminal.WinUI`](https://www.nuget.org/packages/LoomTerminal.WinUI) NuGet package (see [ADR 0002](docs/adr/0002-editor-and-terminal-components.md)); nothing to configure. The author's LoomEditor (SQL editor, WinUI head) and the Avalonia LoomTerminal control (not published yet) are used from local checkouts. Create the git-ignored `Directory.Build.local.props` at the repository root:
 
 ```xml
 <Project>
@@ -72,7 +72,7 @@ SQuilL can use the author's [LoomEditor](docs/adr/0002-editor-and-terminal-compo
 </Project>
 ```
 
-Either property can be omitted. Without `LoomEditorPath` the WinUI head uses a plain-text editor (the Avalonia head uses AvaloniaEdit); without `LoomTerminalPath` no terminal UI is compiled. CI builds without them. With either property set, the WinUI head targets `net11.0-windows10.0.26100.0`.
+Either property can be omitted. Without `LoomEditorPath` the WinUI head uses a plain-text editor (the Avalonia head uses AvaloniaEdit); without `LoomTerminalPath` the Avalonia head has no terminal UI. `LoomTerminalPath` does not affect the WinUI head. CI builds without them. The WinUI head targets `net11.0-windows10.0.26100.0`.
 
 ## Project layout
 
