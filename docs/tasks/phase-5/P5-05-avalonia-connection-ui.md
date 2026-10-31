@@ -1,6 +1,6 @@
 # P5-05 - Avalonia head: connection dialog and list
 
-Status: todo
+Status: done
 Depends on: P5-04
 
 ## Goal
@@ -14,8 +14,8 @@ Create, edit, delete, test and open connections from the UI.
 - Import from other tools.
 
 ## Tasks
-- [ ] Implement dialog and list interactions.
-- [ ] Headless tests: editor window shows the SSH section only when `UseSsh`; list context menu commands are bound (check `Command` bindings are non-null).
+- [x] Implement dialog and list interactions.
+- [x] Headless tests: editor window shows the SSH section only when `UseSsh`; list context menu commands are bound (check `Command` bindings are non-null).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

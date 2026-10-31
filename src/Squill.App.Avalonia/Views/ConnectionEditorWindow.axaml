@@ -1,0 +1,73 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:core="using:Squill.Core"
+        xmlns:cn="using:Squill.Presentation.Connections"
+        x:Class="Squill.App.Avalonia.Views.ConnectionEditorWindow"
+        x:DataType="cn:ConnectionEditorViewModel"
+        Title="Connection" Width="460" SizeToContent="Height" CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SquillBgSurfaceBrush}">
+  <StackPanel Margin="16" Spacing="6">
+    <TextBlock Text="Name" Foreground="{DynamicResource SquillFg2Brush}" />
+    <TextBox Name="NameBox" Text="{Binding Name, Mode=TwoWay}" />
+    <TextBlock Text="Engine" Foreground="{DynamicResource SquillFg2Brush}" />
+    <ComboBox Name="DialectBox" HorizontalAlignment="Stretch" SelectedItem="{Binding Dialect, Mode=TwoWay}" />
+
+    <StackPanel Name="SqliteFields" Spacing="6"
+                IsVisible="{Binding Dialect, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static core:DatabaseDialect.Sqlite}}">
+      <TextBlock Text="Database file" Foreground="{DynamicResource SquillFg2Brush}" />
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBox Text="{Binding FilePath, Mode=TwoWay}" />
+        <Button Grid.Column="1" Content="Browse..." Margin="6,0,0,0" Click="OnBrowseDatabase" />
+      </Grid>
+    </StackPanel>
+
+    <StackPanel Name="ServerFields" Spacing="6"
+                IsVisible="{Binding Dialect, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static core:DatabaseDialect.Sqlite}}">
+      <TextBlock Text="Host" Foreground="{DynamicResource SquillFg2Brush}" />
+      <TextBox Text="{Binding Host, Mode=TwoWay}" />
+      <TextBlock Text="Port" Foreground="{DynamicResource SquillFg2Brush}" />
+      <TextBox Text="{Binding Port, Mode=TwoWay}" />
+      <TextBlock Text="Database" Foreground="{DynamicResource SquillFg2Brush}" />
+      <TextBox Text="{Binding Database, Mode=TwoWay}" />
+      <TextBlock Text="User name" Foreground="{DynamicResource SquillFg2Brush}" />
+      <TextBox Text="{Binding UserName, Mode=TwoWay}" />
+      <TextBlock Text="Password" Foreground="{DynamicResource SquillFg2Brush}" />
+      <TextBox PasswordChar="&#x25CF;" Text="{Binding Password, Mode=TwoWay}" />
+    </StackPanel>
+
+    <Expander Header="SSH tunnel" Margin="0,6,0,0" IsExpanded="{Binding UseSsh, Mode=TwoWay}">
+      <StackPanel Spacing="6" Margin="0,6,0,0">
+        <CheckBox Content="Connect through an SSH tunnel" IsChecked="{Binding UseSsh, Mode=TwoWay}" />
+        <StackPanel Name="SshFields" Spacing="6" IsVisible="{Binding UseSsh}">
+          <TextBlock Text="SSH host" Foreground="{DynamicResource SquillFg2Brush}" />
+          <TextBox Text="{Binding SshHost, Mode=TwoWay}" />
+          <TextBlock Text="SSH port" Foreground="{DynamicResource SquillFg2Brush}" />
+          <TextBox Text="{Binding SshPort, Mode=TwoWay}" />
+          <TextBlock Text="SSH user name" Foreground="{DynamicResource SquillFg2Brush}" />
+          <TextBox Text="{Binding SshUserName, Mode=TwoWay}" />
+          <TextBlock Text="Authentication" Foreground="{DynamicResource SquillFg2Brush}" />
+          <ComboBox Name="SshAuthBox" HorizontalAlignment="Stretch" SelectedItem="{Binding SshAuthMethod, Mode=TwoWay}" />
+          <StackPanel Spacing="6"
+                      IsVisible="{Binding SshAuthMethod, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static core:SshAuthMethod.PrivateKey}}">
+            <TextBlock Text="Private key file" Foreground="{DynamicResource SquillFg2Brush}" />
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBox Text="{Binding SshPrivateKeyPath, Mode=TwoWay}" />
+              <Button Grid.Column="1" Content="Browse..." Margin="6,0,0,0" Click="OnBrowseKey" />
+            </Grid>
+          </StackPanel>
+          <TextBlock Text="Password or key passphrase" Foreground="{DynamicResource SquillFg2Brush}" />
+          <TextBox PasswordChar="&#x25CF;" Text="{Binding SshSecret, Mode=TwoWay}" />
+        </StackPanel>
+      </StackPanel>
+    </Expander>
+
+    <TextBlock Name="ErrorsText" Foreground="{DynamicResource SquillDangerBrush}" TextWrapping="Wrap" />
+    <TextBlock Text="{Binding TestStatus}" Foreground="{DynamicResource SquillFg2Brush}" TextWrapping="Wrap" />
+    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,8,0,0">
+      <Button Name="TestButton" Content="Test" Command="{Binding TestCommand}" />
+      <Button Name="SaveButton" Content="Save" Command="{Binding SaveCommand}" />
+      <Button Content="Cancel" Click="OnCancel" />
+    </StackPanel>
+  </StackPanel>
+</Window>

@@ -9,13 +9,38 @@
     <TextBlock Text="Connections" Margin="8,6" FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" />
     <ListBox Grid.Row="1" Name="Profiles" ItemsSource="{Binding ConnectionList.Profiles}"
              SelectedItem="{Binding ConnectionList.SelectedProfile, Mode=TwoWay}" Background="Transparent"
-             DoubleTapped="OnProfileDoubleTapped">
+             DoubleTapped="OnProfileDoubleTapped" KeyDown="OnProfileKeyDown">
+      <ListBox.ContextMenu>
+        <ContextMenu>
+          <MenuItem Header="New connection" Command="{Binding ConnectionList.NewCommand}" />
+          <MenuItem Header="Edit" Command="{Binding ConnectionList.EditCommand}" />
+          <MenuItem Header="Delete" Command="{Binding ConnectionList.DeleteCommand}" />
+          <MenuItem Header="Connect" Command="{Binding ConnectCommand}" CommandParameter="{Binding ConnectionList.SelectedProfile}" />
+          <MenuItem Header="Disconnect" Command="{Binding DisconnectCommand}" />
+        </ContextMenu>
+      </ListBox.ContextMenu>
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="core:ConnectionProfile">
-          <TextBlock Text="{Binding Name}" Foreground="{DynamicResource SquillFgBrush}" />
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Ellipse Width="8" Height="8" VerticalAlignment="Center" Fill="{DynamicResource SquillSuccessBrush}">
+              <Ellipse.IsVisible>
+                <MultiBinding Converter="{x:Static v:ConnectedProfileConverter.Instance}">
+                  <Binding Path="." />
+                  <Binding Path="$parent[ListBox].((ws:WorkspaceViewModel)DataContext).Sessions" />
+                  <Binding Path="$parent[ListBox].((ws:WorkspaceViewModel)DataContext).Sessions.Count" />
+                </MultiBinding>
+              </Ellipse.IsVisible>
+            </Ellipse>
+            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource SquillFgBrush}" />
+          </StackPanel>
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
+    <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
+                IsVisible="{Binding !ConnectionList.Profiles.Count}">
+      <TextBlock Text="No connections yet" Foreground="{DynamicResource SquillFg3Brush}" />
+      <Button Content="New connection" HorizontalAlignment="Center" Command="{Binding ConnectionList.NewCommand}" />
+    </StackPanel>
     <TextBlock Grid.Row="2" Text="Objects" Margin="8,6" FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" />
     <v:ObjectExplorerView Grid.Row="3" DataContext="{Binding Explorer}" />
   </Grid>
