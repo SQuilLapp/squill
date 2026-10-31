@@ -43,6 +43,13 @@ dotnet publish src/Squill.App.WinUI -c Release -r win-x64
 dotnet publish src/Squill.App.Avalonia -c Release -r win-x64
 ```
 
+Run a head from its publish folder (`-o`), not from `bin/.../native/`: that folder holds the raw compiler output without the Windows App SDK DLLs and `.pri` files, so the exe fails at startup with `DllNotFoundException: Microsoft.WindowsAppRuntime.dll`.
+
+```bash
+dotnet publish src/Squill.App.WinUI -c Release -r win-x64 -o artifacts/winui
+artifacts/winui/Squill.App.WinUI.exe
+```
+
 Design tokens (`tokens/squill.tokens.json`) are turned into XAML/AXAML by `tools/Squill.TokenGen`:
 
 ```bash
