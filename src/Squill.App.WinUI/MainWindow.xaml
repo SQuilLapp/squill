@@ -1,9 +1,45 @@
 <Window x:Class="Squill.App.WinUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="using:Squill.App.WinUI.Views"
         Title="SQuilL">
-  <Grid Background="{ThemeResource SquillBgBaseBrush}">
-    <TextBlock Text="SQuilL" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Center"
-               Foreground="{ThemeResource SquillAccentTextBrush}" />
+  <Grid x:Name="Root" Background="{ThemeResource SquillBgBaseBrush}">
+    <Grid.KeyboardAccelerators>
+      <KeyboardAccelerator Key="F5" Invoked="OnRunAccelerator" />
+      <KeyboardAccelerator Key="Enter" Modifiers="Control" Invoked="OnRunAccelerator" />
+      <KeyboardAccelerator Key="Escape" Invoked="OnCancelAccelerator" />
+      <KeyboardAccelerator Key="F" Modifiers="Control,Shift" Invoked="OnFormatAccelerator" />
+      <KeyboardAccelerator Key="T" Modifiers="Control" Invoked="OnNewTabAccelerator" />
+      <KeyboardAccelerator Key="W" Modifiers="Control" Invoked="OnCloseTabAccelerator" />
+    </Grid.KeyboardAccelerators>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="260" />
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="4" Margin="6,4">
+      <Button Content="Run" ToolTipService.ToolTip="F5 / Ctrl+Enter" Click="OnRunClicked" />
+      <Button Content="Run all" Click="OnRunAllClicked" />
+      <Button x:Name="CancelButton" Content="Cancel" ToolTipService.ToolTip="Esc" Click="OnCancelClicked" Visibility="Collapsed" />
+      <Button Content="Format" ToolTipService.ToolTip="Ctrl+Shift+F" Click="OnFormatClicked" />
+      <Button Content="New tab" ToolTipService.ToolTip="Ctrl+T" Click="OnNewTabClicked" />
+      <Button Content="Close tab" ToolTipService.ToolTip="Ctrl+W" Click="OnCloseTabClicked" />
+    </StackPanel>
+    <v:SidebarView x:Name="Sidebar" Grid.Row="1" />
+    <Grid Grid.Row="1" Grid.Column="2">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <TabView x:Name="Tabs" IsAddTabButtonVisible="False" TabWidthMode="SizeToContent"
+               TabCloseRequested="OnTabCloseRequested" SelectionChanged="OnTabSelectionChanged" />
+      <v:QueryTabView x:Name="ActiveTabView" Grid.Row="1" />
+    </Grid>
+    <v:StatusBar x:Name="Status" Grid.Row="2" Grid.ColumnSpan="3" />
   </Grid>
 </Window>

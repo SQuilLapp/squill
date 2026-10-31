@@ -45,6 +45,7 @@ public sealed partial class App : Application
         var main = new MainWindow();
         _window = main;
         platform.AttachWindow(main);
+        main.Attach(Services);
         _window.Activate();
     }
 }
