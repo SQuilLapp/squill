@@ -272,7 +272,7 @@ public sealed class DataGridCanvas : Control
     }
 
     /// <inheritdoc />
-    protected override async void OnKeyDown(KeyEventArgs e)
+    protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
         var source = _source;
@@ -281,55 +281,60 @@ public sealed class DataGridCanvas : Control
             return;
         }
 
-        var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
         var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
-        var page = Math.Max(1, (long)(BodyHeight / _layout.RowHeight) - 1);
-        var rows = source.RowCount;
-        var cols = source.Columns.Count;
-        switch (e.Key)
+        if (ctrl && e.Key == Key.C)
         {
-            case Key.A when ctrl:
-                Selection.SelectAll(rows, cols);
-                break;
-            case Key.C when ctrl:
-                if (Selection.HasSelection && TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
-                {
-                    await clipboard.SetTextAsync(Selection.ToTsv(source));
-                }
-
-                e.Handled = true;
-                return;
-            case Key.Up:
-                Selection.Move(-1, 0, rows, cols, shift);
-                break;
-            case Key.Down:
-                Selection.Move(1, 0, rows, cols, shift);
-                break;
-            case Key.Left:
-                Selection.Move(0, -1, rows, cols, shift);
-                break;
-            case Key.Right:
-                Selection.Move(0, 1, rows, cols, shift);
-                break;
-            case Key.PageUp:
-                Selection.Move(-page, 0, rows, cols, shift);
-                break;
-            case Key.PageDown:
-                Selection.Move(page, 0, rows, cols, shift);
-                break;
-            case Key.Home:
-                Selection.Move(ctrl ? -rows : 0, -cols, rows, cols, shift);
-                break;
-            case Key.End:
-                Selection.Move(ctrl ? rows : 0, cols, rows, cols, shift);
-                break;
-            default:
-                return;
+            _ = CopySelectionAsync(source);
+            e.Handled = true;
+            return;
         }
 
-        e.Handled = true;
-        EnsureVisible(Selection.ActiveRow, Selection.ActiveColumn);
-        InvalidateVisual();
+        if (ApplyKey(e.Key, ctrl, e.KeyModifiers.HasFlag(KeyModifiers.Shift), source))
+        {
+            e.Handled = true;
+            EnsureVisible(Selection.ActiveRow, Selection.ActiveColumn);
+            InvalidateVisual();
+        }
+    }
+
+    private async Task CopySelectionAsync(IGridDataSource source)
+    {
+        if (Selection.HasSelection && TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+        {
+            await clipboard.SetTextAsync(Selection.ToTsv(source));
+        }
+    }
+
+    private bool ApplyKey(Key key, bool ctrl, bool shift, IGridDataSource source)
+    {
+        var rows = source.RowCount;
+        var cols = source.Columns.Count;
+        var page = Math.Max(1, (long)(BodyHeight / _layout.RowHeight) - 1);
+        (long Rows, long Cols)? delta = key switch
+        {
+            Key.Up => (-1, 0),
+            Key.Down => (1, 0),
+            Key.Left => (0, -1),
+            Key.Right => (0, 1),
+            Key.PageUp => (-page, 0),
+            Key.PageDown => (page, 0),
+            Key.Home => (ctrl ? -rows : 0, -cols),
+            Key.End => (ctrl ? rows : 0, cols),
+            _ => null,
+        };
+        if (delta is { } d)
+        {
+            Selection.Move(d.Rows, d.Cols, rows, cols, shift);
+            return true;
+        }
+
+        if (ctrl && key == Key.A)
+        {
+            Selection.SelectAll(rows, cols);
+            return true;
+        }
+
+        return false;
     }
 
     private void SelectAt(Point point, bool extend)
