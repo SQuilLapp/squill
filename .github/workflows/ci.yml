@@ -13,6 +13,7 @@ jobs:
         with:
           global-json-file: global.json
       - run: dotnet build Squill.slnx -c Release -warnaserror
+      - run: dotnet build Squill.Windows.slnx -c Release -warnaserror
       - run: dotnet test --solution Squill.slnx -c Release
       - run: dotnet publish tools/Squill.TokenGen -c Release -r win-x64
 

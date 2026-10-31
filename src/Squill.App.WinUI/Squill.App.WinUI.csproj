@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <OutputType>WinExe</OutputType>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <PublishAot>true</PublishAot>
+    <!-- Remove when fixed: without it the Windows App SDK build fails with WMC1007 under Native AOT. -->
+    <UseOptimizedPublish>false</UseOptimizedPublish>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Package-level trim/AOT warnings of Microsoft.Data.SqlClient (docs/poc/aot-drivers.md); Squill code stays warning-free. -->
+    <WarningsNotAsErrors>IL2104;IL3053</WarningsNotAsErrors>
+    <ApplicationIcon>..\..\assets\brand\app-icons\windows\squill.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <ProjectReference Include="..\Squill.Presentation\Squill.Presentation.csproj" />
+    <ProjectReference Include="..\Squill.Data.MySql\Squill.Data.MySql.csproj" />
+    <ProjectReference Include="..\Squill.Data.Postgres\Squill.Data.Postgres.csproj" />
+    <ProjectReference Include="..\Squill.Data.SqlServer\Squill.Data.SqlServer.csproj" />
+    <ProjectReference Include="..\Squill.Data.Sqlite\Squill.Data.Sqlite.csproj" />
+    <Content Include="..\..\assets\brand\app-icons\windows\squill.ico" Link="Assets\squill.ico" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <!-- Native AOT publish leaves the app's own resource index and compiled XAML out of the publish folder (the window then fails to load). Remove when fixed. -->
+  <Target Name="CopyXamlResourcesToPublish" AfterTargets="Publish">
+    <ItemGroup>
+      <AppXamlResource Include="$(OutDir)Squill.App.WinUI.pri;$(OutDir)**\*.xbf" />
+    </ItemGroup>
+    <Copy SourceFiles="@(AppXamlResource)" DestinationFiles="@(AppXamlResource->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+</Project>
