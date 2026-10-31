@@ -9,6 +9,7 @@ using Squill.Presentation.Connections;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Panels;
 using Squill.Presentation.Sessions;
+using Squill.Presentation.Settings;
 using Squill.Presentation.Workspace;
 
 namespace Squill.Presentation;
@@ -33,7 +34,8 @@ public interface IPlatformServices
 /// <param name="Workspace">The shell view-model.</param>
 /// <param name="History">The query history panel.</param>
 /// <param name="Snippets">The snippets panel.</param>
-public sealed record AppServices(WorkspaceViewModel Workspace, HistoryViewModel History, SnippetsViewModel Snippets);
+/// <param name="Settings">The settings, including the theme.</param>
+public sealed record AppServices(WorkspaceViewModel Workspace, HistoryViewModel History, SnippetsViewModel Snippets, SettingsViewModel Settings);
 
 /// <summary>Builds the object graph shared by all heads.</summary>
 public static class AppComposition
@@ -56,6 +58,7 @@ public static class AppComposition
         return new AppServices(
             workspace,
             new HistoryViewModel(history, workspace, platform.Dialogs),
-            new SnippetsViewModel(new JsonSnippetStore(paths), workspace, platform.Dialogs));
+            new SnippetsViewModel(new JsonSnippetStore(paths), workspace, platform.Dialogs),
+            new SettingsViewModel(settings));
     }
 }

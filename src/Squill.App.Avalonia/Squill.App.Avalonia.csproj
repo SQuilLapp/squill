@@ -5,6 +5,8 @@
     <UseOptimizedPublish>false</UseOptimizedPublish>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- Package-level trim/AOT warnings of Microsoft.Data.SqlClient (docs/poc/aot-drivers.md); Squill code stays warning-free. -->
+    <WarningsNotAsErrors>IL2104;IL3053</WarningsNotAsErrors>
     <ApplicationIcon>..\..\assets\brand\app-icons\windows\squill.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>

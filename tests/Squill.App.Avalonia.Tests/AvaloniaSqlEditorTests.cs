@@ -1,5 +1,3 @@
-using Avalonia;
-using Avalonia.Headless;
 using Squill.App.Avalonia.Editors;
 using Squill.Core;
 using Squill.Sql.Completion;
@@ -7,12 +5,9 @@ using Xunit;
 
 namespace Squill.App.Avalonia.Tests;
 
+[Collection("Headless")]
 public sealed class AvaloniaSqlEditorTests
 {
-    private sealed class TestApp : Application;
-
-    private static readonly HeadlessUnitTestSession Session = HeadlessUnitTestSession.StartNew(typeof(TestApp));
-
     private sealed class FakeProvider : ISqlCompletionProvider
     {
         public SqlRequest? Request { get; private set; }
@@ -27,7 +22,7 @@ public sealed class AvaloniaSqlEditorTests
     [Fact]
     public async Task Text_SetAndRead_RoundTripsAndRaisesChanged()
     {
-        await Session.Dispatch(() =>
+        await Headless.Session.Dispatch(() =>
         {
             var editor = new AvaloniaSqlEditor();
             var raised = 0;
@@ -43,7 +38,7 @@ public sealed class AvaloniaSqlEditorTests
     [Fact]
     public async Task CaretAndSelection_Set_AreMapped()
     {
-        await Session.Dispatch(() =>
+        await Headless.Session.Dispatch(() =>
         {
             var editor = new AvaloniaSqlEditor { Text = "select 1" };
 
@@ -58,7 +53,7 @@ public sealed class AvaloniaSqlEditorTests
     [Fact]
     public async Task RequestCompletions_AfterFrom_AsksProviderAtCaret()
     {
-        await Session.Dispatch(() =>
+        await Headless.Session.Dispatch(() =>
         {
             var editor = new AvaloniaSqlEditor { Text = "select * from " };
             var provider = new FakeProvider();

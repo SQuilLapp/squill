@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Squill.App.Avalonia.Bench;
 using Squill.App.Avalonia.Services;
 using Squill.Data;
@@ -9,6 +10,8 @@ using Squill.Data.Postgres;
 using Squill.Data.Sqlite;
 using Squill.Data.SqlServer;
 using Squill.Presentation;
+using Squill.Platform;
+using Squill.Platform.Settings;
 using Squill.Presentation.Editor;
 
 namespace Squill.App.Avalonia;
@@ -33,10 +36,27 @@ public sealed partial class App : Application
             providers.Register(new MySqlDatabaseProvider());
             providers.Register(new SqlServerDatabaseProvider());
             var platform = new AvaloniaPlatformServices(providers, () => new Editors.AvaloniaSqlEditor());
-            Services = AppComposition.Create(platform);
-            desktop.MainWindow = GridBench.IsRequested(desktop.Args) ? GridBench.Start(desktop) : new MainWindow();
+            // SQUILL_DATA_DIR redirects profiles, settings and history (used to run against a throwaway data directory).
+            var dataDir = Environment.GetEnvironmentVariable("SQUILL_DATA_DIR");
+            Services = AppComposition.Create(platform, string.IsNullOrEmpty(dataDir) ? null : new AppPaths(dataDir));
+            desktop.MainWindow = GridBench.IsRequested(desktop.Args) ? GridBench.Start(desktop) : CreateMainWindow(Services);
         }
 
         base.OnFrameworkInitializationCompleted();
     }
+
+    private MainWindow CreateMainWindow(AppServices services)
+    {
+        services.Settings.ThemeChanged += (_, _) => ApplyTheme(services.Settings.Theme);
+        services.Settings.LoadCommand.Execute(null);
+        services.Workspace.ConnectionList.LoadCommand.Execute(null);
+        return new MainWindow { DataContext = services.Workspace };
+    }
+
+    private void ApplyTheme(ThemeMode mode) => RequestedThemeVariant = mode switch
+    {
+        ThemeMode.Light => ThemeVariant.Light,
+        ThemeMode.Dark => ThemeVariant.Dark,
+        _ => ThemeVariant.Default,
+    };
 }
