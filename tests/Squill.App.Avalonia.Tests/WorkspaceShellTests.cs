@@ -26,7 +26,7 @@ public sealed class WorkspaceShellTests
             {
                 var providers = new ProviderRegistry();
                 providers.Register(new SqliteDatabaseProvider());
-                var services = AppComposition.Create(new Platform(providers), new AppPaths(dir));
+                var services = AppComposition.Create(new TestPlatform(providers), new AppPaths(dir));
                 var workspace = services.Workspace;
                 // Not shown: the session disposes the fonts before its last render, so nothing may draw text.
                 var window = new MainWindow { DataContext = workspace };
@@ -53,24 +53,5 @@ public sealed class WorkspaceShellTests
             {
             }
         }
-    }
-
-    private sealed class Platform(ProviderRegistry providers) : IPlatformServices
-    {
-        public IUiDispatcher Dispatcher { get; } = new ImmediateDispatcher();
-        public IDialogService Dialogs { get; } = new Dialogs();
-        public Func<ISqlEditor> EditorFactory { get; } = () => new AvaloniaSqlEditor();
-        public ProviderRegistry Providers { get; } = providers;
-    }
-
-    private sealed class Dialogs : IDialogService
-    {
-        public ValueTask<bool> ConfirmAsync(string title, string message) => ValueTask.FromResult(true);
-        public ValueTask<string?> PromptAsync(string title, string message, string? initial) => ValueTask.FromResult<string?>(null);
-        public ValueTask<string?> PickSaveFileAsync(string suggestedName, string extension) => ValueTask.FromResult<string?>(null);
-        public ValueTask ShowErrorAsync(string title, string message) => throw new InvalidOperationException(message);
-        public ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(
-            IReadOnlyList<string> names,
-            IReadOnlyDictionary<string, ParameterValue> defaults) => ValueTask.FromResult<IReadOnlyList<ParameterValue>?>(null);
     }
 }

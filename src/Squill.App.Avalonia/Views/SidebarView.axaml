@@ -5,7 +5,18 @@
              xmlns:v="using:Squill.App.Avalonia.Views"
              x:Class="Squill.App.Avalonia.Views.SidebarView"
              x:DataType="ws:WorkspaceViewModel">
-  <Grid RowDefinitions="Auto,*,Auto,2*" Background="{DynamicResource SquillBgSurfaceBrush}">
+  <Grid RowDefinitions="Auto,*" Background="{DynamicResource SquillBgSurfaceBrush}">
+    <StackPanel Orientation="Horizontal" Spacing="4" Margin="6,4">
+      <RadioButton Name="ExplorerTab" GroupName="SidebarPanel" Theme="{StaticResource {x:Type ToggleButton}}" Content="Explorer"
+                   IsChecked="True" IsCheckedChanged="OnPanelChecked" />
+      <RadioButton Name="HistoryTab" GroupName="SidebarPanel" Theme="{StaticResource {x:Type ToggleButton}}" Content="History"
+                   IsCheckedChanged="OnPanelChecked" />
+      <RadioButton Name="SnippetsTab" GroupName="SidebarPanel" Theme="{StaticResource {x:Type ToggleButton}}" Content="Snippets"
+                   IsCheckedChanged="OnPanelChecked" />
+    </StackPanel>
+    <v:HistoryView Grid.Row="1" Name="HistoryPanel" IsVisible="False" />
+    <v:SnippetsView Grid.Row="1" Name="SnippetsPanel" IsVisible="False" />
+    <Grid Grid.Row="1" Name="ExplorerPanel" RowDefinitions="Auto,*,Auto,2*">
     <TextBlock Text="Connections" Margin="8,6" FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" />
     <ListBox Grid.Row="1" Name="Profiles" ItemsSource="{Binding ConnectionList.Profiles}"
              SelectedItem="{Binding ConnectionList.SelectedProfile, Mode=TwoWay}" Background="Transparent"
@@ -43,5 +54,6 @@
     </StackPanel>
     <TextBlock Grid.Row="2" Text="Objects" Margin="8,6" FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" />
     <v:ObjectExplorerView Grid.Row="3" DataContext="{Binding Explorer}" />
+    </Grid>
   </Grid>
 </UserControl>

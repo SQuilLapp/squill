@@ -25,10 +25,11 @@
               IsVisible="{Binding ActiveTab.IsRunning, FallbackValue=False}" />
       <Button Content="Format" ToolTip.Tip="Ctrl+Shift+F" Command="{Binding ActiveTab.FormatDocumentCommand}" />
       <Button Content="New tab" ToolTip.Tip="Ctrl+T" Command="{Binding NewTabCommand}" />
+      <Button Content="Settings" ToolTip.Tip="Ctrl+," Click="OnSettingsClicked" />
       <Button Content="Close tab" ToolTip.Tip="Ctrl+W" Command="{Binding CloseTabCommand}"
               CommandParameter="{Binding ActiveTab}" />
     </StackPanel>
-    <v:SidebarView Grid.Row="1" />
+    <v:SidebarView Grid.Row="1" Name="Sidebar" />
     <GridSplitter Grid.Row="1" Grid.Column="1" Width="4" Background="{DynamicResource SquillBorderBrush}" />
     <Grid Grid.Row="1" Grid.Column="2" RowDefinitions="Auto,*">
       <ListBox ItemsSource="{Binding Tabs}" SelectedItem="{Binding ActiveTab, Mode=TwoWay}" Background="Transparent">
@@ -46,8 +47,8 @@
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <v:QueryTabView Grid.Row="1" DataContext="{Binding ActiveTab}" />
+      <v:QueryTabView Grid.Row="1" Name="ActiveTabView" DataContext="{Binding ActiveTab}" />
     </Grid>
-    <v:StatusBar Grid.Row="2" Grid.ColumnSpan="3" />
+    <v:StatusBar Grid.Row="2" Name="Status" Grid.ColumnSpan="3" />
   </Grid>
 </Window>

@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pn="using:Squill.Presentation.Panels"
+             xmlns:st="using:Squill.Platform.Storage"
+             x:Class="Squill.App.Avalonia.Views.HistoryView"
+             x:DataType="pn:HistoryViewModel">
+  <Grid RowDefinitions="Auto,*">
+    <Grid ColumnDefinitions="*,Auto" Margin="6">
+      <TextBox Name="FilterBox" PlaceholderText="Filter history" Text="{Binding FilterText, Mode=TwoWay}" />
+      <Button Grid.Column="1" Margin="6,0,0,0" Content="Clear" Command="{Binding ClearCommand}" />
+    </Grid>
+    <ListBox Grid.Row="1" Name="List" ItemsSource="{Binding Entries}" Background="Transparent" DoubleTapped="OnDoubleTapped">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="st:HistoryEntry">
+          <StackPanel Spacing="2">
+            <TextBlock Text="{Binding Sql}" MaxLines="2" TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource SquillFgBrush}" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="OK" IsVisible="{Binding Succeeded}" Foreground="{DynamicResource SquillSuccessBrush}" />
+              <TextBlock Text="Failed" IsVisible="{Binding !Succeeded}" Foreground="{DynamicResource SquillFg3Brush}" />
+              <TextBlock Text="{Binding At, StringFormat='{}{0:g}'}" Foreground="{DynamicResource SquillFg3Brush}" />
+              <TextBlock Text="{Binding Elapsed, StringFormat='{}{0:m\:ss\.fff}'}" Foreground="{DynamicResource SquillFg3Brush}" />
+            </StackPanel>
+          </StackPanel>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </Grid>
+</UserControl>

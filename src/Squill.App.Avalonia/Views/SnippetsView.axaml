@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pn="using:Squill.Presentation.Panels"
+             xmlns:st="using:Squill.Platform.Storage"
+             x:Class="Squill.App.Avalonia.Views.SnippetsView"
+             x:DataType="pn:SnippetsViewModel">
+  <Grid RowDefinitions="Auto,*">
+    <Button Margin="6" Content="Save current" Command="{Binding SaveCurrentCommand}" />
+    <ListBox Grid.Row="1" Name="List" ItemsSource="{Binding Snippets}" Background="Transparent" DoubleTapped="OnDoubleTapped">
+      <ListBox.ContextMenu>
+        <ContextMenu>
+          <MenuItem Header="Insert" Command="{Binding InsertCommand}" CommandParameter="{Binding #List.SelectedItem}" />
+          <MenuItem Header="Rename" Command="{Binding RenameCommand}" CommandParameter="{Binding #List.SelectedItem}" />
+          <MenuItem Header="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding #List.SelectedItem}" />
+        </ContextMenu>
+      </ListBox.ContextMenu>
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="st:Snippet">
+          <TextBlock Text="{Binding Name}" Foreground="{DynamicResource SquillFgBrush}" />
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </Grid>
+</UserControl>

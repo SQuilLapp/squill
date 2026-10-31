@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Interactivity;
 using Squill.Presentation.Results;
 using Squill.App.Avalonia.Editors;
@@ -17,6 +18,13 @@ public sealed partial class QueryTabView : UserControl
     {
         InitializeComponent();
         IsVisible = false;
+    }
+
+    /// <summary>Gets or sets the font size of the editor in points.</summary>
+    public double EditorFontSize
+    {
+        get => TextElement.GetFontSize(EditorHost);
+        set => TextElement.SetFontSize(EditorHost, value);
     }
 
     /// <inheritdoc />

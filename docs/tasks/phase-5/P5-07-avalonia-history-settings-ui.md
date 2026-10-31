@@ -1,6 +1,6 @@
 # P5-07 - Avalonia head: history, snippets and settings views
 
-Status: todo
+Status: done
 Depends on: P5-06
 
 ## Goal
@@ -15,8 +15,8 @@ Expose the remaining view-models.
 - Keyboard shortcut customization.
 
 ## Tasks
-- [ ] Implement views and wiring.
-- [ ] Headless tests: switching the segmented control changes the visible panel; settings window binds the four properties.
+- [x] Implement views and wiring.
+- [x] Headless tests: switching the segmented control changes the visible panel; settings window binds the four properties.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

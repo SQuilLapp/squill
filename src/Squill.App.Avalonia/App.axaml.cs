@@ -19,6 +19,8 @@ namespace Squill.App.Avalonia;
 /// <summary>Application root: loads the resources and builds the shared object graph.</summary>
 public sealed partial class App : Application
 {
+    private AppPaths? _paths;
+
     /// <summary>Gets the root view-models shared with the other heads.</summary>
     public AppServices? Services { get; private set; }
 
@@ -38,7 +40,8 @@ public sealed partial class App : Application
             var platform = new AvaloniaPlatformServices(providers, () => new Editors.AvaloniaSqlEditor());
             // SQUILL_DATA_DIR redirects profiles, settings and history (used to run against a throwaway data directory).
             var dataDir = Environment.GetEnvironmentVariable("SQUILL_DATA_DIR");
-            Services = AppComposition.Create(platform, string.IsNullOrEmpty(dataDir) ? null : new AppPaths(dataDir));
+            _paths = new AppPaths(string.IsNullOrEmpty(dataDir) ? null : dataDir);
+            Services = AppComposition.Create(platform, _paths);
             desktop.MainWindow = GridBench.IsRequested(desktop.Args) ? GridBench.Start(desktop) : CreateMainWindow(Services);
         }
 
@@ -50,7 +53,9 @@ public sealed partial class App : Application
         services.Settings.ThemeChanged += (_, _) => ApplyTheme(services.Settings.Theme);
         services.Settings.LoadCommand.Execute(null);
         services.Workspace.ConnectionList.LoadCommand.Execute(null);
-        return new MainWindow { DataContext = services.Workspace };
+        var window = new MainWindow { DataContext = services.Workspace };
+        window.Attach(services, _paths!.DataDirectory);
+        return window;
     }
 
     private void ApplyTheme(ThemeMode mode) => RequestedThemeVariant = mode switch

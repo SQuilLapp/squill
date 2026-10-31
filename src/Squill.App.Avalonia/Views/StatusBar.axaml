@@ -6,6 +6,8 @@
   <Border Background="{DynamicResource SquillBgSurfaceBrush}" BorderBrush="{DynamicResource SquillBorderSubtleBrush}"
           BorderThickness="0,1,0,0" Padding="8,2" MinHeight="{DynamicResource SquillControlHeightCompact}">
     <DockPanel>
+      <Button DockPanel.Dock="Right" Margin="12,0,0,0" Padding="0" Content="Data folder" Background="Transparent"
+              Foreground="{DynamicResource SquillFg2Brush}" Click="OnOpenDataFolder" />
       <TextBlock DockPanel.Dock="Right" Margin="12,0,0,0" Foreground="{DynamicResource SquillFgDisabledBrush}"
                  Text="{Binding ActiveTab.Elapsed, StringFormat='{}{0:m\\:ss\\.fff}'}" />
       <TextBlock DockPanel.Dock="Right" Margin="12,0,0,0" Foreground="{DynamicResource SquillFgBrush}"

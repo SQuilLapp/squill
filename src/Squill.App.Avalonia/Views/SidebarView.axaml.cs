@@ -1,7 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Squill.Core;
 using Squill.Presentation.Connections;
+using Squill.Presentation.Panels;
 using Squill.Presentation.Workspace;
 
 namespace Squill.App.Avalonia.Views;
@@ -23,6 +25,26 @@ public sealed partial class SidebarView : UserControl
             if (_list is not null)
                 _list.EditRequested += OnEditRequested;
         };
+    }
+
+    /// <summary>Gives the history and snippets panels their view-models.</summary>
+    /// <param name="history">The history view-model.</param>
+    /// <param name="snippets">The snippets view-model.</param>
+    public void Attach(HistoryViewModel history, SnippetsViewModel snippets)
+    {
+        HistoryPanel.DataContext = history;
+        SnippetsPanel.DataContext = snippets;
+    }
+
+    private void OnPanelChecked(object? sender, RoutedEventArgs e)
+    {
+        ExplorerPanel.IsVisible = ExplorerTab.IsChecked == true;
+        HistoryPanel.IsVisible = HistoryTab.IsChecked == true;
+        SnippetsPanel.IsVisible = SnippetsTab.IsChecked == true;
+        if (sender == HistoryTab && HistoryTab.IsChecked == true)
+            (HistoryPanel.DataContext as HistoryViewModel)?.LoadCommand.Execute(null);
+        else if (sender == SnippetsTab && SnippetsTab.IsChecked == true)
+            (SnippetsPanel.DataContext as SnippetsViewModel)?.LoadCommand.Execute(null);
     }
 
     private async void OnEditRequested(object? sender, ConnectionEditorViewModel editor)
