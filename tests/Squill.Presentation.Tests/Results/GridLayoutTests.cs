@@ -1,7 +1,7 @@
 using Xunit;
-using Squill.App.Avalonia.Controls;
+using Squill.Presentation.Results;
 
-namespace Squill.App.Avalonia.Tests;
+namespace Squill.Presentation.Tests.Results;
 
 public sealed class GridLayoutTests
 {

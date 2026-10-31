@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml;
+using Squill.App.WinUI.Bench;
 using Squill.App.WinUI.Services;
 using Squill.Data;
 using Squill.Data.MySql;
@@ -14,7 +15,7 @@ namespace Squill.App.WinUI;
 /// <summary>Application root: builds the shared object graph and opens the main window.</summary>
 public sealed partial class App : Application
 {
-    private MainWindow? _window;
+    private Window? _window;
 
     /// <summary>Initializes the application.</summary>
     public App() => InitializeComponent();
@@ -25,6 +26,13 @@ public sealed partial class App : Application
     /// <inheritdoc />
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        if (GridBench.IsRequested())
+        {
+            _window = GridBench.Start();
+            _window.Activate();
+            return;
+        }
+
         var providers = new ProviderRegistry();
         providers.Register(new SqliteDatabaseProvider());
         providers.Register(new PostgresDatabaseProvider());
@@ -34,8 +42,9 @@ public sealed partial class App : Application
         // SQUILL_DATA_DIR redirects profiles, settings and history (used to run against a throwaway data directory).
         var dataDir = Environment.GetEnvironmentVariable("SQUILL_DATA_DIR");
         Services = AppComposition.Create(platform, new AppPaths(string.IsNullOrEmpty(dataDir) ? null : dataDir));
-        _window = new MainWindow();
-        platform.AttachWindow(_window);
+        var main = new MainWindow();
+        _window = main;
+        platform.AttachWindow(main);
         _window.Activate();
     }
 }

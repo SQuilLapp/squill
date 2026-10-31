@@ -1,4 +1,4 @@
-namespace Squill.App.Avalonia.Controls;
+namespace Squill.Presentation.Results;
 
 /// <summary>Pure geometry of the virtualized grid: column offsets, visible ranges and hit-testing, with no UI types.</summary>
 public sealed class GridLayout

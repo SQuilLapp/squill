@@ -19,7 +19,7 @@ public sealed class DataGridCanvas : Control
     public static readonly StyledProperty<IGridDataSource?> DataSourceProperty =
         AvaloniaProperty.Register<DataGridCanvas, IGridDataSource?>(nameof(DataSource));
 
-    private readonly TextCache _text = new(4096);
+    private readonly LruCache<(string Text, IBrush Brush), FormattedText> _text = new(4096);
     private readonly GridLayout _layout;
     private readonly Typeface _typeface = new(FontFamily.Default);
     private readonly double _fontSize = 13;
@@ -151,7 +151,7 @@ public sealed class DataGridCanvas : Control
                         }
 
                         var value = CellFormatter.Format(source.GetCell(row, col), info);
-                        var text = _text.Get(value ?? "NULL", value is null ? b.Muted : b.Text, _typeface, _fontSize);
+                        var text = Text(value ?? "NULL", value is null ? b.Muted : b.Text);
                         context.DrawText(text, new Point(left + CellPadding, top + ((rowHeight - text.Height) / 2)));
                     }
 
@@ -161,7 +161,7 @@ public sealed class DataGridCanvas : Control
                         context.FillRectangle(b.Selection, new Rect(left, 0, colWidth, headerHeight));
                     }
 
-                    var header = _text.Get(info.Name, b.HeaderText, _typeface, _fontSize);
+                    var header = Text(info.Name, b.HeaderText);
                     context.DrawText(header, new Point(left + CellPadding, (headerHeight - header.Height) / 2));
                 }
 
@@ -396,7 +396,7 @@ public sealed class DataGridCanvas : Control
             for (var row = 0; row < sample; row++)
             {
                 var value = CellFormatter.Format(source.GetCell(row, col), source.Columns[col]) ?? "NULL";
-                max = Math.Max(max, _text.Get(value, brush, _typeface, _fontSize).Width);
+                max = Math.Max(max, Text(value, brush).Width);
             }
 
             widths[col] = max + (2 * CellPadding);
@@ -404,6 +404,17 @@ public sealed class DataGridCanvas : Control
 
         _layout.SetColumnWidths(widths);
         _measuredRows = sample;
+    }
+
+    private FormattedText Text(string text, IBrush brush)
+    {
+        if (!_text.TryGet((text, brush), out var formatted))
+        {
+            formatted = new FormattedText(text, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _typeface, _fontSize, brush);
+            _text.Add((text, brush), formatted);
+        }
+
+        return formatted;
     }
 
     private void SetScroll(double x, double y)
