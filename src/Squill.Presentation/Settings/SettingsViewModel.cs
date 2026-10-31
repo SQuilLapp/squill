@@ -63,7 +63,7 @@ public sealed partial class SettingsViewModel(ISettingsStore store) : ViewModelB
     partial void OnEditorFontSizeChanged(double value)
     {
         var clamped = Current.Clamp().EditorFontSize;
-        if (clamped != value)
+        if (!clamped.Equals(value))
             EditorFontSize = clamped;
         else
             Save();
@@ -72,7 +72,7 @@ public sealed partial class SettingsViewModel(ISettingsStore store) : ViewModelB
     partial void OnMaxGridRowsChanged(int value)
     {
         var clamped = Current.Clamp().MaxGridRows;
-        if (clamped != value)
+        if (!clamped.Equals(value))
             MaxGridRows = clamped;
         else
             Save();

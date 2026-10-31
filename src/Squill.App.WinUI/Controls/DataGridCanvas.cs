@@ -257,7 +257,7 @@ public sealed partial class DataGridCanvas : Grid
     {
         var newX = Math.Clamp(x, 0, MaxScrollX);
         var newY = Math.Clamp(y, 0, MaxScrollY);
-        if (newX != _scrollX || newY != _scrollY)
+        if (!newX.Equals(_scrollX) || !newY.Equals(_scrollY))
         {
             _scrollX = newX;
             _scrollY = newY;

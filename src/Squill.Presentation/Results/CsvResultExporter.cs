@@ -20,47 +20,49 @@ public sealed class CsvResultExporter : IResultExporter
 
         var columns = source.Columns;
         var rows = source.RowCount;
-        var writer = new StreamWriter(destination, new UTF8Encoding(false), 1 << 16, leaveOpen: true) { NewLine = "\r\n" };
+        var writer = new StreamWriter(destination, new UTF8Encoding(false), 1 << 16, leaveOpen: true);
+        var line = new StringBuilder();
         await using (writer.ConfigureAwait(false))
         {
             for (var c = 0; c < columns.Count; c++)
             {
                 if (c > 0)
-                    writer.Write(',');
-                WriteField(writer, columns[c].Name);
+                    line.Append(',');
+                AppendField(line, columns[c].Name);
             }
 
-            writer.WriteLine();
+            line.Append("\r\n");
             for (var r = 0L; r < rows; r++)
             {
                 if ((r & 1023) == 0)
                     ct.ThrowIfCancellationRequested();
+                await writer.WriteAsync(line, ct).ConfigureAwait(false);
+                line.Clear();
                 for (var c = 0; c < columns.Count; c++)
                 {
                     if (c > 0)
-                        writer.Write(',');
-                    WriteField(writer, CellFormatter.Format(source.GetCell(r, c), columns[c]));
+                        line.Append(',');
+                    AppendField(line, CellFormatter.Format(source.GetCell(r, c), columns[c]));
                 }
 
-                writer.WriteLine();
+                line.Append("\r\n");
             }
 
+            await writer.WriteAsync(line, ct).ConfigureAwait(false);
             await writer.FlushAsync(ct).ConfigureAwait(false);
         }
     }
 
-    private static void WriteField(StreamWriter writer, string? text)
+    private static void AppendField(StringBuilder line, string? text)
     {
         if (string.IsNullOrEmpty(text))
             return;
         if (text.AsSpan().IndexOfAny(SpecialChars) < 0)
         {
-            writer.Write(text);
+            line.Append(text);
             return;
         }
 
-        writer.Write('"');
-        writer.Write(text.Replace("\"", "\"\"", StringComparison.Ordinal));
-        writer.Write('"');
+        line.Append('"').Append(text.Replace("\"", "\"\"", StringComparison.Ordinal)).Append('"');
     }
 }
