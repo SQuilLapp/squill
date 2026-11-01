@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    ignore:
+      # Tied to the SDK pinned in global.json (.NET 11 RC); bumped by hand.
+      - dependency-name: Microsoft.Data.Sqlite
+      # Own alpha package; updated deliberately.
+      - dependency-name: LoomTerminal.WinUI
+    groups:
+      avalonia:
+        patterns: ["Avalonia*"]
+      testcontainers:
+        patterns: ["Testcontainers*"]
+      xunit:
+        patterns: ["xunit*", "Microsoft.NET.Test.Sdk"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
