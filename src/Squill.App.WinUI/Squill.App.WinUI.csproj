@@ -29,12 +29,12 @@
     <ProjectReference Include="..\Squill.Data.Sqlite\Squill.Data.Sqlite.csproj" />
     <Content Include="..\..\assets\brand\app-icons\windows\squill.ico" Link="Assets\squill.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-  <!-- Optional LoomEditor (ADR 0002): set LoomEditorPath in the git-ignored Directory.Build.local.props. Without it the head uses PlainSqlEditor. -->
-  <PropertyGroup Condition="'$(LoomEditorPath)' != ''">
+  <!-- LoomEditor (ADR 0002) comes from NuGet; it targets the 26100 Windows SDK. -->
+  <PropertyGroup>
     <DefineConstants>$(DefineConstants);SQUILL_LOOMEDITOR</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition="'$(LoomEditorPath)' != ''">
-    <ProjectReference Include="$(LoomEditorPath)\src\LoomEditor.WinUI\LoomEditor.WinUI.csproj" />
+  <ItemGroup>
+    <PackageReference Include="LoomEditor.WinUI" />
   </ItemGroup>
   <!-- LoomTerminal (ADR 0002) comes from NuGet; it targets the 26100 Windows SDK. -->
   <PropertyGroup>
