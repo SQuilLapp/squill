@@ -412,6 +412,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         {
             Title = $"Query {_tabCounters[session]}",
         };
+        tab.ScriptRequested += script => AddTab(session, script);
         Tabs.Add(tab);
         ActiveTab = tab;
         return tab;

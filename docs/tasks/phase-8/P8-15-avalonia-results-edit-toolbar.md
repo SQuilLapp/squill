@@ -1,6 +1,6 @@
 # P8-15 - Avalonia head: edit toolbar, issues and commit
 
-Status: todo
+Status: done
 Depends on: P8-14
 
 ## Goal
@@ -16,9 +16,9 @@ The commands around an editable grid on the Avalonia head: add, delete, revert, 
 - WinUI (P8-16), column resizing, filters.
 
 ## Tasks
-- [ ] Implement the edit bar, issues flyout, shortcuts and script routing.
-- [ ] Headless tests in `tests/Squill.App.Avalonia.Tests`: bar visible only for editable results, read-only label for others, Add row adds a pending row and enables Commit, an issue disables Commit and appears in the flyout, `Ctrl+S` runs commit with a fake connection, `Preview SQL` opens a tab with the generated script.
-- [ ] Run the AOT-published head on a temp SQLite file: open a table with a primary key, edit a cell, add a row, delete a row, commit, re-run the query and check the values. State in the card report what was and was not exercised (no UI automation may mean only startup was verified). Close every process you started.
+- [x] Implement the edit bar, issues flyout, shortcuts and script routing.
+- [x] Headless tests in `tests/Squill.App.Avalonia.Tests`: bar visible only for editable results, read-only label for others, Add row adds a pending row and enables Commit, an issue disables Commit and appears in the flyout, `Ctrl+S` runs commit with a fake connection, `Preview SQL` opens a tab with the generated script.
+- [x] Run the AOT-published head on a temp SQLite file: open a table with a primary key, edit a cell, add a row, delete a row, commit, re-run the query and check the values. State in the card report what was and was not exercised (no UI automation may mean only startup was verified). Close every process you started.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

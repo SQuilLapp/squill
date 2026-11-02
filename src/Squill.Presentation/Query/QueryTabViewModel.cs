@@ -31,6 +31,9 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     private Action? _cancel;
     private string _baselineText;
 
+    /// <summary>Raised with a DML script that a result editor wants opened in a new query tab.</summary>
+    public event Action<string>? ScriptRequested;
+
     /// <summary>Creates the tab and wires the editor with the dialect, completion, hover and diagnostics of the session.</summary>
     /// <param name="session">The session the statements run on.</param>
     /// <param name="editor">The editor holding the script.</param>
@@ -265,7 +268,9 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             }
 
             var editable = new EditableGridDataSource(grid, verdict.Target);
-            result.SetEditor(new ResultEditorViewModel(editable, verdict.Target, _session, _dialogs, () => IsRunning));
+            var editor = new ResultEditorViewModel(editable, verdict.Target, _session, _dialogs, () => IsRunning);
+            editor.ScriptRequested += script => ScriptRequested?.Invoke(script);
+            result.SetEditor(editor);
         }
         catch (Exception)
         {
