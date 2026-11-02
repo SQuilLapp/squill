@@ -1,6 +1,6 @@
 # P8-03 - Sql: INSERT, UPDATE and DELETE generation
 
-Status: todo
+Status: done
 Depends on: P8-01, P7-09
 
 ## Goal
@@ -18,8 +18,8 @@ Generate parameterized INSERT, UPDATE and DELETE statements for the four dialect
 - Reading generated keys back (P8-04), type conversion of values (P8-05), several rows in one statement.
 
 ## Tasks
-- [ ] Implement `DmlParameter`, `DmlStatement`, `DmlGenerator`.
-- [ ] Tests in `tests/Squill.Sql.Tests` with exact expected strings and parameter lists per dialect: insert with values, insert with no values, update of one and of several columns, update of a key column, composite key, NULL key value, delete, schema qualification, quoting of identifiers with embedded quotes, every `ArgumentException` case.
+- [x] Implement `DmlParameter`, `DmlStatement`, `DmlGenerator`.
+- [x] Tests in `tests/Squill.Sql.Tests` with exact expected strings and parameter lists per dialect: insert with values, insert with no values, update of one and of several columns, update of a key column, composite key, NULL key value, delete, schema qualification, quoting of identifiers with embedded quotes, every `ArgumentException` case.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
