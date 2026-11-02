@@ -44,6 +44,7 @@
       <Color x:Key="SquillEngineMysqlColor">#FFA85A24</Color>
       <Color x:Key="SquillEngineSqlserverColor">#FFA63A4A</Color>
       <Color x:Key="SquillEngineSqliteColor">#FF4F7A99</Color>
+      <Color x:Key="SquillOnEngineColor">#FFFFFFFF</Color>
       <Color x:Key="SquillOnEnvProdColor">#FF0F1013</Color>
       <Color x:Key="SquillOnEnvStagingColor">#FF0F1013</Color>
       <Color x:Key="SquillOnEnvDevColor">#FF0B1A10</Color>
@@ -103,6 +104,7 @@
       <SolidColorBrush x:Key="SquillEngineMysqlBrush" Color="{ThemeResource SquillEngineMysqlColor}"/>
       <SolidColorBrush x:Key="SquillEngineSqlserverBrush" Color="{ThemeResource SquillEngineSqlserverColor}"/>
       <SolidColorBrush x:Key="SquillEngineSqliteBrush" Color="{ThemeResource SquillEngineSqliteColor}"/>
+      <SolidColorBrush x:Key="SquillOnEngineBrush" Color="{ThemeResource SquillOnEngineColor}"/>
       <SolidColorBrush x:Key="SquillOnEnvProdBrush" Color="{ThemeResource SquillOnEnvProdColor}"/>
       <SolidColorBrush x:Key="SquillOnEnvStagingBrush" Color="{ThemeResource SquillOnEnvStagingColor}"/>
       <SolidColorBrush x:Key="SquillOnEnvDevBrush" Color="{ThemeResource SquillOnEnvDevColor}"/>
@@ -164,6 +166,7 @@
       <Color x:Key="SquillEngineMysqlColor">#FFA85A24</Color>
       <Color x:Key="SquillEngineSqlserverColor">#FFA63A4A</Color>
       <Color x:Key="SquillEngineSqliteColor">#FF4F7A99</Color>
+      <Color x:Key="SquillOnEngineColor">#FFFFFFFF</Color>
       <Color x:Key="SquillOnEnvProdColor">#FFFFFFFF</Color>
       <Color x:Key="SquillOnEnvStagingColor">#FF0F1013</Color>
       <Color x:Key="SquillOnEnvDevColor">#FFFFFFFF</Color>
@@ -223,6 +226,7 @@
       <SolidColorBrush x:Key="SquillEngineMysqlBrush" Color="{ThemeResource SquillEngineMysqlColor}"/>
       <SolidColorBrush x:Key="SquillEngineSqlserverBrush" Color="{ThemeResource SquillEngineSqlserverColor}"/>
       <SolidColorBrush x:Key="SquillEngineSqliteBrush" Color="{ThemeResource SquillEngineSqliteColor}"/>
+      <SolidColorBrush x:Key="SquillOnEngineBrush" Color="{ThemeResource SquillOnEngineColor}"/>
       <SolidColorBrush x:Key="SquillOnEnvProdBrush" Color="{ThemeResource SquillOnEnvProdColor}"/>
       <SolidColorBrush x:Key="SquillOnEnvStagingBrush" Color="{ThemeResource SquillOnEnvStagingColor}"/>
       <SolidColorBrush x:Key="SquillOnEnvDevBrush" Color="{ThemeResource SquillOnEnvDevColor}"/>

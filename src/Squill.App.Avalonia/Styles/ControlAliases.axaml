@@ -1,0 +1,145 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Fluent theme resources re-pointed to the Squill tokens; merged once per theme variant so the lookups follow it. -->
+  <!-- Button: secondary is the default look -->
+  <StaticResource x:Key="ButtonBackground" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="SquillBgHoverBrush" />
+  <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="SquillBgActiveBrush" />
+  <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="ButtonForeground" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="SquillFgDisabledBrush" />
+  <StaticResource x:Key="ButtonBorderBrush" ResourceKey="SquillBorderBrush" />
+  <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="SquillBorderStrongBrush" />
+  <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="SquillBorderStrongBrush" />
+  <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="SquillBorderSubtleBrush" />
+  <!-- Text fields -->
+  <StaticResource x:Key="TextControlBackground" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="SquillBgSurfaceBrush" />
+  <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SquillBorderBrush" />
+  <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SquillBorderStrongBrush" />
+  <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="SquillFocusBrush" />
+  <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="SquillBorderSubtleBrush" />
+  <StaticResource x:Key="TextControlForeground" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="SquillFgDisabledBrush" />
+  <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="SquillFg3Brush" />
+  <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver" ResourceKey="SquillFg3Brush" />
+  <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="SquillFg3Brush" />
+  <StaticResource x:Key="TextControlPlaceholderForegroundDisabled" ResourceKey="SquillFgDisabledBrush" />
+  <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
+  <!-- ComboBox -->
+  <StaticResource x:Key="ComboBoxBackground" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="ComboBoxBackgroundPointerOver" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="ComboBoxBackgroundPressed" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="ComboBoxBackgroundDisabled" ResourceKey="SquillBgSurfaceBrush" />
+  <StaticResource x:Key="ComboBoxBorderBrush" ResourceKey="SquillBorderBrush" />
+  <StaticResource x:Key="ComboBoxBorderBrushPointerOver" ResourceKey="SquillBorderStrongBrush" />
+  <StaticResource x:Key="ComboBoxBorderBrushPressed" ResourceKey="SquillBorderStrongBrush" />
+  <StaticResource x:Key="ComboBoxBorderBrushDisabled" ResourceKey="SquillBorderSubtleBrush" />
+  <StaticResource x:Key="ComboBoxForeground" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="ComboBoxForegroundDisabled" ResourceKey="SquillFgDisabledBrush" />
+  <StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="SquillBgOverlayBrush" />
+  <StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SquillBorderBrush" />
+  <StaticResource x:Key="ComboBoxDropDownGlyphForeground" ResourceKey="SquillFg3Brush" />
+  <!-- CheckBox -->
+  <StaticResource x:Key="CheckBoxCheckBackgroundFillUnchecked" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPressed" ResourceKey="SquillBgActiveBrush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedDisabled" ResourceKey="SquillBgSurfaceBrush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUnchecked" ResourceKey="SquillBorderStrongBrush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver" ResourceKey="SquillFg3Brush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPressed" ResourceKey="SquillFg3Brush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedDisabled" ResourceKey="SquillBorderSubtleBrush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundFillChecked" ResourceKey="SquillAccentBrush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" ResourceKey="SquillAccentHoverBrush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedPressed" ResourceKey="SquillAccentPressedBrush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedDisabled" ResourceKey="SquillFgDisabledBrush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundStrokeChecked" ResourceKey="SquillAccentBrush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver" ResourceKey="SquillAccentHoverBrush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed" ResourceKey="SquillAccentPressedBrush" />
+  <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedDisabled" ResourceKey="SquillFgDisabledBrush" />
+  <StaticResource x:Key="CheckBoxCheckGlyphForegroundChecked" ResourceKey="SquillOnAccentBrush" />
+  <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" ResourceKey="SquillOnAccentBrush" />
+  <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" ResourceKey="SquillOnAccentBrush" />
+  <StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="CheckBoxForegroundChecked" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="CheckBoxForegroundUncheckedDisabled" ResourceKey="SquillFgDisabledBrush" />
+  <StaticResource x:Key="CheckBoxForegroundCheckedDisabled" ResourceKey="SquillFgDisabledBrush" />
+  <!-- RadioButton -->
+  <StaticResource x:Key="RadioButtonOuterEllipseStroke" ResourceKey="SquillBorderStrongBrush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseStrokePointerOver" ResourceKey="SquillFg3Brush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseStrokePressed" ResourceKey="SquillFg3Brush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseStrokeDisabled" ResourceKey="SquillBorderSubtleBrush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="SquillAccentBrush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" ResourceKey="SquillAccentHoverBrush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePressed" ResourceKey="SquillAccentPressedBrush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokeDisabled" ResourceKey="SquillFgDisabledBrush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseFill" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseFillPointerOver" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseFillPressed" ResourceKey="SquillBgActiveBrush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseFillDisabled" ResourceKey="SquillBgSurfaceBrush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseCheckedFill" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPressed" ResourceKey="SquillBgRaisedBrush" />
+  <StaticResource x:Key="RadioButtonCheckGlyphFill" ResourceKey="SquillAccentBrush" />
+  <StaticResource x:Key="RadioButtonCheckGlyphFillPointerOver" ResourceKey="SquillAccentHoverBrush" />
+  <StaticResource x:Key="RadioButtonCheckGlyphFillPressed" ResourceKey="SquillAccentPressedBrush" />
+  <StaticResource x:Key="RadioButtonCheckGlyphFillDisabled" ResourceKey="SquillFgDisabledBrush" />
+  <StaticResource x:Key="RadioButtonForeground" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="RadioButtonForegroundDisabled" ResourceKey="SquillFgDisabledBrush" />
+  <!-- ToggleSwitch -->
+  <StaticResource x:Key="ToggleSwitchFillOff" ResourceKey="SquillBgActiveBrush" />
+  <StaticResource x:Key="ToggleSwitchFillOffPointerOver" ResourceKey="SquillBgActiveBrush" />
+  <StaticResource x:Key="ToggleSwitchFillOffPressed" ResourceKey="SquillBgActiveBrush" />
+  <StaticResource x:Key="ToggleSwitchStrokeOff" ResourceKey="SquillBorderStrongBrush" />
+  <StaticResource x:Key="ToggleSwitchStrokeOffPointerOver" ResourceKey="SquillFg3Brush" />
+  <StaticResource x:Key="ToggleSwitchStrokeOffPressed" ResourceKey="SquillFg3Brush" />
+  <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="SquillAccentBrush" />
+  <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="SquillAccentHoverBrush" />
+  <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="SquillAccentPressedBrush" />
+  <StaticResource x:Key="ToggleSwitchStrokeOn" ResourceKey="SquillAccentBrush" />
+  <StaticResource x:Key="ToggleSwitchStrokeOnPointerOver" ResourceKey="SquillAccentHoverBrush" />
+  <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="SquillAccentPressedBrush" />
+  <StaticResource x:Key="ToggleSwitchKnobFillOff" ResourceKey="SquillFg3Brush" />
+  <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="SquillFg2Brush" />
+  <StaticResource x:Key="ToggleSwitchKnobFillOffPressed" ResourceKey="SquillFg2Brush" />
+  <StaticResource x:Key="ToggleSwitchKnobFillOn" ResourceKey="SquillOnAccentBrush" />
+  <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="SquillOnAccentBrush" />
+  <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="SquillOnAccentBrush" />
+  <!-- Underline tabs -->
+  <StaticResource x:Key="TabItemHeaderForegroundSelected" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="TabItemHeaderForegroundSelectedPointerOver" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="TabItemHeaderForegroundSelectedPressed" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="TabItemHeaderForegroundUnselected" ResourceKey="SquillFg2Brush" />
+  <StaticResource x:Key="TabItemHeaderForegroundUnselectedPointerOver" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="TabItemHeaderForegroundUnselectedPressed" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="TabItemHeaderForegroundDisabled" ResourceKey="SquillFgDisabledBrush" />
+  <StaticResource x:Key="TabItemHeaderSelectedPipeFill" ResourceKey="SquillAccentBrush" />
+  <!-- Menus, flyouts, tooltips -->
+  <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SquillBgOverlayBrush" />
+  <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SquillBorderBrush" />
+  <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="SquillBgOverlayBrush" />
+  <StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SquillBorderBrush" />
+  <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="SquillBgHoverBrush" />
+  <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="SquillBgActiveBrush" />
+  <StaticResource x:Key="MenuFlyoutItemForeground" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="MenuFlyoutItemForegroundPointerOver" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="MenuFlyoutItemForegroundPressed" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="MenuFlyoutItemForegroundDisabled" ResourceKey="SquillFgDisabledBrush" />
+  <StaticResource x:Key="ToolTipBackground" ResourceKey="SquillBgOverlayBrush" />
+  <StaticResource x:Key="ToolTipForeground" ResourceKey="SquillFgBrush" />
+  <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SquillBorderBrush" />
+  <!-- Scrollbar (thin, 8 px) and progress bar -->
+  <x:Double x:Key="ScrollBarSize">8</x:Double>
+  <StaticResource x:Key="ProgressBarForeground" ResourceKey="SquillAccentBrush" />
+  <StaticResource x:Key="ProgressBarBackground" ResourceKey="SquillBgActiveBrush" />
+  <!-- Keyboard focus ring -->
+  <StaticResource x:Key="SystemControlFocusVisualPrimaryBrush" ResourceKey="SquillFocusBrush" />
+  <StaticResource x:Key="SystemControlFocusVisualSecondaryBrush" ResourceKey="SquillBgBaseBrush" />
+  <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
+  <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
+</ResourceDictionary>

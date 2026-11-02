@@ -44,6 +44,7 @@
       <SolidColorBrush x:Key="SquillEngineMysqlBrush" Color="#FFA85A24"/>
       <SolidColorBrush x:Key="SquillEngineSqlserverBrush" Color="#FFA63A4A"/>
       <SolidColorBrush x:Key="SquillEngineSqliteBrush" Color="#FF4F7A99"/>
+      <SolidColorBrush x:Key="SquillOnEngineBrush" Color="#FFFFFFFF"/>
       <SolidColorBrush x:Key="SquillOnEnvProdBrush" Color="#FF0F1013"/>
       <SolidColorBrush x:Key="SquillOnEnvStagingBrush" Color="#FF0F1013"/>
       <SolidColorBrush x:Key="SquillOnEnvDevBrush" Color="#FF0B1A10"/>
@@ -107,6 +108,7 @@
       <SolidColorBrush x:Key="SquillEngineMysqlBrush" Color="#FFA85A24"/>
       <SolidColorBrush x:Key="SquillEngineSqlserverBrush" Color="#FFA63A4A"/>
       <SolidColorBrush x:Key="SquillEngineSqliteBrush" Color="#FF4F7A99"/>
+      <SolidColorBrush x:Key="SquillOnEngineBrush" Color="#FFFFFFFF"/>
       <SolidColorBrush x:Key="SquillOnEnvProdBrush" Color="#FFFFFFFF"/>
       <SolidColorBrush x:Key="SquillOnEnvStagingBrush" Color="#FF0F1013"/>
       <SolidColorBrush x:Key="SquillOnEnvDevBrush" Color="#FFFFFFFF"/>

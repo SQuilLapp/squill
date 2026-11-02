@@ -296,6 +296,13 @@
           "dark": "#4F7A99"
         }
       },
+      "on-engine": {
+        "$type": "color",
+        "$value": {
+          "light": "#FFFFFF",
+          "dark": "#FFFFFF"
+        }
+      },
       "on-env-prod": {
         "$type": "color",
         "$value": {

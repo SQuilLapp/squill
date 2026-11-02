@@ -1,0 +1,380 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Shared control styles (docs/design/visual-spec.md section 3). Merged after FluentTheme: the Fluent templates stay, their
+       theme resources are re-pointed to the Squill tokens (DynamicResource aliases, so both themes follow), and selectors add
+       sizes, radii, variants and states. -->
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <ResourceDictionary.MergedDictionaries>
+            <ResourceInclude Source="avares://Squill.App.Avalonia/Styles/ControlAliases.axaml" />
+          </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <ResourceDictionary.MergedDictionaries>
+            <ResourceInclude Source="avares://Squill.App.Avalonia/Styles/ControlAliases.axaml" />
+          </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </Styles.Resources>
+
+  <!-- Typography -->
+  <Style Selector="Window">
+    <Setter Property="FontFamily" Value="{DynamicResource SquillFontUi}" />
+    <Setter Property="FontSize" Value="{DynamicResource SquillFontSizeBody}" />
+  </Style>
+  <Style Selector="TextBlock.mono">
+    <Setter Property="FontFamily" Value="{DynamicResource SquillFontMono}" />
+  </Style>
+  <Style Selector="TextBox.mono">
+    <Setter Property="FontFamily" Value="{DynamicResource SquillFontMono}" />
+  </Style>
+  <Style Selector="TextBlock.caps">
+    <Setter Property="FontSize" Value="{DynamicResource SquillFontSizeCaption}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LetterSpacing" Value="0.6" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFg3Brush}" />
+  </Style>
+
+  <!-- Button -->
+  <Style Selector="Button">
+    <Setter Property="MinHeight" Value="{DynamicResource SquillControlHeightStandard}" />
+    <Setter Property="Padding" Value="12,0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusMd}" />
+    <Setter Property="FontSize" Value="{DynamicResource SquillFontSizeBody}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <!-- Button variants: primary, outline-success, outline-danger, ghost, icon (secondary is the default look) -->
+  <Style Selector="Button.primary /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillOnAccentBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillAccentBrush}" />
+  </Style>
+  <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillAccentHoverBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillOnAccentBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillAccentHoverBrush}" />
+  </Style>
+  <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillAccentPressedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillOnAccentBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillAccentPressedBrush}" />
+  </Style>
+  <Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillBgActiveBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgDisabledBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillBgActiveBrush}" />
+  </Style>
+  <Style Selector="Button.outline-success /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillBgRaisedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillSuccessBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillSuccessBrush}" />
+  </Style>
+  <Style Selector="Button.outline-success:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillSuccessSoftBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillSuccessBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillSuccessBrush}" />
+  </Style>
+  <Style Selector="Button.outline-success:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillSuccessSoftBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillSuccessBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillSuccessBrush}" />
+  </Style>
+  <Style Selector="Button.outline-success:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillBgRaisedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgDisabledBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillBorderSubtleBrush}" />
+  </Style>
+  <Style Selector="Button.outline-danger /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillBgRaisedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillDangerBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillDangerBrush}" />
+  </Style>
+  <Style Selector="Button.outline-danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillDangerSoftBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillDangerBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillDangerBrush}" />
+  </Style>
+  <Style Selector="Button.outline-danger:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillDangerSoftBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillDangerBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillDangerBrush}" />
+  </Style>
+  <Style Selector="Button.outline-danger:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillBgRaisedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgDisabledBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillBorderSubtleBrush}" />
+  </Style>
+  <Style Selector="Button.ghost /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFg2Brush}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.ghost:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillBgHoverBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.ghost:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillBgActiveBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.ghost:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgDisabledBrush}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.icon /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFg2Brush}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.icon:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillBgHoverBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.icon:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillBgActiveBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.icon:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgDisabledBrush}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.icon">
+    <Setter Property="Width" Value="28" />
+    <Setter Property="Height" Value="28" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+  </Style>
+
+  <!-- Text fields, search box (TextBox.search: InnerLeftContent icon, InnerRightContent KeyboardChip), ComboBox -->
+  <Style Selector="TextBox">
+    <Setter Property="MinHeight" Value="30" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusMd}" />
+    <Setter Property="Padding" Value="10,0" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="TextBox.search">
+    <Setter Property="MinHeight" Value="{DynamicResource SquillControlHeightStandard}" />
+    <Setter Property="Padding" Value="4,0" />
+  </Style>
+  <Style Selector="ComboBox">
+    <Setter Property="MinHeight" Value="{DynamicResource SquillControlHeightStandard}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusMd}" />
+    <Setter Property="Padding" Value="10,0" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="ComboBoxItem">
+    <Setter Property="MinHeight" Value="{DynamicResource SquillRowHeightStandard}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusSm}" />
+  </Style>
+  <Style Selector="CheckBox, RadioButton, ToggleSwitch">
+    <Setter Property="MinHeight" Value="{DynamicResource SquillControlHeightStandard}" />
+  </Style>
+
+  <!-- Underline tabs -->
+  <Style Selector="TabItem">
+    <Setter Property="FontSize" Value="{DynamicResource SquillFontSizeBody}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="MinHeight" Value="{DynamicResource SquillControlHeightStandard}" />
+    <Setter Property="Padding" Value="12,0" />
+  </Style>
+
+  <!-- Segmented control: a StackPanel.segmented of RadioButton.segment -->
+  <Style Selector="StackPanel.segmented">
+    <Setter Property="Orientation" Value="Horizontal" />
+  </Style>
+  <Style Selector="RadioButton.segment">
+    <Setter Property="Foreground" Value="{DynamicResource SquillFg2Brush}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="Root" Background="{DynamicResource SquillBgRaisedBrush}" BorderBrush="{DynamicResource SquillBorderBrush}"
+                BorderThickness="1" Padding="12,0" MinHeight="{DynamicResource SquillControlHeightStandard}"
+                CornerRadius="{DynamicResource SquillRadiusMd}">
+          <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" VerticalAlignment="Center"
+                            HorizontalAlignment="Center" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="RadioButton.segment:pointerover /template/ Border#Root">
+    <Setter Property="Background" Value="{DynamicResource SquillBgHoverBrush}" />
+  </Style>
+  <Style Selector="RadioButton.segment:checked /template/ Border#Root">
+    <Setter Property="Background" Value="{DynamicResource SquillBgActiveBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillBorderStrongBrush}" />
+  </Style>
+  <Style Selector="RadioButton.segment:checked">
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+  </Style>
+  <Style Selector="RadioButton.segment:disabled">
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgDisabledBrush}" />
+  </Style>
+  <Style Selector="RadioButton.segment:focus-visible /template/ Border#Root">
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillFocusBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+
+  <!-- List and tree rows -->
+  <Style Selector="ListBoxItem">
+    <Setter Property="MinHeight" Value="{DynamicResource SquillRowHeightStandard}" />
+    <Setter Property="Padding" Value="8,0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusMd}" />
+  </Style>
+  <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillBgHoverBrush}" />
+  </Style>
+  <Style Selector="TreeViewItem /template/ Border#PART_LayoutRoot:pointerover">
+    <Setter Property="Background" Value="{DynamicResource SquillBgHoverBrush}" />
+  </Style>
+  <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillAccentSoftBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+  </Style>
+  <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillAccentSoftBrush}" />
+  </Style>
+  <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot">
+    <Setter Property="Background" Value="{DynamicResource SquillAccentSoftBrush}" />
+  </Style>
+  <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot:pointerover">
+    <Setter Property="Background" Value="{DynamicResource SquillAccentSoftBrush}" />
+  </Style>
+  <Style Selector="TreeViewItem /template/ Border#PART_LayoutRoot">
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusMd}" />
+    <Setter Property="MinHeight" Value="{DynamicResource SquillRowHeightStandard}" />
+  </Style>
+  <Style Selector="ListBoxItem:disabled, TreeViewItem:disabled">
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgDisabledBrush}" />
+  </Style>
+  <Style Selector="ListBoxItem:focus-visible /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillFocusBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+  <Style Selector="TreeViewItem:focus-visible /template/ Border#PART_LayoutRoot">
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillFocusBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+
+  <!-- Menus, flyouts and popups: radius 8, bg-overlay, shadow-3 -->
+  <Style Selector="MenuFlyoutPresenter, FlyoutPresenter, ContextMenu">
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusLg}" />
+  </Style>
+  <Style Selector="ContextMenu">
+    <Setter Property="Background" Value="{DynamicResource SquillBgOverlayBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillBorderBrush}" />
+  </Style>
+  <Style Selector="MenuItem">
+    <Setter Property="MinHeight" Value="{DynamicResource SquillRowHeightStandard}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusSm}" />
+  </Style>
+  <Style Selector="MenuItem:pointerover /template/ Border#PART_LayoutRoot, MenuItem:selected /template/ Border#PART_LayoutRoot">
+    <Setter Property="Background" Value="{DynamicResource SquillBgHoverBrush}" />
+  </Style>
+  <Style Selector="MenuItem:disabled">
+    <Setter Property="Foreground" Value="{DynamicResource SquillFgDisabledBrush}" />
+  </Style>
+  <Style Selector="ToolTip">
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusMd}" />
+    <Setter Property="FontSize" Value="{DynamicResource SquillFontSizeBodySm}" />
+  </Style>
+
+  <!-- Scrollbar thumb -->
+  <Style Selector="ScrollBar /template/ Thumb">
+    <Setter Property="Background" Value="{DynamicResource SquillBorderStrongBrush}" />
+  </Style>
+  <Style Selector="ScrollBar /template/ Thumb:pointerover">
+    <Setter Property="Background" Value="{DynamicResource SquillFg3Brush}" />
+  </Style>
+
+  <!-- Progress bar -->
+  <Style Selector="ProgressBar">
+    <Setter Property="MinHeight" Value="4" />
+    <Setter Property="Height" Value="4" />
+  </Style>
+
+  <!-- Dialog frame and card: Border.dialog / Border.card -->
+  <Style Selector="Border.dialog">
+    <Setter Property="Background" Value="{DynamicResource SquillBgOverlayBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusXl}" />
+    <Setter Property="BoxShadow" Value="{DynamicResource SquillShadow3}" />
+    <Setter Property="Padding" Value="20" />
+  </Style>
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource SquillBgRaisedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillBorderSubtleBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusLg}" />
+    <Setter Property="Padding" Value="14" />
+  </Style>
+
+  <!-- KeyboardChip: Border.kbd around a TextBlock -->
+  <Style Selector="Border.kbd">
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusSm}" />
+    <Setter Property="Padding" Value="5,1" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Border.kbd > TextBlock">
+    <Setter Property="FontFamily" Value="{DynamicResource SquillFontMono}" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFg3Brush}" />
+  </Style>
+
+  <!-- Badge: Border.badge around a TextBlock; variants info success warning danger env-prod env-staging env-dev env-local -->
+  <Style Selector="Border.badge">
+    <Setter Property="Background" Value="{DynamicResource SquillBgActiveBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusXs}" />
+    <Setter Property="Padding" Value="6,1" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Border.badge > TextBlock">
+    <Setter Property="FontSize" Value="{DynamicResource SquillFontSizeCaption}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFg2Brush}" />
+  </Style>
+  <Style Selector="Border.badge.info"><Setter Property="Background" Value="{DynamicResource SquillInfoSoftBrush}" /></Style>
+  <Style Selector="Border.badge.info > TextBlock"><Setter Property="Foreground" Value="{DynamicResource SquillInfoBrush}" /></Style>
+  <Style Selector="Border.badge.success"><Setter Property="Background" Value="{DynamicResource SquillSuccessSoftBrush}" /></Style>
+  <Style Selector="Border.badge.success > TextBlock"><Setter Property="Foreground" Value="{DynamicResource SquillSuccessBrush}" /></Style>
+  <Style Selector="Border.badge.warning"><Setter Property="Background" Value="{DynamicResource SquillWarningSoftBrush}" /></Style>
+  <Style Selector="Border.badge.warning > TextBlock"><Setter Property="Foreground" Value="{DynamicResource SquillWarningBrush}" /></Style>
+  <Style Selector="Border.badge.danger"><Setter Property="Background" Value="{DynamicResource SquillDangerSoftBrush}" /></Style>
+  <Style Selector="Border.badge.danger > TextBlock"><Setter Property="Foreground" Value="{DynamicResource SquillDangerBrush}" /></Style>
+  <Style Selector="Border.badge.env-prod"><Setter Property="Background" Value="{DynamicResource SquillEnvProdSoftBrush}" /></Style>
+  <Style Selector="Border.badge.env-prod > TextBlock"><Setter Property="Foreground" Value="{DynamicResource SquillEnvProdBrush}" /></Style>
+  <Style Selector="Border.badge.env-staging"><Setter Property="Background" Value="{DynamicResource SquillEnvStagingSoftBrush}" /></Style>
+  <Style Selector="Border.badge.env-staging > TextBlock"><Setter Property="Foreground" Value="{DynamicResource SquillEnvStagingBrush}" /></Style>
+  <Style Selector="Border.badge.env-dev"><Setter Property="Background" Value="{DynamicResource SquillEnvDevSoftBrush}" /></Style>
+  <Style Selector="Border.badge.env-dev > TextBlock"><Setter Property="Foreground" Value="{DynamicResource SquillEnvDevBrush}" /></Style>
+  <Style Selector="Border.badge.env-local"><Setter Property="Background" Value="{DynamicResource SquillEnvLocalSoftBrush}" /></Style>
+  <Style Selector="Border.badge.env-local > TextBlock"><Setter Property="Foreground" Value="{DynamicResource SquillEnvLocalBrush}" /></Style>
+
+  <!-- EngineBadge: Border.engine (18 x 18) around two letters; variants postgres mysql sqlserver sqlite -->
+  <Style Selector="Border.engine">
+    <Setter Property="Width" Value="18" />
+    <Setter Property="Height" Value="18" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusSm}" />
+  </Style>
+  <Style Selector="Border.engine > TextBlock">
+    <Setter Property="FontSize" Value="9" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillOnEngineBrush}" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Border.engine.postgres"><Setter Property="Background" Value="{DynamicResource SquillEnginePostgresBrush}" /></Style>
+  <Style Selector="Border.engine.mysql"><Setter Property="Background" Value="{DynamicResource SquillEngineMysqlBrush}" /></Style>
+  <Style Selector="Border.engine.sqlserver"><Setter Property="Background" Value="{DynamicResource SquillEngineSqlserverBrush}" /></Style>
+  <Style Selector="Border.engine.sqlite"><Setter Property="Background" Value="{DynamicResource SquillEngineSqliteBrush}" /></Style>
+</Styles>
