@@ -1,6 +1,6 @@
 # P8-01 - Core: row edit model
 
-Status: todo
+Status: done
 Depends on: P7-01
 
 ## Goal
@@ -19,8 +19,8 @@ The dialect-independent vocabulary of phase 8: which table a result grid edits, 
 - Eligibility analysis (P8-02), SQL generation (P8-03), the pending-change store (P8-06).
 
 ## Tasks
-- [ ] Implement the records and helpers.
-- [ ] Tests in `tests/Squill.Core.Tests`: `ByOrdinal` and `IsEditable` for mapped, unmapped and out-of-range ordinals; value equality of the records.
+- [x] Implement the records and helpers.
+- [x] Tests in `tests/Squill.Core.Tests`: `ByOrdinal` and `IsEditable` for mapped, unmapped and out-of-range ordinals; value equality of the records.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
