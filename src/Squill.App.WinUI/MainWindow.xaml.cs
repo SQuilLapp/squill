@@ -160,7 +160,7 @@ public sealed partial class MainWindow : Window
                 break;
             case TableDesignerViewModel designer:
                 Workspace.ActiveDesigner = designer;
-                ShowDesigner();
+                ShowDesigner(designer);
                 break;
             case TerminalTabViewModel terminal:
                 ShowTerminal(terminal);
@@ -181,6 +181,14 @@ public sealed partial class MainWindow : Window
     }
 
     private void OnDiagramClicked(object sender, RoutedEventArgs e) => Workspace.OpenDiagramCommand.Execute(null);
+
+    private void OnNewTableClicked(object sender, RoutedEventArgs e) => Workspace.NewTableCommand.Execute(null);
+
+    private void OnApplyDesignerAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (DesignerArea.Visibility == Visibility.Visible)
+            Accelerate(args, () => Workspace.ActiveDesigner?.ApplyCommand.Execute(null));
+    }
 
     private void OnRunClicked(object sender, RoutedEventArgs e) => Workspace.ActiveTab?.RunCommand.Execute(null);
 

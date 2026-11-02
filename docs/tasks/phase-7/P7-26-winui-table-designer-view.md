@@ -1,6 +1,6 @@
 # P7-26 - WinUI head: table designer view
 
-Status: todo
+Status: done
 Depends on: P7-25, P7-21
 
 ## Goal
@@ -16,8 +16,8 @@ The WinUI counterpart of P7-24.
 - Anything in the Avalonia head, drag-and-drop reordering.
 
 ## Tasks
-- [ ] Implement the view and the shell changes.
-- [ ] Tests in `tests/Squill.App.WinUI.Tests` for the testable parts; run the AOT-published head on a temp SQLite file, create a table with the designer if the session allows UI driving, otherwise verify startup only. State in the card report what was and was not exercised. Close every process you started.
+- [x] Implement the view and the shell changes.
+- [x] Tests in `tests/Squill.App.WinUI.Tests` for the testable parts; run the AOT-published head on a temp SQLite file, create a table with the designer if the session allows UI driving, otherwise verify startup only. State in the card report what was and was not exercised. Close every process you started.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.

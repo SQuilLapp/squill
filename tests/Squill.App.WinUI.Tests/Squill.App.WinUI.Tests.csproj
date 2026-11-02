@@ -20,6 +20,8 @@
     <Content Include="..\..\src\Squill.App.WinUI\Views\SnippetsView.xaml.cs" Link="Xaml\SnippetsView.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\DiagramTabView.xaml" Link="Xaml\DiagramTabView.xaml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\DiagramTabView.xaml.cs" Link="Xaml\DiagramTabView.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\TableDesignerView.xaml" Link="Xaml\TableDesignerView.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\TableDesignerView.xaml.cs" Link="Xaml\TableDesignerView.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Styles\SquillTokens.xaml" Link="SquillTokens.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

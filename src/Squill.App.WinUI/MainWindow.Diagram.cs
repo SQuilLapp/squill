@@ -68,7 +68,12 @@ public sealed partial class MainWindow
         DiagramArea.ViewModel = diagram;
     }
 
-    private void ShowDesigner() => ShowOnly(DesignerArea);
+    private void ShowDesigner(TableDesignerViewModel designer)
+    {
+        ShowOnly(DesignerArea);
+        DesignerArea.ViewModel = designer;
+    }
+
 
     private void ShowOnly(UIElement area)
     {

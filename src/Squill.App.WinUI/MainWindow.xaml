@@ -11,6 +11,7 @@
       <KeyboardAccelerator Key="F" Modifiers="Control,Shift" Invoked="OnFormatAccelerator" />
       <KeyboardAccelerator Key="T" Modifiers="Control" Invoked="OnNewTabAccelerator" />
       <KeyboardAccelerator Key="W" Modifiers="Control" Invoked="OnCloseTabAccelerator" />
+      <KeyboardAccelerator Key="S" Modifiers="Control" Invoked="OnApplyDesignerAccelerator" />
     </Grid.KeyboardAccelerators>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -30,6 +31,7 @@
       <Button Content="New tab" ToolTipService.ToolTip="Ctrl+T" Click="OnNewTabClicked" />
       <Button Content="Close tab" ToolTipService.ToolTip="Ctrl+W" Click="OnCloseTabClicked" />
       <Button x:Name="DiagramButton" Content="ER diagram" Click="OnDiagramClicked" />
+      <Button Content="New table" Click="OnNewTableClicked" />
       <Button Content="Settings" ToolTipService.ToolTip="Ctrl+," Click="OnSettingsClicked" />
     </StackPanel>
     <v:SidebarView x:Name="Sidebar" Grid.Row="1" />
@@ -42,8 +44,7 @@
                TabCloseRequested="OnTabCloseRequested" SelectionChanged="OnTabSelectionChanged" />
       <v:QueryTabView x:Name="ActiveTabView" Grid.Row="1" />
       <v:DiagramTabView x:Name="DiagramArea" Grid.Row="1" Visibility="Collapsed" />
-      <TextBlock x:Name="DesignerArea" Grid.Row="1" Margin="12" Visibility="Collapsed" Foreground="{ThemeResource SquillFg2Brush}"
-                 Text="Designer view arrives with P7-26" />
+      <v:TableDesignerView x:Name="DesignerArea" Grid.Row="1" Visibility="Collapsed" />
       <Grid x:Name="TerminalArea" Grid.Row="1" Visibility="Collapsed" />
     </Grid>
     <v:StatusBar x:Name="Status" Grid.Row="2" Grid.ColumnSpan="3" />

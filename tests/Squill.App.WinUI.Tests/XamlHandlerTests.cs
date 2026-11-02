@@ -12,13 +12,14 @@ public class XamlHandlerTests
     [InlineData("HistoryView")]
     [InlineData("SnippetsView")]
     [InlineData("DiagramTabView")]
+    [InlineData("TableDesignerView")]
     public void Every_event_handler_named_in_xaml_exists_in_the_code_behind(string view)
     {
         var xaml = XDocument.Load($"Xaml/{view}.xaml");
         var code = File.ReadAllText($"Xaml/{view}.xaml.cs");
         var handlers = xaml.Descendants().SelectMany(e => e.Attributes())
             .Where(a => a.Name.LocalName is "Click" or "Invoked" or "TextChanged" or "DoubleTapped" or "KeyDown"
-                or "SelectionChanged" or "TabCloseRequested" or "Checked" or "ContextRequested")
+                or "SelectionChanged" or "TabCloseRequested" or "Checked" or "ContextRequested" or "Loaded" or "GotFocus")
             .Select(a => a.Value)
             .ToList();
 
