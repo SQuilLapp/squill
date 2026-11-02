@@ -1,6 +1,6 @@
 # P7-24 - Avalonia head: table designer view
 
-Status: todo
+Status: done
 Depends on: P7-23, P7-21
 
 ## Goal
@@ -16,9 +16,9 @@ The editing UI for `TableDesignerViewModel` on the Avalonia head, replacing the 
 - WinUI (P7-26), drag-and-drop reordering (use the up/down buttons), column type pickers beyond the suggestion list.
 
 ## Tasks
-- [ ] Implement the view and the shell changes.
-- [ ] Headless tests in `tests/Squill.App.Avalonia.Tests`: adding a column row updates the script text, a validation error shows in the issues list and disables Apply, `Ctrl+S` runs the apply command with a fake connection, the foreign key tab binds.
-- [ ] Run the AOT-published head on a temp SQLite file: create a table through the designer, rename a column, apply, check the schema with a query. State in the card report what was and was not exercised (no UI automation may mean only startup was verified). Close every process you started.
+- [x] Implement the view and the shell changes.
+- [x] Headless tests in `tests/Squill.App.Avalonia.Tests`: adding a column row updates the script text, a validation error shows in the issues list and disables Apply, `Ctrl+S` runs the apply command with a fake connection, the foreign key tab binds.
+- [x] Run the AOT-published head on a temp SQLite file: create a table through the designer, rename a column, apply, check the schema with a query. State in the card report what was and was not exercised (no UI automation may mean only startup was verified). Close every process you started.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

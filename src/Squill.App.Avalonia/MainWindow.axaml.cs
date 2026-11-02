@@ -94,7 +94,9 @@ public sealed partial class MainWindow : Window
         var diagram = DiagramStrip.SelectedItem as DiagramTabViewModel;
         DiagramArea.DataContext = diagram;
         DiagramArea.IsVisible = diagram is not null;
-        DesignerArea.IsVisible = DesignerStrip.SelectedItem is TableDesignerViewModel;
+        var designer = DesignerStrip.SelectedItem as TableDesignerViewModel;
+        DesignerArea.DataContext = designer;
+        DesignerArea.IsVisible = designer is not null;
     }
 
     private void OnCloseDiagramClicked(object? sender, RoutedEventArgs e)

@@ -17,6 +17,7 @@
     <KeyBinding Gesture="Escape" Command="{Binding ActiveTab.CancelCommand}" />
     <KeyBinding Gesture="Ctrl+Shift+F" Command="{Binding ActiveTab.FormatDocumentCommand}" />
     <KeyBinding Gesture="Ctrl+T" Command="{Binding NewTabCommand}" />
+    <KeyBinding Gesture="Ctrl+S" Command="{Binding ActiveDesigner.ApplyCommand}" />
     <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseTabCommand}" CommandParameter="{Binding ActiveTab}" />
   </Window.KeyBindings>
   <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="260,Auto,*">
@@ -104,8 +105,7 @@
       </StackPanel>
       <v:QueryTabView Grid.Row="1" Name="ActiveTabView" DataContext="{Binding ActiveTab}" />
       <v:DiagramTabView Grid.Row="1" Name="DiagramArea" IsVisible="False" />
-      <TextBlock Grid.Row="1" Name="DesignerArea" IsVisible="False" Margin="12" Foreground="{DynamicResource SquillFg2Brush}"
-                 Text="Designer view arrives with P7-24" />
+      <v:TableDesignerView Grid.Row="1" Name="DesignerArea" IsVisible="False" />
       <Grid Name="TerminalArea" Grid.Row="1" IsVisible="False" Background="{DynamicResource SquillBgBaseBrush}" />
     </Grid>
     <v:StatusBar Grid.Row="2" Name="Status" Grid.ColumnSpan="3" />
