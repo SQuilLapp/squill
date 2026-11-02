@@ -1,6 +1,6 @@
 # P7-15 - Presentation: ER model built from a schema snapshot
 
-Status: todo
+Status: done
 Depends on: P7-01, P4-05
 
 ## Goal
@@ -22,8 +22,8 @@ The pure entity-relationship model (entities, columns, relations) of a `SchemaSn
 - Layout (P7-16), routing (P7-17), view-model (P7-19).
 
 ## Tasks
-- [ ] Implement the model and builder.
-- [ ] Tests in `tests/Squill.Presentation.Tests`: single table, a foreign key (many-to-one, optional vs required), one-to-one through a unique index and through the primary key, composite foreign key, cross-schema relation, self-reference, filter by keys, view handling, unresolved relation counted, `Neighborhood` depths 0, 1, 2.
+- [x] Implement the model and builder.
+- [x] Tests in `tests/Squill.Presentation.Tests`: single table, a foreign key (many-to-one, optional vs required), one-to-one through a unique index and through the primary key, composite foreign key, cross-schema relation, self-reference, filter by keys, view handling, unresolved relation counted, `Neighborhood` depths 0, 1, 2.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
