@@ -5,6 +5,8 @@ using Avalonia.Interactivity;
 using CommunityToolkit.Mvvm.Input;
 using Squill.App.Avalonia.Views;
 using Squill.Presentation;
+using Squill.Presentation.Designer;
+using Squill.Presentation.Diagram;
 using Squill.Presentation.Query;
 using Squill.Presentation.Settings;
 using Squill.Presentation.Terminal;
@@ -33,8 +35,18 @@ public sealed partial class MainWindow : Window
         AttachTerminals(services.Workspace);
         services.Workspace.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(WorkspaceViewModel.ActiveTab))
-                ShowQueryArea();
+            switch (e.PropertyName)
+            {
+                case nameof(WorkspaceViewModel.ActiveTab):
+                    ShowQueryArea();
+                    break;
+                case nameof(WorkspaceViewModel.ActiveDiagram) when services.Workspace.ActiveDiagram is { } diagram:
+                    DiagramStrip.SelectedItem = diagram;
+                    break;
+                case nameof(WorkspaceViewModel.ActiveDesigner) when services.Workspace.ActiveDesigner is { } designer:
+                    DesignerStrip.SelectedItem = designer;
+                    break;
+            }
         };
         QueryStrip.AddHandler(PointerPressedEvent, (_, _) => ShowQueryArea(), RoutingStrategies.Tunnel);
         Status.DataDirectory = dataDirectory;
@@ -61,12 +73,52 @@ public sealed partial class MainWindow : Window
     {
         TerminalArea.IsVisible = false;
         TerminalStrip.SelectedItem = null;
+        DiagramStrip.SelectedItem = null;
+        DesignerStrip.SelectedItem = null;
+    }
+
+    private void OnExtraSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        // One strip at a time: selecting a diagram or designer clears the other strips, then the matching area shows.
+        if (sender is ListBox { SelectedItem: not null } strip)
+        {
+            foreach (var other in new[] { DiagramStrip, DesignerStrip, TerminalStrip })
+            {
+                if (other != strip)
+                    other.SelectedItem = null;
+            }
+
+            TerminalArea.IsVisible = false;
+        }
+
+        var diagram = DiagramStrip.SelectedItem as DiagramTabViewModel;
+        DiagramArea.DataContext = diagram;
+        DiagramArea.IsVisible = diagram is not null;
+        var designer = DesignerStrip.SelectedItem as TableDesignerViewModel;
+        DesignerArea.DataContext = designer;
+        DesignerArea.IsVisible = designer is not null;
+    }
+
+    private void OnCloseDiagramClicked(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is WorkspaceViewModel workspace && (sender as Control)?.DataContext is DiagramTabViewModel diagram)
+            workspace.CloseDiagramCommand.Execute(diagram);
+    }
+
+    private void OnCloseDesignerClicked(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is WorkspaceViewModel workspace && (sender as Control)?.DataContext is TableDesignerViewModel designer)
+            workspace.CloseDesignerCommand.Execute(designer);
     }
 
     private void OnTerminalSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (TerminalStrip.SelectedItem is TerminalTabViewModel terminal)
+        {
+            DiagramStrip.SelectedItem = null;
+            DesignerStrip.SelectedItem = null;
             ShowTerminal(terminal);
+        }
     }
 
     private void OnCloseTerminalClicked(object? sender, RoutedEventArgs e)

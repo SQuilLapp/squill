@@ -47,8 +47,14 @@ public static class AppComposition
     /// <summary>Creates the stores and view-models.</summary>
     /// <param name="platform">The services supplied by the head.</param>
     /// <param name="paths">Application paths; <see langword="null"/> uses the per-user default (tests pass a temporary directory).</param>
+    /// <param name="diagramStore">Persists ER diagram layouts; <see langword="null"/> disables the diagram.</param>
+    /// <param name="measureText">Text measurer of the head's diagram font; <see langword="null"/> disables the diagram.</param>
     /// <returns>The root view-models.</returns>
-    public static AppServices Create(IPlatformServices platform, AppPaths? paths = null)
+    public static AppServices Create(
+        IPlatformServices platform,
+        AppPaths? paths = null,
+        IDiagramLayoutStore? diagramStore = null,
+        Func<string, double>? measureText = null)
     {
         ArgumentNullException.ThrowIfNull(platform);
         paths ??= new AppPaths();
@@ -59,7 +65,7 @@ public static class AppComposition
         var list = new ConnectionListViewModel(profiles, platform.Providers, platform.Dialogs);
         var workspace = new WorkspaceViewModel(
             sessions, list, history, settings, platform.Dispatcher, platform.Dialogs, platform.EditorFactory,
-            profiles, platform.TerminalHostFactory);
+            profiles, platform.TerminalHostFactory, diagramStore: diagramStore, measureText: measureText);
         return new AppServices(
             workspace,
             new HistoryViewModel(history, workspace, platform.Dialogs),

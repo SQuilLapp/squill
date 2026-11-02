@@ -44,8 +44,12 @@ internal static class SqliteSchemaReader
         var rows = await ReadAsync(connection, $"PRAGMA table_xinfo({Quote(table)})",
             r => (Name: r.GetString(1), Type: r.GetString(2), NotNull: r.GetInt32(3) != 0,
                   Default: r.IsDBNull(4) ? null : r.GetString(4), Pk: r.GetInt32(5), Hidden: r.GetInt32(6)), cancellationToken);
-        return rows.Where(c => c.Hidden == 0)
-            .Select(c => new ColumnDefinition(c.Name, c.Type, !c.NotNull, c.Pk > 0, c.Default))
+        var visible = rows.Where(c => c.Hidden == 0).ToList();
+        var singleKey = visible.Count(c => c.Pk > 0) == 1;
+        // A lone INTEGER primary key is a rowid alias, which SQLite generates itself.
+        return visible
+            .Select(c => new ColumnDefinition(c.Name, c.Type, !c.NotNull, c.Pk > 0, c.Default,
+                singleKey && c.Pk > 0 && c.Type.Trim().Equals("INTEGER", StringComparison.OrdinalIgnoreCase)))
             .ToList();
     }
 
@@ -67,7 +71,8 @@ internal static class SqliteSchemaReader
     private static async Task<IReadOnlyList<ForeignKeyInfo>> ReadForeignKeysAsync(SqliteConnection connection, string table, CancellationToken cancellationToken)
     {
         var rows = await ReadAsync(connection, $"PRAGMA foreign_key_list({Quote(table)})",
-            r => (Id: r.GetInt32(0), Table: r.GetString(2), From: r.GetString(3), To: r.IsDBNull(4) ? null : r.GetString(4)), cancellationToken);
+            r => (Id: r.GetInt32(0), Table: r.GetString(2), From: r.GetString(3), To: r.IsDBNull(4) ? null : r.GetString(4),
+                  OnUpdate: r.GetString(5), OnDelete: r.GetString(6)), cancellationToken);
         var foreignKeys = new List<ForeignKeyInfo>();
         foreach (var group in rows.GroupBy(r => r.Id).OrderBy(g => g.Key))
         {
@@ -76,7 +81,9 @@ internal static class SqliteSchemaReader
             var referencedColumns = group.All(r => r.To is not null)
                 ? group.Select(r => r.To!).ToList()
                 : (await ReadColumnsAsync(connection, referenced, cancellationToken)).Where(c => c.IsPrimaryKey).Select(c => c.Name).ToList();
-            foreignKeys.Add(new ForeignKeyInfo($"fk_{table}_{group.Key}", group.Select(r => r.From).ToList(), Schema, referenced, referencedColumns));
+            foreignKeys.Add(new ForeignKeyInfo($"fk_{table}_{group.Key}", group.Select(r => r.From).ToList(), Schema, referenced, referencedColumns,
+                ReferentialActions.Parse(group.First().OnDelete) ?? ReferentialAction.NoAction,
+                ReferentialActions.Parse(group.First().OnUpdate) ?? ReferentialAction.NoAction));
         }
         return foreignKeys;
     }

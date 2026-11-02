@@ -1,0 +1,23 @@
+<UserControl x:Class="Squill.App.WinUI.Views.DiagramTabView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="using:Squill.App.WinUI.Controls">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <StackPanel Orientation="Horizontal" Spacing="4" Margin="6,4">
+      <TextBox Width="180" PlaceholderText="Filter tables" Text="{x:Bind ViewModel.FilterText, Mode=TwoWay}" />
+      <ToggleButton Content="Include views" IsChecked="{x:Bind ViewModel.IncludeViews, Mode=TwoWay}" />
+      <Button Content="Fit" ToolTipService.ToolTip="Ctrl+0" Click="OnFitClicked" />
+      <Button Content="Reset layout" Command="{x:Bind ViewModel.ResetLayoutCommand}" />
+      <Button Content="Focus" Command="{x:Bind ViewModel.FocusSelectedCommand}" />
+      <ComboBox x:Name="DepthBox" SelectedIndex="0" SelectionChanged="OnDepthChanged" ToolTipService.ToolTip="Relation hops">
+        <ComboBoxItem Content="1 hop" />
+        <ComboBoxItem Content="2 hops" />
+        <ComboBoxItem Content="3 hops" />
+      </ComboBox>
+      <Button Content="Show all" Command="{x:Bind ViewModel.ShowAllCommand}" />
+      <Button Content="Export SVG" Command="{x:Bind ViewModel.ExportSvgCommand}" />
+    </StackPanel>
+    <c:ErDiagramCanvas x:Name="Canvas" Grid.Row="1" />
+    <TextBlock Grid.Row="2" Margin="8,2" Foreground="{ThemeResource SquillFg2Brush}" Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
+  </Grid>
+</UserControl>

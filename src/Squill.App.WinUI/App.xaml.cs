@@ -6,7 +6,9 @@ using Squill.Data.MySql;
 using Squill.Data.Postgres;
 using Squill.Data.Sqlite;
 using Squill.Data.SqlServer;
+using Squill.App.WinUI.Controls;
 using Squill.Platform;
+using Squill.Platform.Storage;
 using Squill.Presentation;
 using Squill.App.WinUI.Editors;
 
@@ -51,7 +53,7 @@ public sealed partial class App : Application
         // SQUILL_DATA_DIR redirects profiles, settings and history (used to run against a throwaway data directory).
         var dataDir = Environment.GetEnvironmentVariable("SQUILL_DATA_DIR");
         var paths = new AppPaths(string.IsNullOrEmpty(dataDir) ? null : dataDir);
-        Services = AppComposition.Create(platform, paths);
+        Services = AppComposition.Create(platform, paths, new JsonDiagramLayoutStore(paths), ErDiagramCanvas.MeasureText);
         var main = new MainWindow();
         _window = main;
         platform.AttachWindow(main);

@@ -39,7 +39,7 @@ public sealed class SqliteSchemaReaderTests
         var person = schema.FindTable(null, "person")!;
         Assert.Equal(TableKind.Table, person.Kind);
         Assert.Equal(["id", "name", "a", "b"], person.Columns.Select(c => c.Name));
-        Assert.Equal(new ColumnDefinition("id", "INTEGER", true, true, null), person.Columns[0]);
+        Assert.Equal(new ColumnDefinition("id", "INTEGER", true, true, null, true), person.Columns[0]);
         Assert.Equal(new ColumnDefinition("name", "TEXT", false, false, "'x'"), person.Columns[1]);
         Assert.Equal(TableKind.View, schema.FindTable(null, "v")!.Kind);
         Assert.Equal(["id"], schema.FindTable(null, "v")!.Columns.Select(c => c.Name));
@@ -87,5 +87,35 @@ public sealed class SqliteSchemaReaderTests
         var table = Assert.Single(schema.Tables);
         Assert.Equal("we\"ird", table.Name);
         Assert.Equal(["id", "my col"], table.Columns.Select(c => c.Name));
+    }
+
+    [Fact]
+    public async Task ReadSchemaAsync_AutoIncrement_OnlyForSingleIntegerPrimaryKey()
+    {
+        var schema = await ReadAsync(
+            "CREATE TABLE a (id INTEGER PRIMARY KEY, n INTEGER)",
+            "CREATE TABLE b (id INT PRIMARY KEY)",
+            "CREATE TABLE c (x INTEGER, y INTEGER, PRIMARY KEY (x, y))");
+
+        Assert.True(schema.FindTable(null, "a")!.Columns[0].IsAutoIncrement);
+        Assert.False(schema.FindTable(null, "a")!.Columns[1].IsAutoIncrement);
+        Assert.False(schema.FindTable(null, "b")!.Columns[0].IsAutoIncrement);
+        Assert.All(schema.FindTable(null, "c")!.Columns, c => Assert.False(c.IsAutoIncrement));
+    }
+
+    [Fact]
+    public async Task ReadSchemaAsync_ForeignKeyActions_AreReadBack()
+    {
+        var schema = await ReadAsync(
+            "CREATE TABLE p (id INTEGER PRIMARY KEY)",
+            "CREATE TABLE c (a INTEGER REFERENCES p ON DELETE CASCADE ON UPDATE SET NULL, b INTEGER REFERENCES p)");
+
+        var fks = schema.FindTable(null, "c")!.ForeignKeys;
+        var withActions = Assert.Single(fks, f => f.Columns[0] == "a");
+        Assert.Equal(ReferentialAction.Cascade, withActions.OnDelete);
+        Assert.Equal(ReferentialAction.SetNull, withActions.OnUpdate);
+        var plain = Assert.Single(fks, f => f.Columns[0] == "b");
+        Assert.Equal(ReferentialAction.NoAction, plain.OnDelete);
+        Assert.Equal(ReferentialAction.NoAction, plain.OnUpdate);
     }
 }

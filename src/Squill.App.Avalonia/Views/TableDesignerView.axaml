@@ -1,0 +1,144 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:dz="using:Squill.Presentation.Designer"
+             xmlns:dc="using:Squill.Core.Design"
+             xmlns:v="using:Squill.App.Avalonia.Views"
+             x:Class="Squill.App.Avalonia.Views.TableDesignerView"
+             x:DataType="dz:TableDesignerViewModel">
+  <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="6">
+    <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,0,6">
+      <TextBox Width="120" Text="{Binding Schema, Mode=TwoWay}" PlaceholderText="Schema"
+               MinHeight="{DynamicResource SquillControlHeightStandard}" />
+      <TextBox Width="200" Text="{Binding Name, Mode=TwoWay}" PlaceholderText="Name"
+               MinHeight="{DynamicResource SquillControlHeightStandard}" />
+      <Button Content="Apply" ToolTip.Tip="Ctrl+S" Command="{Binding ApplyCommand}" />
+      <Button Content="Revert" Command="{Binding RevertCommand}" />
+      <Button Content="Open script" Command="{Binding OpenScriptCommand}" />
+      <Button Content="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding IsApplying}" />
+    </StackPanel>
+    <TabControl Grid.Row="1">
+      <TabItem Header="Columns">
+        <DockPanel>
+          <Button DockPanel.Dock="Bottom" Content="Add column" HorizontalAlignment="Left" Margin="0,4,0,0"
+                  Command="{Binding AddColumnCommand}" />
+          <ScrollViewer>
+            <ItemsControl Name="ColumnRows" ItemsSource="{Binding Columns}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="dz:ColumnRowViewModel">
+                  <Grid Margin="0,1">
+                    <Border IsHitTestVisible="False" CornerRadius="3" BorderThickness="1"
+                            BorderBrush="{DynamicResource SquillDangerBrush}" Background="{DynamicResource SquillDangerSoftBrush}">
+                      <Border.IsVisible>
+                        <MultiBinding Converter="{x:Static v:DesignIssueSubjectConverter.Instance}">
+                          <Binding Path="Name" />
+                          <Binding Path="$parent[UserControl].((dz:TableDesignerViewModel)DataContext).Issues" />
+                        </MultiBinding>
+                      </Border.IsVisible>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="2">
+                      <TextBox Width="160" Text="{Binding Name, Mode=TwoWay}" MinHeight="{DynamicResource SquillControlHeightStandard}" />
+                      <AutoCompleteBox Width="160" Text="{Binding DataType, Mode=TwoWay}" FilterMode="Contains"
+                                       ItemsSource="{Binding $parent[UserControl].((dz:TableDesignerViewModel)DataContext).TypeSuggestions}" />
+                      <CheckBox Content="Nullable" IsChecked="{Binding IsNullable, Mode=TwoWay}" />
+                      <CheckBox Content="PK" IsChecked="{Binding IsPrimaryKey, Mode=TwoWay}" />
+                      <CheckBox Content="Auto" IsChecked="{Binding IsAutoIncrement, Mode=TwoWay}" />
+                      <TextBox Width="140" Text="{Binding DefaultExpression, Mode=TwoWay}" PlaceholderText="Default"
+                               MinHeight="{DynamicResource SquillControlHeightStandard}" />
+                      <Button Content="Up" Command="{Binding $parent[UserControl].((dz:TableDesignerViewModel)DataContext).MoveColumnUpCommand}" CommandParameter="{Binding}" />
+                      <Button Content="Down" Command="{Binding $parent[UserControl].((dz:TableDesignerViewModel)DataContext).MoveColumnDownCommand}" CommandParameter="{Binding}" />
+                      <Button Content="Delete" Command="{Binding $parent[UserControl].((dz:TableDesignerViewModel)DataContext).RemoveColumnCommand}" CommandParameter="{Binding}" />
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </DockPanel>
+      </TabItem>
+      <TabItem Header="Indexes">
+        <DockPanel>
+          <Button DockPanel.Dock="Bottom" Content="Add index" HorizontalAlignment="Left" Margin="0,4,0,0"
+                  Command="{Binding AddIndexCommand}" />
+          <ScrollViewer>
+            <ItemsControl Name="IndexRows" ItemsSource="{Binding Indexes}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="dz:IndexRowViewModel">
+                  <Grid Margin="0,1">
+                    <Border IsHitTestVisible="False" CornerRadius="3" BorderThickness="1"
+                            BorderBrush="{DynamicResource SquillDangerBrush}" Background="{DynamicResource SquillDangerSoftBrush}">
+                      <Border.IsVisible>
+                        <MultiBinding Converter="{x:Static v:DesignIssueSubjectConverter.Instance}">
+                          <Binding Path="Name" />
+                          <Binding Path="$parent[UserControl].((dz:TableDesignerViewModel)DataContext).Issues" />
+                        </MultiBinding>
+                      </Border.IsVisible>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="2">
+                      <TextBox Width="160" Text="{Binding Name, Mode=TwoWay}" MinHeight="{DynamicResource SquillControlHeightStandard}" />
+                      <CheckBox Content="Unique" IsChecked="{Binding IsUnique, Mode=TwoWay}" />
+                      <TextBox Width="260" Text="{Binding ColumnsText, Mode=TwoWay}" PlaceholderText="Columns, comma separated"
+                               MinHeight="{DynamicResource SquillControlHeightStandard}" />
+                      <Button Content="Delete" Command="{Binding $parent[UserControl].((dz:TableDesignerViewModel)DataContext).RemoveIndexCommand}" CommandParameter="{Binding}" />
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </DockPanel>
+      </TabItem>
+      <TabItem Header="Foreign keys">
+        <DockPanel>
+          <Button DockPanel.Dock="Bottom" Content="Add foreign key" HorizontalAlignment="Left" Margin="0,4,0,0"
+                  Command="{Binding AddForeignKeyCommand}" />
+          <ScrollViewer>
+            <ItemsControl Name="ForeignKeyRows" ItemsSource="{Binding ForeignKeys}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="dz:ForeignKeyRowViewModel">
+                  <Grid Margin="0,1">
+                    <Border IsHitTestVisible="False" CornerRadius="3" BorderThickness="1"
+                            BorderBrush="{DynamicResource SquillDangerBrush}" Background="{DynamicResource SquillDangerSoftBrush}">
+                      <Border.IsVisible>
+                        <MultiBinding Converter="{x:Static v:DesignIssueSubjectConverter.Instance}">
+                          <Binding Path="Name" />
+                          <Binding Path="$parent[UserControl].((dz:TableDesignerViewModel)DataContext).Issues" />
+                        </MultiBinding>
+                      </Border.IsVisible>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="2">
+                      <TextBox Width="120" Text="{Binding Name, Mode=TwoWay}" PlaceholderText="Name" MinHeight="{DynamicResource SquillControlHeightStandard}" />
+                      <TextBox Width="120" Text="{Binding ColumnsText, Mode=TwoWay}" PlaceholderText="Columns" MinHeight="{DynamicResource SquillControlHeightStandard}" />
+                      <TextBox Width="90" Text="{Binding ReferencedSchema, Mode=TwoWay}" PlaceholderText="Ref. schema" MinHeight="{DynamicResource SquillControlHeightStandard}" />
+                      <TextBox Width="120" Text="{Binding ReferencedTable, Mode=TwoWay}" PlaceholderText="Ref. table" MinHeight="{DynamicResource SquillControlHeightStandard}" />
+                      <TextBox Width="120" Text="{Binding ReferencedColumnsText, Mode=TwoWay}" PlaceholderText="Ref. columns" MinHeight="{DynamicResource SquillControlHeightStandard}" />
+                      <ComboBox Width="130" ToolTip.Tip="ON DELETE" SelectedItem="{Binding OnDelete, Mode=TwoWay}"
+                                ItemsSource="{Binding $parent[UserControl].((dz:TableDesignerViewModel)DataContext).ReferentialActions}" />
+                      <ComboBox Width="130" ToolTip.Tip="ON UPDATE" SelectedItem="{Binding OnUpdate, Mode=TwoWay}"
+                                ItemsSource="{Binding $parent[UserControl].((dz:TableDesignerViewModel)DataContext).ReferentialActions}" />
+                      <Button Content="Delete" Command="{Binding $parent[UserControl].((dz:TableDesignerViewModel)DataContext).RemoveForeignKeyCommand}" CommandParameter="{Binding}" />
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </DockPanel>
+      </TabItem>
+    </TabControl>
+    <Grid Grid.Row="2" ColumnDefinitions="*,*" Height="160" Margin="0,6,0,0">
+      <TextBox Name="ScriptBox" IsReadOnly="True" AcceptsReturn="True" FontFamily="Consolas,Menlo,monospace"
+               Text="{Binding Script, Mode=OneWay}" />
+      <ListBox Name="IssueList" Grid.Column="1" ItemsSource="{Binding Issues}" Background="Transparent" Margin="6,0,0,0">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="dc:DesignIssue">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="{Binding Severity}" Foreground="{DynamicResource SquillFg3Brush}" />
+              <TextBlock Text="{Binding Message}" Foreground="{DynamicResource SquillFgBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Grid>
+    <TextBlock Grid.Row="3" Margin="2,4" Foreground="{DynamicResource SquillFg2Brush}" Text="{Binding StatusText}" />
+  </Grid>
+</UserControl>

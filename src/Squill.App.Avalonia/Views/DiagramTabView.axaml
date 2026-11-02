@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:Squill.Presentation.Diagram"
+             xmlns:c="using:Squill.App.Avalonia.Controls"
+             x:Class="Squill.App.Avalonia.Views.DiagramTabView"
+             x:DataType="d:DiagramTabViewModel">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <StackPanel Orientation="Horizontal" Spacing="4" Margin="6,4">
+      <TextBox Width="180" Text="{Binding FilterText, Mode=TwoWay}" PlaceholderText="Filter tables"
+               MinHeight="{DynamicResource SquillControlHeightStandard}" />
+      <ToggleButton Content="Include views" IsChecked="{Binding IncludeViews, Mode=TwoWay}" />
+      <Button Name="FitButton" Content="Fit" ToolTip.Tip="Ctrl+0" Click="OnFitClicked" />
+      <Button Content="Reset layout" Command="{Binding ResetLayoutCommand}" />
+      <Button Content="Focus" Command="{Binding FocusSelectedCommand}" />
+      <ComboBox Name="DepthBox" SelectedIndex="0" SelectionChanged="OnDepthChanged" ToolTip.Tip="Relation hops">
+        <ComboBoxItem Content="1 hop" />
+        <ComboBoxItem Content="2 hops" />
+        <ComboBoxItem Content="3 hops" />
+      </ComboBox>
+      <Button Content="Show all" Command="{Binding ShowAllCommand}" />
+      <Button Content="Export SVG" Command="{Binding ExportSvgCommand}" />
+    </StackPanel>
+    <c:ErDiagramCanvas Grid.Row="1" Name="Canvas" Diagram="{Binding}" />
+    <TextBlock Grid.Row="2" Margin="8,2" Foreground="{DynamicResource SquillFg2Brush}" Text="{Binding StatusText}" />
+  </Grid>
+</UserControl>

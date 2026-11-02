@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Squill.Core;
 using Squill.Presentation.Connections;
@@ -105,5 +106,24 @@ public sealed partial class SidebarView : UserControl
     {
         if (_workspace?.Explorer is { } explorer && Tree.SelectedItem is ExplorerNode node)
             explorer.ActivateCommand.Execute(node);
+    }
+
+    // Only tables can be designed or dropped; the flyout is built per request so other nodes show no menu.
+    private void OnNodeContextRequested(UIElement sender, ContextRequestedEventArgs e)
+    {
+        if (_workspace?.Explorer is not { } explorer || (sender as FrameworkElement)?.DataContext is not ExplorerNode { Kind: ExplorerNodeKind.Table } node)
+            return;
+        var menu = new MenuFlyout();
+        var design = new MenuFlyoutItem { Text = "Design table..." };
+        design.Click += (_, _) => explorer.DesignCommand.Execute(node);
+        var drop = new MenuFlyoutItem { Text = "Drop table..." };
+        drop.Click += (_, _) => explorer.DropCommand.Execute(node);
+        menu.Items.Add(design);
+        menu.Items.Add(drop);
+        if (e.TryGetPosition(sender, out var position))
+            menu.ShowAt(sender, new FlyoutShowOptions { Position = position });
+        else
+            menu.ShowAt((FrameworkElement)sender);
+        e.Handled = true;
     }
 }

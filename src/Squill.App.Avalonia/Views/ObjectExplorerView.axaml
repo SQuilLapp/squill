@@ -18,6 +18,12 @@
       <TreeView.ItemTemplate>
         <TreeDataTemplate x:DataType="ex:ExplorerNode" ItemsSource="{Binding Children}">
           <StackPanel Orientation="Horizontal" Spacing="6">
+            <StackPanel.ContextMenu>
+              <ContextMenu Opening="OnNodeMenuOpening">
+                <MenuItem Header="Design table..." Click="OnDesignClicked" />
+                <MenuItem Header="Drop table..." Click="OnDropClicked" />
+              </ContextMenu>
+            </StackPanel.ContextMenu>
             <TextBlock Text="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.Glyph}}"
                        Foreground="{DynamicResource SquillAccentTextBrush}" Width="16" />
             <TextBlock Text="{Binding Title}" Foreground="{DynamicResource SquillFgBrush}" />

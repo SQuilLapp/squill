@@ -1,0 +1,114 @@
+<UserControl x:Class="Squill.App.WinUI.Views.TableDesignerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:dz="using:Squill.Presentation.Designer"
+             xmlns:dc="using:Squill.Core.Design"
+             xmlns:v="using:Squill.App.WinUI.Views">
+  <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="6">
+    <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,0,6">
+      <TextBox Width="120" PlaceholderText="Schema" Text="{x:Bind ViewModel.Schema, Mode=TwoWay}" />
+      <TextBox Width="200" PlaceholderText="Name" Text="{x:Bind ViewModel.Name, Mode=TwoWay}" />
+      <Button Content="Apply" ToolTipService.ToolTip="Ctrl+S" Command="{x:Bind ViewModel.ApplyCommand}" />
+      <Button Content="Revert" Command="{x:Bind ViewModel.RevertCommand}" />
+      <Button Content="Open script" Command="{x:Bind ViewModel.OpenScriptCommand}" />
+      <Button Content="Cancel" Command="{x:Bind ViewModel.CancelCommand}" />
+    </StackPanel>
+    <Pivot Grid.Row="1">
+      <PivotItem Header="Columns">
+        <Grid RowDefinitions="*,Auto">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto">
+            <ItemsControl x:Name="ColumnRows" ItemsSource="{x:Bind ViewModel.Columns}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="dz:ColumnRowViewModel">
+                  <Grid Margin="0,1" Loaded="OnRowLoaded">
+                    <Border IsHitTestVisible="False" CornerRadius="3" BorderThickness="1" Visibility="Collapsed"
+                            BorderBrush="{ThemeResource SquillDangerBrush}" Background="{ThemeResource SquillDangerSoftBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="2">
+                      <TextBox Width="160" Text="{x:Bind Name, Mode=TwoWay}" />
+                      <AutoSuggestBox Width="160" Text="{x:Bind DataType, Mode=TwoWay}" TextChanged="OnTypeTextChanged" GotFocus="OnTypeGotFocus" />
+                      <CheckBox Content="Nullable" MinWidth="0" IsChecked="{x:Bind IsNullable, Mode=TwoWay}" />
+                      <CheckBox Content="PK" MinWidth="0" IsChecked="{x:Bind IsPrimaryKey, Mode=TwoWay}" />
+                      <CheckBox Content="Auto" MinWidth="0" IsChecked="{x:Bind IsAutoIncrement, Mode=TwoWay}" />
+                      <TextBox Width="140" PlaceholderText="Default" Text="{x:Bind DefaultExpression, Mode=TwoWay}" />
+                      <Button Content="Up" Click="OnMoveColumnUp" />
+                      <Button Content="Down" Click="OnMoveColumnDown" />
+                      <Button Content="Delete" Click="OnRemoveColumn" />
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+          <Button Grid.Row="1" Content="Add column" Margin="0,4,0,0" Command="{x:Bind ViewModel.AddColumnCommand}" />
+        </Grid>
+      </PivotItem>
+      <PivotItem Header="Indexes">
+        <Grid RowDefinitions="*,Auto">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto">
+            <ItemsControl x:Name="IndexRows" ItemsSource="{x:Bind ViewModel.Indexes}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="dz:IndexRowViewModel">
+                  <Grid Margin="0,1" Loaded="OnRowLoaded">
+                    <Border IsHitTestVisible="False" CornerRadius="3" BorderThickness="1" Visibility="Collapsed"
+                            BorderBrush="{ThemeResource SquillDangerBrush}" Background="{ThemeResource SquillDangerSoftBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="2">
+                      <TextBox Width="160" Text="{x:Bind Name, Mode=TwoWay}" />
+                      <CheckBox Content="Unique" MinWidth="0" IsChecked="{x:Bind IsUnique, Mode=TwoWay}" />
+                      <TextBox Width="260" PlaceholderText="Columns, comma separated" Text="{x:Bind ColumnsText, Mode=TwoWay}" />
+                      <Button Content="Delete" Click="OnRemoveIndex" />
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+          <Button Grid.Row="1" Content="Add index" Margin="0,4,0,0" Command="{x:Bind ViewModel.AddIndexCommand}" />
+        </Grid>
+      </PivotItem>
+      <PivotItem Header="Foreign keys">
+        <Grid RowDefinitions="*,Auto">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto">
+            <ItemsControl x:Name="ForeignKeyRows" ItemsSource="{x:Bind ViewModel.ForeignKeys}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="dz:ForeignKeyRowViewModel">
+                  <Grid Margin="0,1" Loaded="OnRowLoaded">
+                    <Border IsHitTestVisible="False" CornerRadius="3" BorderThickness="1" Visibility="Collapsed"
+                            BorderBrush="{ThemeResource SquillDangerBrush}" Background="{ThemeResource SquillDangerSoftBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="2">
+                      <TextBox Width="120" PlaceholderText="Name" Text="{x:Bind Name, Mode=TwoWay}" />
+                      <TextBox Width="120" PlaceholderText="Columns" Text="{x:Bind ColumnsText, Mode=TwoWay}" />
+                      <TextBox Width="90" PlaceholderText="Ref. schema" Text="{x:Bind ReferencedSchema, Mode=TwoWay}" />
+                      <TextBox Width="120" PlaceholderText="Ref. table" Text="{x:Bind ReferencedTable, Mode=TwoWay}" />
+                      <TextBox Width="120" PlaceholderText="Ref. columns" Text="{x:Bind ReferencedColumnsText, Mode=TwoWay}" />
+                      <ComboBox Width="150" ToolTipService.ToolTip="ON DELETE" ItemsSource="{x:Bind v:TableDesignerView.Actions}"
+                                SelectedItem="{x:Bind OnDelete, Mode=TwoWay}" />
+                      <ComboBox Width="150" ToolTipService.ToolTip="ON UPDATE" ItemsSource="{x:Bind v:TableDesignerView.Actions}"
+                                SelectedItem="{x:Bind OnUpdate, Mode=TwoWay}" />
+                      <Button Content="Delete" Click="OnRemoveForeignKey" />
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+          <Button Grid.Row="1" Content="Add foreign key" Margin="0,4,0,0" Command="{x:Bind ViewModel.AddForeignKeyCommand}" />
+        </Grid>
+      </PivotItem>
+    </Pivot>
+    <Grid Grid.Row="2" ColumnDefinitions="*,*" Height="160" Margin="0,6,0,0">
+      <TextBox x:Name="ScriptBox" IsReadOnly="True" AcceptsReturn="True" FontFamily="Cascadia Mono, Consolas"
+               ScrollViewer.VerticalScrollBarVisibility="Auto" Text="{x:Bind ViewModel.Script, Mode=OneWay}" />
+      <ListView x:Name="IssueList" Grid.Column="1" Margin="6,0,0,0" SelectionMode="None" ItemsSource="{x:Bind ViewModel.Issues, Mode=OneWay}">
+        <ListView.ItemTemplate>
+          <DataTemplate x:DataType="dc:DesignIssue">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="{x:Bind Severity}" Foreground="{ThemeResource SquillFg3Brush}" />
+              <TextBlock Text="{x:Bind Message}" Foreground="{ThemeResource SquillFgBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+          </DataTemplate>
+        </ListView.ItemTemplate>
+      </ListView>
+    </Grid>
+    <TextBlock Grid.Row="3" Margin="2,4" Foreground="{ThemeResource SquillFg2Brush}" Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
+  </Grid>
+</UserControl>

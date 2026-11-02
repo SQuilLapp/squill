@@ -7,7 +7,7 @@ namespace Squill.Data.MySql;
 internal static class MySqlSchemaReader
 {
     private const string ColumnsSql = """
-        select t.TABLE_NAME, t.TABLE_TYPE, c.COLUMN_NAME, c.COLUMN_TYPE, c.IS_NULLABLE, c.COLUMN_DEFAULT, c.COLUMN_KEY
+        select t.TABLE_NAME, t.TABLE_TYPE, c.COLUMN_NAME, c.COLUMN_TYPE, c.IS_NULLABLE, c.COLUMN_DEFAULT, c.COLUMN_KEY, c.EXTRA
         from information_schema.TABLES t
         join information_schema.COLUMNS c on c.TABLE_SCHEMA = t.TABLE_SCHEMA and c.TABLE_NAME = t.TABLE_NAME
         where t.TABLE_SCHEMA = database() and t.TABLE_TYPE in ('BASE TABLE', 'VIEW')
@@ -23,7 +23,8 @@ internal static class MySqlSchemaReader
         """;
 
     private const string ForeignKeysSql = """
-        select k.TABLE_NAME, k.CONSTRAINT_NAME, k.COLUMN_NAME, k.REFERENCED_TABLE_SCHEMA, k.REFERENCED_TABLE_NAME, k.REFERENCED_COLUMN_NAME
+        select k.TABLE_NAME, k.CONSTRAINT_NAME, k.COLUMN_NAME, k.REFERENCED_TABLE_SCHEMA, k.REFERENCED_TABLE_NAME, k.REFERENCED_COLUMN_NAME,
+               r.DELETE_RULE, r.UPDATE_RULE
         from information_schema.KEY_COLUMN_USAGE k
         join information_schema.REFERENTIAL_CONSTRAINTS r
           on r.CONSTRAINT_SCHEMA = k.CONSTRAINT_SCHEMA and r.CONSTRAINT_NAME = k.CONSTRAINT_NAME and r.TABLE_NAME = k.TABLE_NAME
@@ -40,7 +41,8 @@ internal static class MySqlSchemaReader
         var database = (await ReadAsync(connection, "select database()", r => r.IsDBNull(0) ? null : r.GetString(0), cancellationToken))[0];
         var columns = (await ReadAsync(connection, ColumnsSql, r => (
             Table: r.GetString(0), Kind: r.GetString(1) == "VIEW" ? TableKind.View : TableKind.Table,
-            Column: new ColumnDefinition(r.GetString(2), r.GetString(3), r.GetString(4) == "YES", r.GetString(6) == "PRI", r.IsDBNull(5) ? null : r.GetString(5))), cancellationToken))
+            Column: new ColumnDefinition(r.GetString(2), r.GetString(3), r.GetString(4) == "YES", r.GetString(6) == "PRI", r.IsDBNull(5) ? null : r.GetString(5),
+                r.GetString(7).Contains("auto_increment", StringComparison.OrdinalIgnoreCase))), cancellationToken))
             .GroupBy(c => (c.Table, c.Kind))
             .ToList();
         var indexes = (await ReadAsync(connection, IndexesSql, r => (
@@ -49,9 +51,11 @@ internal static class MySqlSchemaReader
             .ToLookup(g => g.Key.Table, g => new IndexInfo(g.Key.Name, g.Key.Unique, g.Select(i => i.Column).ToList()));
         var foreignKeys = (await ReadAsync(connection, ForeignKeysSql, r => (
             Table: r.GetString(0), Name: r.GetString(1), Column: r.GetString(2),
-            RefSchema: r.GetString(3), RefTable: r.GetString(4), RefColumn: r.GetString(5)), cancellationToken))
-            .GroupBy(f => (f.Table, f.Name, f.RefSchema, f.RefTable))
-            .ToLookup(g => g.Key.Table, g => new ForeignKeyInfo(g.Key.Name, g.Select(f => f.Column).ToList(), g.Key.RefSchema, g.Key.RefTable, g.Select(f => f.RefColumn).ToList()));
+            RefSchema: r.GetString(3), RefTable: r.GetString(4), RefColumn: r.GetString(5),
+            OnDelete: ReferentialActions.Parse(r.GetString(6)) ?? ReferentialAction.NoAction,
+            OnUpdate: ReferentialActions.Parse(r.GetString(7)) ?? ReferentialAction.NoAction), cancellationToken))
+            .GroupBy(f => (f.Table, f.Name, f.RefSchema, f.RefTable, f.OnDelete, f.OnUpdate))
+            .ToLookup(g => g.Key.Table, g => new ForeignKeyInfo(g.Key.Name, g.Select(f => f.Column).ToList(), g.Key.RefSchema, g.Key.RefTable, g.Select(f => f.RefColumn).ToList(), g.Key.OnDelete, g.Key.OnUpdate));
 
         var tables = columns
             .Select(g => new TableInfo(database!, g.Key.Table, g.Key.Kind,

@@ -19,11 +19,13 @@ internal static class SqlServerSchemaReader
                cast(case when exists (
                    select 1 from sys.indexes pk
                    join sys.index_columns pkc on pkc.object_id = pk.object_id and pkc.index_id = pk.index_id
-                   where pk.object_id = o.object_id and pk.is_primary_key = 1 and pkc.column_id = c.column_id) then 1 else 0 end as bit)
+                   where pk.object_id = o.object_id and pk.is_primary_key = 1 and pkc.column_id = c.column_id) then 1 else 0 end as bit),
+               c.is_identity, kc.name
         from objs o
         join sys.schemas s on s.schema_id = o.schema_id
         join sys.columns c on c.object_id = o.object_id
         join sys.types ty on ty.user_type_id = c.user_type_id
+        left join sys.key_constraints kc on kc.parent_object_id = o.object_id and kc.type = 'PK'
         left join sys.default_constraints d on d.parent_object_id = c.object_id and d.parent_column_id = c.column_id
         where s.name not in ('sys', 'INFORMATION_SCHEMA')
         order by s.name, o.name, c.column_id
@@ -44,7 +46,7 @@ internal static class SqlServerSchemaReader
         """;
 
     private const string ForeignKeysSql = """
-        select ps.name, pt.name, f.name, pc.name, rs.name, rt.name, rc.name
+        select ps.name, pt.name, f.name, pc.name, rs.name, rt.name, rc.name, f.delete_referential_action, f.update_referential_action
         from sys.foreign_keys f
         join sys.foreign_key_columns fc on fc.constraint_object_id = f.object_id
         join sys.objects pt on pt.object_id = f.parent_object_id
@@ -82,7 +84,8 @@ internal static class SqlServerSchemaReader
         var columns = (await ReadAsync(connection, ColumnsSql, r => (
             Schema: r.GetString(0), Table: r.GetString(1), Kind: r.GetString(2) == "V" ? TableKind.View : TableKind.Table,
             Column: new ColumnDefinition(r.GetString(3), FormatDataType(r.GetString(4), r.GetInt16(5), r.GetByte(6), r.GetByte(7)),
-                r.GetBoolean(8), r.GetBoolean(10), r.IsDBNull(9) ? null : r.GetString(9))), cancellationToken))
+                r.GetBoolean(8), r.GetBoolean(10), r.IsDBNull(9) ? null : r.GetString(9), r.GetBoolean(11)),
+            PrimaryKeyName: r.IsDBNull(12) ? null : r.GetString(12)), cancellationToken))
             .GroupBy(c => (c.Schema, c.Table, c.Kind))
             .ToList();
         var indexes = (await ReadAsync(connection, IndexesSql, r => (
@@ -91,17 +94,26 @@ internal static class SqlServerSchemaReader
             .ToLookup(g => (g.Key.Schema, g.Key.Table), g => new IndexInfo(g.Key.Name, g.Key.Unique, g.Select(i => i.Column).ToList()));
         var foreignKeys = (await ReadAsync(connection, ForeignKeysSql, r => (
             Schema: r.GetString(0), Table: r.GetString(1), Name: r.GetString(2), Column: r.GetString(3),
-            RefSchema: r.GetString(4), RefTable: r.GetString(5), RefColumn: r.GetString(6)), cancellationToken))
-            .GroupBy(f => (f.Schema, f.Table, f.Name, f.RefSchema, f.RefTable))
+            RefSchema: r.GetString(4), RefTable: r.GetString(5), RefColumn: r.GetString(6),
+            OnDelete: ToAction(r.GetByte(7)), OnUpdate: ToAction(r.GetByte(8))), cancellationToken))
+            .GroupBy(f => (f.Schema, f.Table, f.Name, f.RefSchema, f.RefTable, f.OnDelete, f.OnUpdate))
             .ToLookup(g => (g.Key.Schema, g.Key.Table),
-                g => new ForeignKeyInfo(g.Key.Name, g.Select(f => f.Column).ToList(), g.Key.RefSchema, g.Key.RefTable, g.Select(f => f.RefColumn).ToList()));
+                g => new ForeignKeyInfo(g.Key.Name, g.Select(f => f.Column).ToList(), g.Key.RefSchema, g.Key.RefTable, g.Select(f => f.RefColumn).ToList(), g.Key.OnDelete, g.Key.OnUpdate));
 
         var tables = columns
             .Select(g => new TableInfo(g.Key.Schema, g.Key.Table, g.Key.Kind,
-                g.Select(c => c.Column).ToList(), indexes[(g.Key.Schema, g.Key.Table)].ToList(), foreignKeys[(g.Key.Schema, g.Key.Table)].ToList()))
+                g.Select(c => c.Column).ToList(), indexes[(g.Key.Schema, g.Key.Table)].ToList(), foreignKeys[(g.Key.Schema, g.Key.Table)].ToList(), g.First().PrimaryKeyName))
             .ToList();
         return new SchemaSnapshot(defaultSchema, tables);
     }
+
+    private static ReferentialAction ToAction(byte code) => code switch
+    {
+        1 => ReferentialAction.Cascade,
+        2 => ReferentialAction.SetNull,
+        3 => ReferentialAction.SetDefault,
+        _ => ReferentialAction.NoAction,
+    };
 
     private static async Task<List<T>> ReadAsync<T>(SqlConnection connection, string sql, Func<SqlDataReader, T> map, CancellationToken cancellationToken)
     {

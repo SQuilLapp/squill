@@ -13,6 +13,7 @@
                    IsCheckedChanged="OnPanelChecked" />
       <RadioButton Name="SnippetsTab" GroupName="SidebarPanel" Theme="{StaticResource {x:Type ToggleButton}}" Content="Snippets"
                    IsCheckedChanged="OnPanelChecked" />
+      <Button Content="New table" Command="{Binding NewTableCommand}" />
     </StackPanel>
     <v:HistoryView Grid.Row="1" Name="HistoryPanel" IsVisible="False" />
     <v:SnippetsView Grid.Row="1" Name="SnippetsPanel" IsVisible="False" />

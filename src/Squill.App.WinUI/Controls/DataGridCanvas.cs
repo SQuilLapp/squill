@@ -460,7 +460,7 @@ public sealed partial class DataGridCanvas : Grid
             Get("SquillSelectionColor"));
     }
 
-    private static object? FindMerged(ResourceDictionary dictionary, string key)
+    internal static object? FindMerged(ResourceDictionary dictionary, string key)
     {
         if (dictionary.TryGetValue(key, out var value))
         {
@@ -470,7 +470,7 @@ public sealed partial class DataGridCanvas : Grid
         return dictionary.MergedDictionaries.Select(merged => FindMerged(merged, key)).FirstOrDefault(found => found is not null);
     }
 
-    private static ResourceDictionary? FindThemeDictionary(ResourceDictionary dictionary, string key)
+    internal static ResourceDictionary? FindThemeDictionary(ResourceDictionary dictionary, string key)
     {
         // Other merged dictionaries (the XAML controls resources) have their own "Default" and "Light" themes: match on one of our tokens.
         if (dictionary.ThemeDictionaries.TryGetValue(key, out var value) && value is ResourceDictionary theme && theme.ContainsKey("SquillBgSurfaceColor"))

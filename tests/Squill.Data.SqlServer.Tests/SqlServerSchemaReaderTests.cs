@@ -8,6 +8,10 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
     private static readonly string[] Setup =
     [
         "drop view if exists dbo.person_nick",
+        "drop table if exists dbo.actions",
+        "drop table if exists dbo.ident",
+        "drop table if exists dbo.named_pk",
+        "drop table if exists dbo.country2",
         "drop table if exists dbo.person",
         "drop table if exists dbo.country",
         "create table dbo.country (code char(2) primary key, name nvarchar(50) not null)",
@@ -20,6 +24,16 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
             created datetime2(3) not null constraint df_person_created default sysutcdatetime(),
             constraint pk_person primary key (id, tenant),
             constraint fk_person_country foreign key (country) references dbo.country (code))
+        """,
+        "create table dbo.country2 (id int primary key)",
+        "create table dbo.ident (id int identity(1,1) primary key, plain int null)",
+        "create table dbo.named_pk (id int not null, constraint pk_named primary key (id))",
+        """
+        create table dbo.actions (
+            id int primary key,
+            a int references dbo.country2 (id) on delete cascade on update set null,
+            b int default 1 references dbo.country2 (id) on delete set default on update cascade,
+            c int references dbo.country2 (id))
         """,
         "create unique index person_tenant_nick on dbo.person (tenant, nick)",
         "create index person_country on dbo.person (country)",
@@ -57,7 +71,7 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
     {
         var snapshot = await ReadAsync();
         Assert.Equal("dbo", snapshot.DefaultSchema);
-        Assert.Equal(["country", "person", "person_nick"], snapshot.Tables.Select(t => t.Name).Order());
+        Assert.Equal(["actions", "country", "country2", "ident", "named_pk", "person", "person_nick"], snapshot.Tables.Select(t => t.Name).Order());
         Assert.All(snapshot.Tables, t => Assert.Equal("dbo", t.Schema));
     }
 
@@ -100,5 +114,31 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
         var view = (await ReadAsync()).FindTable("dbo", "person_nick")!;
         Assert.Equal(TableKind.View, view.Kind);
         Assert.Equal(["id", "nick"], view.Columns.Select(c => c.Name));
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_IdentityColumn_IsAutoIncrement()
+    {
+        var ident = (await ReadAsync()).FindTable("dbo", "ident")!;
+        Assert.True(ident.Columns[0].IsAutoIncrement);
+        Assert.False(ident.Columns[1].IsAutoIncrement);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_ForeignKeyActions_AreRead()
+    {
+        var keys = (await ReadAsync()).FindTable("dbo", "actions")!.ForeignKeys.ToDictionary(k => k.Columns[0]);
+        Assert.Equal((ReferentialAction.Cascade, ReferentialAction.SetNull), (keys["a"].OnDelete, keys["a"].OnUpdate));
+        Assert.Equal((ReferentialAction.SetDefault, ReferentialAction.Cascade), (keys["b"].OnDelete, keys["b"].OnUpdate));
+        Assert.Equal((ReferentialAction.NoAction, ReferentialAction.NoAction), (keys["c"].OnDelete, keys["c"].OnUpdate));
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_PrimaryKeyName_IsNamedAutoOrNull()
+    {
+        var snapshot = await ReadAsync();
+        Assert.Equal("pk_named", snapshot.FindTable("dbo", "named_pk")!.PrimaryKeyName);
+        Assert.StartsWith("PK__", snapshot.FindTable("dbo", "ident")!.PrimaryKeyName);
+        Assert.Null(snapshot.FindTable("dbo", "person_nick")!.PrimaryKeyName);
     }
 }

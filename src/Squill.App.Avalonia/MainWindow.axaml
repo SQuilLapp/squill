@@ -3,6 +3,8 @@
         xmlns:ws="using:Squill.Presentation.Workspace"
         xmlns:q="using:Squill.Presentation.Query"
         xmlns:t="using:Squill.Presentation.Terminal"
+        xmlns:dg="using:Squill.Presentation.Diagram"
+        xmlns:dz="using:Squill.Presentation.Designer"
         xmlns:v="using:Squill.App.Avalonia.Views"
         x:Class="Squill.App.Avalonia.MainWindow"
         x:DataType="ws:WorkspaceViewModel"
@@ -15,6 +17,7 @@
     <KeyBinding Gesture="Escape" Command="{Binding ActiveTab.CancelCommand}" />
     <KeyBinding Gesture="Ctrl+Shift+F" Command="{Binding ActiveTab.FormatDocumentCommand}" />
     <KeyBinding Gesture="Ctrl+T" Command="{Binding NewTabCommand}" />
+    <KeyBinding Gesture="Ctrl+S" Command="{Binding ActiveDesigner.ApplyCommand}" />
     <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseTabCommand}" CommandParameter="{Binding ActiveTab}" />
   </Window.KeyBindings>
   <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="260,Auto,*">
@@ -26,6 +29,8 @@
               IsVisible="{Binding ActiveTab.IsRunning, FallbackValue=False}" />
       <Button Content="Format" ToolTip.Tip="Ctrl+Shift+F" Command="{Binding ActiveTab.FormatDocumentCommand}" />
       <Button Content="New tab" ToolTip.Tip="Ctrl+T" Command="{Binding NewTabCommand}" />
+      <Button Content="ER diagram" Command="{Binding OpenDiagramCommand}"
+              IsVisible="{Binding $self.IsEnabled}" />
       <Button Content="Settings" ToolTip.Tip="Ctrl+," Click="OnSettingsClicked" />
       <Button Content="Close tab" ToolTip.Tip="Ctrl+W" Command="{Binding CloseTabCommand}"
               CommandParameter="{Binding ActiveTab}" />
@@ -65,8 +70,42 @@
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
+        <ListBox Name="DiagramStrip" ItemsSource="{Binding Diagrams}" Background="Transparent"
+                 SelectionChanged="OnExtraSelectionChanged">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="dg:DiagramTabViewModel">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Text="Diagrams" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
+                <Button Content="x" Padding="4,0" Background="Transparent" Click="OnCloseDiagramClicked" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <ListBox Name="DesignerStrip" ItemsSource="{Binding Designers}" Background="Transparent"
+                 SelectionChanged="OnExtraSelectionChanged">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="dz:TableDesignerViewModel">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
+                <Button Content="x" Padding="4,0" Background="Transparent" Click="OnCloseDesignerClicked" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
       </StackPanel>
       <v:QueryTabView Grid.Row="1" Name="ActiveTabView" DataContext="{Binding ActiveTab}" />
+      <v:DiagramTabView Grid.Row="1" Name="DiagramArea" IsVisible="False" />
+      <v:TableDesignerView Grid.Row="1" Name="DesignerArea" IsVisible="False" />
       <Grid Name="TerminalArea" Grid.Row="1" IsVisible="False" Background="{DynamicResource SquillBgBaseBrush}" />
     </Grid>
     <v:StatusBar Grid.Row="2" Name="Status" Grid.ColumnSpan="3" />
