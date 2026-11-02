@@ -1,6 +1,6 @@
 # P7-17 - Presentation: ER diagram edge routing
 
-Status: todo
+Status: done
 Depends on: P7-16
 
 ## Goal
@@ -19,8 +19,8 @@ Compute the polyline of every relation from the entity boxes, so heads only draw
 - Avoiding crossings through other boxes (documented limit: lines may pass behind boxes), curved lines.
 
 ## Tasks
-- [ ] Implement `ErEdge` and `ErRouter`.
-- [ ] Tests in `tests/Squill.Presentation.Tests`: facing boxes (4 points, anchors at the right rows), reversed order, overlapping x, self-reference with two loops, composite key uses the first column, two edges to the same parent get different `midX`, missing box skips the edge.
+- [x] Implement `ErEdge` and `ErRouter`.
+- [x] Tests in `tests/Squill.Presentation.Tests`: facing boxes (4 points, anchors at the right rows), reversed order, overlapping x, self-reference with two loops, composite key uses the first column, two edges to the same parent get different `midX`, missing box skips the edge.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
