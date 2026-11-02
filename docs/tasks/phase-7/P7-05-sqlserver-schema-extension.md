@@ -1,6 +1,6 @@
 # P7-05 - Data.SqlServer: read identity, foreign-key actions and key name
 
-Status: todo
+Status: done
 Depends on: P7-01, P1-14
 
 ## Goal
@@ -16,8 +16,8 @@ Depends on: P7-01, P1-14
 - Other engines, default-constraint names (the SQL Server generator looks them up at run time, P7-13).
 
 ## Tasks
-- [ ] Extend the reader.
-- [ ] Extend the Docker-gated tests (as in P1-14): identity column, each action, a named primary key and an auto-named one (name starts with `PK__`).
+- [x] Extend the reader.
+- [x] Extend the Docker-gated tests (as in P1-14): identity column, each action, a named primary key and an auto-named one (name starts with `PK__`).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

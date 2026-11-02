@@ -103,7 +103,7 @@ Depends on: <card ids, ranges allowed>
 | [P7-02](phase-7/P7-02-sqlite-schema-extension.md) | Data.Sqlite: read auto-increment and foreign-key actions | P7-01, P1-07 | done |
 | [P7-03](phase-7/P7-03-postgres-schema-extension.md) | Data.Postgres: read auto-increment, foreign-key actions and key name | P7-01, P1-10 | done |
 | [P7-04](phase-7/P7-04-mysql-schema-extension.md) | Data.MySql: read auto-increment and foreign-key actions | P7-01, P1-12 | done |
-| [P7-05](phase-7/P7-05-sqlserver-schema-extension.md) | Data.SqlServer: read identity, foreign-key actions and key name | P7-01, P1-14 | todo |
+| [P7-05](phase-7/P7-05-sqlserver-schema-extension.md) | Data.SqlServer: read identity, foreign-key actions and key name | P7-01, P1-14 | done |
 | [P7-06](phase-7/P7-06-core-table-design-model.md) | Core: table design model | P7-01 | todo |
 | [P7-07](phase-7/P7-07-core-table-diff.md) | Core: table diff into schema operations | P7-06 | todo |
 | [P7-08](phase-7/P7-08-core-design-validation.md) | Core: table design validation | P7-07 | todo |
