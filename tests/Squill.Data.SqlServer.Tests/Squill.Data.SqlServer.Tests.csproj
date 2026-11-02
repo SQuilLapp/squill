@@ -10,5 +10,6 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Testcontainers.MsSql" />
     <ProjectReference Include="..\..\src\Squill.Data.SqlServer\Squill.Data.SqlServer.csproj" />
+    <ProjectReference Include="..\..\src\Squill.Sql\Squill.Sql.csproj" />
   </ItemGroup>
 </Project>

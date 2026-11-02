@@ -1,6 +1,6 @@
 # P7-13 - Sql: ALTER TABLE for SQL Server
 
-Status: todo
+Status: done
 Depends on: P7-10, P7-07
 
 ## Goal
@@ -22,9 +22,9 @@ Replace the SQL Server `Alter` stub.
 - Other dialects, toggling IDENTITY on an existing column (rejected by P7-08).
 
 ## Tasks
-- [ ] Implement `Alter` for SQL Server and remove its stub.
-- [ ] Tests in `tests/Squill.Sql.Tests` with exact strings: one per operation, the default batch text, type change on a column with a default (three statements), `Restrict` mapped to `NO ACTION`, mixed order.
-- [ ] Docker-gated test (as in `tests/Squill.Data.SqlServer.Tests`): create a table with a default, change its type and default, rename a column, add a foreign key, run `Alter`, read back and compare.
+- [x] Implement `Alter` for SQL Server and remove its stub.
+- [x] Tests in `tests/Squill.Sql.Tests` with exact strings: one per operation, the default batch text, type change on a column with a default (three statements), `Restrict` mapped to `NO ACTION`, mixed order.
+- [x] Docker-gated test (as in `tests/Squill.Data.SqlServer.Tests`): create a table with a default, change its type and default, rename a column, add a foreign key, run `Alter`, read back and compare.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

@@ -44,7 +44,11 @@ internal static class DdlWriter
     public static string ForeignKey(ForeignKeyDesign f, DatabaseDialect d) =>
         $"CONSTRAINT {SqlQuoting.Quote(f.Name, d)} FOREIGN KEY ({Columns(f.Columns, d)}) "
         + $"REFERENCES {SqlQuoting.QualifiedName(f.ReferencedSchema, f.ReferencedTable, d)} ({Columns(f.ReferencedColumns, d)}) "
-        + $"ON DELETE {f.OnDelete.ToSql()} ON UPDATE {f.OnUpdate.ToSql()}";
+        + $"ON DELETE {Action(f.OnDelete, d)} ON UPDATE {Action(f.OnUpdate, d)}";
+
+    // SQL Server has no RESTRICT keyword; NO ACTION is its equivalent.
+    private static string Action(ReferentialAction a, DatabaseDialect d) =>
+        d == DatabaseDialect.SqlServer && a == ReferentialAction.Restrict ? "NO ACTION" : a.ToSql();
 
     /// <summary>Builds the DROP TABLE statement.</summary>
     public static IReadOnlyList<string> DropTable(string? schema, string name, DatabaseDialect d) =>
