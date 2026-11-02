@@ -136,6 +136,10 @@ public sealed partial class DiagramTabViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     public partial string StatusText { get; private set; } = "";
 
+    /// <summary>Gets or sets whether the SVG export uses the dark palette; set by the head from the current theme.</summary>
+    [ObservableProperty]
+    public partial bool IsDarkTheme { get; set; }
+
     partial void OnIncludeViewsChanged(bool value) => RebuildIfReady();
 
     partial void OnFilterTextChanged(string value) => RebuildIfReady();
@@ -253,6 +257,23 @@ public sealed partial class DiagramTabViewModel : ViewModelBase, IDisposable
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             await _dialogs.ShowErrorAsync("Refresh failed", ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    private async Task ExportSvgAsync()
+    {
+        var path = await _dialogs.PickSaveFileAsync(_session.Profile.Name, "svg");
+        if (path is null)
+            return;
+        try
+        {
+            await File.WriteAllTextAsync(path, ErSvgExporter.Render(Model, Boxes, Edges, _options, IsDarkTheme), _cts.Token);
+            StatusText = "Saved " + path;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            await _dialogs.ShowErrorAsync("Export failed", ex.Message);
         }
     }
 

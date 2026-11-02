@@ -54,13 +54,13 @@ public sealed class DiagramTabViewModelTests
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 
-    private static (DiagramTabViewModel Vm, FakeStore Store) Create(SchemaSnapshot schema, SchemaSnapshot? refreshed = null, FakeStore? store = null)
+    private static (DiagramTabViewModel Vm, FakeStore Store) Create(SchemaSnapshot schema, SchemaSnapshot? refreshed = null, FakeStore? store = null, FakeDialogService? dialogs = null)
     {
         store ??= new FakeStore();
         var session = new ConnectionSession(
             new ConnectionProfile(Guid.NewGuid(), "prod", DatabaseDialect.PostgreSql, "h", 1, "d", "u", null, null),
             new FakeConnection(refreshed ?? schema), schema, null);
-        return (new DiagramTabViewModel(session, store, new FakeDialogService(), s => s.Length * 7, new ImmediateDispatcher()), store);
+        return (new DiagramTabViewModel(session, store, dialogs ?? new FakeDialogService(), s => s.Length * 7, new ImmediateDispatcher()), store);
     }
 
     [Fact]
@@ -250,5 +250,51 @@ public sealed class DiagramTabViewModelTests
         vm.ActivateCommand.Execute("missing");
 
         Assert.Equal(["open a", "design a"], events);
+    }
+
+    [Fact]
+    public async Task ExportSvg_WritesFileAndReportsPath()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".svg");
+        try
+        {
+            var dialogs = new FakeDialogService { SavePathResult = path };
+            var (vm, _) = Create(Schema(Plain("a"), Child("b", "a")), dialogs: dialogs);
+            vm.IsDarkTheme = true;
+
+            await vm.ExportSvgCommand.ExecuteAsync(null);
+
+            var svg = await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
+            Assert.Contains("<svg", svg);
+            Assert.Contains("#1A1B20", svg);
+            Assert.Equal("Saved " + path, vm.StatusText);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public async Task ExportSvg_CancelledDialogWritesNothing()
+    {
+        var dialogs = new FakeDialogService { SavePathResult = null };
+        var (vm, _) = Create(Schema(Plain("a")), dialogs: dialogs);
+
+        await vm.ExportSvgCommand.ExecuteAsync(null);
+
+        Assert.Empty(dialogs.Errors);
+        Assert.Equal("", vm.StatusText);
+    }
+
+    [Fact]
+    public async Task ExportSvg_ReportsWriteFailure()
+    {
+        var dialogs = new FakeDialogService { SavePathResult = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "x.svg") };
+        var (vm, _) = Create(Schema(Plain("a")), dialogs: dialogs);
+
+        await vm.ExportSvgCommand.ExecuteAsync(null);
+
+        Assert.Single(dialogs.Errors);
     }
 }

@@ -1,6 +1,6 @@
 # P7-20 - Presentation: ER diagram SVG export
 
-Status: todo
+Status: done
 Depends on: P7-19
 
 ## Goal
@@ -16,8 +16,8 @@ Export the visible diagram as a standalone SVG file, with no UI framework and no
 - PNG/PDF export, copying the image to the clipboard.
 
 ## Tasks
-- [ ] Implement the exporter and the command.
-- [ ] Tests: output parses as XML (`XDocument.Parse`), contains one `rect` pair per entity and one `polyline` per edge, escaping of `<`, `&` and quotes in names, dashed optional relations, determinism, export command with a fake dialog service and a temp file, cancelled dialog writes nothing.
+- [x] Implement the exporter and the command.
+- [x] Tests: output parses as XML (`XDocument.Parse`), contains one `rect` pair per entity and one `polyline` per edge, escaping of `<`, `&` and quotes in names, dashed optional relations, determinism, export command with a fake dialog service and a temp file, cancelled dialog writes nothing.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
