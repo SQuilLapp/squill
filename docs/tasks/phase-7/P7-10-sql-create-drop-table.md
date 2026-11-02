@@ -1,6 +1,6 @@
 # P7-10 - Sql: DDL generator contract, CREATE TABLE and DROP TABLE
 
-Status: todo
+Status: done
 Depends on: P7-09, P7-06
 
 ## Goal
@@ -22,9 +22,9 @@ The generator contract and the CREATE/DROP TABLE statements for the four dialect
 - ALTER (P7-11 to P7-14), check constraints, table options (engine, collation, tablespace).
 
 ## Tasks
-- [ ] Implement the contract, `DdlGenerators`, `DdlWriter` and the four `CreateTable`/`DropTable` implementations.
-- [ ] Tests in `tests/Squill.Sql.Tests` with exact expected strings per dialect: simple table, composite key, named key, auto-increment (all four, including the SQLite sole-key case and its composite-key case), index and unique index, foreign key with actions and with a schema, quoting with embedded quotes, `ToScript`, `UsesTransactionalDdl`.
-- [ ] Round-trip test in `tests/Squill.Data.Sqlite.Tests` (add a project reference to `Squill.Sql` if missing): run the generated `CreateTable` statements on `:memory:` through `Squill.Data.Sqlite`, read the schema back, compare with the design (names, types, nullability, key, index, foreign key).
+- [x] Implement the contract, `DdlGenerators`, `DdlWriter` and the four `CreateTable`/`DropTable` implementations.
+- [x] Tests in `tests/Squill.Sql.Tests` with exact expected strings per dialect: simple table, composite key, named key, auto-increment (all four, including the SQLite sole-key case and its composite-key case), index and unique index, foreign key with actions and with a schema, quoting with embedded quotes, `ToScript`, `UsesTransactionalDdl`.
+- [x] Round-trip test in `tests/Squill.Data.Sqlite.Tests` (add a project reference to `Squill.Sql` if missing): run the generated `CreateTable` statements on `:memory:` through `Squill.Data.Sqlite`, read the schema back, compare with the design (names, types, nullability, key, index, foreign key).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
