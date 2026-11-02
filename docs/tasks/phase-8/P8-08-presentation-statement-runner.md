@@ -1,6 +1,6 @@
 # P8-08 - Presentation: shared statement runner (refactor of the designer apply flow)
 
-Status: todo
+Status: done
 Depends on: P7-21, P4-04
 
 ## Goal
@@ -18,9 +18,9 @@ Extract the "run one statement, drain it, bracket statements in a transaction" c
 - Any new behaviour, grid editing, changing the designer's tests (they must pass unchanged).
 
 ## Tasks
-- [ ] Add `SqlRunner` and switch the designer to it.
-- [ ] Tests for `SqlRunner` in `tests/Squill.Presentation.Tests` with the fake `IDatabaseConnection` of the designer tests: statements recorded with exact text, parameters forwarded, reader drained and disposed, `RecordsAffected` returned, `QueryFirstRowAsync` with and without rows, begin/commit/rollback text per dialect, rollback swallowing an error but not a cancellation.
-- [ ] All existing designer tests still pass unmodified.
+- [x] Add `SqlRunner` and switch the designer to it.
+- [x] Tests for `SqlRunner` in `tests/Squill.Presentation.Tests` with the fake `IDatabaseConnection` of the designer tests: statements recorded with exact text, parameters forwarded, reader drained and disposed, `RecordsAffected` returned, `QueryFirstRowAsync` with and without rows, begin/commit/rollback text per dialect, rollback swallowing an error but not a cancellation.
+- [x] All existing designer tests still pass unmodified.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

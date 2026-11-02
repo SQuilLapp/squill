@@ -173,8 +173,6 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         using var cts = new CancellationTokenSource();
         _cts = cts;
         var statements = _statements;
-        var begin = _dialect == DatabaseDialect.SqlServer ? "BEGIN TRANSACTION" : "BEGIN";
-        var commit = _dialect == DatabaseDialect.SqlServer ? "COMMIT TRANSACTION" : "COMMIT";
         var transactional = DdlGenerators.UsesTransactionalDdl(_dialect);
         var lead = 0;
         var tail = statements.Count;
@@ -193,13 +191,13 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
             {
                 if (transactional && i == lead && lead < tail)
                 {
-                    await RunAsync(begin, cts.Token);
+                    await SqlRunner.BeginAsync(_session.Connection, _dialect, cts.Token);
                     inTransaction = true;
                 }
 
                 if (transactional && i == tail && inTransaction)
                 {
-                    await RunAsync(commit, cts.Token);
+                    await SqlRunner.CommitAsync(_session.Connection, _dialect, cts.Token);
                     inTransaction = false;
                 }
 
@@ -208,7 +206,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
 
             if (inTransaction)
             {
-                await RunAsync(commit, cts.Token);
+                await SqlRunner.CommitAsync(_session.Connection, _dialect, cts.Token);
                 inTransaction = false;
             }
 
@@ -219,7 +217,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         catch (Exception ex)
         {
             if (inTransaction)
-                await TryRunAsync("ROLLBACK");
+                await SqlRunner.RollbackAsync(_session.Connection, _dialect, CancellationToken.None);
             if (transactional)
             {
                 // Restores what a SQLite rebuild switched off; the violation check is skipped on purpose.
@@ -255,20 +253,8 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
 
     private static bool IsPragma(string sql) => sql.AsSpan().TrimStart().StartsWith("PRAGMA", StringComparison.OrdinalIgnoreCase);
 
-    private async Task RunAsync(string sql, CancellationToken ct)
-    {
-        var reader = await _session.Connection.ExecuteAsync(sql, [], ct);
-        try
-        {
-            while (await reader.ReadBatchAsync(100, ct) is not null)
-            {
-            }
-        }
-        finally
-        {
-            await reader.DisposeAsync();
-        }
-    }
+    private ValueTask<long> RunAsync(string sql, CancellationToken ct) =>
+        SqlRunner.ExecuteAsync(_session.Connection, sql, [], ct);
 
     private async Task TryRunAsync(string sql)
     {
