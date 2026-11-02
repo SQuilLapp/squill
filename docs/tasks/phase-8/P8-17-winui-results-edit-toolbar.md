@@ -1,6 +1,6 @@
 # P8-17 - WinUI head: edit toolbar, issues and commit
 
-Status: todo
+Status: done
 Depends on: P8-16, P8-15
 
 ## Goal
@@ -15,8 +15,8 @@ The WinUI counterpart of P8-15.
 - Anything in the Avalonia head.
 
 ## Tasks
-- [ ] Implement the edit bar, flyout, shortcuts and script routing.
-- [ ] Tests in `tests/Squill.App.WinUI.Tests` for the testable parts; run the AOT-published head on a temp SQLite file and edit, add, delete and commit a row if the session allows UI driving, otherwise verify startup only. State in the card report what was and was not exercised. Close every process you started.
+- [x] Implement the edit bar, flyout, shortcuts and script routing.
+- [x] Tests in `tests/Squill.App.WinUI.Tests` for the testable parts; run the AOT-published head on a temp SQLite file and edit, add, delete and commit a row if the session allows UI driving, otherwise verify startup only. State in the card report what was and was not exercised. Close every process you started.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.
