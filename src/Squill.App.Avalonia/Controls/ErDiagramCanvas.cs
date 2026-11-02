@@ -19,8 +19,8 @@ public sealed class ErDiagramCanvas : Control
     private const double DragThreshold = 3;
 
     /// <summary>Identifies the <see cref="Diagram"/> property.</summary>
-    public static readonly StyledProperty<DiagramTabViewModel?> DiagramProperty =
-        AvaloniaProperty.Register<ErDiagramCanvas, DiagramTabViewModel?>(nameof(Diagram));
+    public static readonly DirectProperty<ErDiagramCanvas, DiagramTabViewModel?> DiagramProperty =
+        AvaloniaProperty.RegisterDirect<ErDiagramCanvas, DiagramTabViewModel?>(nameof(Diagram), o => o.Diagram, (o, v) => o.Diagram = v);
 
     private static readonly Typeface Face = new(FontFamily.Default);
     private static readonly Typeface BoldFace = new(FontFamily.Default, weight: FontWeight.SemiBold);
@@ -49,8 +49,18 @@ public sealed class ErDiagramCanvas : Control
     /// <summary>Gets or sets the diagram drawn and operated.</summary>
     public DiagramTabViewModel? Diagram
     {
-        get => GetValue(DiagramProperty);
-        set => SetValue(DiagramProperty, value);
+        get => _diagram;
+        set
+        {
+            var old = _diagram;
+            if (!SetAndRaise(DiagramProperty, ref _diagram, value))
+                return;
+            if (old is not null)
+                old.PropertyChanged -= OnDiagramChanged;
+            if (value is not null)
+                value.PropertyChanged += OnDiagramChanged;
+            InvalidateVisual();
+        }
     }
 
     /// <summary>Measures a text in the diagram font so the shared layout matches the drawing.</summary>
@@ -58,20 +68,6 @@ public sealed class ErDiagramCanvas : Control
     /// <returns>Its width in device-independent pixels.</returns>
     public static double MeasureText(string text) =>
         new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Face, ColumnFontSize, Brushes.Black).Width;
-
-    /// <inheritdoc />
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (change.Property != DiagramProperty)
-            return;
-        if (_diagram is not null)
-            _diagram.PropertyChanged -= OnDiagramChanged;
-        _diagram = Diagram;
-        if (_diagram is not null)
-            _diagram.PropertyChanged += OnDiagramChanged;
-        InvalidateVisual();
-    }
 
     /// <inheritdoc />
     public override void Render(DrawingContext context)

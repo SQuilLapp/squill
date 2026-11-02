@@ -206,25 +206,27 @@ public static class ErLayout
     {
         var cmp = StringComparer.OrdinalIgnoreCase;
         Dictionary<string, List<string>> kept = comp.ToDictionary(k => k, _ => new List<string>(), cmp);
-        Dictionary<string, int> state = new(cmp); // 1 = on stack, 2 = done
+        HashSet<string> onStack = new(cmp);
+        HashSet<string> visited = new(cmp);
         void Visit(string k)
         {
-            state[k] = 1;
+            visited.Add(k);
+            onStack.Add(k);
             foreach (var p in parents[k])
             {
-                if (state.TryGetValue(p, out var s) && s == 1)
+                if (onStack.Contains(p))
                     continue;
                 kept[k].Add(p);
-                if (!state.ContainsKey(p))
+                if (!visited.Contains(p))
                     Visit(p);
             }
 
-            state[k] = 2;
+            onStack.Remove(k);
         }
 
         foreach (var k in comp)
         {
-            if (!state.ContainsKey(k))
+            if (!visited.Contains(k))
                 Visit(k);
         }
 

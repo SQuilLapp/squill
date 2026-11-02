@@ -349,7 +349,11 @@ public sealed partial class DiagramTabViewModel : ViewModelBase, IDisposable
     }
 
     /// <summary>Stops pending saves from reporting after the tab is closed.</summary>
-    public void Dispose() => _cts.Cancel();
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
 
     private void RebuildIfReady()
     {
