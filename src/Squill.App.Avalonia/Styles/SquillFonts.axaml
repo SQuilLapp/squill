@@ -1,0 +1,6 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Fallback lists mirror the font.* tokens of tokens/squill.tokens.json; bundled files live in assets/fonts. -->
+  <FontFamily x:Key="SquillFontUi">Segoe UI Variable, SF Pro Text, avares://Squill.App.Avalonia/Assets/Fonts#Inter, sans-serif</FontFamily>
+  <FontFamily x:Key="SquillFontMono">avares://Squill.App.Avalonia/Assets/Fonts#JetBrains Mono, Cascadia Code, monospace</FontFamily>
+  <FontFamily x:Key="SquillFontBrand">avares://Squill.App.Avalonia/Assets/Fonts#Inter Tight, avares://Squill.App.Avalonia/Assets/Fonts#Inter, sans-serif</FontFamily>
+</ResourceDictionary>

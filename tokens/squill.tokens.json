@@ -240,6 +240,62 @@
           "dark": "#878A97"
         }
       },
+      "env-prod-soft": {
+        "$type": "color",
+        "$value": {
+          "light": "#F9EBEA",
+          "dark": "#382629"
+        }
+      },
+      "env-staging-soft": {
+        "$type": "color",
+        "$value": {
+          "light": "#F7EEE6",
+          "dark": "#382D25"
+        }
+      },
+      "env-dev-soft": {
+        "$type": "color",
+        "$value": {
+          "light": "#E8F1ED",
+          "dark": "#21322E"
+        }
+      },
+      "env-local-soft": {
+        "$type": "color",
+        "$value": {
+          "light": "#EAEAEC",
+          "dark": "#2F3036"
+        }
+      },
+      "engine-postgres": {
+        "$type": "color",
+        "$value": {
+          "light": "#3D6CB0",
+          "dark": "#3D6CB0"
+        }
+      },
+      "engine-mysql": {
+        "$type": "color",
+        "$value": {
+          "light": "#A85A24",
+          "dark": "#A85A24"
+        }
+      },
+      "engine-sqlserver": {
+        "$type": "color",
+        "$value": {
+          "light": "#A63A4A",
+          "dark": "#A63A4A"
+        }
+      },
+      "engine-sqlite": {
+        "$type": "color",
+        "$value": {
+          "light": "#4F7A99",
+          "dark": "#4F7A99"
+        }
+      },
       "on-env-prod": {
         "$type": "color",
         "$value": {

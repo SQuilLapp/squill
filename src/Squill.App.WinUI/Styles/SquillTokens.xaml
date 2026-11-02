@@ -36,6 +36,14 @@
       <Color x:Key="SquillEnvStagingColor">#FFF09A4A</Color>
       <Color x:Key="SquillEnvDevColor">#FF4FBF86</Color>
       <Color x:Key="SquillEnvLocalColor">#FF878A97</Color>
+      <Color x:Key="SquillEnvProdSoftColor">#FF382629</Color>
+      <Color x:Key="SquillEnvStagingSoftColor">#FF382D25</Color>
+      <Color x:Key="SquillEnvDevSoftColor">#FF21322E</Color>
+      <Color x:Key="SquillEnvLocalSoftColor">#FF2F3036</Color>
+      <Color x:Key="SquillEnginePostgresColor">#FF3D6CB0</Color>
+      <Color x:Key="SquillEngineMysqlColor">#FFA85A24</Color>
+      <Color x:Key="SquillEngineSqlserverColor">#FFA63A4A</Color>
+      <Color x:Key="SquillEngineSqliteColor">#FF4F7A99</Color>
       <Color x:Key="SquillOnEnvProdColor">#FF0F1013</Color>
       <Color x:Key="SquillOnEnvStagingColor">#FF0F1013</Color>
       <Color x:Key="SquillOnEnvDevColor">#FF0B1A10</Color>
@@ -87,6 +95,14 @@
       <SolidColorBrush x:Key="SquillEnvStagingBrush" Color="{ThemeResource SquillEnvStagingColor}"/>
       <SolidColorBrush x:Key="SquillEnvDevBrush" Color="{ThemeResource SquillEnvDevColor}"/>
       <SolidColorBrush x:Key="SquillEnvLocalBrush" Color="{ThemeResource SquillEnvLocalColor}"/>
+      <SolidColorBrush x:Key="SquillEnvProdSoftBrush" Color="{ThemeResource SquillEnvProdSoftColor}"/>
+      <SolidColorBrush x:Key="SquillEnvStagingSoftBrush" Color="{ThemeResource SquillEnvStagingSoftColor}"/>
+      <SolidColorBrush x:Key="SquillEnvDevSoftBrush" Color="{ThemeResource SquillEnvDevSoftColor}"/>
+      <SolidColorBrush x:Key="SquillEnvLocalSoftBrush" Color="{ThemeResource SquillEnvLocalSoftColor}"/>
+      <SolidColorBrush x:Key="SquillEnginePostgresBrush" Color="{ThemeResource SquillEnginePostgresColor}"/>
+      <SolidColorBrush x:Key="SquillEngineMysqlBrush" Color="{ThemeResource SquillEngineMysqlColor}"/>
+      <SolidColorBrush x:Key="SquillEngineSqlserverBrush" Color="{ThemeResource SquillEngineSqlserverColor}"/>
+      <SolidColorBrush x:Key="SquillEngineSqliteBrush" Color="{ThemeResource SquillEngineSqliteColor}"/>
       <SolidColorBrush x:Key="SquillOnEnvProdBrush" Color="{ThemeResource SquillOnEnvProdColor}"/>
       <SolidColorBrush x:Key="SquillOnEnvStagingBrush" Color="{ThemeResource SquillOnEnvStagingColor}"/>
       <SolidColorBrush x:Key="SquillOnEnvDevBrush" Color="{ThemeResource SquillOnEnvDevColor}"/>
@@ -140,6 +156,14 @@
       <Color x:Key="SquillEnvStagingColor">#FFC9620E</Color>
       <Color x:Key="SquillEnvDevColor">#FF267A45</Color>
       <Color x:Key="SquillEnvLocalColor">#FF737684</Color>
+      <Color x:Key="SquillEnvProdSoftColor">#FFF9EBEA</Color>
+      <Color x:Key="SquillEnvStagingSoftColor">#FFF7EEE6</Color>
+      <Color x:Key="SquillEnvDevSoftColor">#FFE8F1ED</Color>
+      <Color x:Key="SquillEnvLocalSoftColor">#FFEAEAEC</Color>
+      <Color x:Key="SquillEnginePostgresColor">#FF3D6CB0</Color>
+      <Color x:Key="SquillEngineMysqlColor">#FFA85A24</Color>
+      <Color x:Key="SquillEngineSqlserverColor">#FFA63A4A</Color>
+      <Color x:Key="SquillEngineSqliteColor">#FF4F7A99</Color>
       <Color x:Key="SquillOnEnvProdColor">#FFFFFFFF</Color>
       <Color x:Key="SquillOnEnvStagingColor">#FF0F1013</Color>
       <Color x:Key="SquillOnEnvDevColor">#FFFFFFFF</Color>
@@ -191,6 +215,14 @@
       <SolidColorBrush x:Key="SquillEnvStagingBrush" Color="{ThemeResource SquillEnvStagingColor}"/>
       <SolidColorBrush x:Key="SquillEnvDevBrush" Color="{ThemeResource SquillEnvDevColor}"/>
       <SolidColorBrush x:Key="SquillEnvLocalBrush" Color="{ThemeResource SquillEnvLocalColor}"/>
+      <SolidColorBrush x:Key="SquillEnvProdSoftBrush" Color="{ThemeResource SquillEnvProdSoftColor}"/>
+      <SolidColorBrush x:Key="SquillEnvStagingSoftBrush" Color="{ThemeResource SquillEnvStagingSoftColor}"/>
+      <SolidColorBrush x:Key="SquillEnvDevSoftBrush" Color="{ThemeResource SquillEnvDevSoftColor}"/>
+      <SolidColorBrush x:Key="SquillEnvLocalSoftBrush" Color="{ThemeResource SquillEnvLocalSoftColor}"/>
+      <SolidColorBrush x:Key="SquillEnginePostgresBrush" Color="{ThemeResource SquillEnginePostgresColor}"/>
+      <SolidColorBrush x:Key="SquillEngineMysqlBrush" Color="{ThemeResource SquillEngineMysqlColor}"/>
+      <SolidColorBrush x:Key="SquillEngineSqlserverBrush" Color="{ThemeResource SquillEngineSqlserverColor}"/>
+      <SolidColorBrush x:Key="SquillEngineSqliteBrush" Color="{ThemeResource SquillEngineSqliteColor}"/>
       <SolidColorBrush x:Key="SquillOnEnvProdBrush" Color="{ThemeResource SquillOnEnvProdColor}"/>
       <SolidColorBrush x:Key="SquillOnEnvStagingBrush" Color="{ThemeResource SquillOnEnvStagingColor}"/>
       <SolidColorBrush x:Key="SquillOnEnvDevBrush" Color="{ThemeResource SquillOnEnvDevColor}"/>
@@ -221,4 +253,41 @@
   <CornerRadius x:Key="SquillRadiusMd">6</CornerRadius>
   <CornerRadius x:Key="SquillRadiusLg">8</CornerRadius>
   <CornerRadius x:Key="SquillRadiusXl">12</CornerRadius>
+  <x:Double x:Key="SquillSpace0">0</x:Double>
+  <x:Double x:Key="SquillSpace1">2</x:Double>
+  <x:Double x:Key="SquillSpace2">4</x:Double>
+  <x:Double x:Key="SquillSpace3">8</x:Double>
+  <x:Double x:Key="SquillSpace4">12</x:Double>
+  <x:Double x:Key="SquillSpace5">16</x:Double>
+  <x:Double x:Key="SquillSpace6">20</x:Double>
+  <x:Double x:Key="SquillSpace7">24</x:Double>
+  <x:Double x:Key="SquillSpace8">32</x:Double>
+  <x:Double x:Key="SquillSpace9">40</x:Double>
+  <x:Double x:Key="SquillFontSizeCaption">11</x:Double>
+  <x:Double x:Key="SquillLineHeightCaption">16</x:Double>
+  <FontWeight x:Key="SquillFontWeightCaption">Normal</FontWeight>
+  <x:Double x:Key="SquillFontSizeBodySm">12</x:Double>
+  <x:Double x:Key="SquillLineHeightBodySm">16</x:Double>
+  <FontWeight x:Key="SquillFontWeightBodySm">Normal</FontWeight>
+  <x:Double x:Key="SquillFontSizeBody">13</x:Double>
+  <x:Double x:Key="SquillLineHeightBody">18</x:Double>
+  <FontWeight x:Key="SquillFontWeightBody">Normal</FontWeight>
+  <x:Double x:Key="SquillFontSizeBodyStrong">13</x:Double>
+  <x:Double x:Key="SquillLineHeightBodyStrong">18</x:Double>
+  <FontWeight x:Key="SquillFontWeightBodyStrong">SemiBold</FontWeight>
+  <x:Double x:Key="SquillFontSizeSubtitle">14</x:Double>
+  <x:Double x:Key="SquillLineHeightSubtitle">20</x:Double>
+  <FontWeight x:Key="SquillFontWeightSubtitle">SemiBold</FontWeight>
+  <x:Double x:Key="SquillFontSizeTitle">18</x:Double>
+  <x:Double x:Key="SquillLineHeightTitle">24</x:Double>
+  <FontWeight x:Key="SquillFontWeightTitle">SemiBold</FontWeight>
+  <x:Double x:Key="SquillFontSizeDisplay">28</x:Double>
+  <x:Double x:Key="SquillLineHeightDisplay">36</x:Double>
+  <FontWeight x:Key="SquillFontWeightDisplay">SemiBold</FontWeight>
+  <x:Double x:Key="SquillFontSizeMonoGrid">12</x:Double>
+  <x:Double x:Key="SquillLineHeightMonoGrid">16</x:Double>
+  <FontWeight x:Key="SquillFontWeightMonoGrid">Normal</FontWeight>
+  <x:Double x:Key="SquillFontSizeMonoEditor">13</x:Double>
+  <x:Double x:Key="SquillLineHeightMonoEditor">20</x:Double>
+  <FontWeight x:Key="SquillFontWeightMonoEditor">Normal</FontWeight>
 </ResourceDictionary>

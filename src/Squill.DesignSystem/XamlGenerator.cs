@@ -27,12 +27,21 @@ public static class XamlGenerator
             RowHeight: density.EnumerateObject().ToDictionary(d => d.Name, d => Px(d.Value.GetProperty("row"))),
             ControlHeight: density.EnumerateObject().ToDictionary(d => d.Name, d => Px(d.Value.GetProperty("control"))),
             Radius: root.GetProperty("radius").EnumerateObject().ToDictionary(r => r.Name, r => Px(r.Value)),
-            MotionMs: root.GetProperty("motion").EnumerateObject().ToDictionary(m => m.Name, m => Px(m.Value))));
+            MotionMs: root.GetProperty("motion").EnumerateObject().ToDictionary(m => m.Name, m => Px(m.Value)),
+            Typography: root.GetProperty("typescale").EnumerateObject().ToDictionary(t => t.Name, t => TypeOf(t.Value.GetProperty("$value"))),
+            Space: root.GetProperty("space").EnumerateObject().ToDictionary(s => s.Name, s => Px(s.Value))));
     }
 
     // "26px" / "150ms" -> 26 / 150
-    private static int Px(JsonElement token) =>
-        int.Parse(new string(token.GetProperty("$value").GetString()!.TakeWhile(char.IsDigit).ToArray()), CultureInfo.InvariantCulture);
+    private static int Px(JsonElement token) => Digits(token.GetProperty("$value").GetString()!);
+
+    private static int Digits(string s) => int.Parse(new string(s.TakeWhile(char.IsDigit).ToArray()), CultureInfo.InvariantCulture);
+
+    private static TypeStyle TypeOf(JsonElement v) =>
+        new(Digits(v.GetProperty("fontSize").GetString()!), Digits(v.GetProperty("lineHeight").GetString()!), v.GetProperty("fontWeight").GetInt32());
+
+    // WinUI has no numeric weight in XAML; both heads use the named weight nearest below (650 -> SemiBold).
+    private static string WeightName(int w) => w >= 700 ? "Bold" : w >= 600 ? "SemiBold" : w >= 500 ? "Medium" : "Normal";
 
     /// <summary>Converts a kebab-case name to PascalCase.</summary>
     /// <param name="kebab">Name whose parts are separated by hyphens, such as <c>accent-hover</c>.</param>
@@ -91,6 +100,8 @@ public static class XamlGenerator
             sb.AppendLine(CultureInfo.InvariantCulture, $"    <ResourceDictionary x:Key=\"{key}\">");
             foreach (var (name, v) in t.Themes[theme].Where(kv => IsColor(kv.Value)))
                 sb.AppendLine(CultureInfo.InvariantCulture, $"      <SolidColorBrush x:Key=\"Squill{Pascal(name)}Brush\" Color=\"{Argb(v)}\"/>");
+            foreach (var (name, v) in t.Themes[theme].Where(kv => kv.Key.StartsWith("shadow-", StringComparison.Ordinal)))
+                sb.AppendLine(CultureInfo.InvariantCulture, $"      <BoxShadows x:Key=\"Squill{Pascal(name)}\">{BoxShadow(v)}</BoxShadows>");
             sb.AppendLine("    </ResourceDictionary>");
         }
         sb.AppendLine("  </ResourceDictionary.ThemeDictionaries>");
@@ -99,7 +110,15 @@ public static class XamlGenerator
         return sb.ToString();
     }
 
-    // Shadows (--shadow-*) are not colors: handled with the views.
+    // "0 4px 14px rgba(10,12,30,.10)" -> "0 4 14 0 #1A0A0C1E" (Avalonia: x y blur spread color)
+    private static string BoxShadow(string css)
+    {
+        var i = css.IndexOf("rgba(", StringComparison.Ordinal);
+        var n = css[..i].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(Digits).ToArray();
+        return $"{n[0]} {n[1]} {n[2]} 0 {Argb(css[i..])}";
+    }
+
+    // Shadows (--shadow-*) are not colors; only Avalonia has a resource type for them (BoxShadows), WinUI skips them.
     private static bool IsColor(string v) => v.StartsWith('#') || v.StartsWith("rgba(", StringComparison.Ordinal);
 
     private static void AppendMetrics(StringBuilder sb, Metrics m)
@@ -107,5 +126,12 @@ public static class XamlGenerator
         foreach (var (k, v) in m.RowHeight) sb.AppendLine(CultureInfo.InvariantCulture, $"  <x:Double x:Key=\"SquillRowHeight{Pascal(k)}\">{v}</x:Double>");
         foreach (var (k, v) in m.ControlHeight) sb.AppendLine(CultureInfo.InvariantCulture, $"  <x:Double x:Key=\"SquillControlHeight{Pascal(k)}\">{v}</x:Double>");
         foreach (var (k, v) in m.Radius) sb.AppendLine(CultureInfo.InvariantCulture, $"  <CornerRadius x:Key=\"SquillRadius{Pascal(k)}\">{v}</CornerRadius>");
+        foreach (var (k, v) in m.Space) sb.AppendLine(CultureInfo.InvariantCulture, $"  <x:Double x:Key=\"Squill{Pascal(k)}\">{v}</x:Double>");
+        foreach (var (k, v) in m.Typography)
+        {
+            sb.AppendLine(CultureInfo.InvariantCulture, $"  <x:Double x:Key=\"SquillFontSize{Pascal(k)}\">{v.FontSize}</x:Double>");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"  <x:Double x:Key=\"SquillLineHeight{Pascal(k)}\">{v.LineHeight}</x:Double>");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"  <FontWeight x:Key=\"SquillFontWeight{Pascal(k)}\">{WeightName(v.FontWeight)}</FontWeight>");
+        }
     }
 }

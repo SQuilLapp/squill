@@ -36,6 +36,14 @@
       <SolidColorBrush x:Key="SquillEnvStagingBrush" Color="#FFF09A4A"/>
       <SolidColorBrush x:Key="SquillEnvDevBrush" Color="#FF4FBF86"/>
       <SolidColorBrush x:Key="SquillEnvLocalBrush" Color="#FF878A97"/>
+      <SolidColorBrush x:Key="SquillEnvProdSoftBrush" Color="#FF382629"/>
+      <SolidColorBrush x:Key="SquillEnvStagingSoftBrush" Color="#FF382D25"/>
+      <SolidColorBrush x:Key="SquillEnvDevSoftBrush" Color="#FF21322E"/>
+      <SolidColorBrush x:Key="SquillEnvLocalSoftBrush" Color="#FF2F3036"/>
+      <SolidColorBrush x:Key="SquillEnginePostgresBrush" Color="#FF3D6CB0"/>
+      <SolidColorBrush x:Key="SquillEngineMysqlBrush" Color="#FFA85A24"/>
+      <SolidColorBrush x:Key="SquillEngineSqlserverBrush" Color="#FFA63A4A"/>
+      <SolidColorBrush x:Key="SquillEngineSqliteBrush" Color="#FF4F7A99"/>
       <SolidColorBrush x:Key="SquillOnEnvProdBrush" Color="#FF0F1013"/>
       <SolidColorBrush x:Key="SquillOnEnvStagingBrush" Color="#FF0F1013"/>
       <SolidColorBrush x:Key="SquillOnEnvDevBrush" Color="#FF0B1A10"/>
@@ -53,6 +61,8 @@
       <SolidColorBrush x:Key="SquillSynOperatorBrush" Color="#FFAEB0BC"/>
       <SolidColorBrush x:Key="SquillSynParamBrush" Color="#FFF2A274"/>
       <SolidColorBrush x:Key="SquillSynIdentBrush" Color="#FFE8E9EE"/>
+      <BoxShadows x:Key="SquillShadow2">0 4 14 0 #59000000</BoxShadows>
+      <BoxShadows x:Key="SquillShadow3">0 18 48 0 #80000000</BoxShadows>
     </ResourceDictionary>
     <ResourceDictionary x:Key="Light">
       <SolidColorBrush x:Key="SquillBgBaseBrush" Color="#FFF1F2F5"/>
@@ -89,6 +99,14 @@
       <SolidColorBrush x:Key="SquillEnvStagingBrush" Color="#FFC9620E"/>
       <SolidColorBrush x:Key="SquillEnvDevBrush" Color="#FF267A45"/>
       <SolidColorBrush x:Key="SquillEnvLocalBrush" Color="#FF737684"/>
+      <SolidColorBrush x:Key="SquillEnvProdSoftBrush" Color="#FFF9EBEA"/>
+      <SolidColorBrush x:Key="SquillEnvStagingSoftBrush" Color="#FFF7EEE6"/>
+      <SolidColorBrush x:Key="SquillEnvDevSoftBrush" Color="#FFE8F1ED"/>
+      <SolidColorBrush x:Key="SquillEnvLocalSoftBrush" Color="#FFEAEAEC"/>
+      <SolidColorBrush x:Key="SquillEnginePostgresBrush" Color="#FF3D6CB0"/>
+      <SolidColorBrush x:Key="SquillEngineMysqlBrush" Color="#FFA85A24"/>
+      <SolidColorBrush x:Key="SquillEngineSqlserverBrush" Color="#FFA63A4A"/>
+      <SolidColorBrush x:Key="SquillEngineSqliteBrush" Color="#FF4F7A99"/>
       <SolidColorBrush x:Key="SquillOnEnvProdBrush" Color="#FFFFFFFF"/>
       <SolidColorBrush x:Key="SquillOnEnvStagingBrush" Color="#FF0F1013"/>
       <SolidColorBrush x:Key="SquillOnEnvDevBrush" Color="#FFFFFFFF"/>
@@ -106,6 +124,8 @@
       <SolidColorBrush x:Key="SquillSynOperatorBrush" Color="#FF4C4F5C"/>
       <SolidColorBrush x:Key="SquillSynParamBrush" Color="#FFB4580C"/>
       <SolidColorBrush x:Key="SquillSynIdentBrush" Color="#FF16171C"/>
+      <BoxShadows x:Key="SquillShadow2">0 4 14 0 #1A0A0C1E</BoxShadows>
+      <BoxShadows x:Key="SquillShadow3">0 18 48 0 #2E0A0C1E</BoxShadows>
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
   <x:Double x:Key="SquillRowHeightCompact">22</x:Double>
@@ -119,4 +139,41 @@
   <CornerRadius x:Key="SquillRadiusMd">6</CornerRadius>
   <CornerRadius x:Key="SquillRadiusLg">8</CornerRadius>
   <CornerRadius x:Key="SquillRadiusXl">12</CornerRadius>
+  <x:Double x:Key="SquillSpace0">0</x:Double>
+  <x:Double x:Key="SquillSpace1">2</x:Double>
+  <x:Double x:Key="SquillSpace2">4</x:Double>
+  <x:Double x:Key="SquillSpace3">8</x:Double>
+  <x:Double x:Key="SquillSpace4">12</x:Double>
+  <x:Double x:Key="SquillSpace5">16</x:Double>
+  <x:Double x:Key="SquillSpace6">20</x:Double>
+  <x:Double x:Key="SquillSpace7">24</x:Double>
+  <x:Double x:Key="SquillSpace8">32</x:Double>
+  <x:Double x:Key="SquillSpace9">40</x:Double>
+  <x:Double x:Key="SquillFontSizeCaption">11</x:Double>
+  <x:Double x:Key="SquillLineHeightCaption">16</x:Double>
+  <FontWeight x:Key="SquillFontWeightCaption">Normal</FontWeight>
+  <x:Double x:Key="SquillFontSizeBodySm">12</x:Double>
+  <x:Double x:Key="SquillLineHeightBodySm">16</x:Double>
+  <FontWeight x:Key="SquillFontWeightBodySm">Normal</FontWeight>
+  <x:Double x:Key="SquillFontSizeBody">13</x:Double>
+  <x:Double x:Key="SquillLineHeightBody">18</x:Double>
+  <FontWeight x:Key="SquillFontWeightBody">Normal</FontWeight>
+  <x:Double x:Key="SquillFontSizeBodyStrong">13</x:Double>
+  <x:Double x:Key="SquillLineHeightBodyStrong">18</x:Double>
+  <FontWeight x:Key="SquillFontWeightBodyStrong">SemiBold</FontWeight>
+  <x:Double x:Key="SquillFontSizeSubtitle">14</x:Double>
+  <x:Double x:Key="SquillLineHeightSubtitle">20</x:Double>
+  <FontWeight x:Key="SquillFontWeightSubtitle">SemiBold</FontWeight>
+  <x:Double x:Key="SquillFontSizeTitle">18</x:Double>
+  <x:Double x:Key="SquillLineHeightTitle">24</x:Double>
+  <FontWeight x:Key="SquillFontWeightTitle">SemiBold</FontWeight>
+  <x:Double x:Key="SquillFontSizeDisplay">28</x:Double>
+  <x:Double x:Key="SquillLineHeightDisplay">36</x:Double>
+  <FontWeight x:Key="SquillFontWeightDisplay">SemiBold</FontWeight>
+  <x:Double x:Key="SquillFontSizeMonoGrid">12</x:Double>
+  <x:Double x:Key="SquillLineHeightMonoGrid">16</x:Double>
+  <FontWeight x:Key="SquillFontWeightMonoGrid">Normal</FontWeight>
+  <x:Double x:Key="SquillFontSizeMonoEditor">13</x:Double>
+  <x:Double x:Key="SquillLineHeightMonoEditor">20</x:Double>
+  <FontWeight x:Key="SquillFontWeightMonoEditor">Normal</FontWeight>
 </ResourceDictionary>
