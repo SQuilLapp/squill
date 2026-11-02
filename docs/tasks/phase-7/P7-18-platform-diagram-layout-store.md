@@ -1,6 +1,6 @@
 # P7-18 - Platform: diagram layout store
 
-Status: todo
+Status: done
 Depends on: P2-04
 
 ## Goal
@@ -17,8 +17,8 @@ Remember, per connection profile, where the user dragged the entity boxes and th
 - Using the store (P7-19), deleting layouts when a profile is deleted (not required; stale files are harmless).
 
 ## Tasks
-- [ ] Implement the contract, the record types and the JSON store.
-- [ ] Tests in `tests/Squill.Platform.Tests` using a temp directory `AppPaths`: round trip, missing file, corrupt file, overwrite, delete, two profiles do not mix.
+- [x] Implement the contract, the record types and the JSON store.
+- [x] Tests in `tests/Squill.Platform.Tests` using a temp directory `AppPaths`: round trip, missing file, corrupt file, overwrite, delete, two profiles do not mix.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
