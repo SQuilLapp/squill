@@ -1,6 +1,6 @@
 # P7-19 - Presentation: ER diagram view-model
 
-Status: todo
+Status: done
 Depends on: P7-15, P7-16, P7-17, P7-18, P4-04
 
 ## Goal
@@ -20,8 +20,8 @@ The headless view-model of a diagram tab: scene, selection, pan/zoom, dragging, 
 - Drawing (P7-23, P7-25), SVG export (P7-20), table editing (P7-21).
 
 ## Tasks
-- [ ] Implement the view-model and `ErSize`.
-- [ ] Tests in `tests/Squill.Presentation.Tests` with a fake store and a synthetic session (see how P4-05/P4-07 tests build a `ConnectionSession`): initial layout, restore of saved positions, drag then save, zoom around an anchor keeps the world point, fit-to-screen, filter, focus, 200+ table cap, hit test picks the topmost box, refresh rebuilds, events raised.
+- [x] Implement the view-model and `ErSize`.
+- [x] Tests in `tests/Squill.Presentation.Tests` with a fake store and a synthetic session (see how P4-05/P4-07 tests build a `ConnectionSession`): initial layout, restore of saved positions, drag then save, zoom around an anchor keeps the world point, fit-to-screen, filter, focus, 200+ table cap, hit test picks the topmost box, refresh rebuilds, events raised.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
