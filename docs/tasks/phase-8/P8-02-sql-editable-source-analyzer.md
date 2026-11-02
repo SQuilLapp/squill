@@ -1,6 +1,6 @@
 # P8-02 - Sql: editable source analysis
 
-Status: todo
+Status: done
 Depends on: P8-01, P3-07, P1-04
 
 ## Goal
@@ -17,8 +17,8 @@ Decide whether a result grid may be edited and, if so, which table and key it ma
 - Joins, views, updatable views, tables without a primary key (no ROWID/ctid tricks), editing aggregated or computed columns.
 
 ## Tasks
-- [ ] Implement the analyzer.
-- [ ] Tests in `tests/Squill.Sql.Tests` over a small hand-built `SchemaSnapshot` for all four dialects: `SELECT *`, explicit columns, quoted names, schema-qualified table, alias on the table, `TOP` (SQL Server) and `LIMIT`, `WHERE`/`ORDER BY`; every reason above once; a computed column is read-only while the rest stays editable; an alias renaming a column becomes read-only.
+- [x] Implement the analyzer.
+- [x] Tests in `tests/Squill.Sql.Tests` over a small hand-built `SchemaSnapshot` for all four dialects: `SELECT *`, explicit columns, quoted names, schema-qualified table, alias on the table, `TOP` (SQL Server) and `LIMIT`, `WHERE`/`ORDER BY`; every reason above once; a computed column is read-only while the rest stays editable; an alias renaming a column becomes read-only.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

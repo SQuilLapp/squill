@@ -127,7 +127,7 @@ Depends on: <card ids, ranges allowed>
 | [P7-26](phase-7/P7-26-winui-table-designer-view.md) | WinUI head: table designer view | P7-25, P7-21 | done |
 | [P7-27](phase-7/P7-27-docs-and-adr.md) | Documentation: schema designer ADR, README and architecture note | P7-24, P7-26, P6-04 | done |
 | [P8-01](phase-8/P8-01-core-edit-model.md) | Core: row edit model | P7-01 | done |
-| [P8-02](phase-8/P8-02-sql-editable-source-analyzer.md) | Sql: editable source analysis | P8-01, P3-07, P1-04 | todo |
+| [P8-02](phase-8/P8-02-sql-editable-source-analyzer.md) | Sql: editable source analysis | P8-01, P3-07, P1-04 | done |
 | [P8-03](phase-8/P8-03-sql-dml-generator.md) | Sql: INSERT, UPDATE and DELETE generation | P8-01, P7-09 | todo |
 | [P8-04](phase-8/P8-04-sql-generated-key-readback.md) | Sql: reading generated keys after an INSERT | P8-03 | todo |
 | [P8-05](phase-8/P8-05-presentation-cell-value-parsing.md) | Presentation: parsing edited cell text into typed values | P4-06 | todo |
