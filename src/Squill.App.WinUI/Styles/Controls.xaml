@@ -115,6 +115,12 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
 
+  <!-- Activity rail item: 36 x 36 ghost icon button; the active one is painted by the window -->
+  <Style x:Key="RailButtonStyle" TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
+    <Setter Property="Width" Value="36" />
+    <Setter Property="Height" Value="36" />
+  </Style>
+
   <!-- Fields -->
   <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
     <Setter Property="MinHeight" Value="30" />

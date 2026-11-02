@@ -18,7 +18,7 @@ using Windows.System;
 
 namespace Squill.App.WinUI;
 
-/// <summary>The workspace shell: sidebar, query tabs, editor with results, and status bar.</summary>
+/// <summary>The workspace shell: title bar with menu, activity rail, sidebar, query tabs, editor with results, and status bar.</summary>
 public sealed partial class MainWindow : Window
 {
     private readonly Dictionary<QueryTabViewModel, TabViewItem> _items = [];
@@ -30,22 +30,24 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        InitializeChrome();
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "squill.ico"));
         var splitter = new Splitter(true);
         Grid.SetRow(splitter, 1);
-        Grid.SetColumn(splitter, 1);
+        Grid.SetColumn(splitter, 2);
         Root.Children.Add(splitter);
     }
 
     /// <summary>Connects the window to the shared view-models and loads the saved connections and settings.</summary>
     /// <param name="services">The shared root view-models.</param>
-    /// <param name="dataDirectory">The directory holding profiles, settings and history, opened from the status bar.</param>
+    /// <param name="dataDirectory">The directory holding profiles, settings and history, opened from the File menu.</param>
     /// <param name="dialogs">The service that reports grid paste errors.</param>
     public void Attach(AppServices services, string dataDirectory, IDialogService dialogs)
     {
         ActiveTabView.Dialogs = dialogs;
         _workspace = services.Workspace;
         _settings = services.Settings;
+        _dataDirectory = dataDirectory;
         Root.KeyboardAccelerators.Add(SettingsAccelerator());
         services.Settings.ThemeChanged += (_, _) => ApplyTheme(services.Settings.Theme);
         services.Settings.LoadCommand.Execute(null);
@@ -56,7 +58,8 @@ public sealed partial class MainWindow : Window
         AttachDiagrams(services.Workspace);
         AttachTerminals(services.Workspace);
         Sidebar.Attach(services.Workspace, services.History, services.Snippets);
-        Status.Attach(services.Workspace, dataDirectory);
+        Status.Attach(services.Workspace);
+        AttachMenu(services.Workspace);
     }
 
     private WorkspaceViewModel Workspace => _workspace!;
@@ -106,12 +109,10 @@ public sealed partial class MainWindow : Window
         _syncing = false;
         ShowQueryArea();
         ActiveTabView.Show(tab);
-        CancelButton.Visibility = Visibility.Collapsed;
         if (tab is not null)
         {
             tab.PropertyChanged -= OnActiveTabChanged;
             tab.PropertyChanged += OnActiveTabChanged;
-            ShowRunning(tab);
         }
     }
 
@@ -119,14 +120,9 @@ public sealed partial class MainWindow : Window
     {
         if (sender is not QueryTabViewModel tab)
             return;
-        if (e.PropertyName == nameof(QueryTabViewModel.IsRunning) && tab == Workspace.ActiveTab)
-            ShowRunning(tab);
-        else if (e.PropertyName == nameof(QueryTabViewModel.Title) && _items.TryGetValue(tab, out var item))
+        if (e.PropertyName == nameof(QueryTabViewModel.Title) && _items.TryGetValue(tab, out var item))
             item.Header = tab.Title;
     }
-
-    private void ShowRunning(QueryTabViewModel tab) =>
-        CancelButton.Visibility = tab.IsRunning ? Visibility.Visible : Visibility.Collapsed;
 
     private void OnTabsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {

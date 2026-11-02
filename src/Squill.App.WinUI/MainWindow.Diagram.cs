@@ -16,12 +16,7 @@ public sealed partial class MainWindow
     {
         workspace.Diagrams.CollectionChanged += OnExtraTabsChanged;
         workspace.Designers.CollectionChanged += OnExtraTabsChanged;
-        workspace.OpenDiagramCommand.CanExecuteChanged += (_, _) => SyncDiagramButton();
-        SyncDiagramButton();
     }
-
-    private void SyncDiagramButton() =>
-        DiagramButton.Visibility = Workspace.OpenDiagramCommand.CanExecute(null) ? Visibility.Visible : Visibility.Collapsed;
 
     private void OnExtraTabsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {

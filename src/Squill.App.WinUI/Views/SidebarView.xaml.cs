@@ -21,8 +21,6 @@ public sealed partial class SidebarView : UserControl
     public SidebarView()
     {
         InitializeComponent();
-        // Checked here, not in XAML: the handler needs every panel, which the parser has not created yet while it sets the property.
-        ExplorerTab.IsChecked = true;
     }
 
     /// <summary>Connects the view to the workspace, history and snippets it shows.</summary>
@@ -45,14 +43,16 @@ public sealed partial class SidebarView : UserControl
         ShowExplorer();
     }
 
-    private void OnPanelChecked(object sender, RoutedEventArgs e)
+    /// <summary>Shows one of the left panels and loads its content, as the activity rail asks.</summary>
+    /// <param name="panel">The panel to show.</param>
+    public void ShowPanel(SidebarPanel panel)
     {
-        ExplorerPanel.Visibility = ExplorerGlyphs.Show(ExplorerTab.IsChecked == true);
-        HistoryPanel.Visibility = ExplorerGlyphs.Show(HistoryTab.IsChecked == true);
-        SnippetsPanel.Visibility = ExplorerGlyphs.Show(SnippetsTab.IsChecked == true);
-        if (ReferenceEquals(sender, HistoryTab))
+        ExplorerPanel.Visibility = ExplorerGlyphs.Show(panel == SidebarPanel.Explorer);
+        HistoryPanel.Visibility = ExplorerGlyphs.Show(panel == SidebarPanel.History);
+        SnippetsPanel.Visibility = ExplorerGlyphs.Show(panel == SidebarPanel.Snippets);
+        if (panel == SidebarPanel.History)
             HistoryPanel.Reload();
-        else if (ReferenceEquals(sender, SnippetsTab))
+        else if (panel == SidebarPanel.Snippets)
             SnippetsPanel.Reload();
     }
 

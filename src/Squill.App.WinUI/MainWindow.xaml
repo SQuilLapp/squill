@@ -14,28 +14,61 @@
       <KeyboardAccelerator Key="S" Modifiers="Control" Invoked="OnApplyDesignerAccelerator" />
     </Grid.KeyboardAccelerators>
     <Grid.RowDefinitions>
-      <RowDefinition Height="Auto" />
+      <RowDefinition Height="41" />
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="260" />
+      <ColumnDefinition Width="45" />
+      <ColumnDefinition Width="270" />
       <ColumnDefinition Width="Auto" />
       <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
-    <StackPanel x:Name="Toolbar" Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="4" Margin="6,4">
-      <Button Content="Run" ToolTipService.ToolTip="F5 / Ctrl+Enter" Click="OnRunClicked" />
-      <Button Content="Run all" Click="OnRunAllClicked" />
-      <Button x:Name="CancelButton" Content="Cancel" ToolTipService.ToolTip="Esc" Click="OnCancelClicked" Visibility="Collapsed" />
-      <Button Content="Format" ToolTipService.ToolTip="Ctrl+Shift+F" Click="OnFormatClicked" />
-      <Button Content="New tab" ToolTipService.ToolTip="Ctrl+T" Click="OnNewTabClicked" />
-      <Button Content="Close tab" ToolTipService.ToolTip="Ctrl+W" Click="OnCloseTabClicked" />
-      <Button x:Name="DiagramButton" Content="ER diagram" Click="OnDiagramClicked" />
-      <Button Content="New table" Click="OnNewTableClicked" />
-      <Button Content="Settings" ToolTipService.ToolTip="Ctrl+," Click="OnSettingsClicked" />
-    </StackPanel>
-    <v:SidebarView x:Name="Sidebar" Grid.Row="1" />
-    <Grid Grid.Row="1" Grid.Column="2">
+    <Border x:Name="TitleBar" Grid.ColumnSpan="4" BorderThickness="0,0,0,1">
+      <Grid>
+        <StackPanel Orientation="Horizontal" Margin="14,0,0,0" HorizontalAlignment="Left">
+          <Image x:Name="TitleIcon" Width="16" Height="16" Margin="0,0,8,0" />
+          <MenuBar x:Name="MainMenu" VerticalAlignment="Center">
+            <MenuBar.Resources>
+              <Thickness x:Key="MenuBarItemMargin">0</Thickness>
+              <Thickness x:Key="MenuBarItemButtonPadding">4,0</Thickness>
+            </MenuBar.Resources>
+          </MenuBar>
+        </StackPanel>
+        <Border x:Name="CommandSearch" Width="438" Height="27" CornerRadius="6" BorderThickness="1" Padding="8,0"
+                HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel x:Name="CommandSearchRow" Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock x:Name="CommandSearchText" FontSize="13" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            </StackPanel>
+            <ContentControl Grid.Column="1" Content="Ctrl+K" Style="{StaticResource KeyboardChipStyle}" VerticalAlignment="Center" />
+          </Grid>
+        </Border>
+      </Grid>
+    </Border>
+    <Border x:Name="ActivityRail" Grid.Row="1" BorderThickness="0,0,1,0">
+      <Grid>
+        <StackPanel Spacing="4" Margin="0,4,0,0" VerticalAlignment="Top">
+          <Grid>
+            <Rectangle x:Name="BarExplorer" Width="3" Height="24" HorizontalAlignment="Left" RadiusX="1.5" RadiusY="1.5" />
+            <Button x:Name="RailExplorer" Style="{StaticResource RailButtonStyle}" HorizontalAlignment="Center" />
+          </Grid>
+          <Grid>
+            <Rectangle x:Name="BarHistory" Width="3" Height="24" HorizontalAlignment="Left" RadiusX="1.5" RadiusY="1.5" />
+            <Button x:Name="RailHistory" Style="{StaticResource RailButtonStyle}" HorizontalAlignment="Center" />
+          </Grid>
+          <Grid>
+            <Rectangle x:Name="BarSnippets" Width="3" Height="24" HorizontalAlignment="Left" RadiusX="1.5" RadiusY="1.5" />
+            <Button x:Name="RailSnippets" Style="{StaticResource RailButtonStyle}" HorizontalAlignment="Center" />
+          </Grid>
+          <Button x:Name="RailDiagram" Style="{StaticResource RailButtonStyle}" HorizontalAlignment="Center" Click="OnDiagramClicked" />
+        </StackPanel>
+        <Button x:Name="RailSettings" Style="{StaticResource RailButtonStyle}" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                Margin="0,0,0,8" Click="OnSettingsClicked" />
+      </Grid>
+    </Border>
+    <v:SidebarView x:Name="Sidebar" Grid.Row="1" Grid.Column="1" />
+    <Grid Grid.Row="1" Grid.Column="3">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="*" />
@@ -47,6 +80,6 @@
       <v:TableDesignerView x:Name="DesignerArea" Grid.Row="1" Visibility="Collapsed" />
       <Grid x:Name="TerminalArea" Grid.Row="1" Visibility="Collapsed" />
     </Grid>
-    <v:StatusBar x:Name="Status" Grid.Row="2" Grid.ColumnSpan="3" />
+    <v:StatusBar x:Name="Status" Grid.Row="2" Grid.ColumnSpan="4" />
   </Grid>
 </Window>

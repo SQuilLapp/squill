@@ -4,13 +4,8 @@
              xmlns:core="using:Squill.Core"
              xmlns:ex="using:Squill.Presentation.Explorer"
              xmlns:v="using:Squill.App.WinUI.Views">
-  <Grid Background="{ThemeResource SquillBgSurfaceBrush}" RowDefinitions="Auto,*">
-    <StackPanel Orientation="Horizontal" Spacing="4" Margin="6,4">
-      <RadioButton x:Name="ExplorerTab" GroupName="SidebarPanel" Content="Explorer" Checked="OnPanelChecked" MinWidth="0" />
-      <RadioButton x:Name="HistoryTab" GroupName="SidebarPanel" Content="History" Checked="OnPanelChecked" MinWidth="0" />
-      <RadioButton x:Name="SnippetsTab" GroupName="SidebarPanel" Content="Snippets" Checked="OnPanelChecked" MinWidth="0" />
-    </StackPanel>
-    <Grid Grid.Row="1">
+  <Grid Background="{ThemeResource SquillBgSurfaceBrush}">
+    <Grid>
     <Grid x:Name="ExplorerPanel" RowDefinitions="Auto,*,Auto,2*">
       <TextBlock Text="Connections" Margin="8,6" FontWeight="SemiBold" Foreground="{ThemeResource SquillFgBrush}" />
       <ListView x:Name="Profiles" Grid.Row="1" SelectionMode="Single" DoubleTapped="OnProfileDoubleTapped"
