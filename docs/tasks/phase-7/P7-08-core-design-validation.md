@@ -1,6 +1,6 @@
 # P7-08 - Core: table design validation
 
-Status: todo
+Status: done
 Depends on: P7-07
 
 ## Goal
@@ -16,8 +16,8 @@ Report everything wrong (or risky) in an edited design before any SQL is generat
 - Checking that referenced tables exist (the designer view-model does it, P7-21), reserved words (everything is quoted).
 
 ## Tasks
-- [ ] Implement the validator.
-- [ ] Tests in `tests/Squill.Core.Tests`: one test per error and per warning, a clean new table and a clean edit give no issue, the dialect-specific rules.
+- [x] Implement the validator.
+- [x] Tests in `tests/Squill.Core.Tests`: one test per error and per warning, a clean new table and a clean edit give no issue, the dialect-specific rules.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
