@@ -1,6 +1,6 @@
 # P8-07 - Presentation: change set and validation
 
-Status: todo
+Status: done
 Depends on: P8-06, P8-01
 
 ## Goal
@@ -17,8 +17,8 @@ Turn the pending state of an `EditableGridDataSource` into an ordered list of `R
 - Type conversion (done when the cell is set, P8-10), SQL generation and execution (P8-03, P8-09), constraint checks that need the database (unique, foreign keys, check): the database reports them at commit and P8-09 maps the failure to the row.
 
 ## Tasks
-- [ ] Implement the builder and records.
-- [ ] Tests in `tests/Squill.Presentation.Tests`: edit order, one update merging several cells, update of a key column keeps the original key, delete uses original key, insert omits unset columns, each validation message, several issues at once, no pending changes gives empty lists, a row edited back to its original yields no edit.
+- [x] Implement the builder and records.
+- [x] Tests in `tests/Squill.Presentation.Tests`: edit order, one update merging several cells, update of a key column keeps the original key, delete uses original key, insert omits unset columns, each validation message, several issues at once, no pending changes gives empty lists, a row edited back to its original yields no edit.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
