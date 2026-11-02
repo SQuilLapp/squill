@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Squill.Presentation.Editing;
 using Squill.Presentation.Results;
 
 namespace Squill.Presentation.Query;
@@ -18,12 +19,35 @@ public sealed partial class ResultViewModel : ViewModelBase
         Text = text;
         Header = title;
         if (grid is not null)
-            grid.Changed += (_, _) => Header = $"{Title} ({grid.RowCount:N0}{(grid.IsTruncated ? "+" : "")} rows)";
+        {
+            ReadOnlyReason = "loading";
+            grid.Changed += (_, _) => UpdateHeader();
+        }
     }
 
     /// <summary>Gets the tab header: the title, then the loaded row count and a <c>+</c> when the row limit truncated the result.</summary>
     [ObservableProperty]
     public partial string Header { get; private set; }
+
+    /// <summary>Gets the editor of a single-table result, otherwise <see langword="null"/>.</summary>
+    [ObservableProperty]
+    public partial ResultEditorViewModel? Editor { get; private set; }
+
+    /// <summary>Gets the keyboard and cell-edit logic shared by the heads; set together with <see cref="Editor"/>.</summary>
+    public GridEditController? EditController { get; private set; }
+
+    /// <summary>Gets the selection the heads and <see cref="EditController"/> share; set together with <see cref="Editor"/>.</summary>
+    public GridSelection? Selection { get; private set; }
+
+    /// <summary>Gets why the grid cannot be edited (<c>loading</c> while it streams), or <see langword="null"/> when it is editable or a message.</summary>
+    [ObservableProperty]
+    public partial string? ReadOnlyReason { get; private set; }
+
+    /// <summary>Gets the grid the heads bind: the editor's grid when there is one, otherwise <see cref="Grid"/>.</summary>
+    public IGridDataSource? DisplayGrid => Editor?.Grid ?? (IGridDataSource?)Grid;
+
+    /// <summary>Gets whether the result holds uncommitted grid edits.</summary>
+    public bool HasPendingChanges => Editor?.HasPendingChanges == true;
 
     /// <summary>Gets whether this result is a grid or a message.</summary>
     public ResultKind Kind { get; }
@@ -36,6 +60,31 @@ public sealed partial class ResultViewModel : ViewModelBase
 
     /// <summary>Gets the text of a <see cref="ResultKind.Message"/> result, otherwise an empty string.</summary>
     public string Text { get; }
+
+    internal void SetEditor(ResultEditorViewModel editor)
+    {
+        Selection = new GridSelection();
+        EditController = new GridEditController(editor, Selection);
+        Editor = editor;
+        ReadOnlyReason = null;
+        editor.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(ResultEditorViewModel.HasPendingChanges))
+            {
+                OnPropertyChanged(nameof(HasPendingChanges));
+                UpdateHeader();
+            }
+        };
+        OnPropertyChanged(nameof(DisplayGrid));
+        UpdateHeader();
+    }
+
+    internal void SetReadOnly(string reason) => ReadOnlyReason = reason;
+
+    private void UpdateHeader() =>
+        Header = Grid is null
+            ? Title
+            : $"{Title} ({Grid.RowCount:N0}{(Grid.IsTruncated ? "+" : "")} rows){(HasPendingChanges ? " *" : "")}";
 
     internal static ResultViewModel ForGrid(string title, StreamingGridDataSource grid, IDialogService dialogs) => new(ResultKind.Grid, title, grid, "", dialogs);
 

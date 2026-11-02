@@ -8,7 +8,7 @@
     <Border Name="EditorHost" Background="{DynamicResource SquillBgBaseBrush}" />
     <GridSplitter Grid.Row="1" Height="4" Background="{DynamicResource SquillBorderBrush}"
                   ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" />
-    <Grid Grid.Row="2" RowDefinitions="Auto,Auto,*" Background="{DynamicResource SquillBgBaseBrush}">
+    <Grid Name="ResultsPanel" Grid.Row="2" RowDefinitions="Auto,Auto,Auto,*" Background="{DynamicResource SquillBgBaseBrush}">
       <Grid ColumnDefinitions="*,Auto" Background="{DynamicResource SquillBgRaisedBrush}">
         <ListBox Name="ResultTabs" ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedResult}">
           <ListBox.ItemsPanel>
@@ -27,8 +27,26 @@
           <Button Name="ExportJson" Content="Export JSON" Click="OnExportJson" />
         </StackPanel>
       </Grid>
-      <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="2" IsVisible="{Binding IsRunning}" />
-      <Grid Grid.Row="2">
+      <StackPanel Name="EditBar" Grid.Row="1" Orientation="Horizontal" Spacing="4" Margin="4" IsVisible="False">
+        <Button Name="AddRow" Content="Add row" Click="OnAddRow" />
+        <Button Name="DeleteRows" Content="Delete rows" Click="OnDeleteRows" />
+        <Button Name="RevertRows" Content="Revert rows" Click="OnRevertRows" />
+        <Button Name="PreviewSql" Content="Preview SQL" />
+        <Button Name="Commit" Content="Commit" />
+        <Button Name="Discard" Content="Discard" />
+        <TextBlock Name="EditStatus" VerticalAlignment="Center" Foreground="{DynamicResource SquillFg2Brush}" />
+        <Button Name="IssuesButton" IsVisible="False" Foreground="{DynamicResource SquillDangerBrush}">
+          <Button.Flyout>
+            <Flyout>
+              <ListBox Name="IssueList" MaxHeight="240" SelectionChanged="OnIssueSelected" />
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+      </StackPanel>
+      <TextBlock Name="ReadOnlyLabel" Grid.Row="1" Margin="8,4" IsVisible="False"
+                 Foreground="{DynamicResource SquillFg3Brush}" />
+      <ProgressBar Grid.Row="2" IsIndeterminate="True" Height="2" IsVisible="{Binding IsRunning}" />
+      <Grid Grid.Row="3">
         <c:DataGridView Name="ResultGrid" />
         <TextBlock Name="Message" Margin="12" TextWrapping="Wrap" IsVisible="False"
                    Foreground="{DynamicResource SquillFgBrush}" />

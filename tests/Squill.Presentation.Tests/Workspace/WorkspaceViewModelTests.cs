@@ -17,6 +17,8 @@ public sealed class WorkspaceViewModelTests
 {
     private static readonly TableInfo Users = new(null, "users", TableKind.Table, [], [], []);
 
+    private static readonly TableInfo GridTable = new(null, "g", TableKind.Table, [new ColumnDefinition("id", "int", false, true, null)], [], []);
+
     private readonly FakeDialogService _dialogs = new();
     private readonly FakeProvider _provider = new();
     private readonly List<StubSqlEditor> _editors = [];
@@ -200,6 +202,7 @@ public sealed class WorkspaceViewModelTests
         public DatabaseDialect Dialect => DatabaseDialect.PostgreSql;
         public Exception? Failure { get; set; }
         public List<string> Executed { get; } = [];
+        public bool ReturnGrid { get; set; }
 
         public ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken) =>
             Failure is { } failure ? throw failure : ValueTask.FromResult<IDatabaseConnection>(new FakeConnection(this));
@@ -212,21 +215,47 @@ public sealed class WorkspaceViewModelTests
         public ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken)
         {
             owner.Executed.Add(sql);
-            return ValueTask.FromResult<IResultReader>(new FakeReader());
+            return ValueTask.FromResult<IResultReader>(new FakeReader(owner.ReturnGrid));
         }
 
-        public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => ValueTask.FromResult(SchemaSnapshot.Empty);
+        public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => ValueTask.FromResult(owner.ReturnGrid ? new SchemaSnapshot(null, [GridTable]) : SchemaSnapshot.Empty);
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 
-    private sealed class FakeReader : IResultReader
+    private sealed class FakeReader(bool grid) : IResultReader
     {
-        public IReadOnlyList<ColumnInfo> Columns { get; } = [];
+        private bool _done;
+
+        public IReadOnlyList<ColumnInfo> Columns { get; } = grid ? [new ColumnInfo("id", "int", typeof(int), false, 0)] : [];
         public long RecordsAffected => -1;
 
-        public ValueTask<object?[][]?> ReadBatchAsync(int maxRows, CancellationToken cancellationToken) => ValueTask.FromResult<object?[][]?>(null);
+        public ValueTask<object?[][]?> ReadBatchAsync(int maxRows, CancellationToken cancellationToken)
+        {
+            var rows = grid && !_done ? new object?[][] { [1] } : null;
+            _done = true;
+            return ValueTask.FromResult<object?[][]?>(rows);
+        }
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CloseTab_WithPendingGridChanges_AsksFirst(bool accept)
+    {
+        _provider.ReturnGrid = true;
+        await ConnectAsync();
+        var tab = _workspace.Tabs[0];
+        _editors[0].Text = "SELECT * FROM g";
+        await tab.RunCommand.ExecuteAsync(null);
+        tab.Results[0].Editor!.TrySetCell(0, 0, "5");
+        _dialogs.ConfirmResult = accept;
+
+        await _workspace.CloseTabCommand.ExecuteAsync(tab);
+
+        Assert.Contains(("Close tab", "Discard pending grid changes?"), _dialogs.Confirms);
+        Assert.Equal(accept, !_workspace.Tabs.Contains(tab));
     }
 }

@@ -4,7 +4,7 @@ Risk R1: the SQL editor must stay responsive on very large scripts. The WinUI he
 
 ## Wiring
 
-- `Directory.Build.local.props` (git-ignored, imported by `Directory.Build.props`) sets `LoomEditorPath` (here `D:\LoomEditor`). Only then does `Squill.App.WinUI.csproj` add the `ProjectReference` to `LoomEditor.WinUI`, define `SQUILL_LOOMEDITOR` and move the head to `net11.0-windows10.0.26100.0` (LoomEditor targets the 26100 Windows SDK and a project cannot reference a higher Windows TFM). Without the property (CI) the head builds with `PlainSqlEditor`.
+- Since the switch to NuGet (`LoomEditor.WinUI` 0.3.0, central version in `Directory.Packages.props`), `Squill.App.WinUI.csproj` always references the package, defines `SQUILL_LOOMEDITOR` and targets `net11.0-windows10.0.26100.0` (LoomEditor targets the 26100 Windows SDK and a project cannot reference a higher Windows TFM). The report below was measured with a local checkout (`LoomEditorPath`, no longer used); `PlainSqlEditor` remains the code path when `SQUILL_LOOMEDITOR` is not defined.
 - `EditorFactory.Create()` returns `LoomSqlEditor` under `SQUILL_LOOMEDITOR`, else `PlainSqlEditor`; both implement `IEditorControl` so `QueryTabView` places either.
 - `LoomSqlEditor` maps text, caret and selection through `TextModel.GetOffsetAt` / `GetPositionAt` (text is kept `\n`-only), completion and hover through `ICompletionItemProvider` / `IHoverProvider` registered in `LanguageFeatures`, diagnostics through `Markers.Change`.
 - Completion and hover send the provider only the statement at the caret (`SqlStatementSplitter`); parsing the whole 100,000-statement script took more than a minute per request.

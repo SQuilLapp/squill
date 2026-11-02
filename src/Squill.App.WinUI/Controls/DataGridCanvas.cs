@@ -6,6 +6,8 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Squill.Presentation;
+using Squill.Presentation.Editing;
 using Squill.Presentation.Results;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -21,9 +23,10 @@ public sealed partial class DataGridCanvas : Grid
     private const float CellPadding = 8;
     private const double ResizeTolerance = 4;
     private const float Unbounded = 10_000;
+    private const long DoubleClickMs = 500;
 
     private readonly CanvasControl _canvas = new();
-    private readonly LruCache<string, CanvasTextLayout> _text = new(4096, layout => layout.Dispose());
+    private readonly LruCache<(string Text, bool Struck), CanvasTextLayout> _text = new(4096, layout => layout.Dispose());
     private readonly GridLayout _layout;
     private IGridDataSource? _source;
     private GridColors? _colors;
@@ -35,6 +38,9 @@ public sealed partial class DataGridCanvas : Grid
     private double _resizeStartX;
     private double _resizeStartWidth;
     private bool _selecting;
+    private long _lastPressTick;
+    private Point _lastPressPoint;
+    private GridEditController? _edit;
 
     /// <summary>Creates the canvas, reading the row height from the token resources.</summary>
     public DataGridCanvas()
@@ -51,6 +57,7 @@ public sealed partial class DataGridCanvas : Grid
         _canvas.PointerReleased += OnPointerReleased;
         _canvas.IsTabStop = true;
         _canvas.KeyDown += OnKeyDown;
+        _canvas.CharacterReceived += OnCharacterReceived;
         _canvas.ActualThemeChanged += (_, _) =>
         {
             _colors = null;
@@ -92,8 +99,35 @@ public sealed partial class DataGridCanvas : Grid
         }
     }
 
-    /// <summary>Gets the current selection.</summary>
-    public GridSelection Selection { get; } = new();
+    /// <summary>Gets or sets the selection; share the one given to <see cref="EditController"/> when editing.</summary>
+    public GridSelection Selection { get; set; } = new();
+
+    /// <summary>Gets or sets the cell-edit logic; <see langword="null"/> keeps the grid read-only.</summary>
+    public GridEditController? EditController
+    {
+        get => _edit;
+        set
+        {
+            _edit = value;
+            _canvas.Invalidate();
+        }
+    }
+
+    /// <summary>Gets or sets the service that reports paste errors.</summary>
+    public IDialogService? Dialogs { get; set; }
+
+    /// <summary>Gets the rectangle of a cell in surface coordinates, or <see langword="null"/> when it is scrolled out of the body.</summary>
+    /// <param name="row">Grid row index.</param>
+    /// <param name="column">Column index.</param>
+    /// <returns>The visible cell rectangle.</returns>
+    internal CellBox? CellRect(long row, int column) =>
+        GridEditGeometry.EditorBox(_layout, row, column, _scrollX, _scrollY, _canvas.ActualWidth, BodyHeight);
+
+    /// <summary>Gives keyboard focus back to the drawing surface.</summary>
+    public void FocusSurface() => _canvas.Focus(FocusState.Programmatic);
+
+    /// <summary>Redraws the surface.</summary>
+    public void Redraw() => _canvas.Invalidate();
 
     /// <summary>Gets the geometry helper (read-only use).</summary>
     public GridLayout Layout => _layout;
@@ -179,12 +213,29 @@ public sealed partial class DataGridCanvas : Grid
             {
                 var top = (float)(headerHeight + (row * rowHeight) - _scrollY);
                 var value = CellFormatter.Format(source.GetCell(row, col), info);
+                var edit = _edit;
+                var state = edit?.GetRowState(row) ?? RowState.Unchanged;
+                if (GridEditGeometry.RowTint(state) is var tint and not GridTint.None)
+                {
+                    ds.FillRectangle(left, top, colWidth, rowHeight, tint == GridTint.Inserted ? c.SuccessSoft : tint == GridTint.Deleted ? c.DangerSoft : c.AccentSoft);
+                }
+
+                if (edit is not null && GridEditGeometry.ModifiedCellTint(state, edit.IsCellModified(row, col)))
+                {
+                    ds.FillRectangle(left, top, colWidth, rowHeight, c.AccentSoft);
+                }
+
                 if (Selection.Contains(row, col, source.RowCount))
                 {
                     ds.FillRectangle(left, top, colWidth, rowHeight, c.Selection);
                 }
 
-                DrawText(ds, value ?? "NULL", left, top, rowHeight, value is null ? c.Muted : c.Text);
+                var muted = value is null || (edit is not null && !edit.IsColumnEditable(col));
+                DrawText(ds, value ?? "NULL", left, top, rowHeight, muted ? c.Muted : c.Text, state == RowState.Deleted);
+                if (edit?.IsCellInvalid(row, col) == true)
+                {
+                    ds.DrawRectangle(left + 0.5f, top + 0.5f, colWidth - 1, rowHeight - 1, c.Danger, 1.5f);
+                }
             }
 
             ds.FillRectangle(left, 0, colWidth, headerHeight, c.Raised);
@@ -199,20 +250,25 @@ public sealed partial class DataGridCanvas : Grid
         ds.DrawLine(left + colWidth - 0.5f, 0, left + colWidth - 0.5f, height, c.Border);
     }
 
-    private void DrawText(CanvasDrawingSession ds, string text, float left, float top, float rowHeight, Color color)
+    private void DrawText(CanvasDrawingSession ds, string text, float left, float top, float rowHeight, Color color, bool struck = false)
     {
-        var layout = TextLayout(ds, text);
+        var layout = TextLayout(ds, text, struck);
         ds.DrawTextLayout(layout, left + CellPadding, top + ((rowHeight - (float)layout.LayoutBounds.Height) / 2), color);
     }
 
-    private CanvasTextLayout TextLayout(ICanvasResourceCreator creator, string text)
+    private CanvasTextLayout TextLayout(ICanvasResourceCreator creator, string text, bool struck = false)
     {
-        if (!_text.TryGet(text, out var layout))
+        if (!_text.TryGet((text, struck), out var layout))
         {
             // The layout copies the format, so a short-lived one is enough.
             using var format = new CanvasTextFormat { FontSize = 13, WordWrapping = CanvasWordWrapping.NoWrap };
             layout = new CanvasTextLayout(creator, text, format, Unbounded, (float)_layout.RowHeight);
-            _text.Add(text, layout);
+            if (struck)
+            {
+                layout.SetStrikethrough(0, text.Length, true);
+            }
+
+            _text.Add((text, struck), layout);
         }
 
         return layout;
@@ -302,6 +358,7 @@ public sealed partial class DataGridCanvas : Grid
         }
 
         _canvas.Focus(FocusState.Pointer);
+        _edit?.Cancel();
         var shift = e.KeyModifiers.HasFlag(VirtualKeyModifiers.Shift);
         if (point.Y <= _layout.HeaderHeight)
         {
@@ -315,6 +372,15 @@ public sealed partial class DataGridCanvas : Grid
         else
         {
             SelectAt(point, shift);
+            var now = Environment.TickCount64;
+            var doubleClick = now - _lastPressTick <= DoubleClickMs && Math.Abs(point.X - _lastPressPoint.X) <= ResizeTolerance && Math.Abs(point.Y - _lastPressPoint.Y) <= ResizeTolerance;
+            _lastPressTick = doubleClick ? 0 : now;
+            _lastPressPoint = point;
+            if (doubleClick && _edit?.Begin() == true)
+            {
+                EnsureVisible(Selection.ActiveRow, Selection.ActiveColumn);
+            }
+
             _selecting = true;
             _canvas.CapturePointer(e.Pointer);
         }
@@ -372,6 +438,10 @@ public sealed partial class DataGridCanvas : Grid
                 Clipboard.SetContent(package);
             }
         }
+        else if (_edit is { } edit && ApplyEditKey(edit, e.Key, ctrl, shift))
+        {
+            // Handled below, like a navigation key.
+        }
         else if (!ApplyKey(e.Key, ctrl, shift, source))
         {
             return;
@@ -380,6 +450,53 @@ public sealed partial class DataGridCanvas : Grid
         e.Handled = true;
         EnsureVisible(Selection.ActiveRow, Selection.ActiveColumn);
         _canvas.Invalidate();
+    }
+
+    private void OnCharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs e)
+    {
+        if (_edit is { } edit && !char.IsControl(e.Character) && edit.Begin(e.Character.ToString()))
+        {
+            e.Handled = true;
+        }
+    }
+
+    private bool ApplyEditKey(GridEditController edit, VirtualKey key, bool ctrl, bool shift)
+    {
+        switch (key)
+        {
+            case VirtualKey.F2:
+                return edit.Begin();
+            case VirtualKey.Delete when ctrl:
+                edit.DeleteSelectedRows();
+                return true;
+            case VirtualKey.Delete:
+                edit.ClearSelection();
+                return true;
+            case VirtualKey.Insert when ctrl:
+            case VirtualKey.N when ctrl && shift:
+                edit.AddRow();
+                return true;
+            case VirtualKey.V when ctrl:
+                _ = PasteAsync(edit);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private async Task PasteAsync(GridEditController edit)
+    {
+        var content = Clipboard.GetContent();
+        if (!content.Contains(StandardDataFormats.Text))
+        {
+            return;
+        }
+
+        var error = edit.Paste(await content.GetTextAsync());
+        if (error is not null && Dialogs is { } dialogs)
+        {
+            await dialogs.ShowErrorAsync("Paste", error);
+        }
     }
 
     private bool ApplyKey(VirtualKey key, bool ctrl, bool shift, IGridDataSource source)
@@ -457,7 +574,11 @@ public sealed partial class DataGridCanvas : Grid
             Get("SquillFg3Color"),
             Get("SquillBorderColor"),
             Get("SquillBorderSubtleColor"),
-            Get("SquillSelectionColor"));
+            Get("SquillSelectionColor"),
+            Get("SquillAccentSoftColor"),
+            Get("SquillSuccessSoftColor"),
+            Get("SquillDangerSoftColor"),
+            Get("SquillDangerColor"));
     }
 
     internal static object? FindMerged(ResourceDictionary dictionary, string key)
@@ -481,5 +602,5 @@ public sealed partial class DataGridCanvas : Grid
         return dictionary.MergedDictionaries.Select(merged => FindThemeDictionary(merged, key)).FirstOrDefault(found => found is not null);
     }
 
-    private sealed record GridColors(Color Surface, Color Raised, Color Text, Color HeaderText, Color Muted, Color Border, Color BorderSubtle, Color Selection);
+    private sealed record GridColors(Color Surface, Color Raised, Color Text, Color HeaderText, Color Muted, Color Border, Color BorderSubtle, Color Selection, Color AccentSoft, Color SuccessSoft, Color DangerSoft, Color Danger);
 }

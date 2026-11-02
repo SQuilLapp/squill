@@ -11,4 +11,7 @@
     <ProjectReference Include="..\..\src\Squill.Data.Sqlite\Squill.Data.Sqlite.csproj" />
     <ProjectReference Include="..\..\src\Squill.Sql\Squill.Sql.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/DmlScenario.cs" Link="DmlScenario.cs" />
+  </ItemGroup>
 </Project>

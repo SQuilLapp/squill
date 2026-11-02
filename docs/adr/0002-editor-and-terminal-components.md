@@ -13,6 +13,7 @@ SQuilL needs a SQL editor (the riskiest component, R1) and, where useful, a term
 - The SQL editor on Windows is **LoomEditor**, consumed through a thin `ISqlEditor` abstraction owned by `Squill.Presentation`, so view-models never reference a control type.
 - Terminal tabs use **LoomTerminal** (WinUI 3 on Windows, Avalonia on macOS/Linux).
 - Both are consumed as NuGet packages once published; until then, as project references to a local checkout (`D:\LoomEditor`, `D:\LoomTerminal`), kept out of the committed solution.
+- NuGet: the WinUI head references the published `LoomEditor.WinUI` package (`0.3.0`, central version in `Directory.Packages.props`) and always compiles the LoomEditor-based editor, like `LoomTerminal.WinUI`.
 - SQL-specific intelligence (dialect tokenization, completion, signature help, diagnostics, formatting) stays in `Squill.Sql` and is exposed to the editor through LoomEditor's extension points (decorations, completion providers; LSP-shaped contracts if phase 8 lands first).
 
 ## Settled points (owner, 2026-10-29)

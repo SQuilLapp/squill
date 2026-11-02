@@ -40,8 +40,10 @@ public sealed partial class MainWindow : Window
     /// <summary>Connects the window to the shared view-models and loads the saved connections and settings.</summary>
     /// <param name="services">The shared root view-models.</param>
     /// <param name="dataDirectory">The directory holding profiles, settings and history, opened from the status bar.</param>
-    public void Attach(AppServices services, string dataDirectory)
+    /// <param name="dialogs">The service that reports grid paste errors.</param>
+    public void Attach(AppServices services, string dataDirectory, IDialogService dialogs)
     {
+        ActiveTabView.Dialogs = dialogs;
         _workspace = services.Workspace;
         _settings = services.Settings;
         Root.KeyboardAccelerators.Add(SettingsAccelerator());

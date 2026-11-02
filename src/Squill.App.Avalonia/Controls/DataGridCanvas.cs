@@ -4,6 +4,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
+using Squill.Presentation;
+using Squill.Presentation.Editing;
 using Squill.Presentation.Results;
 
 namespace Squill.App.Avalonia.Controls;
@@ -19,7 +21,15 @@ public sealed class DataGridCanvas : Control
     public static readonly StyledProperty<IGridDataSource?> DataSourceProperty =
         AvaloniaProperty.Register<DataGridCanvas, IGridDataSource?>(nameof(DataSource));
 
-    private readonly LruCache<(string Text, IBrush Brush), FormattedText> _text = new(4096);
+    /// <summary>Identifies the <see cref="EditController"/> property.</summary>
+    public static readonly StyledProperty<GridEditController?> EditControllerProperty =
+        AvaloniaProperty.Register<DataGridCanvas, GridEditController?>(nameof(EditController));
+
+    /// <summary>Identifies the <see cref="Selection"/> property.</summary>
+    public static readonly StyledProperty<GridSelection> SelectionProperty =
+        AvaloniaProperty.Register<DataGridCanvas, GridSelection>(nameof(Selection), new GridSelection());
+
+    private readonly LruCache<(string Text, IBrush Brush, bool Struck), FormattedText> _text = new(4096);
     private readonly GridLayout _layout;
     private readonly Typeface _typeface = new(FontFamily.Default);
     private readonly double _fontSize = 13;
@@ -58,8 +68,42 @@ public sealed class DataGridCanvas : Control
         set => SetValue(DataSourceProperty, value);
     }
 
-    /// <summary>Gets the current selection.</summary>
-    public GridSelection Selection { get; } = new();
+    /// <summary>Gets or sets the selection; share the one given to <see cref="EditController"/> when editing.</summary>
+    public GridSelection Selection
+    {
+        get => GetValue(SelectionProperty);
+        set => SetValue(SelectionProperty, value);
+    }
+
+    /// <summary>Gets or sets the cell-edit logic; <see langword="null"/> keeps the grid read-only.</summary>
+    public GridEditController? EditController
+    {
+        get => GetValue(EditControllerProperty);
+        set => SetValue(EditControllerProperty, value);
+    }
+
+    /// <summary>Gets or sets the service that reports paste errors.</summary>
+    public IDialogService? Dialogs { get; set; }
+
+    /// <summary>Gets the rectangle of a cell in canvas coordinates, or <see langword="null"/> when it is scrolled out of the body.</summary>
+    /// <param name="row">Grid row index.</param>
+    /// <param name="column">Column index.</param>
+    /// <returns>The visible cell rectangle.</returns>
+    public Rect? CellRect(long row, int column)
+    {
+        if (column < 0 || column >= _layout.ColumnCount)
+        {
+            return null;
+        }
+
+        var rect = new Rect(
+            _layout.ColumnLeft(column) - _scrollX,
+            _layout.HeaderHeight + (row * _layout.RowHeight) - _scrollY,
+            _layout.ColumnWidth(column),
+            _layout.RowHeight);
+        var body = new Rect(0, _layout.HeaderHeight, Bounds.Width, BodyHeight);
+        return body.Contains(rect.TopLeft) && body.Contains(new Point(rect.Left, rect.Bottom - 0.5)) ? rect : null;
+    }
 
     /// <summary>Gets the geometry helper (read-only use).</summary>
     public GridLayout Layout => _layout;
@@ -114,6 +158,10 @@ public sealed class DataGridCanvas : Control
             SetScroll(0, 0);
             InvalidateVisual();
         }
+        else if (change.Property == EditControllerProperty || change.Property == SelectionProperty)
+        {
+            InvalidateVisual();
+        }
         else if (change.Property == BoundsProperty)
         {
             SetScroll(_scrollX, _scrollY);
@@ -145,14 +193,31 @@ public sealed class DataGridCanvas : Control
                     for (var row = firstRow; row < endRow; row++)
                     {
                         var top = headerHeight + (row * rowHeight) - _scrollY;
+                        var edit = EditController;
+                        var state = edit?.GetRowState(row) ?? RowState.Unchanged;
+                        if (state != RowState.Unchanged)
+                        {
+                            context.FillRectangle(state == RowState.Inserted ? b.SuccessSoft : state == RowState.Deleted ? b.DangerSoft : b.AccentSoft, new Rect(left, top, colWidth, rowHeight));
+                        }
+
+                        if (state != RowState.Inserted && edit?.IsCellModified(row, col) == true)
+                        {
+                            context.FillRectangle(b.AccentSoft, new Rect(left, top, colWidth, rowHeight));
+                        }
+
                         if (Selection.Contains(row, col, source.RowCount))
                         {
                             context.FillRectangle(b.Selection, new Rect(left, top, colWidth, rowHeight));
                         }
 
                         var value = CellFormatter.Format(source.GetCell(row, col), info);
-                        var text = Text(value ?? "NULL", value is null ? b.Muted : b.Text);
+                        var muted = value is null || (edit is not null && !edit.IsColumnEditable(col));
+                        var text = Text(value ?? "NULL", muted ? b.Muted : b.Text, state == RowState.Deleted);
                         context.DrawText(text, new Point(left + CellPadding, top + ((rowHeight - text.Height) / 2)));
+                        if (edit?.IsCellInvalid(row, col) == true)
+                        {
+                            context.DrawRectangle(null, b.DangerPen, new Rect(left + 0.5, top + 0.5, colWidth - 1, rowHeight - 1));
+                        }
                     }
 
                     context.FillRectangle(b.Raised, new Rect(left, 0, colWidth, headerHeight));
@@ -202,9 +267,15 @@ public sealed class DataGridCanvas : Control
         var point = e.GetPosition(this);
         Focus();
         var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        EditController?.Cancel();
         if (point.Y > _layout.HeaderHeight)
         {
             SelectAt(point, shift);
+            if (e.ClickCount == 2 && EditController is { } doubleClicked && doubleClicked.Begin())
+            {
+                EnsureVisible(Selection.ActiveRow, Selection.ActiveColumn);
+            }
+
             _selecting = true;
             e.Pointer.Capture(this);
             return;
@@ -289,11 +360,68 @@ public sealed class DataGridCanvas : Control
             return;
         }
 
-        if (ApplyKey(e.Key, ctrl, e.KeyModifiers.HasFlag(KeyModifiers.Shift), source))
+        var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        if (EditController is { } edit && ApplyEditKey(edit, e.Key, ctrl, shift))
         {
             e.Handled = true;
             EnsureVisible(Selection.ActiveRow, Selection.ActiveColumn);
             InvalidateVisual();
+            return;
+        }
+
+        if (ApplyKey(e.Key, ctrl, shift, source))
+        {
+            e.Handled = true;
+            EnsureVisible(Selection.ActiveRow, Selection.ActiveColumn);
+            InvalidateVisual();
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnTextInput(TextInputEventArgs e)
+    {
+        base.OnTextInput(e);
+        if (EditController is { } edit && !string.IsNullOrEmpty(e.Text) && !char.IsControl(e.Text[0]) && edit.Begin(e.Text))
+        {
+            e.Handled = true;
+        }
+    }
+
+    private bool ApplyEditKey(GridEditController edit, Key key, bool ctrl, bool shift)
+    {
+        switch (key)
+        {
+            case Key.F2:
+                return edit.Begin();
+            case Key.Delete when ctrl:
+                edit.DeleteSelectedRows();
+                return true;
+            case Key.Delete:
+                edit.ClearSelection();
+                return true;
+            case Key.Insert when ctrl:
+            case Key.N when ctrl && shift:
+                edit.AddRow();
+                return true;
+            case Key.V when ctrl:
+                _ = PasteAsync(edit);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private async Task PasteAsync(GridEditController edit)
+    {
+        if (TopLevel.GetTopLevel(this)?.Clipboard is not { } clipboard || await clipboard.TryGetTextAsync() is not { } text)
+        {
+            return;
+        }
+
+        var error = edit.Paste(text);
+        if (error is not null && Dialogs is { } dialogs)
+        {
+            await dialogs.ShowErrorAsync("Paste", error);
         }
     }
 
@@ -406,12 +534,17 @@ public sealed class DataGridCanvas : Control
         _measuredRows = sample;
     }
 
-    private FormattedText Text(string text, IBrush brush)
+    private FormattedText Text(string text, IBrush brush, bool struck = false)
     {
-        if (!_text.TryGet((text, brush), out var formatted))
+        if (!_text.TryGet((text, brush, struck), out var formatted))
         {
             formatted = new FormattedText(text, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _typeface, _fontSize, brush);
-            _text.Add((text, brush), formatted);
+            if (struck)
+            {
+                formatted.SetTextDecorations(TextDecorations.Strikethrough);
+            }
+
+            _text.Add((text, brush, struck), formatted);
         }
 
         return formatted;
@@ -439,7 +572,11 @@ public sealed class DataGridCanvas : Control
         ResolveBrush("SquillFg3Brush"),
         new Pen(ResolveBrush("SquillBorderBrush")),
         new Pen(ResolveBrush("SquillBorderSubtleBrush")),
-        ResolveBrush("SquillSelectionBrush"));
+        ResolveBrush("SquillSelectionBrush"),
+        ResolveBrush("SquillAccentSoftBrush"),
+        ResolveBrush("SquillSuccessSoftBrush"),
+        ResolveBrush("SquillDangerSoftBrush"),
+        new Pen(ResolveBrush("SquillDangerBrush"), 1.5));
 
     private IBrush ResolveBrush(string key) =>
         this.TryFindResource(key, ActualThemeVariant, out var value) && value is IBrush brush ? brush : FallbackBrush;
@@ -449,5 +586,5 @@ public sealed class DataGridCanvas : Control
 
     private static readonly IBrush FallbackBrush = Brushes.Gray;
 
-    private sealed record GridBrushes(IBrush Surface, IBrush Raised, IBrush Text, IBrush HeaderText, IBrush Muted, Pen Border, Pen BorderSubtle, IBrush Selection);
+    private sealed record GridBrushes(IBrush Surface, IBrush Raised, IBrush Text, IBrush HeaderText, IBrush Muted, Pen Border, Pen BorderSubtle, IBrush Selection, IBrush AccentSoft, IBrush SuccessSoft, IBrush DangerSoft, Pen DangerPen);
 }

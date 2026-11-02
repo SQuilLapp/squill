@@ -22,6 +22,15 @@ Open a table in the designer to create or alter columns, indexes and foreign key
 
 See [ADR 0004](docs/adr/0004-schema-designer.md) for the design and what is not covered.
 
+## Editing data
+
+Results of a plain `SELECT` over one table can be edited in the grid: change cells, add rows, delete rows, then commit or discard. The primary key must be selected; otherwise the result is read-only and the panel says why (join, view, `DISTINCT` / `GROUP BY` / `WITH`, no primary key, key column not selected). The generated `INSERT`, `UPDATE` and `DELETE` statements can be previewed before they run, and all changes are applied in one transaction (MySQL / MariaDB engines without transactions excepted).
+
+- Updates and deletes match the primary key only: if someone else changed other columns of the row meanwhile, your commit overwrites them (last write wins). A row deleted by someone else makes the commit fail and roll back.
+- The DML tests for PostgreSQL, MySQL / MariaDB and SQL Server need Docker and have never been run, and the edit flow was not driven by hand in either head.
+
+See [ADR 0005](docs/adr/0005-grid-editing.md) for the design and what is not covered.
+
 ## Build and test
 
 Prerequisite: the .NET SDK pinned in [global.json](global.json) (11.0.100-rc.3).
@@ -75,20 +84,19 @@ dotnet run --project tools/Squill.TokenGen -c Release -- tokens/squill.tokens.js
 
 The `release` GitHub workflow (`.github/workflows/release.yml`) runs the same script.
 
-### Optional LoomEditor and LoomTerminal
+### Optional LoomTerminal
 
-The WinUI head gets its terminal tabs from the [`LoomTerminal.WinUI`](https://www.nuget.org/packages/LoomTerminal.WinUI) NuGet package (see [ADR 0002](docs/adr/0002-editor-and-terminal-components.md)); nothing to configure. The author's LoomEditor (SQL editor, WinUI head) and the Avalonia LoomTerminal control (not published yet) are used from local checkouts. Create the git-ignored `Directory.Build.local.props` at the repository root:
+The WinUI head gets its SQL editor and terminal tabs from the [`LoomEditor.WinUI`](https://www.nuget.org/packages/LoomEditor.WinUI) and [`LoomTerminal.WinUI`](https://www.nuget.org/packages/LoomTerminal.WinUI) NuGet packages (see [ADR 0002](docs/adr/0002-editor-and-terminal-components.md)); nothing to configure. The Avalonia LoomTerminal control (not published yet) is used from a local checkout. Create the git-ignored `Directory.Build.local.props` at the repository root:
 
 ```xml
 <Project>
   <PropertyGroup>
-    <LoomEditorPath>D:\LoomEditor</LoomEditorPath>
     <LoomTerminalPath>D:\LoomTerminal</LoomTerminalPath>
   </PropertyGroup>
 </Project>
 ```
 
-Either property can be omitted. Without `LoomEditorPath` the WinUI head uses a plain-text editor (the Avalonia head uses AvaloniaEdit); without `LoomTerminalPath` the Avalonia head has no terminal UI. `LoomTerminalPath` does not affect the WinUI head. CI builds without them. The WinUI head targets `net11.0-windows10.0.26100.0`.
+`LoomTerminalPath` can be omitted: without it the Avalonia head has no terminal UI (the Avalonia head uses AvaloniaEdit as its editor). It does not affect the WinUI head. CI builds without it. The WinUI head targets `net11.0-windows10.0.26100.0`.
 
 ## Project layout
 
@@ -115,7 +123,7 @@ Dependency graph: `Core` <- `Data` <- `Data.<Driver>`; `Core` <- `Sql`; `Core` <
 ## Documentation
 
 - [Architecture note and risks](docs/architecture.md)
-- ADRs: [0001 target framework](docs/adr/0001-target-framework.md), [0002 editor and terminal components](docs/adr/0002-editor-and-terminal-components.md), [0003 SQL parser](docs/adr/0003-sql-parser.md), [0004 schema designer](docs/adr/0004-schema-designer.md)
+- ADRs: [0001 target framework](docs/adr/0001-target-framework.md), [0002 editor and terminal components](docs/adr/0002-editor-and-terminal-components.md), [0003 SQL parser](docs/adr/0003-sql-parser.md), [0004 schema designer](docs/adr/0004-schema-designer.md), [0005 grid editing](docs/adr/0005-grid-editing.md)
 - Proofs of concept: [AOT drivers](docs/poc/aot-drivers.md), [grid](docs/poc/grid.md), [editor](docs/poc/editor.md)
 - [Task cards](docs/tasks/README.md)
 

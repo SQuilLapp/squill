@@ -38,4 +38,4 @@
 
 ## Order of work
 
-Done through phase 7 (schema designer and ER diagram, see [ADR 0004](adr/0004-schema-designer.md)); the card list and statuses are in [docs/tasks/README.md](tasks/README.md).
+Done through phase 8 (schema designer and ER diagram, see [ADR 0004](adr/0004-schema-designer.md); editable data grid, see [ADR 0005](adr/0005-grid-editing.md)); the card list and statuses are in [docs/tasks/README.md](tasks/README.md).

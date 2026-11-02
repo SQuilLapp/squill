@@ -5,11 +5,13 @@ using CommunityToolkit.Mvvm.Input;
 using Squill.Data;
 using Squill.Platform.Settings;
 using Squill.Platform.Storage;
+using Squill.Presentation.Editing;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Analysis;
 using Squill.Sql.Completion;
+using Squill.Sql.Editing;
 using Squill.Sql.Formatting;
 
 namespace Squill.Presentation.Query;
@@ -28,6 +30,9 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     private readonly Dictionary<string, ParameterValue> _lastValues = [];
     private Action? _cancel;
     private string _baselineText;
+
+    /// <summary>Raised with a DML script that a result editor wants opened in a new query tab.</summary>
+    public event Action<string>? ScriptRequested;
 
     /// <summary>Creates the tab and wires the editor with the dialect, completion, hover and diagnostics of the session.</summary>
     /// <param name="session">The session the statements run on.</param>
@@ -93,6 +98,9 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     /// <summary>Gets the results of the last run, in statement order.</summary>
     public ObservableCollection<ResultViewModel> Results { get; } = [];
 
+    /// <summary>Gets whether any result holds uncommitted grid edits.</summary>
+    public bool HasPendingChanges => Results.Any(r => r.HasPendingChanges);
+
     /// <summary>Gets or sets the result currently shown.</summary>
     [ObservableProperty]
     public partial ResultViewModel? SelectedResult { get; set; }
@@ -131,6 +139,8 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     private async Task ExecuteAsync(IReadOnlyList<string> statements)
     {
         if (IsRunning || statements.Count == 0)
+            return;
+        if (HasPendingChanges && !await _dialogs.ConfirmAsync("Run query", "Discard pending grid changes?"))
             return;
         _baselineText = _editor.Text;
         IsRunning = true;
@@ -219,8 +229,10 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             else
             {
                 var grid = new StreamingGridDataSource(reader, maxRows, _dispatcher);
-                AddResult(ResultViewModel.ForGrid(NextTitle(), grid, _dialogs));
+                var result = ResultViewModel.ForGrid(NextTitle(), grid, _dialogs);
+                AddResult(result);
                 await grid.StartAsync(ct);
+                AttachEditor(result, grid, original);
                 rows = grid.RowCount;
             }
 
@@ -241,6 +253,28 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         finally
         {
             await _history.AppendAsync(new HistoryEntry(DateTimeOffset.UtcNow, _session.Profile.Id, original, succeeded, rows, clock.Elapsed), CancellationToken.None);
+        }
+    }
+
+    private void AttachEditor(ResultViewModel result, StreamingGridDataSource grid, string original)
+    {
+        try
+        {
+            var verdict = EditableSourceAnalyzer.Analyze(original, _session.Profile.Dialect, _session.Schema, grid.Columns);
+            if (verdict.Target is null)
+            {
+                result.SetReadOnly(verdict.Reason ?? "not editable");
+                return;
+            }
+
+            var editable = new EditableGridDataSource(grid, verdict.Target);
+            var editor = new ResultEditorViewModel(editable, verdict.Target, _session, _dialogs, () => IsRunning);
+            editor.ScriptRequested += script => ScriptRequested?.Invoke(script);
+            result.SetEditor(editor);
+        }
+        catch (Exception)
+        {
+            result.SetReadOnly("analysis failed");
         }
     }
 

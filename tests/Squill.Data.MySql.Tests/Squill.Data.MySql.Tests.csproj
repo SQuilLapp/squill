@@ -12,4 +12,7 @@
     <ProjectReference Include="..\..\src\Squill.Data.MySql\Squill.Data.MySql.csproj" />
     <ProjectReference Include="..\..\src\Squill.Sql\Squill.Sql.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/DmlScenario.cs" Link="DmlScenario.cs" />
+  </ItemGroup>
 </Project>
