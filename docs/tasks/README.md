@@ -144,3 +144,36 @@ Depends on: <card ids, ranges allowed>
 | [P8-16](phase-8/P8-16-winui-grid-editing.md) | WinUI head: in-place cell editing in the grid | P8-12, P5-12 | todo |
 | [P8-17](phase-8/P8-17-winui-results-edit-toolbar.md) | WinUI head: edit toolbar, issues and commit | P8-16, P8-15 | todo |
 | [P8-18](phase-8/P8-18-docs-and-adr.md) | Documentation: grid editing ADR, README and architecture note | P8-15, P8-17, P8-13, P7-27 | todo |
+| [P9-01](phase-9/P9-01-tokens-and-fonts.md) | Design system: font, type scale and missing tokens, bundled fonts | none | todo |
+| [P9-02](phase-9/P9-02-visual-tooling.md) | Tools: sample data and window capture for visual comparison | none | todo |
+| [P9-03](phase-9/P9-03-localization-catalog.md) | Presentation: French string catalog | none | todo |
+| [P9-04](phase-9/P9-04-profile-environment-folder.md) | Core and Platform: connection environment and folder | none | todo |
+| [P9-05](phase-9/P9-05-avalonia-control-styles.md) | Avalonia head: shared control styles | P9-01, P9-03, P9-02 | todo |
+| [P9-06](phase-9/P9-06-winui-control-styles.md) | WinUI head: shared control styles | P9-01, P9-03, P9-02 | todo |
+| [P9-07](phase-9/P9-07-avalonia-window-chrome.md) | Avalonia head: title bar, menu, activity rail and status bar | P9-04, P9-05, P9-02 | todo |
+| [P9-08](phase-9/P9-08-avalonia-explorer-and-tabs.md) | Avalonia head: object explorer, tab strip and properties panel | P9-07, P9-02 | todo |
+| [P9-09](phase-9/P9-09-winui-window-chrome.md) | WinUI head: title bar, menu, activity rail and status bar | P9-04, P9-06, P9-02 | todo |
+| [P9-10](phase-9/P9-10-winui-explorer-and-tabs.md) | WinUI head: object explorer, tab strip and properties panel | P9-09, P9-02 | todo |
+| [P9-11](phase-9/P9-11-avalonia-editor-toolbar-panels.md) | Avalonia head: query toolbar, editor frame and history panel | P9-08, P9-02 | todo |
+| [P9-12](phase-9/P9-12-winui-editor-toolbar-panels.md) | WinUI head: query toolbar, editor frame and history panel | P9-10, P9-02 | todo |
+| [P9-13](phase-9/P9-13-avalonia-results-panel.md) | Avalonia head: results panel chrome, pending-edit banner and export menu | P9-11, P9-02 | todo |
+| [P9-14](phase-9/P9-14-avalonia-grid-visuals.md) | Avalonia head: grid canvas drawing | P9-13, P9-02 | todo |
+| [P9-15](phase-9/P9-15-winui-results-panel.md) | WinUI head: results panel chrome, pending-edit banner and export menu | P9-12, P8-17, P9-02 | todo |
+| [P9-16](phase-9/P9-16-winui-grid-visuals.md) | WinUI head: Win2D grid drawing | P9-15, P8-16, P9-02 | todo |
+| [P9-17](phase-9/P9-17-avalonia-connection-manager.md) | Avalonia head: connection manager window | P9-04, P9-05, P9-02 | todo |
+| [P9-18](phase-9/P9-18-winui-connection-manager.md) | WinUI head: connection manager dialog | P9-04, P9-06, P9-02 | todo |
+| [P9-19](phase-9/P9-19-avalonia-table-designer.md) | Avalonia head: table designer view | P9-08, P9-02 | todo |
+| [P9-20](phase-9/P9-20-winui-table-designer.md) | WinUI head: table designer view | P9-10, P9-02 | todo |
+| [P9-21](phase-9/P9-21-avalonia-er-diagram.md) | Avalonia head: ER diagram view | P9-08, P9-02 | todo |
+| [P9-22](phase-9/P9-22-winui-er-diagram.md) | WinUI head: ER diagram view | P9-10, P9-02 | todo |
+| [P9-23](phase-9/P9-23-avalonia-settings.md) | Avalonia head: settings window | P9-05, P9-03, P9-02 | todo |
+| [P9-24](phase-9/P9-24-winui-settings.md) | WinUI head: settings window | P9-06, P9-03, P9-02 | todo |
+| [P9-25](phase-9/P9-25-docs-and-adr.md) | Documentation: visual conformance ADR, README and architecture note | P9-07 ... P9-24 | todo |
+
+### Phase 9 - Visual conformance
+
+Goal: make both heads look like the owner's high-fidelity mockups (`docs/design/mockups/`, numbers and decisions in `docs/design/visual-spec.md`). Phase 9 changes appearance and layout, not features: mockup elements without a feature behind them are listed in `visual-spec.md` section 10 and are not drawn.
+
+- Branch: implement phase 9 on a new branch `phase-9-visual-conformance`, cut from `main` **after phase 8 is merged** (P9-15 and P9-16 edit files of P8-16/P8-17). Do not start it from `phase-8-data-grid-editing`.
+- Order: P9-01 ... P9-04 are foundations and tools (any order, P9-01 and P9-02 first), then styles (P9-05/06), then each head screen by screen. Avalonia and WinUI cards of the same screen are independent of each other.
+- Cards that need a screenshot use the tools of P9-02 and the procedure of `visual-spec.md` section 11; a card whose screen cannot be driven must say what the owner has to check by hand.
