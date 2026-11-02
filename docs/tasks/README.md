@@ -107,7 +107,7 @@ Depends on: <card ids, ranges allowed>
 | [P7-06](phase-7/P7-06-core-table-design-model.md) | Core: table design model | P7-01 | done |
 | [P7-07](phase-7/P7-07-core-table-diff.md) | Core: table diff into schema operations | P7-06 | done |
 | [P7-08](phase-7/P7-08-core-design-validation.md) | Core: table design validation | P7-07 | done |
-| [P7-09](phase-7/P7-09-sql-quoting-and-type-catalog.md) | Sql: identifier quoting and data type catalog | P1-04 | todo |
+| [P7-09](phase-7/P7-09-sql-quoting-and-type-catalog.md) | Sql: identifier quoting and data type catalog | P1-04 | done |
 | [P7-10](phase-7/P7-10-sql-create-drop-table.md) | Sql: DDL generator contract, CREATE TABLE and DROP TABLE | P7-09, P7-06 | todo |
 | [P7-11](phase-7/P7-11-sql-alter-postgres.md) | Sql: ALTER TABLE for PostgreSQL | P7-10, P7-07 | todo |
 | [P7-12](phase-7/P7-12-sql-alter-mysql.md) | Sql: ALTER TABLE for MySQL | P7-10, P7-07 | todo |

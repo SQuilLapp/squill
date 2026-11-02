@@ -1,4 +1,5 @@
 using Squill.Core;
+using Squill.Sql.Ddl;
 
 namespace Squill.Presentation.Editor;
 
@@ -23,10 +24,5 @@ public static class SqlSnippets
     /// <param name="identifier">The raw identifier.</param>
     /// <param name="d">The database engine.</param>
     /// <returns>The quoted identifier.</returns>
-    public static string Quote(string identifier, DatabaseDialect d) => d switch
-    {
-        DatabaseDialect.MySql => $"`{identifier.Replace("`", "``", StringComparison.Ordinal)}`",
-        DatabaseDialect.SqlServer => $"[{identifier.Replace("]", "]]", StringComparison.Ordinal)}]",
-        _ => $"\"{identifier.Replace("\"", "\"\"", StringComparison.Ordinal)}\"",
-    };
+    public static string Quote(string identifier, DatabaseDialect d) => SqlQuoting.Quote(identifier, d);
 }

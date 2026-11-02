@@ -1,6 +1,6 @@
 # P7-09 - Sql: identifier quoting and data type catalog
 
-Status: todo
+Status: done
 Depends on: P1-04
 
 ## Goal
@@ -16,8 +16,8 @@ One quoting implementation for every generated statement, and the list of common
 - Type mapping between engines, parsing type strings.
 
 ## Tasks
-- [ ] Implement both types and make `SqlSnippets.Quote` delegate.
-- [ ] Tests in `tests/Squill.Sql.Tests`: quoting with embedded quotes per dialect, qualified names with and without schema, `Literal`, every catalog non-empty and free of duplicates.
+- [x] Implement both types and make `SqlSnippets.Quote` delegate.
+- [x] Tests in `tests/Squill.Sql.Tests`: quoting with embedded quotes per dialect, qualified names with and without schema, `Literal`, every catalog non-empty and free of duplicates.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
