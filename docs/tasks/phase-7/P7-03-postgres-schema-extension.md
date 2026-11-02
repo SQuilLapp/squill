@@ -1,6 +1,6 @@
 # P7-03 - Data.Postgres: read auto-increment, foreign-key actions and key name
 
-Status: todo
+Status: done
 Depends on: P7-01, P1-10
 
 ## Goal
@@ -16,8 +16,8 @@ Depends on: P7-01, P1-10
 - Other engines.
 
 ## Tasks
-- [ ] Extend the reader.
-- [ ] Extend the Docker-gated tests (`SQUILL_DOCKER_TESTS=1`, as in P1-10): identity column, `serial` column, each action, a named primary key (`CONSTRAINT pk_x PRIMARY KEY`) and the default `<table>_pkey` name.
+- [x] Extend the reader.
+- [x] Extend the Docker-gated tests (`SQUILL_DOCKER_TESTS=1`, as in P1-10): identity column, `serial` column, each action, a named primary key (`CONSTRAINT pk_x PRIMARY KEY`) and the default `<table>_pkey` name.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

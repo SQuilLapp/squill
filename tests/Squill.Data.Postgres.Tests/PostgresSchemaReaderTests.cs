@@ -19,6 +19,14 @@ public sealed class PostgresSchemaReaderTests(PostgresFixture server) : IClassFi
             primary key (id, tenant));
         create index person_tenant_nick on app.person (tenant, nick);
         create unique index person_nick_lower on app.person (lower(nick), nick);
+        create table ref.country2 (id int primary key);
+        create table app.serial_t (id serial primary key, plain int);
+        create table app.named_pk (id int, constraint pk_named primary key (id));
+        create table app.actions (
+            id int primary key,
+            a int references ref.country2 (id) on delete cascade on update set null,
+            b int references ref.country2 (id) on delete restrict on update set default,
+            c int references ref.country2 (id));
         create view app.person_nick as select id, nick from app.person;
         create materialized view app.person_count as select count(*) as n from app.person;
         """;
@@ -39,7 +47,7 @@ public sealed class PostgresSchemaReaderTests(PostgresFixture server) : IClassFi
     {
         var snapshot = await ReadAsync();
         Assert.Equal("public", snapshot.DefaultSchema);
-        Assert.Equal(["app.person", "app.person_count", "app.person_nick", "ref.country"], snapshot.Tables.Select(t => $"{t.Schema}.{t.Name}").Order());
+        Assert.Equal(["app.actions", "app.named_pk", "app.person", "app.person_count", "app.person_nick", "app.serial_t", "ref.country", "ref.country2"], snapshot.Tables.Select(t => $"{t.Schema}.{t.Name}").Order());
     }
 
     [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
@@ -83,5 +91,37 @@ public sealed class PostgresSchemaReaderTests(PostgresFixture server) : IClassFi
         Assert.Equal(TableKind.View, snapshot.FindTable("app", "person_nick")!.Kind);
         Assert.Equal(TableKind.View, snapshot.FindTable("app", "person_count")!.Kind);
         Assert.Equal(["id", "nick"], snapshot.FindTable("app", "person_nick")!.Columns.Select(c => c.Name));
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_IdentityAndSerial_AreAutoIncrement()
+    {
+        var snapshot = await ReadAsync();
+        var person = snapshot.FindTable("app", "person")!;
+        Assert.True(person.Columns[0].IsAutoIncrement);
+        Assert.Null(person.Columns[0].DefaultExpression);
+        Assert.False(person.Columns[1].IsAutoIncrement);
+        var serial = snapshot.FindTable("app", "serial_t")!;
+        Assert.True(serial.Columns[0].IsAutoIncrement);
+        Assert.StartsWith("nextval(", serial.Columns[0].DefaultExpression);
+        Assert.False(serial.Columns[1].IsAutoIncrement);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_ForeignKeyActions_AreRead()
+    {
+        var keys = (await ReadAsync()).FindTable("app", "actions")!.ForeignKeys.ToDictionary(k => k.Columns[0]);
+        Assert.Equal((ReferentialAction.Cascade, ReferentialAction.SetNull), (keys["a"].OnDelete, keys["a"].OnUpdate));
+        Assert.Equal((ReferentialAction.Restrict, ReferentialAction.SetDefault), (keys["b"].OnDelete, keys["b"].OnUpdate));
+        Assert.Equal((ReferentialAction.NoAction, ReferentialAction.NoAction), (keys["c"].OnDelete, keys["c"].OnUpdate));
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_PrimaryKeyName_IsNamedDefaultOrNull()
+    {
+        var snapshot = await ReadAsync();
+        Assert.Equal("pk_named", snapshot.FindTable("app", "named_pk")!.PrimaryKeyName);
+        Assert.Equal("person_pkey", snapshot.FindTable("app", "person")!.PrimaryKeyName);
+        Assert.Null(snapshot.FindTable("app", "person_nick")!.PrimaryKeyName);
     }
 }
