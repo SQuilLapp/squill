@@ -15,13 +15,13 @@ public sealed class DmlRoundTripTests(MySqlFixture server) : IClassFixture<MySql
     public async Task GeneratedStatements_ApplyAndReadBack()
     {
         await using var connection = await OpenAsync();
-        await DmlScenario.RunAsync(connection, DatabaseDialect.MySql, null);
+        Assert.Null(await Record.ExceptionAsync(() => DmlScenario.RunAsync(connection, DatabaseDialect.MySql, null)));
     }
 
     [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
     public async Task TypedParameters_ReadBackEqual()
     {
         await using var connection = await OpenAsync();
-        await DmlScenario.RunTypedAsync(connection, DatabaseDialect.MySql, null);
+        Assert.Null(await Record.ExceptionAsync(() => DmlScenario.RunTypedAsync(connection, DatabaseDialect.MySql, null)));
     }
 }

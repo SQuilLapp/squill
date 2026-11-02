@@ -30,13 +30,13 @@ public sealed class DmlRoundTripTests : IDisposable
     public async Task GeneratedStatements_ApplyAndReadBack()
     {
         await using var connection = await OpenAsync();
-        await DmlScenario.RunAsync(connection, DatabaseDialect.Sqlite, null);
+        Assert.Null(await Record.ExceptionAsync(() => DmlScenario.RunAsync(connection, DatabaseDialect.Sqlite, null)));
     }
 
     [Fact]
     public async Task TypedParameters_ReadBackEqual()
     {
         await using var connection = await OpenAsync();
-        await DmlScenario.RunTypedAsync(connection, DatabaseDialect.Sqlite, null);
+        Assert.Null(await Record.ExceptionAsync(() => DmlScenario.RunTypedAsync(connection, DatabaseDialect.Sqlite, null)));
     }
 }

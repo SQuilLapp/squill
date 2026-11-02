@@ -15,13 +15,13 @@ public sealed class DmlRoundTripTests(PostgresFixture server) : IClassFixture<Po
     public async Task GeneratedStatements_ApplyAndReadBack()
     {
         await using var connection = await OpenAsync();
-        await DmlScenario.RunAsync(connection, DatabaseDialect.PostgreSql, "public");
+        Assert.Null(await Record.ExceptionAsync(() => DmlScenario.RunAsync(connection, DatabaseDialect.PostgreSql, "public")));
     }
 
     [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
     public async Task TypedParameters_ReadBackEqual()
     {
         await using var connection = await OpenAsync();
-        await DmlScenario.RunTypedAsync(connection, DatabaseDialect.PostgreSql, "public");
+        Assert.Null(await Record.ExceptionAsync(() => DmlScenario.RunTypedAsync(connection, DatabaseDialect.PostgreSql, "public")));
     }
 }

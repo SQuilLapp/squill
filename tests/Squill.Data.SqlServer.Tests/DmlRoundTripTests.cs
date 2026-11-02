@@ -15,13 +15,13 @@ public sealed class DmlRoundTripTests(SqlServerFixture server) : IClassFixture<S
     public async Task GeneratedStatements_ApplyAndReadBack()
     {
         await using var connection = await OpenAsync();
-        await DmlScenario.RunAsync(connection, DatabaseDialect.SqlServer, "dbo");
+        Assert.Null(await Record.ExceptionAsync(() => DmlScenario.RunAsync(connection, DatabaseDialect.SqlServer, "dbo")));
     }
 
     [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
     public async Task TypedParameters_ReadBackEqual()
     {
         await using var connection = await OpenAsync();
-        await DmlScenario.RunTypedAsync(connection, DatabaseDialect.SqlServer, "dbo");
+        Assert.Null(await Record.ExceptionAsync(() => DmlScenario.RunTypedAsync(connection, DatabaseDialect.SqlServer, "dbo")));
     }
 }
