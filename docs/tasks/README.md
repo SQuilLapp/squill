@@ -147,7 +147,7 @@ Depends on: <card ids, ranges allowed>
 | [P9-01](phase-9/P9-01-tokens-and-fonts.md) | Design system: font, type scale and missing tokens, bundled fonts | none | done |
 | [P9-02](phase-9/P9-02-visual-tooling.md) | Tools: sample data and window capture for visual comparison | none | done |
 | [P9-03](phase-9/P9-03-localization-catalog.md) | Presentation: French string catalog | none | done |
-| [P9-04](phase-9/P9-04-profile-environment-folder.md) | Core and Platform: connection environment and folder | none | todo |
+| [P9-04](phase-9/P9-04-profile-environment-folder.md) | Core and Platform: connection environment and folder | none | done |
 | [P9-05](phase-9/P9-05-avalonia-control-styles.md) | Avalonia head: shared control styles | P9-01, P9-03, P9-02 | todo |
 | [P9-06](phase-9/P9-06-winui-control-styles.md) | WinUI head: shared control styles | P9-01, P9-03, P9-02 | todo |
 | [P9-07](phase-9/P9-07-avalonia-window-chrome.md) | Avalonia head: title bar, menu, activity rail and status bar | P9-04, P9-05, P9-02 | todo |

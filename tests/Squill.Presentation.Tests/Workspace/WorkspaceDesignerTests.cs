@@ -52,6 +52,18 @@ public sealed class WorkspaceDesignerTests
     private async Task ConnectAsync() => await _workspace.ConnectCommand.ExecuteAsync(Profile());
 
     [Fact]
+    public async Task ActiveEnvironment_FollowsActiveSession()
+    {
+        Assert.Equal(ConnectionEnvironment.None, _workspace.ActiveEnvironment);
+
+        await _workspace.ConnectCommand.ExecuteAsync(Profile() with { Environment = ConnectionEnvironment.Production });
+        Assert.Equal(ConnectionEnvironment.Production, _workspace.ActiveEnvironment);
+
+        _workspace.ActiveSession = null;
+        Assert.Equal(ConnectionEnvironment.None, _workspace.ActiveEnvironment);
+    }
+
+    [Fact]
     public async Task NewTable_OpensDesignerOnActiveSession()
     {
         Assert.False(_workspace.NewTableCommand.CanExecute(null));

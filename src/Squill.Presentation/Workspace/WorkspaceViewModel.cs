@@ -125,8 +125,12 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     [ObservableProperty]
     public partial DiagramTabViewModel? ActiveDiagram { get; set; }
 
+    /// <summary>Gets the environment of <see cref="ActiveSession"/>, or <see cref="ConnectionEnvironment.None"/> when not connected.</summary>
+    public ConnectionEnvironment ActiveEnvironment => ActiveSession?.Profile.Environment ?? ConnectionEnvironment.None;
+
     partial void OnActiveSessionChanged(ConnectionSession? value)
     {
+        OnPropertyChanged(nameof(ActiveEnvironment));
         if (Explorer is { } old)
         {
             old.OpenTableRequested -= OnOpenTableRequested;
