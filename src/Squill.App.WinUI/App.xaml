@@ -7,6 +7,7 @@
         <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
         <ResourceDictionary Source="Styles/SquillTokens.xaml" />
         <ResourceDictionary Source="Styles/SquillFonts.xaml" />
+        <ResourceDictionary Source="Styles/Controls.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>

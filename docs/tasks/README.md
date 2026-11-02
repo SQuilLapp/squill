@@ -149,7 +149,7 @@ Depends on: <card ids, ranges allowed>
 | [P9-03](phase-9/P9-03-localization-catalog.md) | Presentation: French string catalog | none | done |
 | [P9-04](phase-9/P9-04-profile-environment-folder.md) | Core and Platform: connection environment and folder | none | done |
 | [P9-05](phase-9/P9-05-avalonia-control-styles.md) | Avalonia head: shared control styles | P9-01, P9-03, P9-02 | done |
-| [P9-06](phase-9/P9-06-winui-control-styles.md) | WinUI head: shared control styles | P9-01, P9-03, P9-02 | todo |
+| [P9-06](phase-9/P9-06-winui-control-styles.md) | WinUI head: shared control styles | P9-01, P9-03, P9-02 | done |
 | [P9-07](phase-9/P9-07-avalonia-window-chrome.md) | Avalonia head: title bar, menu, activity rail and status bar | P9-04, P9-05, P9-02 | todo |
 | [P9-08](phase-9/P9-08-avalonia-explorer-and-tabs.md) | Avalonia head: object explorer, tab strip and properties panel | P9-07, P9-02 | todo |
 | [P9-09](phase-9/P9-09-winui-window-chrome.md) | WinUI head: title bar, menu, activity rail and status bar | P9-04, P9-06, P9-02 | todo |

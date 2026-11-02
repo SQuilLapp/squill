@@ -35,6 +35,13 @@ public sealed partial class App : Application
             return;
         }
 
+        if (Views.StyleGalleryWindow.IsRequested())
+        {
+            _window = new Views.StyleGalleryWindow();
+            _window.Activate();
+            return;
+        }
+
 #if SQUILL_LOOMEDITOR
         if (EditorDemo.IsRequested())
         {

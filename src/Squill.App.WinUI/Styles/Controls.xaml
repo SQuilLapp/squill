@@ -1,0 +1,309 @@
+<!-- Shared control styles (docs/design/visual-spec.md section 3). The WinUI templates stay; their lightweight-styling resources are
+     re-pointed to the Squill tokens (ControlResources.xaml, in both themes) and styles add sizes, radii, variants and the reusable pieces. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="ms-appx:///Styles/ControlResources.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Light">
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="ms-appx:///Styles/ControlResources.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <!-- Shape and typography defaults used by the WinUI templates -->
+  <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
+  <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
+  <StaticResource x:Key="ContentControlThemeFontFamily" ResourceKey="SquillFontUi" />
+  <StaticResource x:Key="ControlContentThemeFontSize" ResourceKey="SquillFontSizeBody" />
+  <x:Double x:Key="ScrollBarSize">8</x:Double>
+  <x:Double x:Key="ProgressBarTrackHeight">4</x:Double>
+  <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
+  <Thickness x:Key="ContentDialogBorderWidth">1</Thickness>
+
+  <Style TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource SquillFontUi}" />
+  </Style>
+  <Style x:Key="MonoTextBlockStyle" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource SquillFontMono}" />
+  </Style>
+  <Style x:Key="CapsTextBlockStyle" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="{StaticResource SquillFontSizeCaption}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="CharacterSpacing" Value="60" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillFg3Brush}" />
+  </Style>
+
+  <!-- Button: secondary (default look), Primary, OutlineSuccess, OutlineDanger, Ghost, Icon -->
+  <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+    <Setter Property="MinHeight" Value="{StaticResource SquillControlHeightStandard}" />
+    <Setter Property="Padding" Value="12,0" />
+    <Setter Property="CornerRadius" Value="{StaticResource SquillRadiusMd}" />
+    <Setter Property="FontSize" Value="{StaticResource SquillFontSizeBody}" />
+  </Style>
+  <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
+    <Setter Property="MinHeight" Value="{StaticResource SquillControlHeightStandard}" />
+    <Setter Property="Padding" Value="12,0" />
+    <Setter Property="CornerRadius" Value="{StaticResource SquillRadiusMd}" />
+    <Setter Property="FontSize" Value="{StaticResource SquillFontSizeBody}" />
+  </Style>
+  <!-- Variant buttons share one template: the style sets Background, Foreground and BorderBrush; hover and pressed wash the content
+       color over the button (14 % / 22 %), which gives the soft success, danger and ghost states without per-variant resources. -->
+  <ControlTemplate x:Key="SquillVariantButtonTemplate" TargetType="Button">
+    <Border x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+      <VisualStateManager.VisualStateGroups>
+        <VisualStateGroup x:Name="CommonStates">
+          <VisualState x:Name="Normal" />
+          <VisualState x:Name="PointerOver">
+            <VisualState.Setters>
+              <Setter Target="Wash.Opacity" Value="0.14" />
+            </VisualState.Setters>
+          </VisualState>
+          <VisualState x:Name="Pressed">
+            <VisualState.Setters>
+              <Setter Target="Wash.Opacity" Value="0.22" />
+            </VisualState.Setters>
+          </VisualState>
+          <VisualState x:Name="Disabled">
+            <VisualState.Setters>
+              <Setter Target="Content.Foreground" Value="{ThemeResource SquillFgDisabledBrush}" />
+              <Setter Target="Root.BorderBrush" Value="{ThemeResource SquillBorderSubtleBrush}" />
+            </VisualState.Setters>
+          </VisualState>
+        </VisualStateGroup>
+      </VisualStateManager.VisualStateGroups>
+      <Grid>
+        <Border x:Name="Wash" Background="{TemplateBinding Foreground}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" />
+        <ContentPresenter x:Name="Content" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Foreground="{TemplateBinding Foreground}" Padding="{TemplateBinding Padding}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+      </Grid>
+    </Border>
+  </ControlTemplate>
+  <Style x:Key="VariantButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+    <Setter Property="MinHeight" Value="{StaticResource SquillControlHeightStandard}" />
+    <Setter Property="Padding" Value="12,0" />
+    <Setter Property="CornerRadius" Value="{StaticResource SquillRadiusMd}" />
+    <Setter Property="Template" Value="{StaticResource SquillVariantButtonTemplate}" />
+  </Style>
+  <Style x:Key="OutlineSuccessButtonStyle" TargetType="Button" BasedOn="{StaticResource VariantButtonStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillBgRaisedBrush}" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillSuccessBrush}" />
+    <Setter Property="BorderBrush" Value="{ThemeResource SquillSuccessBrush}" />
+  </Style>
+  <Style x:Key="OutlineDangerButtonStyle" TargetType="Button" BasedOn="{StaticResource VariantButtonStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillBgRaisedBrush}" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillDangerBrush}" />
+    <Setter Property="BorderBrush" Value="{ThemeResource SquillDangerBrush}" />
+  </Style>
+  <Style x:Key="GhostButtonStyle" TargetType="Button" BasedOn="{StaticResource VariantButtonStyle}">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillFg2Brush}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style x:Key="IconButtonStyle" TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+    <Setter Property="Width" Value="28" />
+    <Setter Property="Height" Value="28" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <!-- Fields -->
+  <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
+    <Setter Property="MinHeight" Value="30" />
+    <Setter Property="Padding" Value="10,5,6,5" />
+    <Setter Property="CornerRadius" Value="{StaticResource SquillRadiusMd}" />
+  </Style>
+  <Style TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
+    <Setter Property="MinHeight" Value="{StaticResource SquillControlHeightStandard}" />
+    <Setter Property="Padding" Value="10,0,0,0" />
+    <Setter Property="CornerRadius" Value="{StaticResource SquillRadiusMd}" />
+  </Style>
+  <Style TargetType="ComboBoxItem" BasedOn="{StaticResource DefaultComboBoxItemStyle}">
+    <Setter Property="MinHeight" Value="{StaticResource SquillRowHeightStandard}" />
+  </Style>
+  <!-- Segmented control: a horizontal StackPanel of RadioButton with this style -->
+  <Style x:Key="SegmentedRadioButtonStyle" TargetType="RadioButton">
+    <Setter Property="MinHeight" Value="{StaticResource SquillControlHeightStandard}" />
+    <Setter Property="Padding" Value="12,0" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillFg2Brush}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RadioButton">
+          <Border x:Name="Root" Background="{ThemeResource SquillBgRaisedBrush}" BorderBrush="{ThemeResource SquillBorderBrush}"
+                  BorderThickness="1" CornerRadius="{StaticResource SquillRadiusMd}" MinHeight="{TemplateBinding MinHeight}"
+                  Padding="{TemplateBinding Padding}">
+            <VisualStateManager.VisualStateGroups>
+              <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="PointerOver">
+                  <VisualState.Setters>
+                    <Setter Target="Root.Background" Value="{ThemeResource SquillBgHoverBrush}" />
+                    <Setter Target="Content.Foreground" Value="{ThemeResource SquillFgBrush}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Pressed">
+                  <VisualState.Setters>
+                    <Setter Target="Root.Background" Value="{ThemeResource SquillBgActiveBrush}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Disabled">
+                  <VisualState.Setters>
+                    <Setter Target="Content.Foreground" Value="{ThemeResource SquillFgDisabledBrush}" />
+                    <Setter Target="Root.BorderBrush" Value="{ThemeResource SquillBorderSubtleBrush}" />
+                  </VisualState.Setters>
+                </VisualState>
+              </VisualStateGroup>
+              <VisualStateGroup x:Name="CheckStates">
+                <VisualState x:Name="Unchecked" />
+                <VisualState x:Name="Checked">
+                  <VisualState.Setters>
+                    <Setter Target="Root.Background" Value="{ThemeResource SquillAccentSoftBrush}" />
+                    <Setter Target="Root.BorderBrush" Value="{ThemeResource SquillAccentLineBrush}" />
+                    <Setter Target="Content.Foreground" Value="{ThemeResource SquillAccentTextBrush}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Indeterminate" />
+              </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+            <ContentPresenter x:Name="Content" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Foreground="{TemplateBinding Foreground}" FontWeight="SemiBold" HorizontalAlignment="Center"
+                              VerticalAlignment="Center" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Rows -->
+  <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+    <Setter Property="MinHeight" Value="{StaticResource SquillRowHeightStandard}" />
+    <Setter Property="CornerRadius" Value="{StaticResource SquillRadiusSm}" />
+  </Style>
+  <Style TargetType="ListBoxItem" BasedOn="{StaticResource DefaultListBoxItemStyle}">
+    <Setter Property="MinHeight" Value="{StaticResource SquillRowHeightStandard}" />
+    <Setter Property="CornerRadius" Value="{StaticResource SquillRadiusSm}" />
+  </Style>
+
+  <!-- Tooltip, progress, dialog frame -->
+  <Style TargetType="ToolTip" BasedOn="{StaticResource DefaultToolTipStyle}">
+    <Setter Property="FontSize" Value="{StaticResource SquillFontSizeBodySm}" />
+    <Setter Property="CornerRadius" Value="{StaticResource SquillRadiusMd}" />
+  </Style>
+  <Style TargetType="ProgressBar" BasedOn="{StaticResource DefaultProgressBarStyle}">
+    <Setter Property="MinHeight" Value="4" />
+    <Setter Property="CornerRadius" Value="{StaticResource SquillRadiusXs}" />
+  </Style>
+  <Style TargetType="ContentDialog" BasedOn="{StaticResource DefaultContentDialogStyle}">
+    <Setter Property="CornerRadius" Value="{StaticResource SquillRadiusLg}" />
+  </Style>
+
+  <!-- KeyboardChip: mono 11, 1 px border, radius 4 -->
+  <Style x:Key="KeyboardChipStyle" TargetType="ContentControl">
+    <Setter Property="FontFamily" Value="{StaticResource SquillFontMono}" />
+    <Setter Property="FontSize" Value="{StaticResource SquillFontSizeCaption}" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillFg3Brush}" />
+    <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ContentControl">
+          <Border BorderBrush="{ThemeResource SquillBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource SquillRadiusSm}" Padding="5,1">
+            <ContentPresenter Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Badge: pill (radius 3), 11 px semibold; the caller writes the text in capitals. Variants: Info, Success, Warning, Danger, Env* -->
+  <Style x:Key="BadgeStyle" TargetType="ContentControl">
+    <Setter Property="FontSize" Value="{StaticResource SquillFontSizeCaption}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillFg2Brush}" />
+    <Setter Property="Background" Value="{ThemeResource SquillBgActiveBrush}" />
+    <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ContentControl">
+          <Border Background="{TemplateBinding Background}" CornerRadius="{StaticResource SquillRadiusXs}" Padding="6,1">
+            <ContentPresenter Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="BadgeInfoStyle" TargetType="ContentControl" BasedOn="{StaticResource BadgeStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillInfoSoftBrush}" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillInfoBrush}" />
+  </Style>
+  <Style x:Key="BadgeSuccessStyle" TargetType="ContentControl" BasedOn="{StaticResource BadgeStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillSuccessSoftBrush}" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillSuccessBrush}" />
+  </Style>
+  <Style x:Key="BadgeWarningStyle" TargetType="ContentControl" BasedOn="{StaticResource BadgeStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillWarningSoftBrush}" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillWarningBrush}" />
+  </Style>
+  <Style x:Key="BadgeDangerStyle" TargetType="ContentControl" BasedOn="{StaticResource BadgeStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillDangerSoftBrush}" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillDangerBrush}" />
+  </Style>
+  <Style x:Key="BadgeEnvProdStyle" TargetType="ContentControl" BasedOn="{StaticResource BadgeStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillEnvProdSoftBrush}" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillEnvProdBrush}" />
+  </Style>
+  <Style x:Key="BadgeEnvStagingStyle" TargetType="ContentControl" BasedOn="{StaticResource BadgeStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillEnvStagingSoftBrush}" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillEnvStagingBrush}" />
+  </Style>
+  <Style x:Key="BadgeEnvDevStyle" TargetType="ContentControl" BasedOn="{StaticResource BadgeStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillEnvDevSoftBrush}" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillEnvDevBrush}" />
+  </Style>
+  <Style x:Key="BadgeEnvLocalStyle" TargetType="ContentControl" BasedOn="{StaticResource BadgeStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillEnvLocalSoftBrush}" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillEnvLocalBrush}" />
+  </Style>
+
+  <!-- EngineBadge: 18 x 18, radius 4, two letters 9 px bold on the engine token -->
+  <Style x:Key="EngineBadgeStyle" TargetType="ContentControl">
+    <Setter Property="Width" Value="18" />
+    <Setter Property="Height" Value="18" />
+    <Setter Property="FontSize" Value="9" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillOnEngineBrush}" />
+    <Setter Property="Background" Value="{ThemeResource SquillFg3Brush}" />
+    <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ContentControl">
+          <Border Background="{TemplateBinding Background}" CornerRadius="{StaticResource SquillRadiusSm}">
+            <ContentPresenter Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center"
+                              VerticalAlignment="Center" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="EngineBadgePostgresStyle" TargetType="ContentControl" BasedOn="{StaticResource EngineBadgeStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillEnginePostgresBrush}" />
+  </Style>
+  <Style x:Key="EngineBadgeMysqlStyle" TargetType="ContentControl" BasedOn="{StaticResource EngineBadgeStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillEngineMysqlBrush}" />
+  </Style>
+  <Style x:Key="EngineBadgeSqlserverStyle" TargetType="ContentControl" BasedOn="{StaticResource EngineBadgeStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillEngineSqlserverBrush}" />
+  </Style>
+  <Style x:Key="EngineBadgeSqliteStyle" TargetType="ContentControl" BasedOn="{StaticResource EngineBadgeStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillEngineSqliteBrush}" />
+  </Style>
+</ResourceDictionary>

@@ -1,6 +1,6 @@
 # P9-06 - WinUI head: shared control styles
 
-Status: todo
+Status: done
 Depends on: P9-01, P9-03, P9-02
 
 ## Goal
@@ -17,8 +17,8 @@ The WinUI counterpart of P9-05: implicit and keyed styles that restyle the WinUI
 - Layout changes of existing views (later cards).
 
 ## Tasks
-- [ ] Write the styles and the gallery.
-- [ ] Tests in `tests/Squill.App.WinUI.Tests` for what is testable without UI (resource keys present in both themes, no literal colors in `Controls.xaml` by a grep-based test). State in the report what needs the screenshot.
+- [x] Write the styles and the gallery.
+- [x] Tests in `tests/Squill.App.WinUI.Tests` for what is testable without UI (resource keys present in both themes, no literal colors in `Controls.xaml` by a grep-based test). State in the report what needs the screenshot.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.
@@ -29,3 +29,7 @@ The WinUI counterpart of P9-05: implicit and keyed styles that restyle the WinUI
 
 ## Suggested commit message
 WinUI: shared control styles
+
+## Report
+- Styles: `Styles/Controls.xaml` (merged after the tokens in `App.xaml`) and `Styles/ControlResources.xaml` (lightweight-styling keys re-pointed to the tokens, merged into both theme dictionaries). Variant buttons share one template whose hover/pressed wash the content color (WinUI 3 has no `Style.Resources`); `TreeViewItem` is restyled through resources only (a `TreeViewItem` style crashed the XAML load), its 24 px row height is left to the explorer card. Segmented control = `RadioButton` with `SegmentedRadioButtonStyle`; `SearchBox` is a code-built control.
+- Not done / to check by hand: popup shadow (`shadow-3`) uses the WinUI default flyout shadow; menu, flyout, tooltip and dialog popups and the pointer-over/pressed states were not driven or captured (gallery captured in light and dark, static states only); the comparison with M03/M05/M02/M14 is deferred to the screen cards because no screen uses the styles yet.

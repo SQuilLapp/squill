@@ -26,5 +26,7 @@
     <Content Include="..\..\src\Squill.App.WinUI\Views\TableDesignerView.xaml" Link="Xaml\TableDesignerView.xaml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\TableDesignerView.xaml.cs" Link="Xaml\TableDesignerView.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Styles\SquillTokens.xaml" Link="SquillTokens.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Styles\Controls.xaml" Link="Styles\Controls.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Styles\ControlResources.xaml" Link="Styles\ControlResources.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

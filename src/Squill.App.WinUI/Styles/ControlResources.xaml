@@ -1,0 +1,445 @@
+<!-- Lightweight-styling overrides of the WinUI controls: every key re-points a WinUI resource to a Squill token
+     (docs/design/visual-spec.md section 3). Merged into both theme dictionaries of Controls.xaml, so the ThemeResource
+     references follow the active theme. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Button -->
+  <SolidColorBrush x:Key="ButtonBackground" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="{ThemeResource SquillBgOverlayColor}"/>
+  <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="ButtonForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ButtonForegroundPressed" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="ButtonForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="ButtonBorderBrush" Color="{ThemeResource SquillBorderColor}"/>
+  <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="{ThemeResource SquillBorderStrongColor}"/>
+  <SolidColorBrush x:Key="ButtonBorderBrushPressed" Color="{ThemeResource SquillBorderStrongColor}"/>
+  <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="{ThemeResource SquillBorderSubtleColor}"/>
+  <!-- AccentButton (primary) -->
+  <SolidColorBrush x:Key="AccentButtonBackground" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="AccentButtonBackgroundPointerOver" Color="{ThemeResource SquillAccentHoverColor}"/>
+  <SolidColorBrush x:Key="AccentButtonBackgroundPressed" Color="{ThemeResource SquillAccentPressedColor}"/>
+  <SolidColorBrush x:Key="AccentButtonBackgroundDisabled" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="AccentButtonForeground" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="AccentButtonForegroundPointerOver" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="AccentButtonForegroundPressed" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="AccentButtonForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="AccentButtonBorderBrush" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="AccentButtonBorderBrushPointerOver" Color="{ThemeResource SquillAccentHoverColor}"/>
+  <SolidColorBrush x:Key="AccentButtonBorderBrushPressed" Color="{ThemeResource SquillAccentPressedColor}"/>
+  <SolidColorBrush x:Key="AccentButtonBorderBrushDisabled" Color="{ThemeResource SquillBgActiveColor}"/>
+  <!-- ToggleButton -->
+  <SolidColorBrush x:Key="ToggleButtonBackground" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="{ThemeResource SquillBgOverlayColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="{ThemeResource SquillAccentSoftColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="{ThemeResource SquillAccentSoftColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="{ThemeResource SquillAccentSoftColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SquillAccentTextColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SquillAccentTextColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SquillAccentTextColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="{ThemeResource SquillBorderColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="{ThemeResource SquillBorderStrongColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="{ThemeResource SquillBorderStrongColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="{ThemeResource SquillBorderSubtleColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="{ThemeResource SquillAccentLineColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="{ThemeResource SquillAccentLineColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="{ThemeResource SquillAccentLineColor}"/>
+  <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="{ThemeResource SquillBorderSubtleColor}"/>
+  <!-- TextBox, PasswordBox, AutoSuggestBox -->
+  <SolidColorBrush x:Key="TextControlBackground" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="TextControlBackgroundPressed" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="TextControlBackgroundDisabled" Color="{ThemeResource SquillBgSurfaceColor}"/>
+  <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="TextControlForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TextControlForegroundPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TextControlForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="TextControlForegroundFocused" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TextControlBorderBrush" Color="{ThemeResource SquillBorderColor}"/>
+  <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="{ThemeResource SquillBorderStrongColor}"/>
+  <SolidColorBrush x:Key="TextControlBorderBrushPressed" Color="{ThemeResource SquillBorderStrongColor}"/>
+  <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="{ThemeResource SquillBorderSubtleColor}"/>
+  <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="{ThemeResource SquillFocusColor}"/>
+  <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="TextControlPlaceholderForegroundPressed" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="TextControlPlaceholderForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="TextControlHeaderForeground" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="TextControlHeaderForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="{ThemeResource SquillAccentLineColor}"/>
+  <SolidColorBrush x:Key="TextControlButtonForeground" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="TextControlButtonForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TextControlButtonForegroundPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TextControlButtonBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="TextControlButtonBackgroundPointerOver" Color="{ThemeResource SquillBgHoverColor}"/>
+  <SolidColorBrush x:Key="TextControlButtonBackgroundPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="TextControlButtonBorderBrush" Color="Transparent"/>
+  <SolidColorBrush x:Key="TextControlButtonBorderBrushPointerOver" Color="Transparent"/>
+  <SolidColorBrush x:Key="TextControlButtonBorderBrushPressed" Color="Transparent"/>
+  <!-- ComboBox -->
+  <SolidColorBrush x:Key="ComboBoxBackground" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="ComboBoxBackgroundDisabled" Color="{ThemeResource SquillBgSurfaceColor}"/>
+  <SolidColorBrush x:Key="ComboBoxBackgroundFocused" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="ComboBoxBackgroundFocusedDropDown" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="ComboBoxForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ComboBoxForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ComboBoxForegroundPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ComboBoxForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="ComboBoxForegroundFocused" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="{ThemeResource SquillBorderColor}"/>
+  <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="{ThemeResource SquillBorderStrongColor}"/>
+  <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="{ThemeResource SquillBorderColor}"/>
+  <SolidColorBrush x:Key="ComboBoxBorderBrushDisabled" Color="{ThemeResource SquillBorderSubtleColor}"/>
+  <SolidColorBrush x:Key="ComboBoxBorderBrushFocused" Color="{ThemeResource SquillFocusColor}"/>
+  <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="{ThemeResource SquillBgOverlayColor}"/>
+  <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="{ThemeResource SquillBorderColor}"/>
+  <SolidColorBrush x:Key="ComboBoxDropDownGlyphForeground" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="ComboBoxPlaceHolderForeground" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="ComboBoxItemBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="{ThemeResource SquillBgHoverColor}"/>
+  <SolidColorBrush x:Key="ComboBoxItemBackgroundPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="ComboBoxItemBackgroundDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPressed" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="ComboBoxItemForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ComboBoxItemForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ComboBoxItemForegroundPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ComboBoxItemForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="ComboBoxItemPillFillBrush" Color="Transparent"/>
+  <!-- CheckBox -->
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUnchecked" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUnchecked" Color="{ThemeResource SquillBorderStrongColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundUnchecked" Color="Transparent"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundUnchecked" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundUncheckedPointerOver" Color="Transparent"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundUncheckedPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUncheckedPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUncheckedPressed" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundUncheckedPressed" Color="Transparent"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundUncheckedPressed" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUncheckedDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUncheckedDisabled" Color="{ThemeResource SquillBorderSubtleColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundUncheckedDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundUncheckedDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillChecked" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeChecked" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundChecked" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundChecked" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminate" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminate" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundIndeterminate" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundIndeterminate" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" Color="{ThemeResource SquillAccentHoverColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver" Color="{ThemeResource SquillAccentHoverColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundCheckedPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminatePointerOver" Color="{ThemeResource SquillAccentHoverColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePointerOver" Color="{ThemeResource SquillAccentHoverColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundIndeterminatePointerOver" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundIndeterminatePointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPressed" Color="{ThemeResource SquillAccentPressedColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed" Color="{ThemeResource SquillAccentPressedColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundCheckedPressed" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminatePressed" Color="{ThemeResource SquillAccentPressedColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePressed" Color="{ThemeResource SquillAccentPressedColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundIndeterminatePressed" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundIndeterminatePressed" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedDisabled" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedDisabled" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundCheckedDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminateDisabled" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminateDisabled" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundIndeterminateDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundIndeterminateDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <!-- RadioButton -->
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseStroke" Color="{ThemeResource SquillBorderStrongColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseFill" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="RadioButtonCheckGlyphFill" Color="Transparent"/>
+  <SolidColorBrush x:Key="RadioButtonForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseStrokePointerOver" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseFillPointerOver" Color="{ThemeResource SquillBgRaisedColor}"/>
+  <SolidColorBrush x:Key="RadioButtonCheckGlyphFillPointerOver" Color="Transparent"/>
+  <SolidColorBrush x:Key="RadioButtonForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseStrokePressed" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseFillPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="RadioButtonCheckGlyphFillPressed" Color="Transparent"/>
+  <SolidColorBrush x:Key="RadioButtonForegroundPressed" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseStrokeDisabled" Color="{ThemeResource SquillBorderSubtleColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseFillDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="RadioButtonCheckGlyphFillDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="RadioButtonForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseStrokeChecked" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseFillChecked" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="RadioButtonCheckGlyphFillChecked" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="RadioButtonForegroundChecked" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseCheckedStroke" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseCheckedFill" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseStrokeCheckedPointerOver" Color="{ThemeResource SquillAccentHoverColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseFillCheckedPointerOver" Color="{ThemeResource SquillAccentHoverColor}"/>
+  <SolidColorBrush x:Key="RadioButtonCheckGlyphFillCheckedPointerOver" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="RadioButtonForegroundCheckedPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" Color="{ThemeResource SquillAccentHoverColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" Color="{ThemeResource SquillAccentHoverColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseStrokeCheckedPressed" Color="{ThemeResource SquillAccentPressedColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseFillCheckedPressed" Color="{ThemeResource SquillAccentPressedColor}"/>
+  <SolidColorBrush x:Key="RadioButtonCheckGlyphFillCheckedPressed" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="RadioButtonForegroundCheckedPressed" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseCheckedStrokePressed" Color="{ThemeResource SquillAccentPressedColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseCheckedFillPressed" Color="{ThemeResource SquillAccentPressedColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseStrokeCheckedDisabled" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseFillCheckedDisabled" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="RadioButtonCheckGlyphFillCheckedDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="RadioButtonForegroundCheckedDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseCheckedStrokeDisabled" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="RadioButtonOuterEllipseCheckedFillDisabled" Color="{ThemeResource SquillBgActiveColor}"/>
+  <!-- ToggleSwitch -->
+  <SolidColorBrush x:Key="ToggleSwitchFillOff" Color="Transparent"/>
+  <SolidColorBrush x:Key="ToggleSwitchFillOffPointerOver" Color="Transparent"/>
+  <SolidColorBrush x:Key="ToggleSwitchFillOffPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchFillOffDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="{ThemeResource SquillBorderStrongColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="ToggleSwitchStrokeOffPressed" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="ToggleSwitchStrokeOffDisabled" Color="{ThemeResource SquillBorderSubtleColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="{ThemeResource SquillAccentHoverColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="{ThemeResource SquillAccentPressedColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchFillOnDisabled" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchStrokeOnPointerOver" Color="{ThemeResource SquillAccentHoverColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchStrokeOnPressed" Color="{ThemeResource SquillAccentPressedColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchStrokeOnDisabled" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchKnobFillOff" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPointerOver" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPressed" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="ToggleSwitchKnobFillOffDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchKnobFillOn" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPointerOver" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPressed" Color="{ThemeResource SquillOnAccentColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchKnobFillOnDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchContainerBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="ToggleSwitchContainerBackgroundPointerOver" Color="Transparent"/>
+  <SolidColorBrush x:Key="ToggleSwitchContainerBackgroundPressed" Color="Transparent"/>
+  <SolidColorBrush x:Key="ToggleSwitchContainerBackgroundDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="ToggleSwitchContentForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchContentForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ToggleSwitchContentForegroundPressed" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="ToggleSwitchContentForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <!-- Underline tabs: SelectorBar and Pivot; document tabs: TabView -->
+  <SolidColorBrush x:Key="SelectorBarItemBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="SelectorBarItemBackgroundPointerOver" Color="{ThemeResource SquillBgHoverColor}"/>
+  <SolidColorBrush x:Key="SelectorBarItemBackgroundPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="SelectorBarItemBackgroundDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="SelectorBarItemBackgroundSelected" Color="Transparent"/>
+  <SolidColorBrush x:Key="SelectorBarItemForeground" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="SelectorBarItemForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="SelectorBarItemForegroundPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="SelectorBarItemForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="SelectorBarItemForegroundSelected" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="SelectorBarItemForegroundSelectedPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="SelectorBarItemForegroundSelectedPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="PivotHeaderForeground" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="PivotHeaderItemForegroundUnselected" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="PivotHeaderItemForegroundSelected" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="PivotHeaderItemForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="PivotHeaderItemFocusPipeFill" Color="{ThemeResource SquillFocusColor}"/>
+  <SolidColorBrush x:Key="PivotHeaderItemSelectedPipeFill" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="PivotItemForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="PivotHeaderBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="PivotHeaderItemBackgroundUnselected" Color="Transparent"/>
+  <SolidColorBrush x:Key="PivotHeaderItemBackgroundUnselectedPointerOver" Color="{ThemeResource SquillBgHoverColor}"/>
+  <SolidColorBrush x:Key="PivotHeaderItemBackgroundSelected" Color="Transparent"/>
+  <SolidColorBrush x:Key="PivotHeaderItemBackgroundSelectedPointerOver" Color="{ThemeResource SquillBgHoverColor}"/>
+  <SolidColorBrush x:Key="TabViewBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="TabViewItemHeaderBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="TabViewItemHeaderBackgroundPointerOver" Color="{ThemeResource SquillBgHoverColor}"/>
+  <SolidColorBrush x:Key="TabViewItemHeaderBackgroundPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="TabViewItemHeaderBackgroundSelected" Color="{ThemeResource SquillBgBaseColor}"/>
+  <SolidColorBrush x:Key="TabViewItemHeaderForeground" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="TabViewItemHeaderForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TabViewItemHeaderForegroundPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TabViewItemHeaderForegroundSelected" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TabViewItemHeaderForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="TabViewItemSeparator" Color="{ThemeResource SquillBorderSubtleColor}"/>
+  <SolidColorBrush x:Key="TabViewSelectedItemBorderBrush" Color="{ThemeResource SquillBorderSubtleColor}"/>
+  <SolidColorBrush x:Key="TabViewBorderBrush" Color="{ThemeResource SquillBorderSubtleColor}"/>
+  <SolidColorBrush x:Key="TabViewItemHeaderCloseButtonForeground" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="TabViewItemHeaderCloseButtonForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TabViewItemHeaderCloseButtonForegroundSelected" Color="{ThemeResource SquillFg2Color}"/>
+  <!-- List, tree and grid rows -->
+  <SolidColorBrush x:Key="ListViewItemBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="{ThemeResource SquillBgHoverColor}"/>
+  <SolidColorBrush x:Key="ListViewItemBackgroundPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="ListViewItemBackgroundDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="ListViewItemBackgroundSelectedDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListViewItemForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ListViewItemForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ListViewItemForegroundPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ListViewItemForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ListViewItemForegroundSelectedPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ListViewItemForegroundSelectedPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ListViewItemForegroundSelectedDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="ListViewItemSelectionIndicatorForeground" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListViewItemSelectionIndicatorBrush" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListViewItemBorderBrush" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListViewItemBorderBrushPointerOver" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListViewItemBorderBrushSelected" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListBoxItemBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListBoxItemBackgroundPointerOver" Color="{ThemeResource SquillBgHoverColor}"/>
+  <SolidColorBrush x:Key="ListBoxItemBackgroundPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="ListBoxItemBackgroundDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListBoxItemBackgroundSelected" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="ListBoxItemBackgroundSelectedPointerOver" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="ListBoxItemBackgroundSelectedPressed" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="ListBoxItemBackgroundSelectedDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListBoxItemForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ListBoxItemForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ListBoxItemForegroundPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ListBoxItemForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="ListBoxItemForegroundSelected" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ListBoxItemForegroundSelectedPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ListBoxItemForegroundSelectedPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ListBoxItemForegroundSelectedDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="ListBoxItemSelectionIndicatorForeground" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListBoxItemSelectionIndicatorBrush" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListBoxItemBorderBrush" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListBoxItemBorderBrushPointerOver" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListBoxItemBorderBrushSelected" Color="Transparent"/>
+  <SolidColorBrush x:Key="GridViewItemBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="GridViewItemBackgroundPointerOver" Color="{ThemeResource SquillBgHoverColor}"/>
+  <SolidColorBrush x:Key="GridViewItemBackgroundPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="GridViewItemBackgroundDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="GridViewItemBackgroundSelected" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="GridViewItemBackgroundSelectedPointerOver" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="GridViewItemBackgroundSelectedPressed" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="GridViewItemBackgroundSelectedDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="GridViewItemForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="GridViewItemForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="GridViewItemForegroundPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="GridViewItemForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="GridViewItemForegroundSelected" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="GridViewItemForegroundSelectedPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="GridViewItemForegroundSelectedPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="GridViewItemForegroundSelectedDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="GridViewItemSelectionIndicatorForeground" Color="Transparent"/>
+  <SolidColorBrush x:Key="GridViewItemSelectionIndicatorBrush" Color="Transparent"/>
+  <SolidColorBrush x:Key="GridViewItemBorderBrush" Color="Transparent"/>
+  <SolidColorBrush x:Key="GridViewItemBorderBrushPointerOver" Color="Transparent"/>
+  <SolidColorBrush x:Key="GridViewItemBorderBrushSelected" Color="Transparent"/>
+  <SolidColorBrush x:Key="TreeViewItemBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="TreeViewItemBackgroundPointerOver" Color="{ThemeResource SquillBgHoverColor}"/>
+  <SolidColorBrush x:Key="TreeViewItemBackgroundPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="TreeViewItemBackgroundDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="TreeViewItemBackgroundSelected" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="TreeViewItemBackgroundSelectedPointerOver" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="TreeViewItemBackgroundSelectedPressed" Color="{ThemeResource SquillSelectionColor}"/>
+  <SolidColorBrush x:Key="TreeViewItemBackgroundSelectedDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="TreeViewItemForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TreeViewItemForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TreeViewItemForegroundPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TreeViewItemForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="TreeViewItemForegroundSelected" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TreeViewItemForegroundSelectedPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TreeViewItemForegroundSelectedPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="TreeViewItemForegroundSelectedDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="TreeViewItemSelectionIndicatorForeground" Color="Transparent"/>
+  <SolidColorBrush x:Key="TreeViewItemSelectionIndicatorBrush" Color="Transparent"/>
+  <SolidColorBrush x:Key="TreeViewItemBorderBrush" Color="Transparent"/>
+  <SolidColorBrush x:Key="TreeViewItemBorderBrushPointerOver" Color="Transparent"/>
+  <SolidColorBrush x:Key="TreeViewItemBorderBrushSelected" Color="Transparent"/>
+  <SolidColorBrush x:Key="TreeViewItemChevronForeground" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="ListViewBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListBoxBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="ListBoxBorderBrush" Color="Transparent"/>
+  <!-- Menus, flyouts, tooltips, scrollbars, progress, dialogs, focus ring -->
+  <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="{ThemeResource SquillBgOverlayColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="{ThemeResource SquillBorderColor}"/>
+  <SolidColorBrush x:Key="FlyoutPresenterBackground" Color="{ThemeResource SquillBgOverlayColor}"/>
+  <SolidColorBrush x:Key="FlyoutBorderThemeBrush" Color="{ThemeResource SquillBorderColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutItemBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="MenuFlyoutItemBackgroundPointerOver" Color="{ThemeResource SquillBgHoverColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutItemBackgroundPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutItemBackgroundDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="MenuFlyoutItemForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutItemForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutItemForegroundPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutItemForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutItemKeyboardAcceleratorTextForeground" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemBackgroundPointerOver" Color="{ThemeResource SquillBgHoverColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemBackgroundPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemBackgroundSubMenuOpened" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemForegroundPointerOver" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemForegroundPressed" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemForegroundSubMenuOpened" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemForegroundDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemChevron" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemChevronPointerOver" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemChevronPressed" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemChevronSubMenuOpened" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSubItemChevronDisabled" Color="{ThemeResource SquillFgDisabledColor}"/>
+  <SolidColorBrush x:Key="MenuFlyoutSeparatorBackground" Color="{ThemeResource SquillBorderSubtleColor}"/>
+  <SolidColorBrush x:Key="MenuBarBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="MenuBarItemBackground" Color="Transparent"/>
+  <SolidColorBrush x:Key="MenuBarItemBackgroundPointerOver" Color="{ThemeResource SquillBgHoverColor}"/>
+  <SolidColorBrush x:Key="MenuBarItemBackgroundPressed" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="MenuBarItemBackgroundSelected" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="MenuBarItemBorderBrush" Color="Transparent"/>
+  <SolidColorBrush x:Key="MenuBarItemBorderBrushPointerOver" Color="Transparent"/>
+  <SolidColorBrush x:Key="MenuBarItemBorderBrushPressed" Color="Transparent"/>
+  <SolidColorBrush x:Key="MenuBarItemBorderBrushSelected" Color="Transparent"/>
+  <SolidColorBrush x:Key="ToolTipBackground" Color="{ThemeResource SquillBgOverlayColor}"/>
+  <SolidColorBrush x:Key="ToolTipForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ToolTipBorderBrush" Color="{ThemeResource SquillBorderColor}"/>
+  <SolidColorBrush x:Key="ScrollBarThumbFill" Color="{ThemeResource SquillBorderStrongColor}"/>
+  <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="{ThemeResource SquillFg3Color}"/>
+  <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="{ThemeResource SquillFg2Color}"/>
+  <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="Transparent"/>
+  <SolidColorBrush x:Key="ScrollBarTrackFill" Color="Transparent"/>
+  <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="Transparent"/>
+  <SolidColorBrush x:Key="ScrollBarTrackStroke" Color="Transparent"/>
+  <SolidColorBrush x:Key="ScrollBarTrackStrokePointerOver" Color="Transparent"/>
+  <SolidColorBrush x:Key="ProgressBarForeground" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="ProgressBarBackground" Color="{ThemeResource SquillBgActiveColor}"/>
+  <SolidColorBrush x:Key="ProgressBarBorderBrush" Color="Transparent"/>
+  <SolidColorBrush x:Key="ContentDialogBackground" Color="{ThemeResource SquillBgOverlayColor}"/>
+  <SolidColorBrush x:Key="ContentDialogForeground" Color="{ThemeResource SquillFgColor}"/>
+  <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="{ThemeResource SquillBorderColor}"/>
+  <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="Transparent"/>
+  <SolidColorBrush x:Key="ContentDialogSeparatorBorderBrush" Color="{ThemeResource SquillBorderSubtleColor}"/>
+  <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{ThemeResource SquillAccentColor}"/>
+  <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{ThemeResource SquillAccentHoverColor}"/>
+  <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{ThemeResource SquillAccentPressedColor}"/>
+  <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="{ThemeResource SquillFocusColor}"/>
+  <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="Transparent"/>
+</ResourceDictionary>
