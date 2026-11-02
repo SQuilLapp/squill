@@ -13,6 +13,15 @@ SQuilL is a SQL client built on .NET 11 (RC3) and Native AOT. The Windows head u
 
 SSH tunnels (`SSH.NET`) are compatible under the same conditions (publish and startup only).
 
+## Schema designer and ER diagram
+
+Open a table in the designer to create or alter columns, indexes and foreign keys: the generated DDL is previewed before it runs. The ER diagram shows the tables of a schema with their foreign keys, can be exported to SVG, and remembers box positions per connection. Both work on SQLite, PostgreSQL, MySQL / MariaDB and SQL Server.
+
+- SQLite changes that `ALTER TABLE` cannot express are done by rebuilding the table inside a transaction (foreign keys are checked afterwards).
+- MySQL / MariaDB does not roll back DDL: if a statement fails, the earlier ones stay applied, and the designer warns about it.
+
+See [ADR 0004](docs/adr/0004-schema-designer.md) for the design and what is not covered.
+
 ## Build and test
 
 Prerequisite: the .NET SDK pinned in [global.json](global.json) (11.0.100-rc.3).
@@ -106,7 +115,7 @@ Dependency graph: `Core` <- `Data` <- `Data.<Driver>`; `Core` <- `Sql`; `Core` <
 ## Documentation
 
 - [Architecture note and risks](docs/architecture.md)
-- ADRs: [0001 target framework](docs/adr/0001-target-framework.md), [0002 editor and terminal components](docs/adr/0002-editor-and-terminal-components.md), [0003 SQL parser](docs/adr/0003-sql-parser.md)
+- ADRs: [0001 target framework](docs/adr/0001-target-framework.md), [0002 editor and terminal components](docs/adr/0002-editor-and-terminal-components.md), [0003 SQL parser](docs/adr/0003-sql-parser.md), [0004 schema designer](docs/adr/0004-schema-designer.md)
 - Proofs of concept: [AOT drivers](docs/poc/aot-drivers.md), [grid](docs/poc/grid.md), [editor](docs/poc/editor.md)
 - [Task cards](docs/tasks/README.md)
 

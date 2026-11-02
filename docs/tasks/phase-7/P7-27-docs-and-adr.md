@@ -1,6 +1,6 @@
 # P7-27 - Documentation: schema designer ADR, README and architecture note
 
-Status: todo
+Status: done
 Depends on: P7-24, P7-26, P6-04
 
 ## Goal
@@ -16,7 +16,7 @@ Record the design decisions of phase 7 and document the feature for users.
 - New features, screenshots that cannot be produced in the session.
 
 ## Tasks
-- [ ] Write the ADR, update the README and architecture note, check every link.
+- [x] Write the ADR, update the README and architecture note, check every link.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings (no code touched; confirms the tree is still green).
