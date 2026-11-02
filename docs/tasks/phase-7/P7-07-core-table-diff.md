@@ -1,6 +1,6 @@
 # P7-07 - Core: table diff into schema operations
 
-Status: todo
+Status: done
 Depends on: P7-06
 
 ## Goal
@@ -20,8 +20,8 @@ Turn "original design" + "edited design" into an ordered list of abstract schema
 - Schema moves (P7-08 rejects them), SQL text, ordering across several tables.
 
 ## Tasks
-- [ ] Implement the operations and `TableDiff`.
-- [ ] Tests in `tests/Squill.Core.Tests`: each operation alone; rename plus type change on one column; composite key change; index recreated when uniqueness flips, not recreated on a column rename; foreign-key action change; dropped column used by an index; the exact group order on a mixed edit; identical designs give an empty list.
+- [x] Implement the operations and `TableDiff`.
+- [x] Tests in `tests/Squill.Core.Tests`: each operation alone; rename plus type change on one column; composite key change; index recreated when uniqueness flips, not recreated on a column rename; foreign-key action change; dropped column used by an index; the exact group order on a mixed edit; identical designs give an empty list.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
