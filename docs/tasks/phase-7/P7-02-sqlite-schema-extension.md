@@ -1,6 +1,6 @@
 # P7-02 - Data.Sqlite: read auto-increment and foreign-key actions
 
-Status: todo
+Status: done
 Depends on: P7-01, P1-07
 
 ## Goal
@@ -15,8 +15,8 @@ Depends on: P7-01, P1-07
 - Other engines (P7-03 to P7-05).
 
 ## Tasks
-- [ ] Extend the reader.
-- [ ] Extend the existing `:memory:` tests: `INTEGER PRIMARY KEY` is auto-increment, `INT PRIMARY KEY` and a composite key are not, `ON DELETE CASCADE ON UPDATE SET NULL` and the default are read back.
+- [x] Extend the reader.
+- [x] Extend the existing `:memory:` tests: `INTEGER PRIMARY KEY` is auto-increment, `INT PRIMARY KEY` and a composite key are not, `ON DELETE CASCADE ON UPDATE SET NULL` and the default are read back.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
