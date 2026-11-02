@@ -35,6 +35,13 @@ public sealed partial class MainWindow : Window
     public void Attach(AppServices services, string dataDirectory)
     {
         Sidebar.Attach(services.History, services.Snippets);
+        ActiveTabView.AttachPanels(services.History, services.Snippets);
+        services.Workspace.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(WorkspaceViewModel.ActiveEnvironment))
+                ActiveTabView.SetEnvironment(services.Workspace.ActiveEnvironment);
+        };
+        ActiveTabView.SetEnvironment(services.Workspace.ActiveEnvironment);
         _tabs = new WorkspaceTabList(services.Workspace);
         TabStrip.ItemsSource = _tabs.Items;
         TabStrip.SelectionChanged += OnTabSelectionChanged;

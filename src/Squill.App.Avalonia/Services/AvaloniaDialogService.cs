@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Layout;
 using Avalonia.Platform.Storage;
 using Squill.Presentation;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Query;
 
 namespace Squill.App.Avalonia.Services;
@@ -49,30 +50,55 @@ internal sealed class AvaloniaDialogService : IDialogService
         IReadOnlyList<string> names,
         IReadOnlyDictionary<string, ParameterValue> defaults)
     {
-        var panel = new StackPanel { Spacing = 6 };
-        var inputs = new List<(string Name, TextBox Box, CheckBox IsNull)>();
+        var rows = new List<ParameterPromptRow>();
+        var panel = new StackPanel { Spacing = 8 };
+        var run = new Button { Content = UiText.Get("editor.runWithValues"), Classes = { "primary" } };
+        void Refresh() => run.IsEnabled = ParameterPromptRow.AllValid(rows);
+        panel.Children.Add(new TextBlock { Text = UiText.Format("editor.parametersDetected", names.Count), Classes = { "caps" } });
         foreach (var name in names)
         {
             defaults.TryGetValue(name, out var previous);
-            var box = new TextBox { Text = previous?.Text, PlaceholderText = name };
-            var isNull = new CheckBox { Content = "NULL", IsChecked = previous?.IsNull ?? false };
-            panel.Children.Add(new TextBlock { Text = name });
-            panel.Children.Add(box);
-            panel.Children.Add(isNull);
-            inputs.Add((name, box, isNull));
+            var row = new ParameterPromptRow(name) { Text = previous?.Text, IsNull = previous?.IsNull ?? false };
+            rows.Add(row);
+            var box = new TextBox { Text = row.Text, Classes = { "mono" }, IsEnabled = !row.IsNull };
+            var isNull = new CheckBox { Content = UiText.Get("editor.passNull"), IsChecked = row.IsNull };
+            var error = new TextBlock { FontSize = 12, IsVisible = row.Error is not null, Text = row.Error };
+            error.Bind(TextBlock.ForegroundProperty, error.GetResourceObservable("SquillDangerBrush"));
+            void Sync()
+            {
+                error.Text = row.Error;
+                error.IsVisible = row.Error is not null;
+                box.IsEnabled = !row.IsNull;
+                Refresh();
+            }
+
+            box.TextChanged += (_, _) => { row.Text = box.Text; Sync(); };
+            isNull.IsCheckedChanged += (_, _) => { row.IsNull = isNull.IsChecked == true; Sync(); };
+            var line = new Grid { ColumnDefinitions = new ColumnDefinitions("120,*,Auto"), ColumnSpacing = 8 };
+            var label = new TextBlock { Text = name, VerticalAlignment = VerticalAlignment.Center, Classes = { "mono" } };
+            Grid.SetColumn(box, 1);
+            Grid.SetColumn(isNull, 2);
+            line.Children.Add(label);
+            line.Children.Add(box);
+            line.Children.Add(isNull);
+            panel.Children.Add(line);
+            panel.Children.Add(error);
         }
 
-        if (await ShowAsync("Parameters", "Enter the parameter values.", panel, ("OK", true), ("Cancel", false)) is not true)
-            return null;
-        return [.. inputs.Select(i => new ParameterValue(i.Name, i.Box.Text, i.IsNull.IsChecked == true))];
+        Refresh();
+        var ok = await ShowAsync(UiText.Get("editor.parameters"), null, panel, run, true, (UiText.Get("editor.ignore"), false)) is true;
+        return ok ? [.. rows.Select(r => new ParameterValue(r.Name, r.Text, r.IsNull))] : null;
     }
 
-    private static async Task<bool?> ShowAsync(string title, string message, Control? content, params (string Text, bool Result)[] buttons)
+    private static Task<bool?> ShowAsync(string title, string message, Control? content, params (string Text, bool Result)[] buttons) =>
+        ShowAsync(title, message, content, null, false, buttons);
+
+    private static async Task<bool?> ShowAsync(string title, string? message, Control? content, Button? primary, bool primaryResult, params (string Text, bool Result)[] buttons)
     {
         var window = new Window
         {
             Title = title,
-            Width = 420,
+            Width = 520,
             SizeToContent = SizeToContent.Height,
             CanResize = false,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -85,8 +111,15 @@ internal sealed class AvaloniaDialogService : IDialogService
             row.Children.Add(button);
         }
 
+        if (primary is not null)
+        {
+            primary.Click += (_, _) => window.Close(primaryResult);
+            row.Children.Add(primary);
+        }
+
         var body = new StackPanel { Margin = new Thickness(16), Spacing = 12 };
-        body.Children.Add(new TextBlock { Text = message, TextWrapping = global::Avalonia.Media.TextWrapping.Wrap });
+        if (message is not null)
+            body.Children.Add(new TextBlock { Text = message, TextWrapping = global::Avalonia.Media.TextWrapping.Wrap });
         if (content is not null)
             body.Children.Add(content);
         body.Children.Add(row);

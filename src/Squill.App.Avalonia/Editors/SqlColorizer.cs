@@ -39,10 +39,10 @@ internal sealed class SqlColorizer : DocumentColorizingTransformer
             var end = Math.Min(d.Range.Start + d.Range.Length, line.EndOffset);
             if (start < end)
             {
-                var color = d.Severity == DiagnosticSeverity.Error ? Colors.IndianRed : Colors.Orange;
+                IBrush stroke = Resource(d.Severity == DiagnosticSeverity.Error ? "SquillDangerBrush" : "SquillWarningBrush") ?? Brushes.IndianRed;
                 ChangeLinePart(start, end, e => e.TextRunProperties.SetTextDecorations(
                 [
-                    new TextDecoration { Location = TextDecorationLocation.Underline, Stroke = new SolidColorBrush(color), StrokeThickness = 1.5 },
+                    new TextDecoration { Location = TextDecorationLocation.Underline, Stroke = stroke, StrokeThickness = 1.5 },
                 ]));
             }
         }

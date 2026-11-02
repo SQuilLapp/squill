@@ -2,13 +2,73 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:q="using:Squill.Presentation.Query"
              xmlns:c="using:Squill.App.Avalonia.Controls"
+             xmlns:v="using:Squill.App.Avalonia.Views"
+             xmlns:loc="using:Squill.App.Avalonia.Localization"
              x:Class="Squill.App.Avalonia.Views.QueryTabView"
              x:DataType="q:QueryTabViewModel">
-  <Grid RowDefinitions="*,Auto,*">
-    <Border Name="EditorHost" Background="{DynamicResource SquillBgBaseBrush}" />
-    <GridSplitter Grid.Row="1" Height="4" Background="{DynamicResource SquillBorderBrush}"
+  <UserControl.Styles>
+    <Style Selector="RadioButton.underline">
+      <Setter Property="Height" Value="36" />
+      <Setter Property="Padding" Value="10,0" />
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="Foreground" Value="{DynamicResource SquillFg3Brush}" />
+    </Style>
+    <Style Selector="RadioButton.underline /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0,0,0,2" />
+      <Setter Property="CornerRadius" Value="0" />
+    </Style>
+    <Style Selector="RadioButton.underline:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+    </Style>
+    <Style Selector="RadioButton.underline:checked /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SquillAccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+    </Style>
+  </UserControl.Styles>
+  <Grid ColumnDefinitions="*,Auto">
+  <Grid RowDefinitions="Auto,*,Auto,*">
+    <Border Name="Toolbar" Height="38" Padding="8,0" Background="{DynamicResource SquillBgBaseBrush}"
+            BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Button Name="FormatButton" Classes="ghost" Width="28" Height="28" MinHeight="28" Padding="0"
+                  ToolTip.Tip="{loc:Text menu.format}" Command="{Binding FormatDocumentCommand}">
+            <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconFormat}" />
+          </Button>
+          <Button Name="HistoryButton" Classes="ghost" Width="28" Height="28" MinHeight="28" Padding="0"
+                  ToolTip.Tip="{loc:Text editor.history}" Click="OnHistoryClicked">
+            <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconHistory}" />
+          </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Button Name="RunButton" Classes="primary" Height="28" MinHeight="28" Command="{Binding RunCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="{loc:Text editor.run}" />
+              <TextBlock Classes="mono" FontSize="11" Opacity="0.7" VerticalAlignment="Center" Text="Ctrl+Entrée" />
+            </StackPanel>
+          </Button>
+          <Button Name="ScriptButton" Height="28" MinHeight="28" Command="{Binding RunAllCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="{loc:Text editor.script}" />
+              <Border Classes="kbd"><TextBlock Text="Ctrl+Maj+Entrée" /></Border>
+            </StackPanel>
+          </Button>
+          <Button Name="StopButton" Height="28" MinHeight="28" Content="{loc:Text editor.stop}"
+                  IsEnabled="{Binding IsRunning}" Command="{Binding CancelCommand}" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+    <Grid Grid.Row="1" ColumnDefinitions="3,*">
+      <Border Name="EnvStripe" IsVisible="False" />
+      <Border Name="EditorHost" Grid.Column="1" Background="{DynamicResource SquillBgBaseBrush}" />
+    </Grid>
+    <GridSplitter Grid.Row="2" Height="4" Background="{DynamicResource SquillBorderBrush}"
                   ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" />
-    <Grid Name="ResultsPanel" Grid.Row="2" RowDefinitions="Auto,Auto,Auto,*" Background="{DynamicResource SquillBgBaseBrush}">
+    <Grid Name="ResultsPanel" Grid.Row="3" RowDefinitions="Auto,Auto,Auto,*" Background="{DynamicResource SquillBgBaseBrush}">
       <Grid ColumnDefinitions="*,Auto" Background="{DynamicResource SquillBgRaisedBrush}">
         <ListBox Name="ResultTabs" ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedResult}">
           <ListBox.ItemsPanel>
@@ -54,5 +114,18 @@
                    Foreground="{DynamicResource SquillFg3Brush}" />
       </Grid>
     </Grid>
+  </Grid>
+    <Border Name="SidePanel" Grid.Column="1" Width="264" IsVisible="False" Background="{DynamicResource SquillBgSurfaceBrush}"
+            BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="1,0,0,0">
+      <Grid RowDefinitions="Auto,*">
+        <StackPanel Orientation="Horizontal" Margin="8,0" Height="36">
+          <RadioButton Name="HistoryTab" Classes="underline" VerticalContentAlignment="Center" VerticalAlignment="Center" Theme="{StaticResource {x:Type ToggleButton}}" GroupName="QuerySidePanel" IsChecked="True"
+                       Content="{loc:Text editor.history}" />
+          <RadioButton Name="SnippetsTab" Classes="underline" VerticalContentAlignment="Center" VerticalAlignment="Center" Theme="{StaticResource {x:Type ToggleButton}}" GroupName="QuerySidePanel" Content="{loc:Text editor.snippets}" />
+        </StackPanel>
+        <v:HistoryView Name="HistoryPanel" Grid.Row="1" IsVisible="{Binding #HistoryTab.IsChecked}" />
+        <v:SnippetsView Name="SnippetsPanel" Grid.Row="1" IsVisible="{Binding #SnippetsTab.IsChecked}" />
+      </Grid>
+    </Border>
   </Grid>
 </UserControl>

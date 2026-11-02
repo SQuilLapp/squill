@@ -2,13 +2,16 @@ using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;
+using Avalonia;
 using Avalonia.Interactivity;
 using CommunityToolkit.Mvvm.Input;
+using Squill.Core;
 using Squill.Core.Editing;
 using Squill.Presentation.Editing;
 using Squill.Presentation.Results;
 using Squill.App.Avalonia.Editors;
 using Squill.App.Avalonia.Services;
+using Squill.Presentation.Panels;
 using Squill.Presentation.Query;
 
 namespace Squill.App.Avalonia.Views;
@@ -38,6 +41,41 @@ public sealed partial class QueryTabView : UserControl
     {
         get => TextElement.GetFontSize(EditorHost);
         set => TextElement.SetFontSize(EditorHost, value);
+    }
+
+    /// <summary>Gives the history and snippets of the right panel their view-models.</summary>
+    /// <param name="history">The history view-model.</param>
+    /// <param name="snippets">The snippets view-model.</param>
+    public void AttachPanels(HistoryViewModel history, SnippetsViewModel snippets)
+    {
+        HistoryPanel.DataContext = history;
+        SnippetsPanel.DataContext = snippets;
+    }
+
+    private void OnHistoryClicked(object? sender, RoutedEventArgs e)
+    {
+        SidePanel.IsVisible = !SidePanel.IsVisible;
+        if (!SidePanel.IsVisible)
+            return;
+        (HistoryPanel.DataContext as HistoryViewModel)?.LoadCommand.Execute(null);
+        (SnippetsPanel.DataContext as SnippetsViewModel)?.LoadCommand.Execute(null);
+    }
+
+    /// <summary>Colors the 3 px stripe along the editor with the environment of the connection; hidden for <see cref="ConnectionEnvironment.None"/>.</summary>
+    /// <param name="environment">The environment of the active connection.</param>
+    public void SetEnvironment(ConnectionEnvironment environment)
+    {
+        var key = environment switch
+        {
+            ConnectionEnvironment.Production => "SquillEnvProdBrush",
+            ConnectionEnvironment.Staging => "SquillEnvStagingBrush",
+            ConnectionEnvironment.Development => "SquillEnvDevBrush",
+            ConnectionEnvironment.Local => "SquillEnvLocalBrush",
+            _ => null,
+        };
+        EnvStripe.IsVisible = key is not null;
+        if (key is not null)
+            EnvStripe.Bind(Border.BackgroundProperty, EnvStripe.GetResourceObservable(key));
     }
 
     /// <inheritdoc />

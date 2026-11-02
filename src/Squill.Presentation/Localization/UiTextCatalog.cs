@@ -103,6 +103,11 @@ internal static class UiTextCatalog
         ("editor.error", "erreur"),
         ("editor.row", "ligne"),
         ("editor.rows", "lignes"),
+        ("editor.historyClear", "Effacer"),
+        ("editor.snippetSave", "Enregistrer le script"),
+        ("editor.snippetInsert", "Insérer"),
+        ("editor.snippetRename", "Renommer"),
+        ("editor.snippetDelete", "Supprimer"),
 
         // Connections window
         ("connections.title", "Connexions — SQuilL"),
