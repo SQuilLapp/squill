@@ -71,6 +71,9 @@ public sealed partial class DiagramTabViewModel : ViewModelBase, IDisposable
     /// <summary>Raised when the user asks to design a table of the diagram.</summary>
     public event EventHandler<TableInfo>? DesignTableRequested;
 
+    /// <summary>Gets the session whose schema is drawn.</summary>
+    public ConnectionSession Session => _session;
+
     /// <summary>Gets the tab title.</summary>
     public string Title { get; }
 

@@ -42,6 +42,9 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         Load(Original ?? StarterDesign());
     }
 
+    /// <summary>Gets the session the table lives in.</summary>
+    public ConnectionSession Session => _session;
+
     /// <summary>Gets the design the table had when it was read, or null for a new table.</summary>
     public TableDesign? Original { get; private set; }
 

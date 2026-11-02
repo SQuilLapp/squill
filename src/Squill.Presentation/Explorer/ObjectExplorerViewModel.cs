@@ -23,6 +23,12 @@ public sealed partial class ObjectExplorerViewModel : ViewModelBase
     /// <summary>Raised when the user opens a table or view.</summary>
     public event EventHandler<TableInfo>? OpenTableRequested;
 
+    /// <summary>Raised when the user asks to design a table.</summary>
+    public event EventHandler<TableInfo>? DesignTableRequested;
+
+    /// <summary>Raised when the user asks to drop a table.</summary>
+    public event EventHandler<TableInfo>? DropTableRequested;
+
     /// <summary>Gets the top-level nodes: schemas when there are several, otherwise tables and views.</summary>
     public ObservableCollection<ExplorerNode> Roots { get; } = [];
 
@@ -44,6 +50,20 @@ public sealed partial class ObjectExplorerViewModel : ViewModelBase
     {
         if (node is { Kind: ExplorerNodeKind.Table or ExplorerNodeKind.View, Table: { } table })
             OpenTableRequested?.Invoke(this, table);
+    }
+
+    [RelayCommand]
+    private void Design(ExplorerNode? node)
+    {
+        if (node is { Kind: ExplorerNodeKind.Table, Table: { } table })
+            DesignTableRequested?.Invoke(this, table);
+    }
+
+    [RelayCommand]
+    private void Drop(ExplorerNode? node)
+    {
+        if (node is { Kind: ExplorerNodeKind.Table, Table: { } table })
+            DropTableRequested?.Invoke(this, table);
     }
 
     private void Rebuild()

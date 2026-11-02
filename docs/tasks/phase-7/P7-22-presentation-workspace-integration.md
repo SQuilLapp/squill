@@ -1,6 +1,6 @@
 # P7-22 - Presentation: workspace integration of designer and diagram tabs
 
-Status: todo
+Status: done
 Depends on: P7-19, P7-20, P7-21, P4-09, P6-01
 
 ## Goal
@@ -18,8 +18,8 @@ The workspace can open diagram and designer tabs and drop tables; the object exp
 - The views (heads, P7-23 to P7-26).
 
 ## Tasks
-- [ ] Implement the commands, collections, event wiring and `AppComposition` parameters.
-- [ ] Tests in `tests/Squill.Presentation.Tests` using the existing workspace test fixtures: new table opens a designer, design table reuses an open one, diagram is unique per session, session close disposes both, drop confirmed / declined / failing, explorer commands raise events only for tables, closing a dirty designer asks.
+- [x] Implement the commands, collections, event wiring and `AppComposition` parameters.
+- [x] Tests in `tests/Squill.Presentation.Tests` using the existing workspace test fixtures: new table opens a designer, design table reuses an open one, diagram is unique per session, session close disposes both, drop confirmed / declined / failing, explorer commands raise events only for tables, closing a dirty designer asks.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

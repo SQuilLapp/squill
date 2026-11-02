@@ -12,7 +12,13 @@ internal sealed class FakeDialogService : IDialogService
     public List<IReadOnlyDictionary<string, ParameterValue>> ParameterPrompts { get; } = [];
     public List<(string Title, string Message)> Errors { get; } = [];
 
-    public ValueTask<bool> ConfirmAsync(string title, string message) => ValueTask.FromResult(ConfirmResult);
+    public List<(string Title, string Message)> Confirms { get; } = [];
+
+    public ValueTask<bool> ConfirmAsync(string title, string message)
+    {
+        Confirms.Add((title, message));
+        return ValueTask.FromResult(ConfirmResult);
+    }
 
     public ValueTask<string?> PromptAsync(string title, string message, string? initial) =>
         ValueTask.FromResult(PromptResult ?? initial);
