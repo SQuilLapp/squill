@@ -1,6 +1,6 @@
 # P7-14 - Sql: ALTER TABLE for SQLite with table rebuild
 
-Status: todo
+Status: done
 Depends on: P7-10, P7-07
 
 ## Goal
@@ -16,9 +16,9 @@ Replace the SQLite `Alter` stub. SQLite supports only a few `ALTER TABLE` forms;
 - Dependent views and triggers on the table (not recreated: state it in a code comment, and the designer shows a warning in P7-21), other dialects.
 
 ## Tasks
-- [ ] Implement `Alter` for SQLite and remove its stub.
-- [ ] Tests in `tests/Squill.Sql.Tests` with exact strings for native paths and for the rebuild (type change, primary-key change, foreign key added, dropped indexed column), and that a mixed native + non-native edit rebuilds once.
-- [ ] Execution tests in `tests/Squill.Data.Sqlite.Tests` on `:memory:` (no Docker): seed rows, run each scenario's statements through the provider, read the schema back and compare with the edited design, check the rows survived (including renamed and retyped columns) and that `PRAGMA foreign_key_check` returns no row.
+- [x] Implement `Alter` for SQLite and remove its stub.
+- [x] Tests in `tests/Squill.Sql.Tests` with exact strings for native paths and for the rebuild (type change, primary-key change, foreign key added, dropped indexed column), and that a mixed native + non-native edit rebuilds once.
+- [x] Execution tests in `tests/Squill.Data.Sqlite.Tests` on `:memory:` (no Docker): seed rows, run each scenario's statements through the provider, read the schema back and compare with the edited design, check the rows survived (including renamed and retyped columns) and that `PRAGMA foreign_key_check` returns no row.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
