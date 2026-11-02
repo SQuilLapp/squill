@@ -13,6 +13,8 @@ using Squill.Presentation;
 using Squill.Platform;
 using Squill.Platform.Settings;
 using Squill.Presentation.Editor;
+using Squill.Platform.Storage;
+using Squill.App.Avalonia.Controls;
 
 namespace Squill.App.Avalonia;
 
@@ -41,7 +43,7 @@ public sealed partial class App : Application
             // SQUILL_DATA_DIR redirects profiles, settings and history (used to run against a throwaway data directory).
             var dataDir = Environment.GetEnvironmentVariable("SQUILL_DATA_DIR");
             _paths = new AppPaths(string.IsNullOrEmpty(dataDir) ? null : dataDir);
-            Services = AppComposition.Create(platform, _paths);
+            Services = AppComposition.Create(platform, _paths, new JsonDiagramLayoutStore(_paths), ErDiagramCanvas.MeasureText);
             desktop.MainWindow = GridBench.IsRequested(desktop.Args) ? GridBench.Start(desktop) : CreateMainWindow(Services);
         }
 

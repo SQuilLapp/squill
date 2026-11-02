@@ -1,6 +1,6 @@
 # P7-23 - Avalonia head: ER diagram tab
 
-Status: todo
+Status: done
 Depends on: P7-22, P7-20, P5-06
 
 ## Goal
@@ -17,9 +17,9 @@ Draw and operate the ER diagram on the Avalonia head, with the same view-model t
 - Designer view (P7-24), WinUI (P7-25, P7-26), touch gestures.
 
 ## Tasks
-- [ ] Implement the control, the view and the shell integration.
-- [ ] Headless tests in `tests/Squill.App.Avalonia.Tests` (Avalonia.Headless as in the other view tests): the view binds to a synthetic schema, dragging an entity moves its box, wheel changes `Zoom`, double click raises activation, export command is reachable.
-- [ ] Run the AOT-published head against a SQLite file with a few related tables (use `SQUILL_DATA_DIR` as in P5-04), open the diagram, check it starts and shows the window; record what could and could not be verified in the card report. Close every process you started.
+- [x] Implement the control, the view and the shell integration.
+- [x] Headless tests in `tests/Squill.App.Avalonia.Tests` (Avalonia.Headless as in the other view tests): the view binds to a synthetic schema, dragging an entity moves its box, wheel changes `Zoom`, double click raises activation, export command is reachable.
+- [x] Run the AOT-published head against a SQLite file with a few related tables (use `SQUILL_DATA_DIR` as in P5-04), open the diagram, check it starts and shows the window; record what could and could not be verified in the card report. Close every process you started.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
@@ -29,3 +29,7 @@ Draw and operate the ER diagram on the Avalonia head, with the same view-model t
 
 ## Suggested commit message
 Add ER diagram tab to the Avalonia head
+
+## Report
+- Verified: build 0 warnings, all tests green (headless: view binds to the diagram, drag moves a box, wheel zooms, double click activates, Export SVG button bound to the command); AOT publish has only the tolerated package warnings; the published exe starts with `SQUILL_DATA_DIR` and shows the `SQuilL` window.
+- Not verified: opening the diagram in the published exe (no UI automation; covered by the headless tests), and the explorer context menu (`Design table...`, `Drop table...`), which is only compile-checked.
