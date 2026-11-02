@@ -135,7 +135,7 @@ Depends on: <card ids, ranges allowed>
 | [P8-07](phase-8/P8-07-presentation-change-set-builder.md) | Presentation: change set and validation | P8-06, P8-01 | done |
 | [P8-08](phase-8/P8-08-presentation-statement-runner.md) | Presentation: shared statement runner (refactor of the designer apply flow) | P7-21, P4-04 | done |
 | [P8-09](phase-8/P8-09-presentation-edit-committer.md) | Presentation: committing a change set | P8-03, P8-04, P8-07, P8-08 | done |
-| [P8-10](phase-8/P8-10-presentation-result-editor-vm.md) | Presentation: result editor view-model | P8-05, P8-06, P8-07, P8-09, P4-01 | todo |
+| [P8-10](phase-8/P8-10-presentation-result-editor-vm.md) | Presentation: result editor view-model | P8-05, P8-06, P8-07, P8-09, P4-01 | done |
 | [P8-11](phase-8/P8-11-presentation-grid-edit-controller.md) | Presentation: grid edit controller (shared keyboard and cell-edit logic) | P8-10, P5-06 | todo |
 | [P8-12](phase-8/P8-12-presentation-query-tab-integration.md) | Presentation: editable results in query tabs | P8-02, P8-10, P8-11, P4-09, P7-22 | todo |
 | [P8-13](phase-8/P8-13-data-dml-round-trip-tests.md) | Data providers: DML round-trip tests on every dialect | P8-04, P8-08, P1-14 | todo |

@@ -1,6 +1,6 @@
 # P8-10 - Presentation: result editor view-model
 
-Status: todo
+Status: done
 Depends on: P8-05, P8-06, P8-07, P8-09, P4-01
 
 ## Goal
@@ -16,8 +16,8 @@ The headless view-model behind an editable result grid: edit operations, pending
 - Keyboard behaviour (P8-11), wiring to tabs (P8-12), views.
 
 ## Tasks
-- [ ] Implement the view-model.
-- [ ] Tests in `tests/Squill.Presentation.Tests` (fake connection, fake dialogs as in the designer tests): each `TrySetCell` outcome, `SetNull`, add/delete/revert with pending-inserted rows, `HasPendingChanges`/`PendingCount`/`Issues` refresh, commit success (state cleared, generated key shown), commit blocked while busy, delete confirmation declined and accepted, provider failure keeps the changes and reports the row, discard with and without confirmation, preview script text for each edit kind, cancel.
+- [x] Implement the view-model.
+- [x] Tests in `tests/Squill.Presentation.Tests` (fake connection, fake dialogs as in the designer tests): each `TrySetCell` outcome, `SetNull`, add/delete/revert with pending-inserted rows, `HasPendingChanges`/`PendingCount`/`Issues` refresh, commit success (state cleared, generated key shown), commit blocked while busy, delete confirmation declined and accepted, provider failure keeps the changes and reports the row, discard with and without confirmation, preview script text for each edit kind, cancel.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
