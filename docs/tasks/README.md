@@ -126,3 +126,21 @@ Depends on: <card ids, ranges allowed>
 | [P7-25](phase-7/P7-25-winui-er-diagram.md) | WinUI head: ER diagram tab | P7-22, P7-20, P5-12 | done |
 | [P7-26](phase-7/P7-26-winui-table-designer-view.md) | WinUI head: table designer view | P7-25, P7-21 | done |
 | [P7-27](phase-7/P7-27-docs-and-adr.md) | Documentation: schema designer ADR, README and architecture note | P7-24, P7-26, P6-04 | done |
+| [P8-01](phase-8/P8-01-core-edit-model.md) | Core: row edit model | P7-01 | todo |
+| [P8-02](phase-8/P8-02-sql-editable-source-analyzer.md) | Sql: editable source analysis | P8-01, P3-07, P1-04 | todo |
+| [P8-03](phase-8/P8-03-sql-dml-generator.md) | Sql: INSERT, UPDATE and DELETE generation | P8-01, P7-09 | todo |
+| [P8-04](phase-8/P8-04-sql-generated-key-readback.md) | Sql: reading generated keys after an INSERT | P8-03 | todo |
+| [P8-05](phase-8/P8-05-presentation-cell-value-parsing.md) | Presentation: parsing edited cell text into typed values | P4-06 | todo |
+| [P8-06](phase-8/P8-06-presentation-editable-grid-data-source.md) | Presentation: editable grid data source with pending changes | P8-01, P4-06 | todo |
+| [P8-07](phase-8/P8-07-presentation-change-set-builder.md) | Presentation: change set and validation | P8-06, P8-01 | todo |
+| [P8-08](phase-8/P8-08-presentation-statement-runner.md) | Presentation: shared statement runner (refactor of the designer apply flow) | P7-21, P4-04 | todo |
+| [P8-09](phase-8/P8-09-presentation-edit-committer.md) | Presentation: committing a change set | P8-03, P8-04, P8-07, P8-08 | todo |
+| [P8-10](phase-8/P8-10-presentation-result-editor-vm.md) | Presentation: result editor view-model | P8-05, P8-06, P8-07, P8-09, P4-01 | todo |
+| [P8-11](phase-8/P8-11-presentation-grid-edit-controller.md) | Presentation: grid edit controller (shared keyboard and cell-edit logic) | P8-10, P5-06 | todo |
+| [P8-12](phase-8/P8-12-presentation-query-tab-integration.md) | Presentation: editable results in query tabs | P8-02, P8-10, P8-11, P4-09, P7-22 | todo |
+| [P8-13](phase-8/P8-13-data-dml-round-trip-tests.md) | Data providers: DML round-trip tests on every dialect | P8-04, P8-08, P1-14 | todo |
+| [P8-14](phase-8/P8-14-avalonia-grid-editing.md) | Avalonia head: in-place cell editing in the grid | P8-12, P5-06 | todo |
+| [P8-15](phase-8/P8-15-avalonia-results-edit-toolbar.md) | Avalonia head: edit toolbar, issues and commit | P8-14 | todo |
+| [P8-16](phase-8/P8-16-winui-grid-editing.md) | WinUI head: in-place cell editing in the grid | P8-12, P5-12 | todo |
+| [P8-17](phase-8/P8-17-winui-results-edit-toolbar.md) | WinUI head: edit toolbar, issues and commit | P8-16, P8-15 | todo |
+| [P8-18](phase-8/P8-18-docs-and-adr.md) | Documentation: grid editing ADR, README and architecture note | P8-15, P8-17, P8-13, P7-27 | todo |
