@@ -1,6 +1,6 @@
 # P7-06 - Core: table design model
 
-Status: todo
+Status: done
 Depends on: P7-01
 
 ## Goal
@@ -21,8 +21,8 @@ The editable draft of a table, independent of any UI and of any dialect, that th
 - Diffing (P7-07), validation (P7-08), SQL.
 
 ## Tasks
-- [ ] Implement the types.
-- [ ] Tests in `tests/Squill.Core.Tests`: `FromTable` for a table with a composite key, an auto-increment column (default dropped), an index and a foreign key with actions; `FromTable` of a view throws; `New` is empty.
+- [x] Implement the types.
+- [x] Tests in `tests/Squill.Core.Tests`: `FromTable` for a table with a composite key, an auto-increment column (default dropped), an index and a foreign key with actions; `FromTable` of a view throws; `New` is empty.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
