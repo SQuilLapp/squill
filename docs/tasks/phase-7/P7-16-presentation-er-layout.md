@@ -1,6 +1,6 @@
 # P7-16 - Presentation: ER diagram node layout
 
-Status: todo
+Status: done
 Depends on: P7-15
 
 ## Goal
@@ -24,8 +24,8 @@ Deterministic placement of entity boxes, with a UI-independent measuring hook.
 - Edge routing (P7-17), user dragging, persistence.
 
 ## Tasks
-- [ ] Implement the options, box types and `ErLayout`.
-- [ ] Tests in `tests/Squill.Presentation.Tests`: a chain A<-B<-C gives increasing x; a table referenced by two children is left of both; a cycle does not hang and yields distinct boxes; no two boxes overlap on random-ish fixed models (a 60-table synthetic schema built in the test); the isolated grid shape; the output is identical on two runs; widths follow `MeasureText`.
+- [x] Implement the options, box types and `ErLayout`.
+- [x] Tests in `tests/Squill.Presentation.Tests`: a chain A<-B<-C gives increasing x; a table referenced by two children is left of both; a cycle does not hang and yields distinct boxes; no two boxes overlap on random-ish fixed models (a 60-table synthetic schema built in the test); the isolated grid shape; the output is identical on two runs; widths follow `MeasureText`.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
