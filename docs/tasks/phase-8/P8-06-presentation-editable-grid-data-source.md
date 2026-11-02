@@ -1,6 +1,6 @@
 # P8-06 - Presentation: editable grid data source with pending changes
 
-Status: todo
+Status: done
 Depends on: P8-01, P4-06
 
 ## Goal
@@ -20,8 +20,8 @@ An `IGridDataSource` that wraps a loaded result and records pending cell edits, 
 - Parsing text, validation, SQL (P8-05, P8-07, P8-09), any UI.
 
 ## Tasks
-- [ ] Implement `RowState` and `EditableGridDataSource`.
-- [ ] Tests in `tests/Squill.Presentation.Tests` with a fake `IGridDataSource` (use `SyntheticGridSource` or a small array-backed fake): edit, edit back to the original clears the change, edit two cells of a row, add and edit an inserted row, delete a base row and a pending-inserted row (index shift), revert, discard all, `AcceptChanges` for updates (original changes), deletes (rows vanish, later rows shift) and inserts with a generated key, `CanEdit` false while the source is incomplete (throws), read-only column throws, `byte[]` equality, `Changed` raised per mutation, `RowCount` arithmetic, a 1,000,000-row `SyntheticGridSource` with 10 edits stays cheap (no per-row allocation: assert `GetCell` for an untouched row does not allocate beyond the source value).
+- [x] Implement `RowState` and `EditableGridDataSource`.
+- [x] Tests in `tests/Squill.Presentation.Tests` with a fake `IGridDataSource` (use `SyntheticGridSource` or a small array-backed fake): edit, edit back to the original clears the change, edit two cells of a row, add and edit an inserted row, delete a base row and a pending-inserted row (index shift), revert, discard all, `AcceptChanges` for updates (original changes), deletes (rows vanish, later rows shift) and inserts with a generated key, `CanEdit` false while the source is incomplete (throws), read-only column throws, `byte[]` equality, `Changed` raised per mutation, `RowCount` arithmetic, a 1,000,000-row `SyntheticGridSource` with 10 edits stays cheap (no per-row allocation: assert `GetCell` for an untouched row does not allocate beyond the source value).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

@@ -131,7 +131,7 @@ Depends on: <card ids, ranges allowed>
 | [P8-03](phase-8/P8-03-sql-dml-generator.md) | Sql: INSERT, UPDATE and DELETE generation | P8-01, P7-09 | done |
 | [P8-04](phase-8/P8-04-sql-generated-key-readback.md) | Sql: reading generated keys after an INSERT | P8-03 | done |
 | [P8-05](phase-8/P8-05-presentation-cell-value-parsing.md) | Presentation: parsing edited cell text into typed values | P4-06 | done |
-| [P8-06](phase-8/P8-06-presentation-editable-grid-data-source.md) | Presentation: editable grid data source with pending changes | P8-01, P4-06 | todo |
+| [P8-06](phase-8/P8-06-presentation-editable-grid-data-source.md) | Presentation: editable grid data source with pending changes | P8-01, P4-06 | done |
 | [P8-07](phase-8/P8-07-presentation-change-set-builder.md) | Presentation: change set and validation | P8-06, P8-01 | todo |
 | [P8-08](phase-8/P8-08-presentation-statement-runner.md) | Presentation: shared statement runner (refactor of the designer apply flow) | P7-21, P4-04 | todo |
 | [P8-09](phase-8/P8-09-presentation-edit-committer.md) | Presentation: committing a change set | P8-03, P8-04, P8-07, P8-08 | todo |
