@@ -146,7 +146,7 @@ Depends on: <card ids, ranges allowed>
 | [P8-18](phase-8/P8-18-docs-and-adr.md) | Documentation: grid editing ADR, README and architecture note | P8-15, P8-17, P8-13, P7-27 | done |
 | [P9-01](phase-9/P9-01-tokens-and-fonts.md) | Design system: font, type scale and missing tokens, bundled fonts | none | done |
 | [P9-02](phase-9/P9-02-visual-tooling.md) | Tools: sample data and window capture for visual comparison | none | done |
-| [P9-03](phase-9/P9-03-localization-catalog.md) | Presentation: French string catalog | none | todo |
+| [P9-03](phase-9/P9-03-localization-catalog.md) | Presentation: French string catalog | none | done |
 | [P9-04](phase-9/P9-04-profile-environment-folder.md) | Core and Platform: connection environment and folder | none | todo |
 | [P9-05](phase-9/P9-05-avalonia-control-styles.md) | Avalonia head: shared control styles | P9-01, P9-03, P9-02 | todo |
 | [P9-06](phase-9/P9-06-winui-control-styles.md) | WinUI head: shared control styles | P9-01, P9-03, P9-02 | todo |

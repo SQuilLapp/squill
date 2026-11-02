@@ -1,6 +1,6 @@
 # P9-03 - Presentation: French string catalog
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -18,8 +18,8 @@ A single AOT-safe place for every user-visible string, filled with the French of
 - Replacing existing strings in views, an English catalog, a language setting.
 
 ## Tasks
-- [ ] Implement `UiText`, the catalog, the two head helpers (one small file each).
-- [ ] Tests in `tests/Squill.Presentation.Tests`: Format with `{0}`, missing key, plural keys, catalog keys unique, every literal key used in `src/` exists.
+- [x] Implement `UiText`, the catalog, the two head helpers (one small file each).
+- [x] Tests in `tests/Squill.Presentation.Tests`: Format with `{0}`, missing key, plural keys, catalog keys unique, every literal key used in `src/` exists.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.
