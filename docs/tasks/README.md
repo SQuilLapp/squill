@@ -99,7 +99,7 @@ Depends on: <card ids, ranges allowed>
 | [P6-02](phase-6/P6-02-loomterminal-integration.md) | Heads: LoomTerminal tabs | P6-01 | done |
 | [P6-03](phase-6/P6-03-velopack-packaging.md) | Windows packaging with Velopack and release workflow | P6-02, P1-02 | done |
 | [P6-04](phase-6/P6-04-readme-and-user-docs.md) | Project README and build instructions | P6-03 | done |
-| [P7-01](phase-7/P7-01-core-schema-model-extension.md) | Core: schema model extension (auto-increment, referential actions, key name) | P1-04 | todo |
+| [P7-01](phase-7/P7-01-core-schema-model-extension.md) | Core: schema model extension (auto-increment, referential actions, key name) | P1-04 | done |
 | [P7-02](phase-7/P7-02-sqlite-schema-extension.md) | Data.Sqlite: read auto-increment and foreign-key actions | P7-01, P1-07 | todo |
 | [P7-03](phase-7/P7-03-postgres-schema-extension.md) | Data.Postgres: read auto-increment, foreign-key actions and key name | P7-01, P1-10 | todo |
 | [P7-04](phase-7/P7-04-mysql-schema-extension.md) | Data.MySql: read auto-increment and foreign-key actions | P7-01, P1-12 | todo |

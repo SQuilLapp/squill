@@ -1,6 +1,6 @@
 # P7-01 - Core: schema model extension (auto-increment, referential actions, key name)
 
-Status: todo
+Status: done
 Depends on: P1-04
 
 ## Goal
@@ -17,9 +17,9 @@ Make the schema snapshot rich enough to edit tables faithfully: auto-increment c
 - Reading the new values from a database (P7-02 to P7-05), check/unique constraints, triggers.
 
 ## Tasks
-- [ ] Add the enum, the extension class and the three trailing parameters.
-- [ ] Grep every `new ColumnDefinition(`, `new ForeignKeyInfo(`, `new TableInfo(` and any `with` use: the solution must still compile unchanged. If a source-generated JSON context serializes these records, keep it compiling.
-- [ ] Tests in `tests/Squill.Core.Tests`: `ToSql` for each member, `Parse` for each SQL spelling plus `"no   action"`, unknown and `null`, defaults of the new parameters.
+- [x] Add the enum, the extension class and the three trailing parameters.
+- [x] Grep every `new ColumnDefinition(`, `new ForeignKeyInfo(`, `new TableInfo(` and any `with` use: the solution must still compile unchanged. If a source-generated JSON context serializes these records, keep it compiling.
+- [x] Tests in `tests/Squill.Core.Tests`: `ToSql` for each member, `Parse` for each SQL spelling plus `"no   action"`, unknown and `null`, defaults of the new parameters.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
