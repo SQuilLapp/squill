@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using Squill.App.Avalonia.Views;
 using Squill.Presentation;
@@ -14,10 +15,11 @@ using Squill.Presentation.Workspace;
 
 namespace Squill.App.Avalonia;
 
-/// <summary>The workspace shell: sidebar, query tabs, editor with results, and status bar.</summary>
+/// <summary>The workspace shell: title bar with menu, activity rail, sidebar, query tabs, editor with results, and status bar.</summary>
 public sealed partial class MainWindow : Window
 {
     private SettingsViewModel? _settings;
+    private string? _dataDirectory;
 
     /// <summary>Creates the window.</summary>
     public MainWindow()
@@ -26,9 +28,9 @@ public sealed partial class MainWindow : Window
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.OemComma, KeyModifiers.Control), Command = new RelayCommand(OpenSettings) });
     }
 
-    /// <summary>Connects the history, snippets and settings view-models and the data directory shown in the status bar.</summary>
+    /// <summary>Connects the history, snippets and settings view-models and the data directory the File menu opens.</summary>
     /// <param name="services">The shared root view-models.</param>
-    /// <param name="dataDirectory">The directory the status bar link opens.</param>
+    /// <param name="dataDirectory">The directory the File menu opens.</param>
     public void Attach(AppServices services, string dataDirectory)
     {
         Sidebar.Attach(services.History, services.Snippets);
@@ -49,7 +51,7 @@ public sealed partial class MainWindow : Window
             }
         };
         QueryStrip.AddHandler(PointerPressedEvent, (_, _) => ShowQueryArea(), RoutingStrategies.Tunnel);
-        Status.DataDirectory = dataDirectory;
+        _dataDirectory = dataDirectory;
         _settings = services.Settings;
         _settings.PropertyChanged += OnSettingsPropertyChanged;
         ActiveTabView.EditorFontSize = _settings.EditorFontSize;
@@ -68,6 +70,20 @@ public sealed partial class MainWindow : Window
     }
 
     private void OnSettingsClicked(object? sender, RoutedEventArgs e) => OpenSettings();
+
+    private void OnRailChecked(object? sender, RoutedEventArgs e)
+    {
+        if (sender is RadioButton { IsChecked: true } rail)
+            Sidebar.ShowPanel(rail == RailHistory ? SidebarPanel.History : rail == RailSnippets ? SidebarPanel.Snippets : SidebarPanel.Explorer);
+    }
+
+    private async void OnOpenDataFolder(object? sender, RoutedEventArgs e)
+    {
+        if (_dataDirectory is null)
+            return;
+        Directory.CreateDirectory(_dataDirectory);
+        await Launcher.LaunchDirectoryInfoAsync(new DirectoryInfo(_dataDirectory));
+    }
 
     private void ShowQueryArea()
     {

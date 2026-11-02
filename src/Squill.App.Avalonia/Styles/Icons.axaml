@@ -1,0 +1,10 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Line icons on a 24 x 24 grid, drawn with a 1.5 stroke through Path.icon (Styles/Controls.axaml). -->
+  <StreamGeometry x:Key="SquillIconExplorer">M4,6 C4,4.3 7.6,3 12,3 C16.4,3 20,4.3 20,6 C20,7.7 16.4,9 12,9 C7.6,9 4,7.7 4,6 Z M4,6 V18 C4,19.7 7.6,21 12,21 C16.4,21 20,19.7 20,18 V6 M4,12 C4,13.7 7.6,15 12,15 C16.4,15 20,13.7 20,12</StreamGeometry>
+  <StreamGeometry x:Key="SquillIconHistory">M12,3 A9,9 0 1 0 12,21 A9,9 0 1 0 12,3 Z M12,7 V12 L15,14</StreamGeometry>
+  <StreamGeometry x:Key="SquillIconSnippets">M8,7 L3,12 L8,17 M16,7 L21,12 L16,17</StreamGeometry>
+  <StreamGeometry x:Key="SquillIconDiagram">M4,4 H10 V10 H4 Z M14,14 H20 V20 H14 Z M10,7 H17 V14</StreamGeometry>
+  <StreamGeometry x:Key="SquillIconSettings">M12,9 A3,3 0 1 0 12,15 A3,3 0 1 0 12,9 Z M12,2 V5 M12,19 V22 M2,12 H5 M19,12 H22 M5,5 L7,7 M17,17 L19,19 M5,19 L7,17 M17,7 L19,5</StreamGeometry>
+  <StreamGeometry x:Key="SquillIconSearch">M10.5,4 A6.5,6.5 0 1 0 10.5,17 A6.5,6.5 0 1 0 10.5,4 Z M15.5,15.5 L20,20</StreamGeometry>
+  <StreamGeometry x:Key="SquillIconWarning">M12,3 L22,20 H2 Z M12,10 V14 M12,17 V17.5</StreamGeometry>
+</ResourceDictionary>

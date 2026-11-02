@@ -1,21 +1,48 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ws="using:Squill.Presentation.Workspace"
+             xmlns:loc="using:Squill.App.Avalonia.Localization"
              x:Class="Squill.App.Avalonia.Views.StatusBar"
              x:DataType="ws:WorkspaceViewModel">
+  <UserControl.Styles>
+    <Style Selector="Border.segment">
+      <Setter Property="Padding" Value="12,0" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SquillBorderSubtleBrush}" />
+      <Setter Property="BorderThickness" Value="0,0,1,0" />
+    </Style>
+    <Style Selector="Border.segment > TextBlock, Border.segment > StackPanel > TextBlock">
+      <Setter Property="FontSize" Value="{DynamicResource SquillFontSizeBodySm}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource SquillFg2Brush}" />
+    </Style>
+  </UserControl.Styles>
   <Border Background="{DynamicResource SquillBgSurfaceBrush}" BorderBrush="{DynamicResource SquillBorderSubtleBrush}"
-          BorderThickness="0,1,0,0" Padding="8,2" MinHeight="{DynamicResource SquillControlHeightCompact}">
+          BorderThickness="0,1,0,0" Height="26">
     <DockPanel>
-      <Button DockPanel.Dock="Right" Margin="12,0,0,0" Padding="0" Content="Data folder" Background="Transparent"
-              Foreground="{DynamicResource SquillFg2Brush}" Click="OnOpenDataFolder" />
-      <TextBlock DockPanel.Dock="Right" Margin="12,0,0,0" Foreground="{DynamicResource SquillFgDisabledBrush}"
-                 Text="{Binding ActiveTab.Elapsed, StringFormat='{}{0:m\\:ss\\.fff}'}" />
-      <TextBlock DockPanel.Dock="Right" Margin="12,0,0,0" Foreground="{DynamicResource SquillFgBrush}"
-                 Text="{Binding ActiveTab.StatusText}" />
-      <TextBlock DockPanel.Dock="Left" Margin="0,0,12,0" Foreground="{DynamicResource SquillFgBrush}"
-                 Text="{Binding ActiveSession.Profile.Name, FallbackValue='Not connected'}" />
-      <TextBlock Foreground="{DynamicResource SquillFgDisabledBrush}" TextTrimming="CharacterEllipsis"
-                 Text="{Binding ActiveSession.Connection.ServerVersion}" />
+      <Border Name="EnvironmentBlock" DockPanel.Dock="Left" Padding="14,0" IsVisible="False">
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Path Name="EnvironmentWarning" Classes="icon" Width="13" Height="13" Data="{StaticResource SquillIconWarning}" IsVisible="False" />
+          <TextBlock Name="EnvironmentLabel" FontSize="{DynamicResource SquillFontSizeBodySm}" FontWeight="Bold" />
+        </StackPanel>
+      </Border>
+      <Border DockPanel.Dock="Right" Classes="segment" BorderThickness="0">
+        <TextBlock Name="ServerVersionText" Classes="mono" TextTrimming="CharacterEllipsis" />
+      </Border>
+      <Border DockPanel.Dock="Right" Classes="segment" BorderThickness="1,0,0,0">
+        <TextBlock Text="{loc:Text status.encoding}" Classes="mono" />
+      </Border>
+      <Border DockPanel.Dock="Right" Classes="segment" BorderThickness="1,0,0,0">
+        <TextBlock Name="PositionText" Classes="mono" />
+      </Border>
+      <Border DockPanel.Dock="Left" Classes="segment">
+        <TextBlock Name="ConnectionText" Classes="mono" Foreground="{DynamicResource SquillFgBrush}" />
+      </Border>
+      <Border Classes="segment" BorderThickness="0">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <TextBlock Name="StatusSegment" />
+          <TextBlock Name="ElapsedSegment" Classes="mono" />
+        </StackPanel>
+      </Border>
     </DockPanel>
   </Border>
 </UserControl>

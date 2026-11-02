@@ -6,9 +6,11 @@
         xmlns:dg="using:Squill.Presentation.Diagram"
         xmlns:dz="using:Squill.Presentation.Designer"
         xmlns:v="using:Squill.App.Avalonia.Views"
+        xmlns:loc="using:Squill.App.Avalonia.Localization"
         x:Class="Squill.App.Avalonia.MainWindow"
         x:DataType="ws:WorkspaceViewModel"
-        Title="SQuilL" Width="1100" Height="700"
+        Title="" Width="1440" Height="900" MinWidth="960" MinHeight="600"
+        ExtendClientAreaToDecorationsHint="True" ExtendClientAreaTitleBarHeightHint="41"
         Icon="avares://Squill.App.Avalonia/Assets/squill.ico"
         Background="{DynamicResource SquillBgBaseBrush}">
   <Window.KeyBindings>
@@ -20,24 +22,139 @@
     <KeyBinding Gesture="Ctrl+S" Command="{Binding ActiveDesigner.ApplyCommand}" />
     <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseTabCommand}" CommandParameter="{Binding ActiveTab}" />
   </Window.KeyBindings>
-  <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="260,Auto,*">
-    <StackPanel Name="Toolbar" Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="4" Margin="6,4"
-                Background="{DynamicResource SquillBgBaseBrush}">
-      <Button Content="Run" ToolTip.Tip="F5 / Ctrl+Enter" Command="{Binding ActiveTab.RunCommand}" />
-      <Button Content="Run all" Command="{Binding ActiveTab.RunAllCommand}" />
-      <Button Content="Cancel" ToolTip.Tip="Esc" Command="{Binding ActiveTab.CancelCommand}"
-              IsVisible="{Binding ActiveTab.IsRunning, FallbackValue=False}" />
-      <Button Content="Format" ToolTip.Tip="Ctrl+Shift+F" Command="{Binding ActiveTab.FormatDocumentCommand}" />
-      <Button Content="New tab" ToolTip.Tip="Ctrl+T" Command="{Binding NewTabCommand}" />
-      <Button Content="ER diagram" Command="{Binding OpenDiagramCommand}"
-              IsVisible="{Binding $self.IsEnabled}" />
-      <Button Content="Settings" ToolTip.Tip="Ctrl+," Click="OnSettingsClicked" />
-      <Button Content="Close tab" ToolTip.Tip="Ctrl+W" Command="{Binding CloseTabCommand}"
-              CommandParameter="{Binding ActiveTab}" />
-    </StackPanel>
-    <v:SidebarView Grid.Row="1" Name="Sidebar" />
-    <GridSplitter Grid.Row="1" Grid.Column="1" Width="4" Background="{DynamicResource SquillBorderBrush}" />
-    <Grid Grid.Row="1" Grid.Column="2" RowDefinitions="Auto,*">
+  <Window.Styles>
+    <Style Selector="Menu > MenuItem">
+      <Setter Property="Padding" Value="7,0" />
+      <Setter Property="MinHeight" Value="28" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+    </Style>
+    <Style Selector="RadioButton.rail">
+      <Setter Property="Width" Value="36" />
+      <Setter Property="Height" Value="36" />
+      <Setter Property="MinHeight" Value="36" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="RadioButton.rail /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="RadioButton.rail:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SquillBgHoverBrush}" />
+    </Style>
+    <Style Selector="RadioButton.rail:checked /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SquillAccentSoftBrush}" />
+    </Style>
+    <Style Selector="RadioButton.rail:checked Path.icon">
+      <Setter Property="Stroke" Value="{DynamicResource SquillAccentBrush}" />
+    </Style>
+    <Style Selector="Button.rail">
+      <Setter Property="Width" Value="36" />
+      <Setter Property="Height" Value="36" />
+      <Setter Property="MinHeight" Value="36" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+  </Window.Styles>
+  <Grid RowDefinitions="41,*,Auto" ColumnDefinitions="45,260,Auto,*">
+    <Border Name="TitleBar" Grid.ColumnSpan="4" Background="{DynamicResource SquillBgBaseBrush}"
+            BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
+      <Grid>
+        <StackPanel Orientation="Horizontal" Margin="14,0,0,0">
+          <Image Source="avares://Squill.App.Avalonia/Assets/squill-32.png" Width="16" Height="16" Margin="0,0,8,0" />
+          <Menu Name="MainMenu" VerticalAlignment="Center" FontSize="13">
+            <MenuItem Header="{loc:Text menu.file}">
+              <MenuItem Header="{loc:Text menu.newTab}" InputGesture="Ctrl+T" Command="{Binding NewTabCommand}" />
+              <MenuItem Header="{loc:Text menu.closeTab}" InputGesture="Ctrl+W" Command="{Binding CloseTabCommand}"
+                        CommandParameter="{Binding ActiveTab}" />
+              <Separator />
+              <MenuItem Name="SettingsMenuItem" Header="{loc:Text menu.settings}" InputGesture="Ctrl+," Click="OnSettingsClicked" />
+              <MenuItem Name="DataFolderMenuItem" Header="{loc:Text menu.openDataFolder}" Click="OnOpenDataFolder" />
+            </MenuItem>
+            <MenuItem Header="{loc:Text menu.edit}">
+              <MenuItem Header="{loc:Text menu.undo}" IsEnabled="False" />
+              <MenuItem Header="{loc:Text menu.redo}" IsEnabled="False" />
+            </MenuItem>
+            <MenuItem Header="{loc:Text menu.view}">
+              <MenuItem Header="{loc:Text menu.erDiagram}" Command="{Binding OpenDiagramCommand}" />
+            </MenuItem>
+            <MenuItem Header="{loc:Text menu.query}">
+              <MenuItem Header="{loc:Text editor.run}" InputGesture="Ctrl+Enter" Command="{Binding ActiveTab.RunCommand}" />
+              <MenuItem Header="{loc:Text menu.runScript}" Command="{Binding ActiveTab.RunAllCommand}" />
+              <MenuItem Header="{loc:Text editor.stop}" InputGesture="Escape" Command="{Binding ActiveTab.CancelCommand}" />
+              <Separator />
+              <MenuItem Header="{loc:Text menu.format}" InputGesture="Ctrl+Shift+F" Command="{Binding ActiveTab.FormatDocumentCommand}" />
+            </MenuItem>
+            <MenuItem Header="{loc:Text menu.database}">
+              <MenuItem Header="{loc:Text menu.newTable}" Command="{Binding NewTableCommand}" />
+            </MenuItem>
+            <MenuItem Name="ToolsMenu" Header="{loc:Text menu.tools}">
+              <MenuItem Header="{loc:Text menu.settings}" Click="OnSettingsClicked" />
+            </MenuItem>
+            <MenuItem Header="{loc:Text menu.help}">
+              <MenuItem Header="{loc:Text menu.about}" IsEnabled="False" />
+            </MenuItem>
+          </Menu>
+        </StackPanel>
+        <!-- Placeholder for the command palette, which does not exist yet. -->
+        <Border Name="CommandSearch" Width="438" Height="27" CornerRadius="6" IsEnabled="False" IsHitTestVisible="False"
+                HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource SquillBgRaisedBrush}"
+                BorderBrush="{DynamicResource SquillBorderBrush}" BorderThickness="1" Padding="8,0">
+          <DockPanel>
+            <Border DockPanel.Dock="Right" Classes="kbd"><TextBlock Text="Ctrl+K" /></Border>
+            <Path DockPanel.Dock="Left" Classes="icon" Width="14" Height="14" Margin="0,0,8,0" Data="{StaticResource SquillIconSearch}"
+                  Stroke="{DynamicResource SquillFg3Brush}" />
+            <TextBlock Text="{loc:Text search.placeholder}" Foreground="{DynamicResource SquillFg3Brush}" VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" />
+          </DockPanel>
+        </Border>
+      </Grid>
+    </Border>
+    <Border Name="ActivityRail" Grid.Row="1" Background="{DynamicResource SquillBgSurfaceBrush}"
+            BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,1,0">
+      <DockPanel>
+        <Button DockPanel.Dock="Bottom" Name="RailSettings" Classes="rail ghost" Margin="0,0,0,8" HorizontalAlignment="Center"
+                ToolTip.Tip="{loc:Text menu.settings}" Click="OnSettingsClicked">
+          <Path Classes="icon" Data="{StaticResource SquillIconSettings}" />
+        </Button>
+        <StackPanel Spacing="4" Margin="0,8,0,0">
+          <Grid>
+            <Border Width="3" Height="24" HorizontalAlignment="Left" CornerRadius="0,2,2,0" Background="{DynamicResource SquillAccentBrush}"
+                    IsVisible="{Binding #RailExplorer.IsChecked}" />
+            <RadioButton Name="RailExplorer" Classes="rail" GroupName="SidebarPanel" Theme="{StaticResource {x:Type ToggleButton}}"
+                         IsChecked="True" ToolTip.Tip="{loc:Text rail.explorer}" IsCheckedChanged="OnRailChecked">
+              <Path Classes="icon" Data="{StaticResource SquillIconExplorer}" />
+            </RadioButton>
+          </Grid>
+          <Grid>
+            <Border Width="3" Height="24" HorizontalAlignment="Left" CornerRadius="0,2,2,0" Background="{DynamicResource SquillAccentBrush}"
+                    IsVisible="{Binding #RailHistory.IsChecked}" />
+            <RadioButton Name="RailHistory" Classes="rail" GroupName="SidebarPanel" Theme="{StaticResource {x:Type ToggleButton}}"
+                         ToolTip.Tip="{loc:Text editor.history}" IsCheckedChanged="OnRailChecked">
+              <Path Classes="icon" Data="{StaticResource SquillIconHistory}" />
+            </RadioButton>
+          </Grid>
+          <Grid>
+            <Border Width="3" Height="24" HorizontalAlignment="Left" CornerRadius="0,2,2,0" Background="{DynamicResource SquillAccentBrush}"
+                    IsVisible="{Binding #RailSnippets.IsChecked}" />
+            <RadioButton Name="RailSnippets" Classes="rail" GroupName="SidebarPanel" Theme="{StaticResource {x:Type ToggleButton}}"
+                         ToolTip.Tip="{loc:Text editor.snippets}" IsCheckedChanged="OnRailChecked">
+              <Path Classes="icon" Data="{StaticResource SquillIconSnippets}" />
+            </RadioButton>
+          </Grid>
+          <Button Name="RailDiagram" Classes="rail ghost" HorizontalAlignment="Center" ToolTip.Tip="{loc:Text menu.erDiagram}"
+                  Command="{Binding OpenDiagramCommand}">
+            <Path Classes="icon" Data="{StaticResource SquillIconDiagram}" />
+          </Button>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+    <v:SidebarView Grid.Row="1" Grid.Column="1" Name="Sidebar" />
+    <GridSplitter Grid.Row="1" Grid.Column="2" Width="4" Background="{DynamicResource SquillBorderBrush}" />
+    <Grid Grid.Row="1" Grid.Column="3" RowDefinitions="Auto,*">
       <StackPanel Orientation="Horizontal">
         <ListBox Name="QueryStrip" ItemsSource="{Binding Tabs}" SelectedItem="{Binding ActiveTab, Mode=TwoWay}" Background="Transparent">
           <ListBox.ItemsPanel>
@@ -108,6 +225,6 @@
       <v:TableDesignerView Grid.Row="1" Name="DesignerArea" IsVisible="False" />
       <Grid Name="TerminalArea" Grid.Row="1" IsVisible="False" Background="{DynamicResource SquillBgBaseBrush}" />
     </Grid>
-    <v:StatusBar Grid.Row="2" Name="Status" Grid.ColumnSpan="3" />
+    <v:StatusBar Grid.Row="2" Name="Status" Grid.ColumnSpan="4" />
   </Grid>
 </Window>

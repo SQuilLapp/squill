@@ -15,6 +15,19 @@ internal static class UiTextCatalog
         ("menu.tools", "Outils"),
         ("menu.help", "Aide"),
         ("search.placeholder", "Rechercher objets, fichiers, actions..."),
+        ("menu.newTab", "Nouvel onglet"),
+        ("menu.closeTab", "Fermer l'onglet"),
+        ("menu.settings", "Paramètres"),
+        ("menu.openDataFolder", "Ouvrir le dossier de données"),
+        ("menu.format", "Formater le SQL"),
+        ("menu.runScript", "Exécuter le script"),
+        ("menu.erDiagram", "Diagramme ER"),
+        ("menu.newTable", "Nouvelle table"),
+        ("menu.undo", "Annuler"),
+        ("menu.redo", "Rétablir"),
+        ("menu.about", "À propos"),
+        ("menu.newTerminal", "Nouveau terminal"),
+        ("rail.explorer", "Explorateur"),
 
         // Explorer and properties
         ("explorer.title", "EXPLORATEUR"),
@@ -62,6 +75,7 @@ internal static class UiTextCatalog
         ("status.pendingTransaction.other", "Transaction ouverte · {0} instructions en attente"),
         ("status.position", "Ln {0}, Col {1}"),
         ("status.encoding", "UTF-8"),
+        ("status.notConnected", "Non connecté"),
 
         // Editor
         ("editor.run", "Exécuter"),

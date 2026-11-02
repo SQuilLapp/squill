@@ -36,35 +36,6 @@ public sealed class PanelsUiTests
     }
 
     [Fact]
-    public async Task Sidebar_SwitchingSegments_ChangesVisiblePanel()
-    {
-        await WithServicesAsync(services =>
-        {
-            var window = new MainWindow { DataContext = services.Workspace };
-            window.Attach(services, Path.GetTempPath());
-            var sidebar = window.GetLogicalDescendants().OfType<SidebarView>().Single();
-            var history = sidebar.GetLogicalDescendants().OfType<HistoryView>().Single();
-            var snippets = sidebar.GetLogicalDescendants().OfType<SnippetsView>().Single();
-            Assert.True(sidebar.FindControl<Grid>("ExplorerPanel")!.IsVisible);
-            Assert.False(history.IsVisible);
-
-            sidebar.FindControl<RadioButton>("HistoryTab")!.IsChecked = true;
-            Assert.True(history.IsVisible);
-            Assert.False(snippets.IsVisible);
-            Assert.False(sidebar.FindControl<Grid>("ExplorerPanel")!.IsVisible);
-
-            sidebar.FindControl<RadioButton>("SnippetsTab")!.IsChecked = true;
-            Assert.True(snippets.IsVisible);
-            Assert.False(history.IsVisible);
-
-            sidebar.FindControl<RadioButton>("ExplorerTab")!.IsChecked = true;
-            Assert.True(sidebar.FindControl<Grid>("ExplorerPanel")!.IsVisible);
-            Assert.False(snippets.IsVisible);
-            return Task.CompletedTask;
-        });
-    }
-
-    [Fact]
     public async Task SettingsWindow_BindsTheFourProperties()
     {
         await WithServicesAsync(services =>

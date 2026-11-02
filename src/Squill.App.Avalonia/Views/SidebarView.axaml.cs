@@ -8,7 +8,20 @@ using Squill.Presentation.Workspace;
 
 namespace Squill.App.Avalonia.Views;
 
-/// <summary>The connection list above the object explorer.</summary>
+/// <summary>The panels of the activity rail.</summary>
+public enum SidebarPanel
+{
+    /// <summary>Connections and the object explorer.</summary>
+    Explorer,
+
+    /// <summary>The query history.</summary>
+    History,
+
+    /// <summary>The saved snippets.</summary>
+    Snippets,
+}
+
+/// <summary>The connection list above the object explorer, the history and the snippets, one at a time.</summary>
 public sealed partial class SidebarView : UserControl
 {
     private ConnectionListViewModel? _list;
@@ -36,14 +49,16 @@ public sealed partial class SidebarView : UserControl
         SnippetsPanel.DataContext = snippets;
     }
 
-    private void OnPanelChecked(object? sender, RoutedEventArgs e)
+    /// <summary>Shows one of the left panels and loads its content, as the activity rail asks.</summary>
+    /// <param name="panel">The panel to show.</param>
+    public void ShowPanel(SidebarPanel panel)
     {
-        ExplorerPanel.IsVisible = ExplorerTab.IsChecked == true;
-        HistoryPanel.IsVisible = HistoryTab.IsChecked == true;
-        SnippetsPanel.IsVisible = SnippetsTab.IsChecked == true;
-        if (sender == HistoryTab && HistoryTab.IsChecked == true)
+        ExplorerPanel.IsVisible = panel == SidebarPanel.Explorer;
+        HistoryPanel.IsVisible = panel == SidebarPanel.History;
+        SnippetsPanel.IsVisible = panel == SidebarPanel.Snippets;
+        if (panel == SidebarPanel.History)
             (HistoryPanel.DataContext as HistoryViewModel)?.LoadCommand.Execute(null);
-        else if (sender == SnippetsTab && SnippetsTab.IsChecked == true)
+        else if (panel == SidebarPanel.Snippets)
             (SnippetsPanel.DataContext as SnippetsViewModel)?.LoadCommand.Execute(null);
     }
 

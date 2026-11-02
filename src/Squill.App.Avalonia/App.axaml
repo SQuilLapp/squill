@@ -12,6 +12,7 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://Squill.App.Avalonia/Styles/SquillTokens.axaml" />
         <ResourceInclude Source="avares://Squill.App.Avalonia/Styles/SquillFonts.axaml" />
+        <ResourceInclude Source="avares://Squill.App.Avalonia/Styles/Icons.axaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>

@@ -37,6 +37,17 @@
     <Setter Property="Foreground" Value="{DynamicResource SquillFg3Brush}" />
   </Style>
 
+  <!-- Icon: Path.icon, 20 px, stroke 1.5, currentColor (the stroke follows the Foreground of the nearest button) -->
+  <Style Selector="Path.icon">
+    <Setter Property="Width" Value="20" />
+    <Setter Property="Height" Value="20" />
+    <Setter Property="Stretch" Value="Uniform" />
+    <Setter Property="StrokeThickness" Value="1.5" />
+    <Setter Property="StrokeLineCap" Value="Round" />
+    <Setter Property="StrokeJoin" Value="Round" />
+    <Setter Property="Stroke" Value="{DynamicResource SquillFg2Brush}" />
+  </Style>
+
   <!-- Button -->
   <Style Selector="Button">
     <Setter Property="MinHeight" Value="{DynamicResource SquillControlHeightStandard}" />
