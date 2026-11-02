@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Squill.App.WinUI.Controls;
 using Squill.App.WinUI.Editors;
+using Squill.Presentation;
 using Squill.Presentation.Query;
 using Squill.Presentation.Results;
 
@@ -23,6 +24,7 @@ public sealed partial class QueryTabView : UserControl
     private readonly Button _exportJson = new() { Content = "Export JSON" };
     private readonly Dictionary<ResultViewModel, ToggleButton> _resultButtons = [];
     private QueryTabViewModel? _tab;
+    private ResultViewModel? _result;
 
     /// <summary>Creates the view.</summary>
     public QueryTabView()
@@ -57,6 +59,13 @@ public sealed partial class QueryTabView : UserControl
         root.Children.Add(results);
         Content = root;
         Visibility = Visibility.Collapsed;
+    }
+
+    /// <summary>Gets or sets the service that reports grid paste errors.</summary>
+    public IDialogService? Dialogs
+    {
+        get => _grid.Dialogs;
+        set => _grid.Dialogs = value;
     }
 
     /// <summary>Shows another tab, or nothing when <see langword="null"/>.</summary>
@@ -107,6 +116,8 @@ public sealed partial class QueryTabView : UserControl
     {
         if (e.PropertyName == nameof(ResultViewModel.Header) && sender is ResultViewModel result && _resultButtons.TryGetValue(result, out var button))
             button.Content = result.Header;
+        else if (e.PropertyName == nameof(ResultViewModel.DisplayGrid) && sender == _result)
+            ShowGrid();
     }
 
     private void OnTabPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -125,11 +136,21 @@ public sealed partial class QueryTabView : UserControl
         foreach (var (candidate, button) in _resultButtons)
             button.IsChecked = candidate == result;
         _exportCsv.IsEnabled = _exportJson.IsEnabled = result?.Kind == ResultKind.Grid;
-        _grid.DataSource = result?.Grid;
+        _result = result;
+        ShowGrid();
         _grid.Visibility = result?.Kind == ResultKind.Grid ? Visibility.Visible : Visibility.Collapsed;
         _message.Visibility = result?.Kind == ResultKind.Message ? Visibility.Visible : Visibility.Collapsed;
         _message.Text = result?.Text ?? "";
         _empty.Visibility = result is null ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void ShowGrid()
+    {
+        var result = _result;
+        // Selection and controller first: assigning the data source clears the selection.
+        _grid.Selection = result?.Selection ?? new GridSelection();
+        _grid.EditController = result?.EditController;
+        _grid.DataSource = result?.DisplayGrid;
     }
 
     private static Microsoft.UI.Xaml.Media.Brush Brush(string key) => (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources[key];

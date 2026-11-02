@@ -1,6 +1,6 @@
 # P8-16 - WinUI head: in-place cell editing in the grid
 
-Status: todo
+Status: done
 Depends on: P8-12, P5-12
 
 ## Goal
@@ -16,8 +16,8 @@ The WinUI counterpart of P8-14 on the Win2D grid.
 - Toolbar and commit buttons (P8-17), anything in the Avalonia head.
 
 ## Tasks
-- [ ] Implement the editing overlay, key handling and drawing.
-- [ ] Tests in `tests/Squill.App.WinUI.Tests` for the testable parts (cell rectangle to overlay position math, row state to brush selection). State in the card report what could not be exercised without UI automation.
+- [x] Implement the editing overlay, key handling and drawing.
+- [x] Tests in `tests/Squill.App.WinUI.Tests` for the testable parts (cell rectangle to overlay position math, row state to brush selection). State in the card report what could not be exercised without UI automation.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.
