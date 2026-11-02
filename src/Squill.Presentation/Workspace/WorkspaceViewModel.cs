@@ -200,6 +200,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
             return;
         if (tab.IsModified && !await _dialogs.ConfirmAsync("Close tab", $"Close '{tab.Title}' and discard its changes?"))
             return;
+        if (tab.HasPendingChanges && !await _dialogs.ConfirmAsync("Close tab", "Discard pending grid changes?"))
+            return;
         var index = Tabs.IndexOf(tab);
         Tabs.RemoveAt(index);
         if (ActiveTab == tab)

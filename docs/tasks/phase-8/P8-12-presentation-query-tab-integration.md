@@ -1,6 +1,6 @@
 # P8-12 - Presentation: editable results in query tabs
 
-Status: todo
+Status: done
 Depends on: P8-02, P8-10, P8-11, P4-09, P7-22
 
 ## Goal
@@ -17,8 +17,8 @@ A grid result that comes from a single table with a primary key gets a `ResultEd
 - Views (heads), editing joins or views, changing export.
 
 ## Tasks
-- [ ] Implement the `ResultViewModel` additions and the tab and workspace changes.
-- [ ] Tests in `tests/Squill.Presentation.Tests` (existing fixtures): editable result for a table with a primary key, read-only reasons for a join, a table without primary key, an aggregate, a view; `DisplayGrid`; header marker; run and close prompts (declined and accepted); explorer open-table gives an editable result; an end-to-end test with the real SQLite provider on a temp file: run `SELECT * FROM t`, edit a cell through `ResultEditorViewModel`, add a row, delete a row, commit, re-run the query and compare.
+- [x] Implement the `ResultViewModel` additions and the tab and workspace changes.
+- [x] Tests in `tests/Squill.Presentation.Tests` (existing fixtures): editable result for a table with a primary key, read-only reasons for a join, a table without primary key, an aggregate, a view; `DisplayGrid`; header marker; run and close prompts (declined and accepted); explorer open-table gives an editable result; an end-to-end test with the real SQLite provider on a temp file: run `SELECT * FROM t`, edit a cell through `ResultEditorViewModel`, add a row, delete a row, commit, re-run the query and compare.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
