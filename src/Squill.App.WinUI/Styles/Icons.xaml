@@ -7,4 +7,5 @@
   <x:String x:Key="SquillIconSettings">M12,9 A3,3 0 1 0 12,15 A3,3 0 1 0 12,9 Z M12,2 V5 M12,19 V22 M2,12 H5 M19,12 H22 M5,5 L7,7 M17,17 L19,19 M5,19 L7,17 M17,7 L19,5</x:String>
   <x:String x:Key="SquillIconSearch">M10.5,4 A6.5,6.5 0 1 0 10.5,17 A6.5,6.5 0 1 0 10.5,4 Z M15.5,15.5 L20,20</x:String>
   <x:String x:Key="SquillIconWarning">M12,3 L22,20 H2 Z M12,10 V14 M12,17 V17.5</x:String>
+  <x:String x:Key="SquillIconFormat">M4,6 H20 M4,10 H14 M4,14 H20 M4,18 H14</x:String>
 </ResourceDictionary>

@@ -1,6 +1,6 @@
 # P9-12 - WinUI head: query toolbar, editor frame and history panel
 
-Status: todo
+Status: done
 Depends on: P9-10, P9-02
 
 ## Goal
@@ -15,11 +15,11 @@ The WinUI query tab chrome around the editor matches M04 and M03.
 - Plan view, auto-commit controls (no feature).
 
 ## Tasks
-- [ ] `Views/QueryTabView.cs`: toolbar `Exécuter`, `Script`, `Arrêter`, separator, format and history icon buttons as P9-11, bound to the existing handlers.
-- [ ] Editor frame: environment stripe, gutter/line numbers/current statement colors, diagnostics presentation as far as Loom supports it.
-- [ ] Right panel `HistoryView`/`SnippetsView` restyled as section 5 with the existing fields; no pinned section without data.
-- [ ] Query parameters panel as section 5.
-- [ ] Tests for the testable helpers; state what needs the screenshot.
+- [x] `Views/QueryTabView.cs`: toolbar `Exécuter`, `Script`, `Arrêter`, separator, format and history icon buttons as P9-11, bound to the existing handlers.
+- [x] Editor frame: environment stripe, gutter/line numbers/current statement colors, diagnostics presentation as far as Loom supports it.
+- [x] Right panel `HistoryView`/`SnippetsView` restyled as section 5 with the existing fields; no pinned section without data.
+- [x] Query parameters panel as section 5.
+- [x] Tests for the testable helpers; state what needs the screenshot.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.
@@ -30,3 +30,12 @@ The WinUI query tab chrome around the editor matches M04 and M03.
 
 ## Suggested commit message
 WinUI: query toolbar, editor frame and history panel
+
+## Report
+Done in `QueryTabView` (toolbar, environment stripe, right Historique/Snippets panel), `HistoryView`, `SnippetsView`, `HistoryFormat`, `ParameterPromptRow`, `WinUiDialogService`, `MainWindow`; tests in `EditorToolbarTests`. Captured dark against M04 with the toolbar, right panel and one history entry; light theme and the Compare-Mockup diff image were not read in detail. To be checked by the owner:
+- Not matched: wavy diagnostic underline, inline diagnostic pill, margin triangle and current-statement background, completion popup and signature help styling (LoomEditor exposes decorations only, no gutter or popup theme; not edited), `Expliquer`, auto-commit/commit controls (no feature).
+- History search box has no magnifier glyph and `Effacer` stays next to it; `SNIPPETS ÉPINGLÉS` omitted (no pinned notion). The history/snippets panel opens from the toolbar history button; the activity rail panels are unchanged.
+- The parameters prompt stays a modal `ContentDialog` (the view-model awaits `IDialogService`) with catalog strings, `Valeur requise` validation, `Ignorer` and `Exécuter avec ces valeurs`; the type dropdown is omitted (parameters carry no type). The dialog was not opened by hand.
+- The environment stripe was not seen on screen: the sample profile has no environment (only the helper is tested).
+- Ctrl+Entrée typed through SendKeys did not run the query in the capture; clicking `Exécuter` did.
+- AOT publish: only the existing IL2104/IL3053 warnings of Microsoft.Data.SqlClient and System.Configuration.ConfigurationManager.

@@ -155,7 +155,7 @@ Depends on: <card ids, ranges allowed>
 | [P9-09](phase-9/P9-09-winui-window-chrome.md) | WinUI head: title bar, menu, activity rail and status bar | P9-04, P9-06, P9-02 | done |
 | [P9-10](phase-9/P9-10-winui-explorer-and-tabs.md) | WinUI head: object explorer, tab strip and properties panel | P9-09, P9-02 | done |
 | [P9-11](phase-9/P9-11-avalonia-editor-toolbar-panels.md) | Avalonia head: query toolbar, editor frame and history panel | P9-08, P9-02 | done |
-| [P9-12](phase-9/P9-12-winui-editor-toolbar-panels.md) | WinUI head: query toolbar, editor frame and history panel | P9-10, P9-02 | todo |
+| [P9-12](phase-9/P9-12-winui-editor-toolbar-panels.md) | WinUI head: query toolbar, editor frame and history panel | P9-10, P9-02 | done |
 | [P9-13](phase-9/P9-13-avalonia-results-panel.md) | Avalonia head: results panel chrome, pending-edit banner and export menu | P9-11, P9-02 | todo |
 | [P9-14](phase-9/P9-14-avalonia-grid-visuals.md) | Avalonia head: grid canvas drawing | P9-13, P9-02 | todo |
 | [P9-15](phase-9/P9-15-winui-results-panel.md) | WinUI head: results panel chrome, pending-edit banner and export menu | P9-12, P8-17, P9-02 | todo |

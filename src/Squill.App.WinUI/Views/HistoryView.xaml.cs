@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Squill.Platform.Storage;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Panels;
 
 namespace Squill.App.WinUI.Views;
@@ -12,7 +13,18 @@ public sealed partial class HistoryView : UserControl
     private HistoryViewModel? _history;
 
     /// <summary>Creates the view.</summary>
-    public HistoryView() => InitializeComponent();
+    public HistoryView()
+    {
+        InitializeComponent();
+        FilterBox.PlaceholderText = UiText.Get("editor.historySearch");
+        ClearButton.Content = UiText.Get("editor.historyClear");
+    }
+
+    /// <summary>Picks the dot color of an entry.</summary>
+    /// <param name="succeeded">Whether the statement succeeded.</param>
+    /// <returns>The success or danger brush.</returns>
+    public static Microsoft.UI.Xaml.Media.Brush StatusBrush(bool succeeded) =>
+        (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources[succeeded ? "SquillSuccessBrush" : "SquillDangerBrush"];
 
     /// <summary>Connects the view to the history it shows.</summary>
     /// <param name="history">The history view-model.</param>

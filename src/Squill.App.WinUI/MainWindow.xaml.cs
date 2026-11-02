@@ -58,6 +58,8 @@ public sealed partial class MainWindow : Window
         AttachDiagrams(services.Workspace);
         AttachTerminals(services.Workspace);
         Sidebar.Attach(services.Workspace, services.History, services.Snippets);
+        ActiveTabView.AttachPanels(services.History, services.Snippets);
+        ActiveTabView.SetEnvironment(services.Workspace.ActiveEnvironment);
         Sidebar.SelectedNodeChanged += (_, node) => Properties.Show(node, services.Workspace);
         Status.Attach(services.Workspace);
         AttachMenu(services.Workspace);
@@ -90,6 +92,9 @@ public sealed partial class MainWindow : Window
     {
         switch (e.PropertyName)
         {
+            case nameof(WorkspaceViewModel.ActiveEnvironment):
+                ActiveTabView.SetEnvironment(Workspace.ActiveEnvironment);
+                break;
             case nameof(WorkspaceViewModel.ActiveTab):
                 ShowActiveTab();
                 break;

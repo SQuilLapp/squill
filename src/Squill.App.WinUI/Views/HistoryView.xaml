@@ -4,16 +4,22 @@
              xmlns:st="using:Squill.Platform.Storage"
              xmlns:v="using:Squill.App.WinUI.Views">
   <Grid RowDefinitions="Auto,*">
-    <Grid ColumnDefinitions="*,Auto" Margin="6">
-      <TextBox x:Name="FilterBox" PlaceholderText="Filter history" TextChanged="OnFilterChanged" />
-      <Button Grid.Column="1" Margin="6,0,0,0" Content="Clear" Click="OnClearClicked" />
+    <Grid ColumnDefinitions="*,Auto" Margin="8">
+      <TextBox x:Name="FilterBox" FontSize="12" Height="27" MinHeight="27" TextChanged="OnFilterChanged" />
+      <Button x:Name="ClearButton" Grid.Column="1" Margin="4,0,0,0" Padding="8,0" Height="27" MinHeight="27"
+              Style="{StaticResource GhostButtonStyle}" Click="OnClearClicked" />
     </Grid>
     <ListView x:Name="List" Grid.Row="1" SelectionMode="Single" DoubleTapped="OnDoubleTapped">
       <ListView.ItemTemplate>
         <DataTemplate x:DataType="st:HistoryEntry">
-          <StackPanel Spacing="2">
-            <TextBlock Text="{x:Bind Sql}" MaxLines="2" TextTrimming="CharacterEllipsis" Foreground="{ThemeResource SquillFgBrush}" />
-            <TextBlock Text="{x:Bind v:HistoryFormat.Detail((st:HistoryEntry))}" Foreground="{ThemeResource SquillFg3Brush}" />
+          <StackPanel Spacing="3" Margin="0,4">
+            <TextBlock Text="{x:Bind Sql}" Style="{StaticResource MonoTextBlockStyle}" FontSize="12" MaxLines="2"
+                       TextTrimming="CharacterEllipsis" Foreground="{ThemeResource SquillFgBrush}" />
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                       Fill="{x:Bind v:HistoryView.StatusBrush(Succeeded)}" />
+              <TextBlock Text="{x:Bind v:HistoryFormat.Detail((st:HistoryEntry))}" FontSize="12" Foreground="{ThemeResource SquillFg3Brush}" />
+            </StackPanel>
           </StackPanel>
         </DataTemplate>
       </ListView.ItemTemplate>

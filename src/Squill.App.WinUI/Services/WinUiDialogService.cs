@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Squill.Presentation;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Query;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -49,23 +50,54 @@ internal sealed class WinUiDialogService : IDialogService
         IReadOnlyList<string> names,
         IReadOnlyDictionary<string, ParameterValue> defaults)
     {
-        var panel = new StackPanel { Spacing = 6 };
-        var inputs = new List<(string Name, TextBox Box, CheckBox IsNull)>();
+        var rows = new List<ParameterPromptRow>();
+        var panel = new StackPanel { Spacing = 8, MinWidth = 440 };
+        panel.Children.Add(new TextBlock { Text = UiText.Format("editor.parametersDetected", names.Count), Style = (Style)Application.Current.Resources["CapsTextBlockStyle"] });
+        var dialog = NewDialog(UiText.Get("editor.parameters"), panel, UiText.Get("editor.runWithValues"), UiText.Get("editor.ignore"));
+        if (dialog is null)
+            return null;
+        dialog.PrimaryButtonStyle = (Style)Application.Current.Resources["PrimaryButtonStyle"];
+        void Refresh() => dialog.IsPrimaryButtonEnabled = ParameterPromptRow.AllValid(rows);
         foreach (var name in names)
         {
             defaults.TryGetValue(name, out var previous);
-            var box = new TextBox { Text = previous?.Text ?? "", PlaceholderText = name };
-            var isNull = new CheckBox { Content = "NULL", IsChecked = previous?.IsNull ?? false };
-            panel.Children.Add(new TextBlock { Text = name });
-            panel.Children.Add(box);
-            panel.Children.Add(isNull);
-            inputs.Add((name, box, isNull));
+            var row = new ParameterPromptRow(name) { Text = previous?.Text, IsNull = previous?.IsNull ?? false };
+            rows.Add(row);
+            var box = new TextBox { Text = row.Text ?? "", FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)Application.Current.Resources["SquillFontMono"], IsEnabled = !row.IsNull };
+            var isNull = new CheckBox { Content = UiText.Get("editor.passNull"), IsChecked = row.IsNull };
+            var error = new TextBlock { FontSize = 12, Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SquillDangerBrush"] };
+            void Sync()
+            {
+                error.Text = row.Error ?? "";
+                error.Visibility = row.Error is null ? Visibility.Collapsed : Visibility.Visible;
+                box.IsEnabled = !row.IsNull;
+                Refresh();
+            }
+
+            box.TextChanged += (_, _) => { row.Text = box.Text; Sync(); };
+            isNull.Click += (_, _) => { row.IsNull = isNull.IsChecked == true; Sync(); };
+            var line = new Grid { ColumnSpacing = 8, ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(120) }, new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } } };
+            var label = new TextBlock { Text = name, VerticalAlignment = VerticalAlignment.Center, Style = (Style)Application.Current.Resources["MonoTextBlockStyle"] };
+            Grid.SetColumn(box, 1);
+            Grid.SetColumn(isNull, 2);
+            line.Children.Add(label);
+            line.Children.Add(box);
+            line.Children.Add(isNull);
+            panel.Children.Add(line);
+            panel.Children.Add(error);
+            Sync();
         }
 
-        if (await ShowAsync("Parameters", "Enter the parameter values.", panel, "OK", "Cancel") != ContentDialogResult.Primary)
+        Refresh();
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary)
             return null;
-        return inputs.Select(i => new ParameterValue(i.Name, i.Box.Text, i.IsNull.IsChecked == true)).ToArray();
+        return rows.Select(r => new ParameterValue(r.Name, r.Text, r.IsNull)).ToArray();
     }
+
+    private ContentDialog? NewDialog(string title, UIElement content, string primary, string close) =>
+        _window?.Content?.XamlRoot is not { } root
+            ? null
+            : new ContentDialog { XamlRoot = root, Title = title, Content = content, PrimaryButtonText = primary, CloseButtonText = close, DefaultButton = ContentDialogButton.Primary };
 
     private async Task<ContentDialogResult> ShowAsync(string title, string message, UIElement? input, string primary, string? close)
     {
