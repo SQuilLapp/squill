@@ -23,22 +23,19 @@
 | xunit.v3 | 4.0.2 | |
 | Velopack | 1.2.161 | Auto-update candidate |
 
-## Risks and proofs of concept
+## Risks and outcomes
 
-| # | Risk | Severity | PoC to produce (exit criterion) |
+| # | Risk | Severity | Outcome |
 |---|---|---|---|
-| R1 | SQL editor: LoomEditor (WinUI 3, phase 11 of its roadmap, owner-maintained; Avalonia backend planned as its phase 12) with AvaloniaEdit as interim on Avalonia, see [ADR 0002](adr/0002-editor-and-terminal-components.md) | High | `ISqlEditor` abstraction + stub; `Squill.Sql` as in-process language-feature providers with LSP-shaped contracts; integrate LoomEditor (TextMate and providers API already exist). Criterion: highlighting + completion demo on 100,000 lines |
-| R2 | WinUI 3 + Native AOT (XAML, MSIX, WinRT) | High | WinUI 3 shell published with AOT win-x64, zero IL2xxx/IL3xxx |
-| R3 | Drivers under AOT: SqlClient (reflection, resources), Npgsql, MySqlConnector | High | One AOT console per driver: connect + query + read. Report: compatible / with caveats / incompatible |
-| R4 | 1M-row grid | High | Custom-drawn control (no per-cell control), row+column virtualization, streaming source. Budget: 60 fps scrolling |
-| R5 | Error-tolerant, multi-dialect SQL parser | Medium | ANTLR vs hand-written comparison. Initial leaning: hand-written (error recovery, typing latency, grammar size), one tokenizer per dialect |
-| R6 | Cross-platform secret storage (libsecret under AOT, P/Invoke) | Medium | Source-generated P/Invoke (`LibraryImport`) to libsecret; Keychain via Security.framework; DPAPI |
-| R7 | SSH tunnel under AOT | Medium | SSH.NET under AOT, otherwise an alternative |
-| R8 | Mockups (15 screens M01-M15) to implement in WinUI 3 and Avalonia | Medium | Shell + Workspace screen (M03) on both heads |
+| R1 | SQL editor: LoomEditor (WinUI 3) with AvaloniaEdit as interim on Avalonia, see [ADR 0002](adr/0002-editor-and-terminal-components.md) | High | Mitigated: `ISqlEditor` abstraction; completion, hover and markers work on 100,000 lines without a stall after start-up; SQL grammars cannot be registered in LoomEditor yet, so highlighting uses decorations ([editor report](poc/editor.md)) |
+| R2 | WinUI 3 + Native AOT (XAML, MSIX, WinRT) | High | Met: the WinUI head publishes with Native AOT win-x64 without IL2xxx/IL3xxx warnings and is packed with Velopack (`eng/pack-windows.ps1`) |
+| R3 | Drivers under AOT: SqlClient, Npgsql, MySqlConnector | High | All compatible; Npgsql, MySqlConnector, SqlClient and SSH.NET verified by publish and startup only, no server available ([AOT driver report](poc/aot-drivers.md)) |
+| R4 | 1M-row grid | High | Met: custom-drawn virtualized grid, 4.4 ms (Avalonia) and 2.4 ms (WinUI) average frame ([grid report](poc/grid.md)) |
+| R5 | Error-tolerant, multi-dialect SQL parser | Medium | Hand-written parser over per-dialect tokenizers, no ANTLR ([ADR 0003](adr/0003-sql-parser.md)) |
+| R6 | Cross-platform secret storage | Medium | DPAPI, libsecret (source-generated P/Invoke) and Keychain stores behind `ISecretStore` ([AOT driver report](poc/aot-drivers.md) covers drivers only; see tasks P2-01 to P2-03 in the [task index](tasks/README.md)) |
+| R7 | SSH tunnel under AOT | Medium | SSH.NET compatible (publish and startup only) ([AOT driver report](poc/aot-drivers.md)) |
+| R8 | Mockups (15 screens M01-M15) in WinUI 3 and Avalonia | Medium | Workspace shell, connections, results, history, snippets and settings implemented on both heads (tasks P5-04 to P5-11 in the [task index](tasks/README.md)) |
 
-## Proposed order of work
+## Order of work
 
-1. Solution + `Directory.Build.props` (AOT analyzers, warnings as errors, target per ADR 0001). Done.
-2. `Squill.Core`, `Squill.Data` (`IDatabaseProvider`), SQLite provider, AOT PoC per driver (R3).
-3. R4 and R1 PoCs on Avalonia first, then WinUI 3 (R2).
-4. UI heads built from the mockups and the generated tokens.
+Done through phase 6; the card list and statuses are in [docs/tasks/README.md](tasks/README.md).

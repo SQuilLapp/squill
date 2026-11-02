@@ -21,4 +21,14 @@
     <ProjectReference Include="..\Squill.Data.Sqlite\Squill.Data.Sqlite.csproj" />
     <AvaloniaResource Include="..\..\assets\brand\app-icons\windows\squill.ico" Link="Assets\squill.ico" />
   </ItemGroup>
+  <!-- Optional LoomTerminal (ADR 0002): set LoomTerminalPath in the git-ignored Directory.Build.local.props. Without it the head has no terminal tabs. -->
+  <PropertyGroup Condition="'$(LoomTerminalPath)' != ''">
+    <DefineConstants>$(DefineConstants);SQUILL_LOOMTERMINAL</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(LoomTerminalPath)' != ''">
+    <ProjectReference Include="$(LoomTerminalPath)\src\LoomTerminal.Avalonia\LoomTerminal.Avalonia.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Squill.App.Shared\LoomTerminalHost.cs" Link="Terminal\LoomTerminalHost.cs" />
+  </ItemGroup>
 </Project>

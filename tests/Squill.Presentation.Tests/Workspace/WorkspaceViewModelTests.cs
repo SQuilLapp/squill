@@ -39,7 +39,8 @@ public sealed class WorkspaceViewModelTests
                 var editor = new StubSqlEditor();
                 _editors.Add(editor);
                 return editor;
-            });
+            },
+            store);
     }
 
     private static ConnectionProfile Profile() =>

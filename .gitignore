@@ -428,5 +428,5 @@ FodyWeavers.xsd
 #*.lscache
 out/
 
-# Machine-specific MSBuild settings (LoomEditorPath)
+# Machine-specific MSBuild settings (LoomEditorPath, LoomTerminalPath)
 Directory.Build.local.props

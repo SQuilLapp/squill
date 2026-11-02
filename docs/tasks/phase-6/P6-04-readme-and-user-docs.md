@@ -1,6 +1,6 @@
 # P6-04 - Project README and build instructions
 
-Status: todo
+Status: done
 Depends on: P6-03
 
 ## Goal
@@ -14,8 +14,8 @@ Replace the one-line README with what a contributor and a user need.
 - Marketing copy, screenshots.
 
 ## Tasks
-- [ ] Write the README and update the architecture note.
-- [ ] Check every command in the README by running it (build, test, TokenGen).
+- [x] Write the README and update the architecture note.
+- [x] Check every command in the README by running it (build, test, TokenGen).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

@@ -10,6 +10,7 @@ using Squill.Presentation;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Query;
 using Squill.Presentation.Settings;
+using Squill.Presentation.Terminal;
 using Squill.Presentation.Workspace;
 using Windows.System;
 
@@ -48,6 +49,7 @@ public sealed partial class MainWindow : Window
         services.Workspace.ConnectionList.EditRequested += OnEditRequested;
         services.Workspace.Tabs.CollectionChanged += OnTabsChanged;
         services.Workspace.PropertyChanged += OnWorkspaceChanged;
+        AttachTerminals(services.Workspace);
         Sidebar.Attach(services.Workspace, services.History, services.Snippets);
         Status.Attach(services.Workspace, dataDirectory);
     }
@@ -88,6 +90,7 @@ public sealed partial class MainWindow : Window
         _syncing = true;
         Tabs.SelectedItem = tab is not null && _items.TryGetValue(tab, out var item) ? item : null;
         _syncing = false;
+        TerminalArea.Visibility = Visibility.Collapsed;
         ActiveTabView.Show(tab);
         CancelButton.Visibility = Visibility.Collapsed;
         if (tab is not null)
@@ -131,14 +134,27 @@ public sealed partial class MainWindow : Window
 
     private void OnTabSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (!_syncing && (Tabs.SelectedItem as TabViewItem)?.Tag is QueryTabViewModel tab)
-            Workspace.ActiveTab = tab;
+        if (_syncing)
+            return;
+        switch ((Tabs.SelectedItem as TabViewItem)?.Tag)
+        {
+            case QueryTabViewModel tab:
+                Workspace.ActiveTab = tab;
+                TerminalArea.Visibility = Visibility.Collapsed;
+                ActiveTabView.Visibility = Visibility.Visible;
+                break;
+            case TerminalTabViewModel terminal:
+                ShowTerminal(terminal);
+                break;
+        }
     }
 
     private void OnTabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
     {
         if (args.Tab.Tag is QueryTabViewModel tab)
             Workspace.CloseTabCommand.Execute(tab);
+        else if (args.Tab.Tag is TerminalTabViewModel terminal)
+            Workspace.CloseTerminalCommand.Execute(terminal);
     }
 
     private void OnRunClicked(object sender, RoutedEventArgs e) => Workspace.ActiveTab?.RunCommand.Execute(null);
@@ -151,7 +167,13 @@ public sealed partial class MainWindow : Window
 
     private void OnNewTabClicked(object sender, RoutedEventArgs e) => Workspace.NewTabCommand.Execute(null);
 
-    private void OnCloseTabClicked(object sender, RoutedEventArgs e) => Workspace.CloseTabCommand.Execute(Workspace.ActiveTab);
+    private void OnCloseTabClicked(object sender, RoutedEventArgs e)
+    {
+        if ((Tabs.SelectedItem as TabViewItem)?.Tag is TerminalTabViewModel terminal)
+            Workspace.CloseTerminalCommand.Execute(terminal);
+        else
+            Workspace.CloseTabCommand.Execute(Workspace.ActiveTab);
+    }
 
     private void OnRunAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) => Accelerate(args, () => OnRunClicked(sender, null!));
 

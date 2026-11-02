@@ -7,6 +7,8 @@ using Squill.Platform.Storage;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Sessions;
+using Squill.Presentation.Terminal;
+using Squill.Presentation.Tests.Terminal;
 using Squill.Presentation.Workspace;
 
 namespace Squill.Presentation.Tests.Panels;
@@ -16,6 +18,7 @@ internal sealed class PanelsHost
 {
     public FakeDialogService Dialogs { get; } = new();
     public List<StubSqlEditor> Editors { get; } = [];
+    public List<FakeTerminalHost> TerminalHosts { get; } = [];
     public WorkspaceViewModel Workspace { get; }
 
     public PanelsHost()
@@ -35,7 +38,15 @@ internal sealed class PanelsHost
                 var editor = new StubSqlEditor();
                 Editors.Add(editor);
                 return editor;
-            });
+            },
+            store,
+            () =>
+            {
+                var host = new FakeTerminalHost();
+                TerminalHosts.Add(host);
+                return host;
+            },
+            name => name == "psql" ? "/usr/bin/psql" : null);
     }
 
     public async Task ConnectAsync() =>
@@ -47,7 +58,7 @@ internal sealed class PanelsHost
         public ValueTask<IReadOnlyList<ConnectionProfile>> ListAsync(CancellationToken ct) => ValueTask.FromResult<IReadOnlyList<ConnectionProfile>>([]);
         public ValueTask SaveAsync(ConnectionProfile profile, string? password, string? sshSecret, CancellationToken ct) => ValueTask.CompletedTask;
         public ValueTask DeleteAsync(Guid id, CancellationToken ct) => ValueTask.CompletedTask;
-        public ValueTask<string?> GetPasswordAsync(Guid id, CancellationToken ct) => ValueTask.FromResult<string?>(null);
+        public ValueTask<string?> GetPasswordAsync(Guid id, CancellationToken ct) => ValueTask.FromResult<string?>("secret");
         public ValueTask<string?> GetSshSecretAsync(Guid id, CancellationToken ct) => ValueTask.FromResult<string?>(null);
     }
 

@@ -1,6 +1,6 @@
 # P6-03 - Windows packaging with Velopack and release workflow
 
-Status: todo
+Status: done
 Depends on: P6-02, P1-02
 
 ## Goal
@@ -15,8 +15,8 @@ Produce an installer and update feed for the WinUI head.
 - Code signing, delta updates, macOS/Linux packages, update UI.
 
 ## Tasks
-- [ ] Add the Velopack bootstrap, script and workflow.
-- [ ] Run the script with `-Version 0.0.1-test`, check the Setup exe exists, DO NOT run the installer; delete `artifacts/` afterwards.
+- [x] Add the Velopack bootstrap, script and workflow.
+- [x] Run the script with `-Version 0.0.1-test`, check the Setup exe exists, DO NOT run the installer; delete `artifacts/` afterwards.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.

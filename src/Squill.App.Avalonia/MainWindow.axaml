@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ws="using:Squill.Presentation.Workspace"
         xmlns:q="using:Squill.Presentation.Query"
+        xmlns:t="using:Squill.Presentation.Terminal"
         xmlns:v="using:Squill.App.Avalonia.Views"
         x:Class="Squill.App.Avalonia.MainWindow"
         x:DataType="ws:WorkspaceViewModel"
@@ -17,7 +18,7 @@
     <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseTabCommand}" CommandParameter="{Binding ActiveTab}" />
   </Window.KeyBindings>
   <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="260,Auto,*">
-    <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="4" Margin="6,4"
+    <StackPanel Name="Toolbar" Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="4" Margin="6,4"
                 Background="{DynamicResource SquillBgBaseBrush}">
       <Button Content="Run" ToolTip.Tip="F5 / Ctrl+Enter" Command="{Binding ActiveTab.RunCommand}" />
       <Button Content="Run all" Command="{Binding ActiveTab.RunAllCommand}" />
@@ -32,22 +33,41 @@
     <v:SidebarView Grid.Row="1" Name="Sidebar" />
     <GridSplitter Grid.Row="1" Grid.Column="1" Width="4" Background="{DynamicResource SquillBorderBrush}" />
     <Grid Grid.Row="1" Grid.Column="2" RowDefinitions="Auto,*">
-      <ListBox ItemsSource="{Binding Tabs}" SelectedItem="{Binding ActiveTab, Mode=TwoWay}" Background="Transparent">
-        <ListBox.ItemsPanel>
-          <ItemsPanelTemplate>
-            <StackPanel Orientation="Horizontal" />
-          </ItemsPanelTemplate>
-        </ListBox.ItemsPanel>
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="q:QueryTabViewModel">
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
-              <Button Content="x" Padding="4,0" Background="Transparent" Click="OnCloseTabClicked" />
-            </StackPanel>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
+      <StackPanel Orientation="Horizontal">
+        <ListBox Name="QueryStrip" ItemsSource="{Binding Tabs}" SelectedItem="{Binding ActiveTab, Mode=TwoWay}" Background="Transparent">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="q:QueryTabViewModel">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
+                <Button Content="x" Padding="4,0" Background="Transparent" Click="OnCloseTabClicked" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <ListBox Name="TerminalStrip" ItemsSource="{Binding Terminals}" Background="Transparent"
+                 SelectionChanged="OnTerminalSelectionChanged">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="t:TerminalTabViewModel">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
+                <Button Content="x" Padding="4,0" Background="Transparent" Click="OnCloseTerminalClicked" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </StackPanel>
       <v:QueryTabView Grid.Row="1" Name="ActiveTabView" DataContext="{Binding ActiveTab}" />
+      <Grid Name="TerminalArea" Grid.Row="1" IsVisible="False" Background="{DynamicResource SquillBgBaseBrush}" />
     </Grid>
     <v:StatusBar Grid.Row="2" Name="Status" Grid.ColumnSpan="3" />
   </Grid>

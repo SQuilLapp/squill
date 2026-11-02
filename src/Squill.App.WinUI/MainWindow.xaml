@@ -22,7 +22,7 @@
       <ColumnDefinition Width="Auto" />
       <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
-    <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="4" Margin="6,4">
+    <StackPanel x:Name="Toolbar" Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="4" Margin="6,4">
       <Button Content="Run" ToolTipService.ToolTip="F5 / Ctrl+Enter" Click="OnRunClicked" />
       <Button Content="Run all" Click="OnRunAllClicked" />
       <Button x:Name="CancelButton" Content="Cancel" ToolTipService.ToolTip="Esc" Click="OnCancelClicked" Visibility="Collapsed" />
@@ -40,6 +40,7 @@
       <TabView x:Name="Tabs" IsAddTabButtonVisible="False" TabWidthMode="SizeToContent"
                TabCloseRequested="OnTabCloseRequested" SelectionChanged="OnTabSelectionChanged" />
       <v:QueryTabView x:Name="ActiveTabView" Grid.Row="1" />
+      <Grid x:Name="TerminalArea" Grid.Row="1" Visibility="Collapsed" />
     </Grid>
     <v:StatusBar x:Name="Status" Grid.Row="2" Grid.ColumnSpan="3" />
   </Grid>
