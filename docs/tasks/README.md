@@ -99,3 +99,30 @@ Depends on: <card ids, ranges allowed>
 | [P6-02](phase-6/P6-02-loomterminal-integration.md) | Heads: LoomTerminal tabs | P6-01 | done |
 | [P6-03](phase-6/P6-03-velopack-packaging.md) | Windows packaging with Velopack and release workflow | P6-02, P1-02 | done |
 | [P6-04](phase-6/P6-04-readme-and-user-docs.md) | Project README and build instructions | P6-03 | done |
+| [P7-01](phase-7/P7-01-core-schema-model-extension.md) | Core: schema model extension (auto-increment, referential actions, key name) | P1-04 | todo |
+| [P7-02](phase-7/P7-02-sqlite-schema-extension.md) | Data.Sqlite: read auto-increment and foreign-key actions | P7-01, P1-07 | todo |
+| [P7-03](phase-7/P7-03-postgres-schema-extension.md) | Data.Postgres: read auto-increment, foreign-key actions and key name | P7-01, P1-10 | todo |
+| [P7-04](phase-7/P7-04-mysql-schema-extension.md) | Data.MySql: read auto-increment and foreign-key actions | P7-01, P1-12 | todo |
+| [P7-05](phase-7/P7-05-sqlserver-schema-extension.md) | Data.SqlServer: read identity, foreign-key actions and key name | P7-01, P1-14 | todo |
+| [P7-06](phase-7/P7-06-core-table-design-model.md) | Core: table design model | P7-01 | todo |
+| [P7-07](phase-7/P7-07-core-table-diff.md) | Core: table diff into schema operations | P7-06 | todo |
+| [P7-08](phase-7/P7-08-core-design-validation.md) | Core: table design validation | P7-07 | todo |
+| [P7-09](phase-7/P7-09-sql-quoting-and-type-catalog.md) | Sql: identifier quoting and data type catalog | P1-04 | todo |
+| [P7-10](phase-7/P7-10-sql-create-drop-table.md) | Sql: DDL generator contract, CREATE TABLE and DROP TABLE | P7-09, P7-06 | todo |
+| [P7-11](phase-7/P7-11-sql-alter-postgres.md) | Sql: ALTER TABLE for PostgreSQL | P7-10, P7-07 | todo |
+| [P7-12](phase-7/P7-12-sql-alter-mysql.md) | Sql: ALTER TABLE for MySQL | P7-10, P7-07 | todo |
+| [P7-13](phase-7/P7-13-sql-alter-sqlserver.md) | Sql: ALTER TABLE for SQL Server | P7-10, P7-07 | todo |
+| [P7-14](phase-7/P7-14-sql-alter-sqlite.md) | Sql: ALTER TABLE for SQLite with table rebuild | P7-10, P7-07 | todo |
+| [P7-15](phase-7/P7-15-presentation-er-model.md) | Presentation: ER model built from a schema snapshot | P7-01, P4-05 | todo |
+| [P7-16](phase-7/P7-16-presentation-er-layout.md) | Presentation: ER diagram node layout | P7-15 | todo |
+| [P7-17](phase-7/P7-17-presentation-er-edge-routing.md) | Presentation: ER diagram edge routing | P7-16 | todo |
+| [P7-18](phase-7/P7-18-platform-diagram-layout-store.md) | Platform: diagram layout store | P2-04 | todo |
+| [P7-19](phase-7/P7-19-presentation-er-diagram-vm.md) | Presentation: ER diagram view-model | P7-15 ... P7-18, P4-04 | todo |
+| [P7-20](phase-7/P7-20-presentation-er-svg-export.md) | Presentation: ER diagram SVG export | P7-19 | todo |
+| [P7-21](phase-7/P7-21-presentation-table-designer-vm.md) | Presentation: table designer view-model | P7-08, P7-10 ... P7-14, P4-04 | todo |
+| [P7-22](phase-7/P7-22-presentation-workspace-integration.md) | Presentation: workspace integration of designer and diagram tabs | P7-19 ... P7-21, P4-09, P6-01 | todo |
+| [P7-23](phase-7/P7-23-avalonia-er-diagram.md) | Avalonia head: ER diagram tab | P7-22, P7-20, P5-06 | todo |
+| [P7-24](phase-7/P7-24-avalonia-table-designer-view.md) | Avalonia head: table designer view | P7-23, P7-21 | todo |
+| [P7-25](phase-7/P7-25-winui-er-diagram.md) | WinUI head: ER diagram tab | P7-22, P7-20, P5-12 | todo |
+| [P7-26](phase-7/P7-26-winui-table-designer-view.md) | WinUI head: table designer view | P7-25, P7-21 | todo |
+| [P7-27](phase-7/P7-27-docs-and-adr.md) | Documentation: schema designer ADR, README and architecture note | P7-24, P7-26, P6-04 | todo |
