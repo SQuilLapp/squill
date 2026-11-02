@@ -23,8 +23,9 @@
       <ColumnDefinition Width="270" />
       <ColumnDefinition Width="Auto" />
       <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="Auto" />
     </Grid.ColumnDefinitions>
-    <Border x:Name="TitleBar" Grid.ColumnSpan="4" BorderThickness="0,0,0,1">
+    <Border x:Name="TitleBar" Grid.ColumnSpan="5" BorderThickness="0,0,0,1">
       <Grid>
         <StackPanel Orientation="Horizontal" Margin="14,0,0,0" HorizontalAlignment="Left">
           <Image x:Name="TitleIcon" Width="16" Height="16" Margin="0,0,8,0" />
@@ -73,13 +74,27 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="*" />
       </Grid.RowDefinitions>
-      <TabView x:Name="Tabs" IsAddTabButtonVisible="False" TabWidthMode="SizeToContent"
-               TabCloseRequested="OnTabCloseRequested" SelectionChanged="OnTabSelectionChanged" />
+      <Border x:Name="TabStripBar" Height="36" BorderThickness="0,0,0,1">
+        <TabView x:Name="Tabs" IsAddTabButtonVisible="False" TabWidthMode="SizeToContent" Background="Transparent"
+                 TabCloseRequested="OnTabCloseRequested" SelectionChanged="OnTabSelectionChanged">
+          <TabView.TabStripFooter>
+            <Button x:Name="NewTabButton" Style="{StaticResource IconButtonStyle}" Width="36" Height="35" CornerRadius="0" Click="OnNewTabClicked">
+              <Viewbox Width="14" Height="14">
+                <Canvas Width="24" Height="24">
+                  <Path Data="M12,5 V19 M5,12 H19" Stroke="{ThemeResource SquillFg2Brush}" StrokeThickness="1.5" StrokeStartLineCap="Round"
+                        StrokeEndLineCap="Round" />
+                </Canvas>
+              </Viewbox>
+            </Button>
+          </TabView.TabStripFooter>
+        </TabView>
+      </Border>
       <v:QueryTabView x:Name="ActiveTabView" Grid.Row="1" />
       <v:DiagramTabView x:Name="DiagramArea" Grid.Row="1" Visibility="Collapsed" />
       <v:TableDesignerView x:Name="DesignerArea" Grid.Row="1" Visibility="Collapsed" />
       <Grid x:Name="TerminalArea" Grid.Row="1" Visibility="Collapsed" />
     </Grid>
-    <v:StatusBar x:Name="Status" Grid.Row="2" Grid.ColumnSpan="4" />
+    <v:PropertiesPanel x:Name="Properties" Grid.Row="1" Grid.Column="4" />
+    <v:StatusBar x:Name="Status" Grid.Row="2" Grid.ColumnSpan="5" />
   </Grid>
 </Window>

@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Input;
 using Squill.Core;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Explorer;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Panels;
 using Squill.Presentation.Workspace;
 using Windows.System;
@@ -21,7 +22,18 @@ public sealed partial class SidebarView : UserControl
     public SidebarView()
     {
         InitializeComponent();
+        TitleText.Text = UiText.Get("explorer.title");
+        Filter.PlaceholderText = UiText.Get("explorer.filter");
+        ToolTipService.SetToolTip(NewConnectionButton, UiText.Get("explorer.newConnection"));
+        ToolTipService.SetToolTip(RefreshButton, UiText.Get("explorer.refresh"));
+        ToolTipService.SetToolTip(CollapseButton, UiText.Get("explorer.collapseAll"));
     }
+
+    /// <summary>Raised when the selection of the object tree changes; the argument is the selected node or <see langword="null"/>.</summary>
+    public event EventHandler<ExplorerNode?>? SelectedNodeChanged;
+
+    /// <summary>Gets the rows of the connection list: folder headers and connections.</summary>
+    public IReadOnlyList<ConnectionRow> Rows { get; private set; } = [];
 
     /// <summary>Connects the view to the workspace, history and snippets it shows.</summary>
     /// <param name="workspace">The workspace view-model.</param>
@@ -32,8 +44,8 @@ public sealed partial class SidebarView : UserControl
         _workspace = workspace;
         HistoryPanel.Attach(history);
         SnippetsPanel.Attach(snippets);
-        Profiles.ItemsSource = workspace.ConnectionList.Profiles;
         workspace.ConnectionList.Profiles.CollectionChanged += OnProfilesChanged;
+        workspace.Sessions.CollectionChanged += OnProfilesChanged;
         workspace.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(WorkspaceViewModel.Explorer))
@@ -58,17 +70,28 @@ public sealed partial class SidebarView : UserControl
 
     private ConnectionListViewModel List => _workspace!.ConnectionList;
 
-    private void OnProfilesChanged(object? sender, NotifyCollectionChangedEventArgs? e) =>
+    private void OnProfilesChanged(object? sender, NotifyCollectionChangedEventArgs? e)
+    {
         EmptyHint.Visibility = List.Profiles.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        Rows = ConnectionRow.Build(List.Groups, _workspace!.Sessions.Select(s => s.Profile.Id).ToHashSet());
+        Profiles.ItemsSource = Rows;
+        Profiles.SelectedItem = Rows.FirstOrDefault(r => r.Profile is { } p && p.Id == List.SelectedProfile?.Id);
+    }
 
     private void ShowExplorer()
     {
         Tree.ItemsSource = _workspace?.Explorer?.Roots;
         Filter.Text = "";
+        SelectedNodeChanged?.Invoke(this, null);
     }
 
-    private void OnProfileSelectionChanged(object sender, SelectionChangedEventArgs e) =>
-        List.SelectedProfile = Profiles.SelectedItem as ConnectionProfile;
+    private void OnProfileSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (Profiles.SelectedItem is ConnectionRow { Profile: { } profile })
+            List.SelectedProfile = profile;
+        else if (Profiles.SelectedItem is not null)
+            Profiles.SelectedItem = null;
+    }
 
     private void OnProfileDoubleTapped(object sender, DoubleTappedRoutedEventArgs e) => Connect();
 
@@ -82,9 +105,27 @@ public sealed partial class SidebarView : UserControl
 
     private void Connect()
     {
-        if (Profiles.SelectedItem is ConnectionProfile profile)
+        if (Profiles.SelectedItem is ConnectionRow { Profile: { } profile })
             _workspace!.ConnectCommand.Execute(profile);
     }
+
+    private void OnRefreshClicked(object sender, RoutedEventArgs e) => _workspace?.Explorer?.RefreshCommand.Execute(null);
+
+    private void OnCollapseAllClicked(object sender, RoutedEventArgs e)
+    {
+        foreach (var root in _workspace?.Explorer?.Roots ?? [])
+            Collapse(root);
+    }
+
+    private static void Collapse(ExplorerNode node)
+    {
+        node.IsExpanded = false;
+        foreach (var child in node.Children)
+            Collapse(child);
+    }
+
+    private void OnTreeSelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs e) =>
+        SelectedNodeChanged?.Invoke(this, e.AddedItems.OfType<ExplorerNode>().FirstOrDefault());
 
     private void OnNewClicked(object sender, RoutedEventArgs e) => List.NewCommand.Execute(null);
 

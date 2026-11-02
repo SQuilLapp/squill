@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Squill.App.WinUI.Views;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
 using Squill.Presentation.Workspace;
@@ -28,8 +29,7 @@ public sealed partial class MainWindow
 
         foreach (var added in e.NewItems ?? new List<object>())
         {
-            var title = added is DiagramTabViewModel diagram ? diagram.Title : ((TableDesignerViewModel)added).Title;
-            var item = new TabViewItem { Header = title, Tag = added };
+            var item = TabHeader.Create(added);
             _extraItems[added] = item;
             Tabs.TabItems.Add(item);
         }

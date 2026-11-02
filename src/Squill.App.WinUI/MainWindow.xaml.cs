@@ -58,6 +58,7 @@ public sealed partial class MainWindow : Window
         AttachDiagrams(services.Workspace);
         AttachTerminals(services.Workspace);
         Sidebar.Attach(services.Workspace, services.History, services.Snippets);
+        Sidebar.SelectedNodeChanged += (_, node) => Properties.Show(node, services.Workspace);
         Status.Attach(services.Workspace);
         AttachMenu(services.Workspace);
     }
@@ -109,19 +110,6 @@ public sealed partial class MainWindow : Window
         _syncing = false;
         ShowQueryArea();
         ActiveTabView.Show(tab);
-        if (tab is not null)
-        {
-            tab.PropertyChanged -= OnActiveTabChanged;
-            tab.PropertyChanged += OnActiveTabChanged;
-        }
-    }
-
-    private void OnActiveTabChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (sender is not QueryTabViewModel tab)
-            return;
-        if (e.PropertyName == nameof(QueryTabViewModel.Title) && _items.TryGetValue(tab, out var item))
-            item.Header = tab.Title;
     }
 
     private void OnTabsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -134,7 +122,7 @@ public sealed partial class MainWindow : Window
 
         foreach (var added in e.NewItems?.OfType<QueryTabViewModel>() ?? [])
         {
-            var item = new TabViewItem { Header = added.Title, Tag = added };
+            var item = TabHeader.Create(added);
             _items[added] = item;
             Tabs.TabItems.Add(item);
         }

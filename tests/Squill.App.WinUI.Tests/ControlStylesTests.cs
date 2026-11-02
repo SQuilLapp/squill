@@ -56,7 +56,8 @@ public partial class ControlStylesTests
         var keys = controls.Elements().Select(e => (string?)e.Attribute(X + "Key")).ToHashSet();
         foreach (var key in new[] { "PrimaryButtonStyle", "OutlineSuccessButtonStyle", "OutlineDangerButtonStyle", "GhostButtonStyle", "IconButtonStyle", "VariantButtonStyle",
                      "SegmentedRadioButtonStyle", "KeyboardChipStyle", "BadgeStyle", "BadgeInfoStyle", "BadgeSuccessStyle", "BadgeWarningStyle",
-                     "BadgeDangerStyle", "BadgeEnvProdStyle", "EngineBadgeStyle", "EngineBadgePostgresStyle" })
+                     "BadgeDangerStyle", "BadgeEnvProdStyle", "EngineBadgeStyle", "EngineBadgePostgresStyle", "SquillTabItemStyle",
+                     "SquillTabItemProdStyle", "EnvSquareStyle", "EnvSquareLocalStyle", "TabDirtyDotStyle" })
             Assert.Contains(key, keys);
     }
 

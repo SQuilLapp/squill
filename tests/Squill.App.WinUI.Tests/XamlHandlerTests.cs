@@ -11,6 +11,7 @@ public class XamlHandlerTests
     [InlineData("SidebarView")]
     [InlineData("HistoryView")]
     [InlineData("SnippetsView")]
+    [InlineData("PropertiesPanel")]
     [InlineData("DiagramTabView")]
     [InlineData("TableDesignerView")]
     public void Every_event_handler_named_in_xaml_exists_in_the_code_behind(string view)

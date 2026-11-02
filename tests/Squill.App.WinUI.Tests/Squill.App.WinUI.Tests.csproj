@@ -13,6 +13,11 @@
     <Compile Include="..\..\src\Squill.App.WinUI\Controls\GridEditGeometry.cs" Link="GridEditGeometry.cs" />
     <Compile Include="..\..\src\Squill.App.WinUI\Views\EditBarFormat.cs" Link="EditBarFormat.cs" />
     <Compile Include="..\..\src\Squill.App.WinUI\Views\ChromeFormat.cs" Link="ChromeFormat.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Views\ConnectionRow.cs" Link="ConnectionRow.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Views\PropertiesModel.cs" Link="PropertiesModel.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Views\TabInfo.cs" Link="TabInfo.cs" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\PropertiesPanel.xaml" Link="Xaml\PropertiesPanel.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\PropertiesPanel.xaml.cs" Link="Xaml\PropertiesPanel.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\tokens\squill.tokens.json" Link="squill.tokens.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\MainWindow.xaml" Link="Xaml\MainWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\MainWindow.xaml.cs" Link="Xaml\MainWindow.xaml.cs" CopyToOutputDirectory="PreserveNewest" />

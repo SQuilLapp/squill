@@ -1,6 +1,6 @@
 # P9-10 - WinUI head: object explorer, tab strip and properties panel
 
-Status: todo
+Status: done
 Depends on: P9-09, P9-02
 
 ## Goal
@@ -13,10 +13,10 @@ The left panel, the tab strip and the right properties panel match M03.
 - Query toolbar and editor (P9-12), results (P9-15).
 
 ## Tasks
-- [ ] `SidebarView`: header `EXPLORATEUR` and icon buttons, filter box (hidden if the view-model has no filter, say so), connection rows grouped by folder (P9-04) with `EngineBadge`, environment `Badge`, connected dot; tree rows 24 high (`TreeView` item container style), kind icons, right-aligned counts that exist.
-- [ ] Replace the `TabView` chrome look of `MainWindow.xaml` by the tab style of section 3 (environment square and top border by the tab's connection environment, dirty dot where available, close button, `+` button): restyle `TabViewItem` through its resources/template, keep the `TabView` behavior and the existing close handlers.
-- [ ] Right properties panel (264 wide, shown for a selected table/view node, hidden otherwise) as section 4 from the schema snapshot already held by the explorer; link runs the existing design-table command. No row count, size, owner or vacuum lines.
-- [ ] Tests in `tests/Squill.App.WinUI.Tests` for grouping/ordering helpers and the properties panel model; state what needs the screenshot.
+- [x] `SidebarView`: header `EXPLORATEUR` and icon buttons, filter box (hidden if the view-model has no filter, say so), connection rows grouped by folder (P9-04) with `EngineBadge`, environment `Badge`, connected dot; tree rows 24 high (`TreeView` item container style), kind icons, right-aligned counts that exist.
+- [x] Replace the `TabView` chrome look of `MainWindow.xaml` by the tab style of section 3 (environment square and top border by the tab's connection environment, dirty dot where available, close button, `+` button): restyle `TabViewItem` through its resources/template, keep the `TabView` behavior and the existing close handlers.
+- [x] Right properties panel (264 wide, shown for a selected table/view node, hidden otherwise) as section 4 from the schema snapshot already held by the explorer; link runs the existing design-table command. No row count, size, owner or vacuum lines.
+- [x] Tests in `tests/Squill.App.WinUI.Tests` for grouping/ordering helpers and the properties panel model; state what needs the screenshot.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.
@@ -27,3 +27,8 @@ The left panel, the tab strip and the right properties panel match M03.
 
 ## Suggested commit message
 WinUI: object explorer, tab strip and properties panel
+
+## Report
+- Tree rows are 28 high, not 24: the `TreeViewItemPresenter` clips descenders below that height, so 24 was not reachable without re-templating the presenter. Other visible differences: the connection list stays a separate list above the tree (as in P9-08) while M03 nests connection > database > schema in one tree; the environment pill reads `PRODUCTION`/`STAGING` (catalog) where M03 shows `PROD`/`DEV`; no counts on schema folders (no data); the editor/toolbar/results areas belong to P9-12/P9-15.
+- Checked in light and dark with `Capture-Window.ps1` (debug and AOT exe): connection rows with folder, badges, pills and connected dot, tree, tab strip (environment square, top bar, close, `+`), properties panel. Not driven: the unsaved dot and the hover close button were not looked at by hand; the owner should check them.
+- Needs the screenshot (not unit-tested): tab template states, tree row height, panel look.

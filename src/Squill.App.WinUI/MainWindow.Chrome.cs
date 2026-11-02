@@ -72,6 +72,8 @@ public sealed partial class MainWindow
         ActivityRail.Background = Tokens.Brush(Root, "SquillBgSurfaceBrush");
         ActivityRail.BorderBrush = Tokens.Brush(Root, "SquillBorderSubtleBrush");
         PaintRail();
+        TabStripBar.Background = Tokens.Brush(Root, "SquillBgSurfaceBrush");
+        TabStripBar.BorderBrush = Tokens.Brush(Root, "SquillBorderSubtleBrush");
         var titleBar = AppWindow.TitleBar;
         titleBar.BackgroundColor = Colors.Transparent;
         titleBar.ButtonBackgroundColor = Colors.Transparent;

@@ -20,6 +20,9 @@
   <StaticResource x:Key="ContentControlThemeFontFamily" ResourceKey="SquillFontUi" />
   <StaticResource x:Key="ControlContentThemeFontSize" ResourceKey="SquillFontSizeBody" />
   <x:Double x:Key="ScrollBarSize">8</x:Double>
+  <!-- Explorer tree rows are 24 high (spec section 3); the tab strip starts flush with the title bar -->
+  <x:Double x:Key="TreeViewItemMinHeight">24</x:Double>
+  <Thickness x:Key="TabViewHeaderPadding">0</Thickness>
   <x:Double x:Key="ProgressBarTrackHeight">4</x:Double>
   <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
   <Thickness x:Key="ContentDialogBorderWidth">1</Thickness>
@@ -311,5 +314,114 @@
   </Style>
   <Style x:Key="EngineBadgeSqliteStyle" TargetType="ContentControl" BasedOn="{StaticResource EngineBadgeStyle}">
     <Setter Property="Background" Value="{ThemeResource SquillEngineSqliteBrush}" />
+  </Style>
+  <!-- Workspace tab (spec section 3): 35 high, 2 px top bar in the environment color when selected, separator on the right, close button on
+       hover or when selected. The header (TabHeader) draws the environment square, title and unsaved dot; BorderBrush carries the bar color. -->
+  <Style x:Key="SquillTabItemStyle" TargetType="TabViewItem">
+    <Setter Property="IsClosable" Value="True" />
+    <Setter Property="Height" Value="35" />
+    <Setter Property="MinHeight" Value="35" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="BorderBrush" Value="{ThemeResource SquillAccentBrush}" />
+    <Setter Property="Foreground" Value="{ThemeResource SquillFgBrush}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TabViewItem">
+          <Border x:Name="TabContainer" Background="Transparent" BorderBrush="{ThemeResource SquillBorderSubtleBrush}" BorderThickness="0,0,1,0">
+            <VisualStateManager.VisualStateGroups>
+              <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="PointerOver">
+                  <VisualState.Setters>
+                    <Setter Target="Fill.Background" Value="{ThemeResource SquillBgHoverBrush}" />
+                    <Setter Target="CloseButton.Opacity" Value="1" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Pressed">
+                  <VisualState.Setters>
+                    <Setter Target="Fill.Background" Value="{ThemeResource SquillBgActiveBrush}" />
+                    <Setter Target="CloseButton.Opacity" Value="1" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Selected">
+                  <VisualState.Setters>
+                    <Setter Target="Fill.Background" Value="{ThemeResource SquillBgBaseBrush}" />
+                    <Setter Target="TopBar.Visibility" Value="Visible" />
+                    <Setter Target="CloseButton.Opacity" Value="1" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="PointerOverSelected">
+                  <VisualState.Setters>
+                    <Setter Target="Fill.Background" Value="{ThemeResource SquillBgBaseBrush}" />
+                    <Setter Target="TopBar.Visibility" Value="Visible" />
+                    <Setter Target="CloseButton.Opacity" Value="1" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="PressedSelected">
+                  <VisualState.Setters>
+                    <Setter Target="Fill.Background" Value="{ThemeResource SquillBgBaseBrush}" />
+                    <Setter Target="TopBar.Visibility" Value="Visible" />
+                    <Setter Target="CloseButton.Opacity" Value="1" />
+                  </VisualState.Setters>
+                </VisualState>
+              </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+            <Grid>
+              <Border x:Name="Fill" Background="Transparent" />
+              <Border x:Name="TopBar" Height="2" VerticalAlignment="Top" Background="{TemplateBinding BorderBrush}" Visibility="Collapsed" />
+              <StackPanel Orientation="Horizontal" Padding="12,2,6,0" VerticalAlignment="Center">
+                <ContentPresenter x:Name="ContentPresenter" Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                  Foreground="{TemplateBinding Foreground}" VerticalAlignment="Center" />
+                <Button x:Name="CloseButton" Style="{StaticResource GhostButtonStyle}" Width="20" Height="20" MinHeight="20" Padding="0"
+                        CornerRadius="{StaticResource SquillRadiusSm}" Margin="8,0,0,0" Opacity="0" IsTabStop="False">
+                  <Viewbox Width="10" Height="10">
+                    <Canvas Width="24" Height="24">
+                      <Path Data="M6,6 L18,18 M18,6 L6,18" Stroke="{ThemeResource SquillFg3Brush}" StrokeThickness="1.5" StrokeStartLineCap="Round"
+                            StrokeEndLineCap="Round" />
+                    </Canvas>
+                  </Viewbox>
+                </Button>
+              </StackPanel>
+            </Grid>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="SquillTabItemProdStyle" TargetType="TabViewItem" BasedOn="{StaticResource SquillTabItemStyle}">
+    <Setter Property="BorderBrush" Value="{ThemeResource SquillEnvProdBrush}" />
+  </Style>
+  <Style x:Key="SquillTabItemStagingStyle" TargetType="TabViewItem" BasedOn="{StaticResource SquillTabItemStyle}">
+    <Setter Property="BorderBrush" Value="{ThemeResource SquillEnvStagingBrush}" />
+  </Style>
+  <Style x:Key="SquillTabItemDevStyle" TargetType="TabViewItem" BasedOn="{StaticResource SquillTabItemStyle}">
+    <Setter Property="BorderBrush" Value="{ThemeResource SquillEnvDevBrush}" />
+  </Style>
+  <Style x:Key="SquillTabItemLocalStyle" TargetType="TabViewItem" BasedOn="{StaticResource SquillTabItemStyle}">
+    <Setter Property="BorderBrush" Value="{ThemeResource SquillEnvLocalBrush}" />
+  </Style>
+  <Style x:Key="TabDirtyDotStyle" TargetType="Ellipse">
+    <Setter Property="Width" Value="6" />
+    <Setter Property="Height" Value="6" />
+    <Setter Property="Fill" Value="{ThemeResource SquillFg3Brush}" />
+  </Style>
+  <!-- Environment square of a tab header: neutral without environment -->
+  <Style x:Key="EnvSquareStyle" TargetType="Border">
+    <Setter Property="Width" Value="8" />
+    <Setter Property="Height" Value="8" />
+    <Setter Property="CornerRadius" Value="{StaticResource SquillRadiusXs}" />
+    <Setter Property="Background" Value="{ThemeResource SquillFg3Brush}" />
+  </Style>
+  <Style x:Key="EnvSquareProdStyle" TargetType="Border" BasedOn="{StaticResource EnvSquareStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillEnvProdBrush}" />
+  </Style>
+  <Style x:Key="EnvSquareStagingStyle" TargetType="Border" BasedOn="{StaticResource EnvSquareStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillEnvStagingBrush}" />
+  </Style>
+  <Style x:Key="EnvSquareDevStyle" TargetType="Border" BasedOn="{StaticResource EnvSquareStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillEnvDevBrush}" />
+  </Style>
+  <Style x:Key="EnvSquareLocalStyle" TargetType="Border" BasedOn="{StaticResource EnvSquareStyle}">
+    <Setter Property="Background" Value="{ThemeResource SquillEnvLocalBrush}" />
   </Style>
 </ResourceDictionary>

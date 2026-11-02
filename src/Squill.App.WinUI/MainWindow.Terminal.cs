@@ -64,7 +64,7 @@ public sealed partial class MainWindow
         foreach (var added in e.NewItems?.OfType<TerminalTabViewModel>() ?? [])
         {
             var view = new TerminalTabView(added) { Visibility = Visibility.Collapsed };
-            var item = new TabViewItem { Header = added.Title, Tag = added };
+            var item = TabHeader.Create(added);
             _terminals[added] = (item, view);
             TerminalArea.Children.Add(view);
             Tabs.TabItems.Add(item);
