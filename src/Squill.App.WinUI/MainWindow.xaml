@@ -29,6 +29,7 @@
       <Button Content="Format" ToolTipService.ToolTip="Ctrl+Shift+F" Click="OnFormatClicked" />
       <Button Content="New tab" ToolTipService.ToolTip="Ctrl+T" Click="OnNewTabClicked" />
       <Button Content="Close tab" ToolTipService.ToolTip="Ctrl+W" Click="OnCloseTabClicked" />
+      <Button x:Name="DiagramButton" Content="ER diagram" Click="OnDiagramClicked" />
       <Button Content="Settings" ToolTipService.ToolTip="Ctrl+," Click="OnSettingsClicked" />
     </StackPanel>
     <v:SidebarView x:Name="Sidebar" Grid.Row="1" />
@@ -40,6 +41,9 @@
       <TabView x:Name="Tabs" IsAddTabButtonVisible="False" TabWidthMode="SizeToContent"
                TabCloseRequested="OnTabCloseRequested" SelectionChanged="OnTabSelectionChanged" />
       <v:QueryTabView x:Name="ActiveTabView" Grid.Row="1" />
+      <v:DiagramTabView x:Name="DiagramArea" Grid.Row="1" Visibility="Collapsed" />
+      <TextBlock x:Name="DesignerArea" Grid.Row="1" Margin="12" Visibility="Collapsed" Foreground="{ThemeResource SquillFg2Brush}"
+                 Text="Designer view arrives with P7-26" />
       <Grid x:Name="TerminalArea" Grid.Row="1" Visibility="Collapsed" />
     </Grid>
     <v:StatusBar x:Name="Status" Grid.Row="2" Grid.ColumnSpan="3" />

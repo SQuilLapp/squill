@@ -8,6 +8,8 @@ using Squill.App.WinUI.Views;
 using Squill.Platform.Settings;
 using Squill.Presentation;
 using Squill.Presentation.Connections;
+using Squill.Presentation.Designer;
+using Squill.Presentation.Diagram;
 using Squill.Presentation.Query;
 using Squill.Presentation.Settings;
 using Squill.Presentation.Terminal;
@@ -49,6 +51,7 @@ public sealed partial class MainWindow : Window
         services.Workspace.ConnectionList.EditRequested += OnEditRequested;
         services.Workspace.Tabs.CollectionChanged += OnTabsChanged;
         services.Workspace.PropertyChanged += OnWorkspaceChanged;
+        AttachDiagrams(services.Workspace);
         AttachTerminals(services.Workspace);
         Sidebar.Attach(services.Workspace, services.History, services.Snippets);
         Status.Attach(services.Workspace, dataDirectory);
@@ -79,9 +82,18 @@ public sealed partial class MainWindow : Window
 
     private void OnWorkspaceChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName != nameof(WorkspaceViewModel.ActiveTab))
-            return;
-        ShowActiveTab();
+        switch (e.PropertyName)
+        {
+            case nameof(WorkspaceViewModel.ActiveTab):
+                ShowActiveTab();
+                break;
+            case nameof(WorkspaceViewModel.ActiveDiagram) when Workspace.ActiveDiagram is { } diagram:
+                SelectExtraTab(diagram);
+                break;
+            case nameof(WorkspaceViewModel.ActiveDesigner) when Workspace.ActiveDesigner is { } designer:
+                SelectExtraTab(designer);
+                break;
+        }
     }
 
     private void ShowActiveTab()
@@ -90,7 +102,7 @@ public sealed partial class MainWindow : Window
         _syncing = true;
         Tabs.SelectedItem = tab is not null && _items.TryGetValue(tab, out var item) ? item : null;
         _syncing = false;
-        TerminalArea.Visibility = Visibility.Collapsed;
+        ShowQueryArea();
         ActiveTabView.Show(tab);
         CancelButton.Visibility = Visibility.Collapsed;
         if (tab is not null)
@@ -140,8 +152,15 @@ public sealed partial class MainWindow : Window
         {
             case QueryTabViewModel tab:
                 Workspace.ActiveTab = tab;
-                TerminalArea.Visibility = Visibility.Collapsed;
-                ActiveTabView.Visibility = Visibility.Visible;
+                ShowQueryArea();
+                break;
+            case DiagramTabViewModel diagram:
+                Workspace.ActiveDiagram = diagram;
+                ShowDiagram(diagram);
+                break;
+            case TableDesignerViewModel designer:
+                Workspace.ActiveDesigner = designer;
+                ShowDesigner();
                 break;
             case TerminalTabViewModel terminal:
                 ShowTerminal(terminal);
@@ -155,7 +174,13 @@ public sealed partial class MainWindow : Window
             Workspace.CloseTabCommand.Execute(tab);
         else if (args.Tab.Tag is TerminalTabViewModel terminal)
             Workspace.CloseTerminalCommand.Execute(terminal);
+        else if (args.Tab.Tag is DiagramTabViewModel diagram)
+            Workspace.CloseDiagramCommand.Execute(diagram);
+        else if (args.Tab.Tag is TableDesignerViewModel designer)
+            Workspace.CloseDesignerCommand.Execute(designer);
     }
+
+    private void OnDiagramClicked(object sender, RoutedEventArgs e) => Workspace.OpenDiagramCommand.Execute(null);
 
     private void OnRunClicked(object sender, RoutedEventArgs e) => Workspace.ActiveTab?.RunCommand.Execute(null);
 
@@ -169,8 +194,13 @@ public sealed partial class MainWindow : Window
 
     private void OnCloseTabClicked(object sender, RoutedEventArgs e)
     {
-        if ((Tabs.SelectedItem as TabViewItem)?.Tag is TerminalTabViewModel terminal)
+        var selected = (Tabs.SelectedItem as TabViewItem)?.Tag;
+        if (selected is TerminalTabViewModel terminal)
             Workspace.CloseTerminalCommand.Execute(terminal);
+        else if (selected is DiagramTabViewModel diagram)
+            Workspace.CloseDiagramCommand.Execute(diagram);
+        else if (selected is TableDesignerViewModel designer)
+            Workspace.CloseDesignerCommand.Execute(designer);
         else
             Workspace.CloseTabCommand.Execute(Workspace.ActiveTab);
     }

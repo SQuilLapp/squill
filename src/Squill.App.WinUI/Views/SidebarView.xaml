@@ -42,7 +42,7 @@
             <DataTemplate x:DataType="ex:ExplorerNode">
               <TreeViewItem ItemsSource="{x:Bind Children}" IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
                             Visibility="{x:Bind v:ExplorerGlyphs.Show(IsVisible), Mode=OneWay}">
-                <StackPanel Orientation="Horizontal" Spacing="6">
+                <StackPanel Orientation="Horizontal" Spacing="6" ContextRequested="OnNodeContextRequested">
                   <TextBlock Text="{x:Bind v:ExplorerGlyphs.Glyph(Kind)}" Width="16" Foreground="{ThemeResource SquillAccentTextBrush}" />
                   <TextBlock Text="{x:Bind Title}" Foreground="{ThemeResource SquillFgBrush}" />
                   <TextBlock Text="{x:Bind Detail}" Foreground="{ThemeResource SquillFgDisabledBrush}" />

@@ -1,6 +1,6 @@
 # P7-25 - WinUI head: ER diagram tab
 
-Status: todo
+Status: done
 Depends on: P7-22, P7-20, P5-12
 
 ## Goal
@@ -16,8 +16,8 @@ The WinUI counterpart of P7-23, drawn with Win2D.
 - WinUI designer view (P7-26), Avalonia changes.
 
 ## Tasks
-- [ ] Implement the control, the view and the shell integration.
-- [ ] Tests in `tests/Squill.App.WinUI.Tests` for the non-visual parts (control logic that can run without a window, e.g. the measure function and view-model wiring); run the AOT-published head on a SQLite file with related tables and check it starts and shows the window. State in the card report what was and was not exercised. Close every process you started.
+- [x] Implement the control, the view and the shell integration.
+- [x] Tests in `tests/Squill.App.WinUI.Tests` for the non-visual parts (control logic that can run without a window, e.g. the measure function and view-model wiring); run the AOT-published head on a SQLite file with related tables and check it starts and shows the window. State in the card report what was and was not exercised. Close every process you started.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.
@@ -27,3 +27,7 @@ The WinUI counterpart of P7-23, drawn with Win2D.
 
 ## Suggested commit message
 Add ER diagram tab to the WinUI head
+
+## Report
+- Verified: `Squill.Windows.slnx` builds with 0 warnings; all tests green (938 passed, 44 Docker-gated skipped); AOT publish has no IL2xxx/IL3xxx warnings; the published exe starts with `SQUILL_DATA_DIR` and shows the `SQuilL` window; the XAML handler test now also covers `DiagramTabView` and the explorer `ContextRequested` handler.
+- Not verified: opening the diagram, dragging, zooming and the explorer context menu in the running exe (no UI automation); the Win2D drawing is only compile-checked.

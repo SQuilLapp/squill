@@ -68,6 +68,7 @@ public sealed partial class MainWindow
 
     partial void ShowTerminal(TerminalTabViewModel terminal)
     {
+        HideExtraAreas();
         ActiveTabView.Visibility = Visibility.Collapsed;
         TerminalArea.Visibility = Visibility.Visible;
         foreach (var (tab, entry) in _terminals)
