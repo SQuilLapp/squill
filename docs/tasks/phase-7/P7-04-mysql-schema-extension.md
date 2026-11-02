@@ -1,6 +1,6 @@
 # P7-04 - Data.MySql: read auto-increment and foreign-key actions
 
-Status: todo
+Status: done
 Depends on: P7-01, P1-12
 
 ## Goal
@@ -16,8 +16,8 @@ Depends on: P7-01, P1-12
 - Other engines.
 
 ## Tasks
-- [ ] Extend the reader.
-- [ ] Extend the Docker-gated tests (as in P1-12): an `AUTO_INCREMENT` column, a column without it, each action.
+- [x] Extend the reader.
+- [x] Extend the Docker-gated tests (as in P1-12): an `AUTO_INCREMENT` column, a column without it, each action.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
