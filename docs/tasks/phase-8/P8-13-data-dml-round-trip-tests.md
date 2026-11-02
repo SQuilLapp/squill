@@ -1,6 +1,6 @@
 # P8-13 - Data providers: DML round-trip tests on every dialect
 
-Status: todo
+Status: done
 Depends on: P8-04, P8-08, P1-14
 
 ## Goal
@@ -15,8 +15,8 @@ Prove the generated INSERT, UPDATE and DELETE statements and the generated-key r
 - Presentation types (P8-09 has its own end-to-end test), performance.
 
 ## Tasks
-- [ ] Write the four test classes.
-- [ ] Run the Docker ones locally when Docker is available (`SQUILL_DOCKER_TESTS=1`); if not, state in the card report that they were not run. Stop every container you started.
+- [x] Write the four test classes.
+- [x] Run the Docker ones locally when Docker is available (`SQUILL_DOCKER_TESTS=1`); if not, state in the card report that they were not run. Stop every container you started.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
