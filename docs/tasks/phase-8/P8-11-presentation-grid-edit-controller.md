@@ -1,6 +1,6 @@
 # P8-11 - Presentation: grid edit controller (shared keyboard and cell-edit logic)
 
-Status: todo
+Status: done
 Depends on: P8-10, P5-06
 
 ## Goal
@@ -20,8 +20,8 @@ One framework-free state machine that both heads drive to edit cells, so the edi
 - Drawing the editor, focus handling, clipboard access (heads), undo stack.
 
 ## Tasks
-- [ ] Implement the controller.
-- [ ] Tests in `tests/Squill.Presentation.Tests`: begin on editable, read-only, deleted and still-loading cases, typed first character, commit moves (down, right, left, clamped at the edges), commit error keeps editing, cancel, clear sets NULL only on editable cells, add row selects the first editable cell, delete and revert on a multi-row selection, read accessors, paste block (inside bounds, overflowing, with an invalid value, `\N`).
+- [x] Implement the controller.
+- [x] Tests in `tests/Squill.Presentation.Tests`: begin on editable, read-only, deleted and still-loading cases, typed first character, commit moves (down, right, left, clamped at the edges), commit error keeps editing, cancel, clear sets NULL only on editable cells, add row selects the first editable cell, delete and revert on a multi-row selection, read accessors, paste block (inside bounds, overflowing, with an invalid value, `\N`).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
