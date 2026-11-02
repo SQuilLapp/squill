@@ -1,6 +1,6 @@
 # P7-21 - Presentation: table designer view-model
 
-Status: todo
+Status: done
 Depends on: P7-08, P7-10, P7-11, P7-12, P7-13, P7-14, P4-04
 
 ## Goal
@@ -18,9 +18,9 @@ The headless view-model that edits a `TableDesign` (new table or existing one), 
 - Views, tabs and workspace commands (P7-22 and heads), dropping tables (P7-22), data migration beyond what the generators emit.
 
 ## Tasks
-- [ ] Implement the view-models.
-- [ ] Tests in `tests/Squill.Presentation.Tests` with a fake `IDatabaseConnection` recording statements (see the fakes used by the P4 tests): new-table starter, edits rebuild `Design`/`Script`, a validation error blocks `ApplyCommand`, primary key flag forces non-null, missing referenced table error, apply order and transaction bracket per dialect (PostgreSql, SqlServer, Sqlite with `PRAGMA` outside, MySql without), failure triggers `ROLLBACK` and keeps the draft, MySQL failure message, warnings require confirmation (declined = nothing executed), success refreshes the schema and resets `HasChanges`, revert, `ScriptRequested`.
-- [ ] One end-to-end test with the real SQLite provider on a temp file: create a table through the view-model, then rename a column and change a type through the rebuild path; rows survive.
+- [x] Implement the view-models.
+- [x] Tests in `tests/Squill.Presentation.Tests` with a fake `IDatabaseConnection` recording statements (see the fakes used by the P4 tests): new-table starter, edits rebuild `Design`/`Script`, a validation error blocks `ApplyCommand`, primary key flag forces non-null, missing referenced table error, apply order and transaction bracket per dialect (PostgreSql, SqlServer, Sqlite with `PRAGMA` outside, MySql without), failure triggers `ROLLBACK` and keeps the draft, MySQL failure message, warnings require confirmation (declined = nothing executed), success refreshes the schema and resets `HasChanges`, revert, `ScriptRequested`.
+- [x] One end-to-end test with the real SQLite provider on a temp file: create a table through the view-model, then rename a column and change a type through the rebuild path; rows survive.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
