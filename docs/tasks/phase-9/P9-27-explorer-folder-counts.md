@@ -7,9 +7,9 @@ Depends on: P9-26
 Schema and folder rows of the object explorer show a right-aligned count in both heads, as in M03 (`docs/design/visual-spec.md` section 3: "counts right-aligned `fg-3`"). P9-08 and P9-10 left this out because `ExplorerNode` carries no count.
 
 ## Design decisions (final)
-- Counts come from the schema snapshot `ObjectExplorerViewModel` already holds (`_session.Schema.Tables`). No new query, no new Core/Data type.
+- Counts come from the schema snapshot `ExplorerTreeViewModel` already holds (`session.Schema.Tables`). No new query, no new Core/Data type.
 - `ExplorerNode` (`src/Squill.Presentation/Explorer/ExplorerNode.cs`) gains a constructor parameter `int? count = null` (after `table`, so existing call sites keep compiling), a read-only `int? Count` property and a read-only `string? Trailing` property: `Detail` when it is not null, otherwise `Count` formatted with `CultureInfo.CurrentCulture` (`"N0"`, so 1208 shows as `1 208` in French), otherwise `null`. Both XML-documented; `Trailing` says it is the one text the heads draw right-aligned.
-- Counts set by `ObjectExplorerViewModel.Rebuild`/`TableNode`:
+- Counts set by `ExplorerTreeViewModel.Populate`/`TableNode`:
   - `Schema` node: number of tables plus views in the schema (its direct children).
   - `Columns`, `Indexes`, `Foreign keys` folders: number of their children, drawn even when 0 (uniform rows; mention in the report if M03 differs).
   - Table, view, column, index and foreign-key rows keep their `Detail` and have no `Count`.
@@ -18,14 +18,14 @@ Schema and folder rows of the object explorer show a right-aligned count in both
 
 ## Out of scope
 - Counts on connection rows, connection folders or the connection manager group rows (those exist from P9-04/P9-17/P9-18).
-- Nesting connection > database > schema in one tree, tree row height changes, a `Tables`/`Views` sub-folder level under schemas.
+- Tree row height changes (the single tree and the `Tables`/`Vues` folders came with P9-26).
 - Lazy loading or live count refresh (the tree is rebuilt from the snapshot on refresh, which recomputes the counts).
 
 ## Tasks
 - [ ] `ExplorerNode`: add `Count` and `Trailing` as described; keep `Detail` unchanged.
-- [ ] `ObjectExplorerViewModel`: pass counts for schema nodes and the three folders in `Rebuild`/`TableNode`.
+- [ ] `ExplorerTreeViewModel`: pass counts for the `Tables`/`Vues` folders (P9-26 added them) and the Columns/Indexes/Foreign keys folders in `Populate`/`TableNode`; the schema node count is its tables plus views.
 - [ ] WinUI `SidebarView.xaml` and Avalonia `ObjectExplorerView.axaml`: bind `Trailing`.
-- [ ] Headless tests in `tests/Squill.Presentation.Tests/Explorer/ObjectExplorerViewModelTests.cs` (extend the existing fake-schema helpers): a two-schema schema gives each `Schema` node a count equal to its tables plus views; the `Columns`, `Indexes` and `Foreign keys` folders of a table give their child counts, including a table with no index (count 0); table, view and column nodes have `Count == null`; `Trailing` returns `Detail` when set, the formatted count otherwise, and `null` when neither; a single-schema schema has no schema node and no count on its roots; the filter does not change counts; `RefreshCommand` after the fake session schema changes recomputes counts. Use a fixed culture (`CultureInfo.InvariantCulture`) in the assertions or set it for the test.
+- [ ] Headless tests in `tests/Squill.Presentation.Tests/Explorer/ExplorerTreeViewModelTests.cs` (extend the existing fake-schema helpers): a two-schema schema gives each `Schema` node a count equal to its tables plus views; the `Columns`, `Indexes` and `Foreign keys` folders of a table give their child counts, including a table with no index (count 0); table, view and column nodes have `Count == null`; `Trailing` returns `Detail` when set, the formatted count otherwise, and `null` when neither; the filter does not change counts; `RefreshCommand` after the fake session schema changes recomputes counts. Use a fixed culture (`CultureInfo.InvariantCulture`) in the assertions or set it for the test.
 - [ ] No head-specific tests: the binding change is checked by the screenshot (say so in the report).
 
 ## Acceptance criteria

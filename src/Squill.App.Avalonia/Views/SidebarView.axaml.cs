@@ -1,9 +1,5 @@
-using System.Collections.Specialized;
-using System.ComponentModel;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
-using Squill.Core;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Explorer;
 using Squill.Presentation.Panels;
@@ -14,7 +10,7 @@ namespace Squill.App.Avalonia.Views;
 /// <summary>The panels of the activity rail.</summary>
 public enum SidebarPanel
 {
-    /// <summary>Connections and the object explorer.</summary>
+    /// <summary>The connections and objects tree.</summary>
     Explorer,
 
     /// <summary>The query history.</summary>
@@ -24,7 +20,7 @@ public enum SidebarPanel
     Snippets,
 }
 
-/// <summary>The connection list above the object explorer, the history and the snippets, one at a time.</summary>
+/// <summary>The explorer tree of connections and objects, the history and the snippets, one at a time.</summary>
 public sealed partial class SidebarView : UserControl
 {
     private ConnectionListViewModel? _list;
@@ -36,21 +32,13 @@ public sealed partial class SidebarView : UserControl
         DataContextChanged += (_, _) =>
         {
             if (_list is not null)
-            {
                 _list.EditRequested -= OnEditRequested;
-                _list.Profiles.CollectionChanged -= OnProfilesChanged;
-                _list.PropertyChanged -= OnListPropertyChanged;
-            }
 
             _list = (DataContext as WorkspaceViewModel)?.ConnectionList;
             if (_list is not null)
-            {
                 _list.EditRequested += OnEditRequested;
-                _list.Profiles.CollectionChanged += OnProfilesChanged;
-                _list.PropertyChanged += OnListPropertyChanged;
-            }
 
-            RebuildRows();
+            ObjectExplorer.Workspace = DataContext as WorkspaceViewModel;
         };
         ObjectExplorer.Tree.SelectionChanged += (_, _) => SelectedNodeChanged?.Invoke(this, ObjectExplorer.Tree.SelectedItem as ExplorerNode);
     }
@@ -58,32 +46,9 @@ public sealed partial class SidebarView : UserControl
     /// <summary>Raised when the selection of the object tree changes; the argument is the selected node or <see langword="null"/>.</summary>
     public event EventHandler<ExplorerNode?>? SelectedNodeChanged;
 
-    /// <summary>Gets the rows of the connection list: folder headers and connections.</summary>
-    public IReadOnlyList<ConnectionRow> Rows { get; private set; } = [];
-
-    private void RebuildRows()
-    {
-        Rows = ConnectionRow.Build(_list?.Groups ?? []);
-        Profiles.ItemsSource = Rows;
-    }
-
-    private void OnProfilesChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildRows();
-
-    private void OnListPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(ConnectionListViewModel.SelectedProfile) && _list?.SelectedProfile is null)
-            Profiles.SelectedItem = null;
-    }
-
-    private void OnProfileSelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        if (_list is not null && Profiles.SelectedItem is ConnectionRow { Profile: { } profile })
-            _list.SelectedProfile = profile;
-    }
-
     private void OnCollapseAllClicked(object? sender, RoutedEventArgs e)
     {
-        foreach (var root in (DataContext as WorkspaceViewModel)?.Explorer?.Roots ?? [])
+        foreach (var root in (DataContext as WorkspaceViewModel)?.Explorer.Roots ?? [])
             Collapse(root);
     }
 
@@ -123,21 +88,5 @@ public sealed partial class SidebarView : UserControl
             await window.ShowDialog(owner);
         else
             window.Show();
-    }
-
-    private void OnProfileDoubleTapped(object? sender, TappedEventArgs e) => Connect();
-
-    private void OnProfileKeyDown(object? sender, KeyEventArgs e)
-    {
-        if (e.Key != Key.Enter)
-            return;
-        Connect();
-        e.Handled = true;
-    }
-
-    private void Connect()
-    {
-        if (DataContext is WorkspaceViewModel workspace && Profiles.SelectedItem is ConnectionRow { Profile: { } profile })
-            workspace.ConnectCommand.Execute(profile);
     }
 }

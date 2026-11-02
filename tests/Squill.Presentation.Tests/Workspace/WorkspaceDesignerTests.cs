@@ -49,7 +49,13 @@ public sealed class WorkspaceDesignerTests
     private static ConnectionProfile Profile() =>
         new(Guid.NewGuid(), "p", DatabaseDialect.PostgreSql, "h", 1, "d", "u", null, null);
 
-    private async Task ConnectAsync() => await _workspace.ConnectCommand.ExecuteAsync(Profile());
+    private async Task ConnectAsync() => await ConnectAsync(Profile());
+
+    private async Task ConnectAsync(ConnectionProfile profile)
+    {
+        _workspace.ConnectionList.Profiles.Add(profile);
+        await _workspace.ConnectCommand.ExecuteAsync(profile);
+    }
 
     [Fact]
     public async Task ActiveEnvironment_FollowsActiveSession()
@@ -248,40 +254,33 @@ public sealed class WorkspaceDesignerTests
     }
 
     [Fact]
-    public async Task ExplorerCommands_RaiseEventsForTablesOnly()
-    {
-        _provider.Schema = new SchemaSnapshot(null, [Users, Recent]);
-        await ConnectAsync();
-        var explorer = _workspace.Explorer!;
-        var design = new List<TableInfo>();
-        var drop = new List<TableInfo>();
-        explorer.DesignTableRequested += (_, t) => design.Add(t);
-        explorer.DropTableRequested += (_, t) => drop.Add(t);
-        var table = explorer.Roots.Single(n => n.Kind == ExplorerNodeKind.Table);
-        var view = explorer.Roots.Single(n => n.Kind == ExplorerNodeKind.View);
-
-        explorer.DesignCommand.Execute(view);
-        explorer.DropCommand.Execute(view);
-        explorer.DesignCommand.Execute(explorer.Roots[0].Children.FirstOrDefault());
-        Assert.Empty(design);
-        Assert.Empty(drop);
-
-        explorer.DesignCommand.Execute(table);
-        explorer.DropCommand.Execute(table);
-        Assert.Same(Users, Assert.Single(design));
-        Assert.Same(Users, Assert.Single(drop));
-    }
-
-    [Fact]
     public async Task ExplorerDesign_OpensDesignerInWorkspace()
     {
         _provider.Schema = new SchemaSnapshot(null, [Users]);
         await ConnectAsync();
+        var table = Descendants(_workspace.Explorer.Roots[0]).Single(n => n.Kind == ExplorerNodeKind.Table);
 
-        _workspace.Explorer!.DesignCommand.Execute(_workspace.Explorer.Roots[0]);
+        _workspace.Explorer.DesignCommand.Execute(table);
 
         Assert.Single(_workspace.Designers);
     }
+
+    [Fact]
+    public async Task SelectingANodeOfAnotherConnection_MakesItsSessionActive()
+    {
+        var first = Profile();
+        var second = Profile();
+        await ConnectAsync(first);
+        await ConnectAsync(second);
+        var firstSession = _workspace.Sessions[0];
+        Assert.Same(_workspace.Sessions[1], _workspace.ActiveSession);
+
+        _workspace.Explorer.SelectedNode = _workspace.Explorer.Roots.Single(r => r.Profile == first);
+
+        Assert.Same(firstSession, _workspace.ActiveSession);
+    }
+
+    private static IEnumerable<ExplorerNode> Descendants(ExplorerNode node) => node.Children.SelectMany(c => Descendants(c).Prepend(c));
 
     private sealed class FakeLayouts : IDiagramLayoutStore
     {

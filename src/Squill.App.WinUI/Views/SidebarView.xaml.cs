@@ -3,7 +3,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
-using Squill.Core;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Explorer;
 using Squill.Presentation.Localization;
@@ -13,7 +12,7 @@ using Windows.System;
 
 namespace Squill.App.WinUI.Views;
 
-/// <summary>The connection list above the object explorer.</summary>
+/// <summary>The explorer tree of connections and objects, the history and the snippets, one at a time.</summary>
 public sealed partial class SidebarView : UserControl
 {
     private WorkspaceViewModel? _workspace;
@@ -32,9 +31,6 @@ public sealed partial class SidebarView : UserControl
     /// <summary>Raised when the selection of the object tree changes; the argument is the selected node or <see langword="null"/>.</summary>
     public event EventHandler<ExplorerNode?>? SelectedNodeChanged;
 
-    /// <summary>Gets the rows of the connection list: folder headers and connections.</summary>
-    public IReadOnlyList<ConnectionRow> Rows { get; private set; } = [];
-
     /// <summary>Connects the view to the workspace, history and snippets it shows.</summary>
     /// <param name="workspace">The workspace view-model.</param>
     /// <param name="history">The history view-model.</param>
@@ -45,14 +41,8 @@ public sealed partial class SidebarView : UserControl
         HistoryPanel.Attach(history);
         SnippetsPanel.Attach(snippets);
         workspace.ConnectionList.Profiles.CollectionChanged += OnProfilesChanged;
-        workspace.Sessions.CollectionChanged += OnProfilesChanged;
-        workspace.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName == nameof(WorkspaceViewModel.Explorer))
-                ShowExplorer();
-        };
+        Tree.ItemsSource = workspace.Explorer.Roots;
         OnProfilesChanged(null, null);
-        ShowExplorer();
     }
 
     /// <summary>Shows one of the left panels and loads its content, as the activity rail asks.</summary>
@@ -70,50 +60,22 @@ public sealed partial class SidebarView : UserControl
 
     private ConnectionListViewModel List => _workspace!.ConnectionList;
 
-    private void OnProfilesChanged(object? sender, NotifyCollectionChangedEventArgs? e)
-    {
+    private void OnProfilesChanged(object? sender, NotifyCollectionChangedEventArgs? e) =>
         EmptyHint.Visibility = List.Profiles.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        Rows = ConnectionRow.Build(List.Groups, _workspace!.Sessions.Select(s => s.Profile.Id).ToHashSet());
-        Profiles.ItemsSource = Rows;
-        Profiles.SelectedItem = Rows.FirstOrDefault(r => r.Profile is { } p && p.Id == List.SelectedProfile?.Id);
-    }
 
-    private void ShowExplorer()
+    private void OnTreeKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        Tree.ItemsSource = _workspace?.Explorer?.Roots;
-        Filter.Text = "";
-        SelectedNodeChanged?.Invoke(this, null);
-    }
-
-    private void OnProfileSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (Profiles.SelectedItem is ConnectionRow { Profile: { } profile })
-            List.SelectedProfile = profile;
-        else if (Profiles.SelectedItem is not null)
-            Profiles.SelectedItem = null;
-    }
-
-    private void OnProfileDoubleTapped(object sender, DoubleTappedRoutedEventArgs e) => Connect();
-
-    private void OnProfileKeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        if (e.Key != VirtualKey.Enter)
+        if (e.Key != VirtualKey.Enter || Tree.SelectedItem is not ExplorerNode { Kind: ExplorerNodeKind.Connection } node)
             return;
-        Connect();
+        _workspace!.Explorer.ActivateCommand.Execute(node);
         e.Handled = true;
     }
 
-    private void Connect()
-    {
-        if (Profiles.SelectedItem is ConnectionRow { Profile: { } profile })
-            _workspace!.ConnectCommand.Execute(profile);
-    }
-
-    private void OnRefreshClicked(object sender, RoutedEventArgs e) => _workspace?.Explorer?.RefreshCommand.Execute(null);
+    private void OnRefreshClicked(object sender, RoutedEventArgs e) => _workspace?.Explorer.RefreshCommand.Execute(null);
 
     private void OnCollapseAllClicked(object sender, RoutedEventArgs e)
     {
-        foreach (var root in _workspace?.Explorer?.Roots ?? [])
+        foreach (var root in _workspace?.Explorer.Roots ?? [])
             Collapse(root);
     }
 
@@ -124,43 +86,64 @@ public sealed partial class SidebarView : UserControl
             Collapse(child);
     }
 
-    private void OnTreeSelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs e) =>
-        SelectedNodeChanged?.Invoke(this, e.AddedItems.OfType<ExplorerNode>().FirstOrDefault());
+    private void OnTreeSelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs e)
+    {
+        var node = e.AddedItems.OfType<ExplorerNode>().FirstOrDefault();
+        if (node is not null)
+            _workspace!.Explorer.SelectedNode = node;
+        SelectedNodeChanged?.Invoke(this, node);
+    }
 
     private void OnNewClicked(object sender, RoutedEventArgs e) => List.NewCommand.Execute(null);
 
-    private void OnEditClicked(object sender, RoutedEventArgs e) => List.EditCommand.Execute(null);
-
-    private void OnDeleteClicked(object sender, RoutedEventArgs e) => List.DeleteCommand.Execute(null);
-
-    private void OnConnectClicked(object sender, RoutedEventArgs e) => Connect();
-
-    private void OnDisconnectClicked(object sender, RoutedEventArgs e) => _workspace!.DisconnectCommand.Execute(null);
-
     private void OnFilterChanged(object sender, TextChangedEventArgs e)
     {
-        if (_workspace?.Explorer is { } explorer)
-            explorer.FilterText = Filter.Text;
+        if (_workspace is not null)
+            _workspace.Explorer.FilterText = Filter.Text;
     }
 
     private void OnTreeDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (_workspace?.Explorer is { } explorer && Tree.SelectedItem is ExplorerNode node)
-            explorer.ActivateCommand.Execute(node);
+        if (_workspace is not null && Tree.SelectedItem is ExplorerNode node)
+            _workspace.Explorer.ActivateCommand.Execute(node);
     }
 
-    // Only tables can be designed or dropped; the flyout is built per request so other nodes show no menu.
+    // The flyout is built per request: connection nodes get the connection commands, tables Design/Drop, other nodes no menu.
     private void OnNodeContextRequested(UIElement sender, ContextRequestedEventArgs e)
     {
-        if (_workspace?.Explorer is not { } explorer || (sender as FrameworkElement)?.DataContext is not ExplorerNode { Kind: ExplorerNodeKind.Table } node)
+        if (_workspace is null || (sender as FrameworkElement)?.DataContext is not ExplorerNode node)
             return;
+        var explorer = _workspace.Explorer;
         var menu = new MenuFlyout();
-        var design = new MenuFlyoutItem { Text = "Design table..." };
-        design.Click += (_, _) => explorer.DesignCommand.Execute(node);
-        var drop = new MenuFlyoutItem { Text = "Drop table..." };
-        drop.Click += (_, _) => explorer.DropCommand.Execute(node);
-        menu.Items.Add(design);
-        menu.Items.Add(drop);
+        void Add(string text, Action action)
+        {
+            var item = new MenuFlyoutItem { Text = text };
+            item.Click += (_, _) => action();
+            menu.Items.Add(item);
+        }
+
+        // A right click does not select the node, and the commands below act on the selection.
+        if (node.Kind is ExplorerNodeKind.Connection or ExplorerNodeKind.Table)
+            Tree.SelectedItem = node;
+        if (node.Kind == ExplorerNodeKind.Connection)
+        {
+            Add("New connection", () => List.NewCommand.Execute(null));
+            Add("Edit", () => List.EditCommand.Execute(null));
+            Add("Delete", () => List.DeleteCommand.Execute(null));
+            if (node.IsConnected)
+                Add("Disconnect", () => _workspace.DisconnectCommand.Execute(null));
+            else
+                Add("Connect", () => _workspace.ConnectCommand.Execute(node.Profile));
+        }
+        else if (node.Kind == ExplorerNodeKind.Table)
+        {
+            Add("Design table...", () => explorer.DesignCommand.Execute(node));
+            Add("Drop table...", () => explorer.DropCommand.Execute(node));
+        }
+        else
+        {
+            return;
+        }
         if (e.TryGetPosition(sender, out var position))
             menu.ShowAt(sender, new FlyoutShowOptions { Position = position });
         else

@@ -81,6 +81,20 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         _findOnPath = findOnPath ?? TerminalLauncher.FindOnPath;
         _diagramStore = diagramStore;
         _measureText = measureText;
+        Explorer = new ExplorerTreeViewModel(connectionList, manager.Sessions);
+        Explorer.OpenTableRequested += (_, r) => _ = OpenTableOnAsync(r.Session, r.Table);
+        Explorer.DesignTableRequested += (_, r) => DesignTableOn(r.Session, r.Table);
+        Explorer.DropTableRequested += (_, r) =>
+        {
+            ActiveSession = r.Session;
+            _ = DropTableCommand.ExecuteAsync(r.Table);
+        };
+        Explorer.ConnectRequested += (_, profile) => _ = ConnectCommand.ExecuteAsync(profile);
+        Explorer.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(ExplorerTreeViewModel.SelectedNode) && Explorer.SelectedNode?.Session is { } session)
+                ActiveSession = session;
+        };
     }
 
     /// <summary>Gets the saved connections.</summary>
@@ -109,9 +123,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(OpenDiagramCommand))]
     public partial ConnectionSession? ActiveSession { get; set; }
 
-    /// <summary>Gets the explorer of <see cref="ActiveSession"/>, or <see langword="null"/> when none is active.</summary>
-    [ObservableProperty]
-    public partial ObjectExplorerViewModel? Explorer { get; private set; }
+    /// <summary>Gets the explorer tree of all connections; selecting one of its nodes makes that connection's session active.</summary>
+    public ExplorerTreeViewModel Explorer { get; }
 
     /// <summary>Gets or sets the tab shown.</summary>
     [ObservableProperty]
@@ -131,26 +144,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     partial void OnActiveSessionChanged(ConnectionSession? value)
     {
         OnPropertyChanged(nameof(ActiveEnvironment));
-        if (Explorer is { } old)
-        {
-            old.OpenTableRequested -= OnOpenTableRequested;
-            old.DesignTableRequested -= OnDesignTableRequested;
-            old.DropTableRequested -= OnDropTableRequested;
-        }
-        Explorer = value is null ? null : new ObjectExplorerViewModel(value);
-        if (Explorer is { } created)
-        {
-            created.OpenTableRequested += OnOpenTableRequested;
-            created.DesignTableRequested += OnDesignTableRequested;
-            created.DropTableRequested += OnDropTableRequested;
-        }
     }
-
-    private void OnDesignTableRequested(object? sender, TableInfo table) => DesignTableCommand.Execute(table);
-
-    private void OnDropTableRequested(object? sender, TableInfo table) => _ = DropTableCommand.ExecuteAsync(table);
-
-    private void OnOpenTableRequested(object? sender, TableInfo table) => _ = OpenTableCommand.ExecuteAsync(table);
 
     private bool HasSession() => ActiveSession is not null;
 
@@ -352,6 +346,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
                 }
             }
             await session.RefreshSchemaAsync(CancellationToken.None);
+            Explorer.Reload(session);
         }
         catch (Exception ex)
         {

@@ -54,14 +54,14 @@ public sealed class ConnectionUiTests
             var dir = Path.Combine(Path.GetTempPath(), "squill-ui-" + Guid.NewGuid().ToString("N"));
             var services = AppComposition.Create(new Platform(new ProviderRegistry()), new AppPaths(dir));
             var window = new MainWindow { DataContext = services.Workspace };
-            var list = window.GetLogicalDescendants().OfType<ListBox>().Single(l => l.Name == "Profiles");
-            Assert.NotNull(list.ContextMenu);
-            // Headless has no popup host, so the items get the data context the open menu would give them.
-            foreach (var item in list.ContextMenu!.Items.OfType<MenuItem>())
-            {
-                item.DataContext = services.Workspace;
-                Assert.NotNull(item.Command);
-            }
+            // The menu lives in the node template, which headless never realizes: check what its handlers run.
+            var explorer = window.GetLogicalDescendants().OfType<ObjectExplorerView>().Single();
+            Assert.Same(services.Workspace, explorer.Workspace);
+            Assert.NotNull(services.Workspace.ConnectionList.NewCommand);
+            Assert.NotNull(services.Workspace.ConnectionList.EditCommand);
+            Assert.NotNull(services.Workspace.ConnectionList.DeleteCommand);
+            Assert.NotNull(services.Workspace.ConnectCommand);
+            Assert.NotNull(services.Workspace.DisconnectCommand);
         }, TestContext.Current.CancellationToken);
     }
 

@@ -1,6 +1,5 @@
 using Squill.App.WinUI.Views;
 using Squill.Core;
-using Squill.Presentation.Connections;
 using Squill.Presentation.Explorer;
 using Squill.Presentation.Localization;
 using Xunit;
@@ -9,44 +8,6 @@ namespace Squill.App.WinUI.Tests;
 
 public class ExplorerAndTabsTests
 {
-    private static ConnectionProfile P(string name, string? folder, ConnectionEnvironment environment = ConnectionEnvironment.Production, DatabaseDialect dialect = DatabaseDialect.PostgreSql) =>
-        new(Guid.NewGuid(), name, dialect, "h", 5432, "d", "u", null, null, environment, folder);
-
-    [Fact]
-    public void Rows_group_by_folder_with_ungrouped_last_and_no_header()
-    {
-        IReadOnlyList<ConnectionGroup> groups = [new("Clients", [P("b", "Clients"), P("a", "Clients")]), new(null, [P("z", null)])];
-
-        var rows = ConnectionRow.Build(groups);
-
-        Assert.Equal(4, rows.Count);
-        Assert.True(rows[0].IsHeader);
-        Assert.Equal("Clients", rows[0].Folder);
-        Assert.Equal(2, rows[0].Count);
-        Assert.True(rows[1].IsProfile && rows[1].Indented);
-        Assert.Equal(16, rows[1].IndentLeft);
-        Assert.Equal("EngineBadgePostgresStyle", rows[1].EngineStyleKey);
-        Assert.Equal("BadgeEnvProdStyle", rows[1].EnvironmentStyleKey);
-        Assert.Equal(UiText.Get("status.production"), rows[1].EnvironmentText);
-        Assert.True(rows[3].IsProfile && !rows[3].Indented);
-        Assert.Equal(0, rows[3].IndentLeft);
-    }
-
-    [Fact]
-    public void Rows_mark_connected_profiles_and_hide_missing_environment()
-    {
-        var open = P("open", null, ConnectionEnvironment.None, DatabaseDialect.Sqlite);
-        var closed = P("closed", null, ConnectionEnvironment.None, DatabaseDialect.Sqlite);
-
-        var rows = ConnectionRow.Build([new(null, [open, closed])], new HashSet<Guid> { open.Id });
-
-        Assert.True(rows[0].IsConnected);
-        Assert.False(rows[1].IsConnected);
-        Assert.False(rows[0].HasEnvironment);
-        Assert.Equal("SL", rows[0].EngineLetters);
-        Assert.Equal("EngineBadgeSqliteStyle", rows[0].EngineStyleKey);
-    }
-
     [Theory]
     [InlineData(ConnectionEnvironment.Production, "Prod")]
     [InlineData(ConnectionEnvironment.Staging, "Staging")]

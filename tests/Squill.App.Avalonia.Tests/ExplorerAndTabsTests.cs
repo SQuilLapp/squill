@@ -5,7 +5,6 @@ using Squill.Data;
 using Squill.Data.Sqlite;
 using Squill.Platform;
 using Squill.Presentation;
-using Squill.Presentation.Connections;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Explorer;
 using Squill.Presentation.Localization;
@@ -50,39 +49,41 @@ public sealed class ExplorerAndTabsTests
         new(Guid.NewGuid(), name, DatabaseDialect.Sqlite, null, null, null, null, Path.Combine(dir, name + ".db"), null, environment, folder);
 
     [Fact]
-    public void ConnectionRows_GroupByFolder_UngroupedLastWithoutHeader()
-    {
-        ConnectionProfile P(string name, string? folder) =>
-            new(Guid.NewGuid(), name, DatabaseDialect.PostgreSql, "h", 5432, "d", "u", null, null, ConnectionEnvironment.Production, folder);
-        IReadOnlyList<ConnectionGroup> groups =
-        [
-            new("Clients", [P("b", "Clients"), P("a", "Clients")]),
-            new(null, [P("z", null)]),
-        ];
-
-        var rows = ConnectionRow.Build(groups);
-
-        Assert.Equal(4, rows.Count);
-        Assert.True(rows[0].IsHeader);
-        Assert.Equal("Clients", rows[0].Folder);
-        Assert.Equal(2, rows[0].Count);
-        Assert.True(rows[1].IsProfile && rows[1].Indented && rows[1].IsPostgres && rows[1].IsProd);
-        Assert.Equal(UiText.Get("status.production"), rows[1].EnvironmentText);
-        Assert.True(rows[3].IsProfile && !rows[3].Indented);
-    }
-
-    [Fact]
-    public async Task Sidebar_RebuildsRows_WhenProfilesChange() =>
+    public async Task Sidebar_ShowsOneTree_WithFoldersAndConnections() =>
         await WithApp((window, workspace, dir) =>
         {
-            var sidebar = window.FindControl<SidebarView>("Sidebar")!;
-            Assert.Empty(sidebar.Rows);
+            var tree = window.FindControl<SidebarView>("Sidebar")!.FindControl<ObjectExplorerView>("ObjectExplorer")!.FindControl<TreeView>("Tree")!;
+            Assert.Same(workspace.Explorer.Roots, tree.ItemsSource);
+            Assert.Empty(workspace.Explorer.Roots);
 
             workspace.ConnectionList.Profiles.Add(Profile(dir, "one", folder: "Dossier"));
             workspace.ConnectionList.Profiles.Add(Profile(dir, "two"));
 
-            Assert.Equal([true, false, false], sidebar.Rows.Select(r => r.IsHeader).ToArray());
+            Assert.Equal([ExplorerNodeKind.ConnectionFolder, ExplorerNodeKind.Connection], workspace.Explorer.Roots.Select(r => r.Kind));
             return Task.CompletedTask;
+        });
+
+    [Fact]
+    public async Task Tree_SelectionFollowsConnections_AndConnectedNodeShowsDatabase() =>
+        await WithApp(async (window, workspace, dir) =>
+        {
+            var tree = window.FindControl<SidebarView>("Sidebar")!.FindControl<ObjectExplorerView>("ObjectExplorer")!.FindControl<TreeView>("Tree")!;
+            var profile = Profile(dir, "lite");
+            workspace.ConnectionList.Profiles.Add(profile);
+            var node = workspace.Explorer.Roots.Single();
+            Assert.Empty(node.Children);
+
+            tree.SelectedItem = node;
+            Assert.Same(profile, workspace.ConnectionList.SelectedProfile);
+            Assert.Null(workspace.ActiveSession);
+
+            await workspace.ConnectCommand.ExecuteAsync(profile);
+
+            Assert.True(node.IsConnected);
+            Assert.True(node.IsExpanded);
+            Assert.Equal(ExplorerNodeKind.Database, Assert.Single(node.Children).Kind);
+            tree.SelectedItem = node;
+            Assert.Same(node.Session, workspace.ActiveSession);
         });
 
     [Fact]

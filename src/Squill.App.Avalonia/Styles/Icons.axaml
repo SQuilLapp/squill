@@ -14,6 +14,7 @@
   <StreamGeometry x:Key="SquillIconChevron">M9,6 L15,12 L9,18</StreamGeometry>
   <StreamGeometry x:Key="SquillIconTable">M4,5 H20 V19 H4 Z M4,10 H20 M4,15 H20 M10,5 V19</StreamGeometry>
   <StreamGeometry x:Key="SquillIconView">M2,12 C5,6 19,6 22,12 C19,18 5,18 2,12 Z M12,9 A3,3 0 1 0 12,15 A3,3 0 1 0 12,9 Z</StreamGeometry>
+  <StreamGeometry x:Key="SquillIconDatabase">M5,6 C5,3.5 19,3.5 19,6 V18 C19,20.5 5,20.5 5,18 Z M5,6 C5,8.5 19,8.5 19,6 M5,12 C5,14.5 19,14.5 19,12</StreamGeometry>
   <StreamGeometry x:Key="SquillIconFolder">M3,6 H10 L12,8 H21 V19 H3 Z</StreamGeometry>
   <StreamGeometry x:Key="SquillIconFormat">M4,6 H20 M4,10 H14 M4,14 H20 M4,18 H14</StreamGeometry>
 </ResourceDictionary>

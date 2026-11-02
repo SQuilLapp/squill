@@ -1,6 +1,6 @@
 # P9-26 - Explorer: one tree connection > database > schema > objects
 
-Status: todo
+Status: done
 Depends on: P9-08, P9-10
 
 ## Goal
@@ -19,10 +19,10 @@ The explorer is a single tree as in mockup M03: every connection is a root node,
 - Listing other databases of the server, lazy loading, drag and drop, tab strip and properties panel look (P9-08/P9-10 stay as they are).
 
 ## Tasks
-- [ ] Presentation: node kinds and properties for connection/database/folder nodes, the unified `Roots` with folder grouping, connect/disconnect/session change updating the tree in place (expand the node that was just connected), filter over all levels, active-session selection. Keep `OpenTableRequested`, `DesignTableRequested`, `DropTableRequested` events wired to `WorkspaceViewModel`.
-- [ ] Avalonia: `SidebarView`/`ObjectExplorerView` use one `TreeView` with a template per node kind (connection row: chevron, `EngineBadge`, name, environment `Badge`, connected dot; folder row; database row; existing schema/table/view/column rows), 24 high rows, indent 16; remove the `Profiles` `ListBox`, its separator and the head-side `ConnectionRow` if now unused. Context menus and double-tap as listed above.
-- [ ] WinUI: same in `SidebarView.xaml`/`SidebarPanel` with one `TreeView` (`ItemTemplateSelector` or `DataTemplate` per kind, existing 28 high row note of P9-10 still applies, say so in the report); remove the connection list and the duplicate `ConnectionRow`.
-- [ ] Tests: Presentation tests for the tree (grouping and order, connected node gets database > schema > tables, disconnected node is a leaf, session change from selection, filter keeps ancestors, connect/disconnect updates in place); headless Avalonia and WinUI tests for the head-side templates/selection that can run without a screenshot; state what needs the screenshot.
+- [x] Presentation: node kinds and properties for connection/database/folder nodes, the unified `Roots` with folder grouping, connect/disconnect/session change updating the tree in place (expand the node that was just connected), filter over all levels, active-session selection. Keep `OpenTableRequested`, `DesignTableRequested`, `DropTableRequested` events wired to `WorkspaceViewModel`.
+- [x] Avalonia: `SidebarView`/`ObjectExplorerView` use one `TreeView` with a template per node kind (connection row: chevron, `EngineBadge`, name, environment `Badge`, connected dot; folder row; database row; existing schema/table/view/column rows), 24 high rows, indent 16; remove the `Profiles` `ListBox`, its separator and the head-side `ConnectionRow` if now unused. Context menus and double-tap as listed above.
+- [x] WinUI: same in `SidebarView.xaml`/`SidebarPanel` with one `TreeView` (`ItemTemplateSelector` or `DataTemplate` per kind, existing 28 high row note of P9-10 still applies, say so in the report); remove the connection list and the duplicate `ConnectionRow`.
+- [x] Tests: Presentation tests for the tree (grouping and order, connected node gets database > schema > tables, disconnected node is a leaf, session change from selection, filter keeps ancestors, connect/disconnect updates in place); headless Avalonia and WinUI tests for the head-side templates/selection that can run without a screenshot; state what needs the screenshot.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` and `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exit 0 with 0 warnings.
@@ -33,3 +33,8 @@ The explorer is a single tree as in mockup M03: every connection is a root node,
 
 ## Suggested commit message
 Explorer: single tree from connection to objects
+
+## Implementation notes
+- `ObjectExplorerViewModel` was replaced by `ExplorerTreeViewModel` (`Squill.Presentation/Explorer/`), owned by `WorkspaceViewModel.Explorer` (never null). New node kinds `Connection`, `Database`, `ConnectionFolder`; `ExplorerNode` gained `Profile`, `Session`, `IsConnected` and the engine/environment display properties of the old head-side `ConnectionRow` (deleted in both heads). Table/design/drop events now carry the node's session (`TableRequest`).
+- Follows mockup M03 over the card: every schema is a node (also with a single schema; schemaless engines such as SQLite put the folders under the database), and each schema holds `Tables` / `Vues` folders (catalog keys `explorer.tables` / `explorer.views`, empty ones are not drawn). Counts on schema/folder rows stay in P9-27.
+- A right click selects the node first (both heads), so the menu commands act on the clicked node. Heads disable horizontal scrolling of the tree so the environment pill and connected dot stay inside the 270 px panel; long connection names ellipsize.

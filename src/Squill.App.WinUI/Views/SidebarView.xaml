@@ -5,7 +5,7 @@
              xmlns:v="using:Squill.App.WinUI.Views">
   <Grid Background="{ThemeResource SquillBgSurfaceBrush}">
     <Grid>
-    <Grid x:Name="ExplorerPanel" RowDefinitions="36,Auto,Auto,*">
+    <Grid x:Name="ExplorerPanel" RowDefinitions="36,*">
       <Grid Margin="14,0,8,0">
         <TextBlock x:Name="TitleText" Style="{StaticResource CapsTextBlockStyle}" VerticalAlignment="Center" />
         <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Right" VerticalAlignment="Center">
@@ -34,63 +34,9 @@
           </Button>
         </StackPanel>
       </Grid>
-      <ListView x:Name="Profiles" Grid.Row="1" SelectionMode="Single" MaxHeight="220" Margin="6,0" DoubleTapped="OnProfileDoubleTapped"
-                KeyDown="OnProfileKeyDown" SelectionChanged="OnProfileSelectionChanged">
-        <ListView.ItemContainerStyle>
-          <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
-            <Setter Property="MinHeight" Value="28" />
-            <Setter Property="Padding" Value="8,0" />
-          </Style>
-        </ListView.ItemContainerStyle>
-        <ListView.ItemTemplate>
-          <DataTemplate x:DataType="v:ConnectionRow">
-            <Grid Height="28">
-              <Grid Visibility="{x:Bind v:ExplorerGlyphs.Show(IsHeader)}" ColumnDefinitions="Auto,Auto,*,Auto" Margin="-2,0,0,0">
-                <Viewbox Width="12" Height="12" Margin="0,0,6,0">
-                  <Canvas Width="24" Height="24">
-                    <Path Data="M5,9 L12,16 L19,9" Stroke="{ThemeResource SquillFg3Brush}" StrokeThickness="1.5" StrokeLineJoin="Round" />
-                  </Canvas>
-                </Viewbox>
-                <Viewbox Grid.Column="1" Width="14" Height="14" Margin="0,0,6,0">
-                  <Canvas Width="24" Height="24">
-                    <Path Data="M3,6 H10 L12,8 H21 V19 H3 Z" Stroke="{ThemeResource SquillFg3Brush}" StrokeThickness="1.5" StrokeLineJoin="Round" />
-                  </Canvas>
-                </Viewbox>
-                <TextBlock Grid.Column="2" Text="{x:Bind Folder}" FontWeight="SemiBold" VerticalAlignment="Center"
-                           Foreground="{ThemeResource SquillFgBrush}" TextTrimming="CharacterEllipsis" />
-                <TextBlock Grid.Column="3" Text="{x:Bind Count}" VerticalAlignment="Center" Foreground="{ThemeResource SquillFg3Brush}" />
-              </Grid>
-              <Grid Visibility="{x:Bind v:ExplorerGlyphs.Show(IsProfile)}" ColumnDefinitions="Auto,*,Auto,Auto"
-                    Margin="{x:Bind v:ExplorerGlyphs.Indent(IndentLeft)}">
-                <ContentControl Style="{x:Bind v:ExplorerGlyphs.StyleOf(EngineStyleKey)}" Content="{x:Bind EngineLetters}" Margin="0,0,8,0" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Text="{x:Bind Name}" FontWeight="SemiBold" VerticalAlignment="Center"
-                           Foreground="{ThemeResource SquillFgBrush}" TextTrimming="CharacterEllipsis" />
-                <ContentControl Grid.Column="2" Style="{x:Bind v:ExplorerGlyphs.StyleOf(EnvironmentStyleKey)}" Content="{x:Bind EnvironmentText}" Margin="8,0,0,0"
-                                VerticalAlignment="Center" Visibility="{x:Bind v:ExplorerGlyphs.Show(HasEnvironment)}" />
-                <Ellipse Grid.Column="3" Width="7" Height="7" Margin="8,0,0,0" VerticalAlignment="Center" Fill="{ThemeResource SquillSuccessBrush}"
-                         Visibility="{x:Bind v:ExplorerGlyphs.Show(IsConnected)}" />
-              </Grid>
-            </Grid>
-          </DataTemplate>
-        </ListView.ItemTemplate>
-        <ListView.ContextFlyout>
-          <MenuFlyout>
-            <MenuFlyoutItem Text="New connection" Click="OnNewClicked" />
-            <MenuFlyoutItem Text="Edit" Click="OnEditClicked" />
-            <MenuFlyoutItem Text="Delete" Click="OnDeleteClicked" />
-            <MenuFlyoutItem Text="Connect" Click="OnConnectClicked" />
-            <MenuFlyoutItem Text="Disconnect" Click="OnDisconnectClicked" />
-          </MenuFlyout>
-        </ListView.ContextFlyout>
-      </ListView>
-      <StackPanel x:Name="EmptyHint" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8" Margin="0,12">
-        <TextBlock Text="No connections yet" Foreground="{ThemeResource SquillFg3Brush}" />
-        <Button Content="New connection" HorizontalAlignment="Center" Click="OnNewClicked" />
-      </StackPanel>
-      <Border Grid.Row="2" Height="1" Margin="0,6" Background="{ThemeResource SquillBorderSubtleBrush}" />
-      <Grid Grid.Row="3" RowDefinitions="Auto,*">
+      <Grid Grid.Row="1" RowDefinitions="Auto,*">
         <TextBox x:Name="Filter" MinHeight="27" Height="27" Padding="10,3,6,3" Margin="10,0,10,6" TextChanged="OnFilterChanged" />
-        <TreeView x:Name="Tree" Grid.Row="1" SelectionMode="Single" Padding="4,0" DoubleTapped="OnTreeDoubleTapped" SelectionChanged="OnTreeSelectionChanged">
+        <TreeView x:Name="Tree" Grid.Row="1" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" Padding="4,0" DoubleTapped="OnTreeDoubleTapped" KeyDown="OnTreeKeyDown" SelectionChanged="OnTreeSelectionChanged">
           <TreeView.ItemContainerStyle>
             <Style TargetType="TreeViewItem">
               <Setter Property="MinHeight" Value="24" />
@@ -102,33 +48,51 @@
             <DataTemplate x:DataType="ex:ExplorerNode">
               <TreeViewItem ItemsSource="{x:Bind Children}" IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
                             Visibility="{x:Bind v:ExplorerGlyphs.Show(IsVisible), Mode=OneWay}">
-                <Grid ColumnDefinitions="18,*,Auto" VerticalAlignment="Center" ContextRequested="OnNodeContextRequested">
-                  <Viewbox Width="14" Height="14" HorizontalAlignment="Left" Visibility="{x:Bind v:ExplorerGlyphs.ShowTable(Kind)}">
-                    <Canvas Width="24" Height="24">
-                      <Path Data="M4,5 H20 V19 H4 Z M4,10 H20 M4,15 H20 M10,5 V19" Stroke="{ThemeResource SquillAccentTextBrush}" StrokeThickness="1.5" StrokeLineJoin="Round" />
-                    </Canvas>
-                  </Viewbox>
-                  <Viewbox Width="14" Height="14" HorizontalAlignment="Left" Visibility="{x:Bind v:ExplorerGlyphs.ShowView(Kind)}">
-                    <Canvas Width="24" Height="24">
-                      <Path Data="M2,12 C5,6 19,6 22,12 C19,18 5,18 2,12 Z M12,9 A3,3 0 1 0 12,15 A3,3 0 1 0 12,9 Z" Stroke="{ThemeResource SquillInfoBrush}" StrokeThickness="1.5" StrokeLineJoin="Round" />
-                    </Canvas>
-                  </Viewbox>
-                  <Viewbox Width="14" Height="14" HorizontalAlignment="Left" Visibility="{x:Bind v:ExplorerGlyphs.ShowSchema(Kind)}">
-                    <Canvas Width="24" Height="24">
-                      <Path Data="M3,6 H10 L12,8 H21 V19 H3 Z" Stroke="{ThemeResource SquillFg3Brush}" StrokeThickness="1.5" StrokeLineJoin="Round" />
-                    </Canvas>
-                  </Viewbox>
-                  <TextBlock Text="{x:Bind v:ExplorerGlyphs.Glyph(Kind)}" FontSize="11" VerticalAlignment="Center" Foreground="{ThemeResource SquillFg3Brush}"
-                             Visibility="{x:Bind v:ExplorerGlyphs.ShowPlain(Kind)}" />
-                  <TextBlock Grid.Column="1" Text="{x:Bind Title}" Foreground="{ThemeResource SquillFgBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                  <TextBlock Grid.Column="2" Style="{StaticResource MonoTextBlockStyle}" Text="{x:Bind Detail}" Foreground="{ThemeResource SquillFg3Brush}"
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto" VerticalAlignment="Center" ContextRequested="OnNodeContextRequested">
+                  <StackPanel Orientation="Horizontal">
+                    <ContentControl Style="{x:Bind v:ExplorerGlyphs.EngineStyle(Profile)}" Content="{x:Bind EngineLetters}" Margin="0,0,8,0" VerticalAlignment="Center"
+                                    Visibility="{x:Bind v:ExplorerGlyphs.ShowConnection(Kind)}" />
+                    <Viewbox Width="14" Height="14" Margin="0,0,6,0" Visibility="{x:Bind v:ExplorerGlyphs.ShowTable(Kind)}">
+                      <Canvas Width="24" Height="24">
+                        <Path Data="M4,5 H20 V19 H4 Z M4,10 H20 M4,15 H20 M10,5 V19" Stroke="{ThemeResource SquillAccentTextBrush}" StrokeThickness="1.5" StrokeLineJoin="Round" />
+                      </Canvas>
+                    </Viewbox>
+                    <Viewbox Width="14" Height="14" Margin="0,0,6,0" Visibility="{x:Bind v:ExplorerGlyphs.ShowView(Kind)}">
+                      <Canvas Width="24" Height="24">
+                        <Path Data="M2,12 C5,6 19,6 22,12 C19,18 5,18 2,12 Z M12,9 A3,3 0 1 0 12,15 A3,3 0 1 0 12,9 Z" Stroke="{ThemeResource SquillInfoBrush}" StrokeThickness="1.5" StrokeLineJoin="Round" />
+                      </Canvas>
+                    </Viewbox>
+                    <Viewbox Width="14" Height="14" Margin="0,0,6,0" Visibility="{x:Bind v:ExplorerGlyphs.ShowFolderIcon(Kind)}">
+                      <Canvas Width="24" Height="24">
+                        <Path Data="M3,6 H10 L12,8 H21 V19 H3 Z" Stroke="{ThemeResource SquillFg3Brush}" StrokeThickness="1.5" StrokeLineJoin="Round" />
+                      </Canvas>
+                    </Viewbox>
+                    <Viewbox Width="14" Height="14" Margin="0,0,6,0" Visibility="{x:Bind v:ExplorerGlyphs.ShowDatabase(Kind)}">
+                      <Canvas Width="24" Height="24">
+                        <Path Data="M5,6 C5,3.5 19,3.5 19,6 V18 C19,20.5 5,20.5 5,18 Z M5,6 C5,8.5 19,8.5 19,6 M5,12 C5,14.5 19,14.5 19,12" Stroke="{ThemeResource SquillFg3Brush}" StrokeThickness="1.5" StrokeLineJoin="Round" />
+                      </Canvas>
+                    </Viewbox>
+                    <TextBlock Width="18" Text="{x:Bind v:ExplorerGlyphs.Glyph(Kind)}" FontSize="11" VerticalAlignment="Center" Foreground="{ThemeResource SquillFg3Brush}"
+                               Visibility="{x:Bind v:ExplorerGlyphs.ShowPlain(Kind)}" />
+                  </StackPanel>
+                  <TextBlock Grid.Column="1" Text="{x:Bind Title}" Foreground="{ThemeResource SquillFgBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                             FontWeight="{x:Bind v:ExplorerGlyphs.TitleWeight(Kind)}" />
+                  <ContentControl Grid.Column="2" Style="{x:Bind v:ExplorerGlyphs.EnvironmentStyle(Profile)}" Content="{x:Bind EnvironmentText}" Margin="8,0,0,0"
+                                  VerticalAlignment="Center" Visibility="{x:Bind v:ExplorerGlyphs.Show(HasEnvironment)}" />
+                  <TextBlock Grid.Column="3" Style="{StaticResource MonoTextBlockStyle}" Text="{x:Bind Detail}" Foreground="{ThemeResource SquillFg3Brush}"
                              Margin="8,0,0,0" VerticalAlignment="Center" />
+                  <Ellipse Grid.Column="3" Width="7" Height="7" Margin="8,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Fill="{ThemeResource SquillSuccessBrush}"
+                           Visibility="{x:Bind v:ExplorerGlyphs.Show(IsConnected), Mode=OneWay}" />
                 </Grid>
               </TreeViewItem>
             </DataTemplate>
           </TreeView.ItemTemplate>
         </TreeView>
       </Grid>
+      <StackPanel x:Name="EmptyHint" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8" Margin="0,12">
+        <TextBlock Text="No connections yet" Foreground="{ThemeResource SquillFg3Brush}" />
+        <Button Content="New connection" HorizontalAlignment="Center" Click="OnNewClicked" />
+      </StackPanel>
     </Grid>
       <v:HistoryView x:Name="HistoryPanel" Visibility="Collapsed" />
       <v:SnippetsView x:Name="SnippetsPanel" Visibility="Collapsed" />
