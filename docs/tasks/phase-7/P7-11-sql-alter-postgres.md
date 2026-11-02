@@ -1,6 +1,6 @@
 # P7-11 - Sql: ALTER TABLE for PostgreSQL
 
-Status: todo
+Status: done
 Depends on: P7-10, P7-07
 
 ## Goal
@@ -21,9 +21,9 @@ Replace the PostgreSQL `Alter` stub: translate every `SchemaOperation` into Post
 - Other dialects, running statements (P7-21).
 
 ## Tasks
-- [ ] Implement `Alter` for PostgreSQL and remove its stub.
-- [ ] Tests in `tests/Squill.Sql.Tests` with exact strings: one per operation, a mixed edit checking order, a drop of a primary key with and without a stored name, schema-qualified table.
-- [ ] Docker-gated test (`SQUILL_DOCKER_TESTS=1`, Testcontainers as in `tests/Squill.Data.Postgres.Tests`): create a table with `CreateTable`, edit it (rename column, change type, add column, add index, add foreign key), run `Alter`, read the schema back and compare with the edited design.
+- [x] Implement `Alter` for PostgreSQL and remove its stub.
+- [x] Tests in `tests/Squill.Sql.Tests` with exact strings: one per operation, a mixed edit checking order, a drop of a primary key with and without a stored name, schema-qualified table.
+- [x] Docker-gated test (`SQUILL_DOCKER_TESTS=1`, Testcontainers as in `tests/Squill.Data.Postgres.Tests`): create a table with `CreateTable`, edit it (rename column, change type, add column, add index, add foreign key), run `Alter`, read the schema back and compare with the edited design.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

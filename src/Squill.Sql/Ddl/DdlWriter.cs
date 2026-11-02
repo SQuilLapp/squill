@@ -25,20 +25,26 @@ internal static class DdlWriter
             clauses.Add($"{name}PRIMARY KEY ({Columns(table.PrimaryKey, d)})");
         }
 
-        clauses.AddRange(table.ForeignKeys.Select(f =>
-            $"CONSTRAINT {SqlQuoting.Quote(f.Name, d)} FOREIGN KEY ({Columns(f.Columns, d)}) "
-            + $"REFERENCES {SqlQuoting.QualifiedName(f.ReferencedSchema, f.ReferencedTable, d)} ({Columns(f.ReferencedColumns, d)}) "
-            + $"ON DELETE {f.OnDelete.ToSql()} ON UPDATE {f.OnUpdate.ToSql()}"));
+        clauses.AddRange(table.ForeignKeys.Select(f => ForeignKey(f, d)));
 
         var qualified = SqlQuoting.QualifiedName(table.Schema, table.Name, d);
         var statements = new List<string>
         {
             $"CREATE TABLE {qualified} (\n    {string.Join(",\n    ", clauses)}\n)",
         };
-        statements.AddRange(table.Indexes.Select(i =>
-            $"CREATE {(i.IsUnique ? "UNIQUE " : "")}INDEX {IndexName(table.Schema, i.Name, d)} ON {qualified} ({Columns(i.Columns, d)})"));
+        statements.AddRange(table.Indexes.Select(i => CreateIndex(table.Schema, qualified, i, d)));
         return statements;
     }
+
+    /// <summary>Builds the CREATE INDEX statement.</summary>
+    public static string CreateIndex(string? schema, string qualifiedTable, IndexDesign i, DatabaseDialect d) =>
+        $"CREATE {(i.IsUnique ? "UNIQUE " : "")}INDEX {IndexName(schema, i.Name, d)} ON {qualifiedTable} ({Columns(i.Columns, d)})";
+
+    /// <summary>Builds the <c>CONSTRAINT ... FOREIGN KEY</c> clause.</summary>
+    public static string ForeignKey(ForeignKeyDesign f, DatabaseDialect d) =>
+        $"CONSTRAINT {SqlQuoting.Quote(f.Name, d)} FOREIGN KEY ({Columns(f.Columns, d)}) "
+        + $"REFERENCES {SqlQuoting.QualifiedName(f.ReferencedSchema, f.ReferencedTable, d)} ({Columns(f.ReferencedColumns, d)}) "
+        + $"ON DELETE {f.OnDelete.ToSql()} ON UPDATE {f.OnUpdate.ToSql()}";
 
     /// <summary>Builds the DROP TABLE statement.</summary>
     public static IReadOnlyList<string> DropTable(string? schema, string name, DatabaseDialect d) =>
@@ -53,7 +59,8 @@ internal static class DdlWriter
             ? SqlQuoting.QualifiedName(schema, name, d)
             : SqlQuoting.Quote(name, d);
 
-    private static string Column(ColumnDesign c, DatabaseDialect d, bool rowidAlias)
+    /// <summary>Builds a column definition clause.</summary>
+    public static string Column(ColumnDesign c, DatabaseDialect d, bool rowidAlias)
     {
         var name = SqlQuoting.Quote(c.Name, d);
         if (rowidAlias)

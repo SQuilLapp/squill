@@ -10,5 +10,6 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Testcontainers.PostgreSql" />
     <ProjectReference Include="..\..\src\Squill.Data.Postgres\Squill.Data.Postgres.csproj" />
+    <ProjectReference Include="..\..\src\Squill.Sql\Squill.Sql.csproj" />
   </ItemGroup>
 </Project>
