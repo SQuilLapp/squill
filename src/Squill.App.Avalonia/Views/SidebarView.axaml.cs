@@ -1,8 +1,11 @@
+using System.Collections.Specialized;
+using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Squill.Core;
 using Squill.Presentation.Connections;
+using Squill.Presentation.Explorer;
 using Squill.Presentation.Panels;
 using Squill.Presentation.Workspace;
 
@@ -33,11 +36,62 @@ public sealed partial class SidebarView : UserControl
         DataContextChanged += (_, _) =>
         {
             if (_list is not null)
+            {
                 _list.EditRequested -= OnEditRequested;
+                _list.Profiles.CollectionChanged -= OnProfilesChanged;
+                _list.PropertyChanged -= OnListPropertyChanged;
+            }
+
             _list = (DataContext as WorkspaceViewModel)?.ConnectionList;
             if (_list is not null)
+            {
                 _list.EditRequested += OnEditRequested;
+                _list.Profiles.CollectionChanged += OnProfilesChanged;
+                _list.PropertyChanged += OnListPropertyChanged;
+            }
+
+            RebuildRows();
         };
+        ObjectExplorer.Tree.SelectionChanged += (_, _) => SelectedNodeChanged?.Invoke(this, ObjectExplorer.Tree.SelectedItem as ExplorerNode);
+    }
+
+    /// <summary>Raised when the selection of the object tree changes; the argument is the selected node or <see langword="null"/>.</summary>
+    public event EventHandler<ExplorerNode?>? SelectedNodeChanged;
+
+    /// <summary>Gets the rows of the connection list: folder headers and connections.</summary>
+    public IReadOnlyList<ConnectionRow> Rows { get; private set; } = [];
+
+    private void RebuildRows()
+    {
+        Rows = ConnectionRow.Build(_list?.Groups ?? []);
+        Profiles.ItemsSource = Rows;
+    }
+
+    private void OnProfilesChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildRows();
+
+    private void OnListPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ConnectionListViewModel.SelectedProfile) && _list?.SelectedProfile is null)
+            Profiles.SelectedItem = null;
+    }
+
+    private void OnProfileSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_list is not null && Profiles.SelectedItem is ConnectionRow { Profile: { } profile })
+            _list.SelectedProfile = profile;
+    }
+
+    private void OnCollapseAllClicked(object? sender, RoutedEventArgs e)
+    {
+        foreach (var root in (DataContext as WorkspaceViewModel)?.Explorer?.Roots ?? [])
+            Collapse(root);
+    }
+
+    private static void Collapse(ExplorerNode node)
+    {
+        node.IsExpanded = false;
+        foreach (var child in node.Children)
+            Collapse(child);
     }
 
     /// <summary>Gives the history and snippets panels their view-models.</summary>
@@ -83,7 +137,7 @@ public sealed partial class SidebarView : UserControl
 
     private void Connect()
     {
-        if (DataContext is WorkspaceViewModel workspace && Profiles.SelectedItem is ConnectionProfile profile)
+        if (DataContext is WorkspaceViewModel workspace && Profiles.SelectedItem is ConnectionRow { Profile: { } profile })
             workspace.ConnectCommand.Execute(profile);
     }
 }

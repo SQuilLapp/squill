@@ -41,6 +41,11 @@ internal static class UiTextCatalog
         ("properties.columns", "Colonnes · {0}"),
         ("properties.indexes", "Index · {0}"),
         ("properties.openDesigner", "Ouvrir l'éditeur de table →"),
+        ("properties.kindTable", "Table"),
+        ("properties.kindView", "Vue"),
+        ("explorer.newConnection", "Nouvelle connexion"),
+        ("explorer.refresh", "Actualiser"),
+        ("explorer.collapseAll", "Tout réduire"),
 
         // Results, status bar
         ("results.result", "Résultat {0}"),

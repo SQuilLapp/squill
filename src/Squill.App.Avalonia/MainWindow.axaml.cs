@@ -20,6 +20,7 @@ public sealed partial class MainWindow : Window
 {
     private SettingsViewModel? _settings;
     private string? _dataDirectory;
+    private WorkspaceTabList? _tabs;
 
     /// <summary>Creates the window.</summary>
     public MainWindow()
@@ -34,23 +35,12 @@ public sealed partial class MainWindow : Window
     public void Attach(AppServices services, string dataDirectory)
     {
         Sidebar.Attach(services.History, services.Snippets);
+        _tabs = new WorkspaceTabList(services.Workspace);
+        TabStrip.ItemsSource = _tabs.Items;
+        TabStrip.SelectionChanged += OnTabSelectionChanged;
+        _tabs.PropertyChanged += OnTabsChanged;
         AttachTerminals(services.Workspace);
-        services.Workspace.PropertyChanged += (_, e) =>
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(WorkspaceViewModel.ActiveTab):
-                    ShowQueryArea();
-                    break;
-                case nameof(WorkspaceViewModel.ActiveDiagram) when services.Workspace.ActiveDiagram is { } diagram:
-                    DiagramStrip.SelectedItem = diagram;
-                    break;
-                case nameof(WorkspaceViewModel.ActiveDesigner) when services.Workspace.ActiveDesigner is { } designer:
-                    DesignerStrip.SelectedItem = designer;
-                    break;
-            }
-        };
-        QueryStrip.AddHandler(PointerPressedEvent, (_, _) => ShowQueryArea(), RoutingStrategies.Tunnel);
+        Sidebar.SelectedNodeChanged += (_, node) => Properties.Show(node, services.Workspace);
         _dataDirectory = dataDirectory;
         _settings = services.Settings;
         _settings.PropertyChanged += OnSettingsPropertyChanged;
@@ -85,67 +75,37 @@ public sealed partial class MainWindow : Window
         await Launcher.LaunchDirectoryInfoAsync(new DirectoryInfo(_dataDirectory));
     }
 
-    private void ShowQueryArea()
+    private void OnTabSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_tabs is not null && TabStrip.SelectedItem is WorkspaceTab tab)
+            _tabs.Selected = tab;
+    }
+
+    private void OnTabsChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(WorkspaceTabList.Selected) || _tabs is null)
+            return;
+        TabStrip.SelectedItem = _tabs.Selected;
+        ShowArea(_tabs.Selected?.Source);
+    }
+
+    // The query view always sits underneath; a diagram, designer or terminal area overlays it.
+    private void ShowArea(object? source)
     {
         TerminalArea.IsVisible = false;
-        TerminalStrip.SelectedItem = null;
-        DiagramStrip.SelectedItem = null;
-        DesignerStrip.SelectedItem = null;
-    }
-
-    private void OnExtraSelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        // One strip at a time: selecting a diagram or designer clears the other strips, then the matching area shows.
-        if (sender is ListBox { SelectedItem: not null } strip)
-        {
-            foreach (var other in new[] { DiagramStrip, DesignerStrip, TerminalStrip })
-            {
-                if (other != strip)
-                    other.SelectedItem = null;
-            }
-
-            TerminalArea.IsVisible = false;
-        }
-
-        var diagram = DiagramStrip.SelectedItem as DiagramTabViewModel;
+        var diagram = source as DiagramTabViewModel;
         DiagramArea.DataContext = diagram;
         DiagramArea.IsVisible = diagram is not null;
-        var designer = DesignerStrip.SelectedItem as TableDesignerViewModel;
+        var designer = source as TableDesignerViewModel;
         DesignerArea.DataContext = designer;
         DesignerArea.IsVisible = designer is not null;
-    }
-
-    private void OnCloseDiagramClicked(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is WorkspaceViewModel workspace && (sender as Control)?.DataContext is DiagramTabViewModel diagram)
-            workspace.CloseDiagramCommand.Execute(diagram);
-    }
-
-    private void OnCloseDesignerClicked(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is WorkspaceViewModel workspace && (sender as Control)?.DataContext is TableDesignerViewModel designer)
-            workspace.CloseDesignerCommand.Execute(designer);
-    }
-
-    private void OnTerminalSelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        if (TerminalStrip.SelectedItem is TerminalTabViewModel terminal)
-        {
-            DiagramStrip.SelectedItem = null;
-            DesignerStrip.SelectedItem = null;
+        if (source is TerminalTabViewModel terminal)
             ShowTerminal(terminal);
-        }
-    }
-
-    private void OnCloseTerminalClicked(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is WorkspaceViewModel workspace && (sender as Control)?.DataContext is TerminalTabViewModel terminal)
-            workspace.CloseTerminalCommand.Execute(terminal);
     }
 
     private void OnCloseTabClicked(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is WorkspaceViewModel workspace && (sender as Control)?.DataContext is QueryTabViewModel tab)
-            workspace.CloseTabCommand.Execute(tab);
+        if (_tabs is not null && (sender as Control)?.DataContext is WorkspaceTab tab)
+            _tabs.Close(tab);
     }
 }

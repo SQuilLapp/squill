@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="using:Squill.App.Avalonia.Views"
+             xmlns:loc="using:Squill.App.Avalonia.Localization"
+             x:Class="Squill.App.Avalonia.Views.PropertiesPanel"
+             IsVisible="False" Width="264">
+  <Border Background="{DynamicResource SquillBgSurfaceBrush}" BorderBrush="{DynamicResource SquillBorderSubtleBrush}"
+          BorderThickness="1,0,0,0">
+    <DockPanel>
+      <TextBlock DockPanel.Dock="Top" Classes="caps" Text="{loc:Text properties.title}" Margin="14,12,14,8" />
+      <Button DockPanel.Dock="Bottom" Name="OpenDesigner" Classes="ghost" Margin="8,4,8,8" HorizontalAlignment="Left"
+              Foreground="{DynamicResource SquillAccentTextBrush}" Click="OnOpenDesignerClicked">
+        <TextBlock Text="{loc:Text properties.openDesigner}" Foreground="{DynamicResource SquillAccentTextBrush}" />
+      </Button>
+      <ScrollViewer>
+        <StackPanel Margin="14,0,14,8" Spacing="2">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Path Name="KindIcon" Classes="icon" Width="16" Height="16" />
+            <TextBlock Name="NameText" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" />
+          </StackPanel>
+          <TextBlock Name="SubtitleText" Foreground="{DynamicResource SquillFg3Brush}" Margin="0,0,0,12" />
+          <TextBlock Name="ColumnsHeader" Classes="caps" Margin="0,4,0,4" />
+          <ItemsControl Name="ColumnList">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="v:ColumnRow">
+                <Grid ColumnDefinitions="16,*,Auto" Height="24">
+                  <TextBlock Text="{Binding Glyph}" Classes.pk="{Binding IsPrimaryKey}" Classes.fk="{Binding IsForeignKey}"
+                             Classes="keyglyph" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Classes="mono" Text="{Binding Name}" Foreground="{DynamicResource SquillFgBrush}"
+                             TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="2" Classes="mono" Text="{Binding DataType}" Foreground="{DynamicResource SquillFg3Brush}"
+                             Margin="8,0,0,0" VerticalAlignment="Center" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Name="IndexesHeader" Classes="caps" Margin="0,12,0,4" />
+          <ItemsControl Name="IndexList">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="x:String">
+                <TextBlock Classes="mono" Text="{Binding}" Height="24" Foreground="{DynamicResource SquillFgBrush}"
+                           TextTrimming="CharacterEllipsis" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </ScrollViewer>
+    </DockPanel>
+  </Border>
+  <UserControl.Styles>
+    <Style Selector="TextBlock.keyglyph">
+      <Setter Property="Foreground" Value="{DynamicResource SquillFg3Brush}" />
+      <Setter Property="FontSize" Value="11" />
+    </Style>
+    <Style Selector="TextBlock.keyglyph.fk"><Setter Property="Foreground" Value="{DynamicResource SquillInfoBrush}" /></Style>
+    <Style Selector="TextBlock.keyglyph.pk"><Setter Property="Foreground" Value="{DynamicResource SquillAccentBrush}" /></Style>
+  </UserControl.Styles>
+</UserControl>

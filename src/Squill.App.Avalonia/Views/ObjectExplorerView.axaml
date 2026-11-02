@@ -2,33 +2,43 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ex="using:Squill.Presentation.Explorer"
              xmlns:v="using:Squill.App.Avalonia.Views"
+             xmlns:loc="using:Squill.App.Avalonia.Localization"
              x:Class="Squill.App.Avalonia.Views.ObjectExplorerView"
              x:DataType="ex:ObjectExplorerViewModel">
   <Grid RowDefinitions="Auto,*">
-    <TextBox Text="{Binding FilterText, Mode=TwoWay}" PlaceholderText="Filter" Margin="6,0,6,4"
-             MinHeight="{DynamicResource SquillControlHeightStandard}" />
-    <TreeView Grid.Row="1" Name="Tree" ItemsSource="{Binding Roots}" Background="Transparent"
+    <TextBox Name="FilterBox" Classes="search" Text="{Binding FilterText, Mode=TwoWay}" PlaceholderText="{loc:Text explorer.filter}"
+             Margin="10,0,10,6" MinHeight="27" Height="27" />
+    <TreeView Grid.Row="1" Name="Tree" ItemsSource="{Binding Roots}" Background="Transparent" Padding="4,0"
               DoubleTapped="OnTreeDoubleTapped">
       <TreeView.Styles>
         <Style Selector="TreeViewItem" x:DataType="ex:ExplorerNode">
           <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
           <Setter Property="IsVisible" Value="{Binding IsVisible}" />
+          <Setter Property="MinHeight" Value="24" />
         </Style>
       </TreeView.Styles>
       <TreeView.ItemTemplate>
         <TreeDataTemplate x:DataType="ex:ExplorerNode" ItemsSource="{Binding Children}">
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <StackPanel.ContextMenu>
+          <Grid ColumnDefinitions="18,*,Auto" Height="24">
+            <Grid.ContextMenu>
               <ContextMenu Opening="OnNodeMenuOpening">
                 <MenuItem Header="Design table..." Click="OnDesignClicked" />
                 <MenuItem Header="Drop table..." Click="OnDropClicked" />
               </ContextMenu>
-            </StackPanel.ContextMenu>
-            <TextBlock Text="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.Glyph}}"
-                       Foreground="{DynamicResource SquillAccentTextBrush}" Width="16" />
-            <TextBlock Text="{Binding Title}" Foreground="{DynamicResource SquillFgBrush}" />
-            <TextBlock Text="{Binding Detail}" Foreground="{DynamicResource SquillFgDisabledBrush}" />
-          </StackPanel>
+            </Grid.ContextMenu>
+            <Path Classes="icon" Width="14" Height="14" HorizontalAlignment="Left" Data="{StaticResource SquillIconTable}"
+                  Stroke="{DynamicResource SquillAccentTextBrush}" IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsTable}}" />
+            <Path Classes="icon" Width="14" Height="14" HorizontalAlignment="Left" Data="{StaticResource SquillIconView}"
+                  Stroke="{DynamicResource SquillInfoBrush}" IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsView}}" />
+            <Path Classes="icon" Width="14" Height="14" HorizontalAlignment="Left" Data="{StaticResource SquillIconFolder}"
+                  Stroke="{DynamicResource SquillFg3Brush}" IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsSchema}}" />
+            <TextBlock Text="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.Glyph}}" Foreground="{DynamicResource SquillFg3Brush}"
+                       FontSize="11" VerticalAlignment="Center" IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsPlain}}" />
+            <TextBlock Grid.Column="1" Text="{Binding Title}" Foreground="{DynamicResource SquillFgBrush}" VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Column="2" Classes="mono" Text="{Binding Detail}" Foreground="{DynamicResource SquillFg3Brush}"
+                       Margin="8,0,0,0" VerticalAlignment="Center" />
+          </Grid>
         </TreeDataTemplate>
       </TreeView.ItemTemplate>
     </TreeView>

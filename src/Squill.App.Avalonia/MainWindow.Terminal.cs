@@ -60,7 +60,8 @@ public sealed partial class MainWindow
             var view = new TerminalTabView(added) { IsVisible = false };
             _terminals[added] = view;
             TerminalArea.Children.Add(view);
-            TerminalStrip.SelectedItem = added;
+            if (_tabs?.Selected?.Source == added)
+                ShowTerminal(added);
         }
     }
 

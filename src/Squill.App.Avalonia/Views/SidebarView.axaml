@@ -1,51 +1,97 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ws="using:Squill.Presentation.Workspace"
-             xmlns:core="using:Squill.Core"
              xmlns:v="using:Squill.App.Avalonia.Views"
+             xmlns:loc="using:Squill.App.Avalonia.Localization"
              x:Class="Squill.App.Avalonia.Views.SidebarView"
              x:DataType="ws:WorkspaceViewModel">
+  <UserControl.Styles>
+    <Style Selector="ListBox.connections ListBoxItem" x:DataType="v:ConnectionRow">
+      <Setter Property="IsEnabled" Value="{Binding IsProfile}" />
+      <Setter Property="MinHeight" Value="28" />
+      <Setter Property="Padding" Value="8,0" />
+      <Setter Property="Margin" Value="6,0" />
+    </Style>
+    <Style Selector="Border.engine.mini"><Setter Property="Margin" Value="0,0,8,0" /></Style>
+  </UserControl.Styles>
   <Grid Background="{DynamicResource SquillBgSurfaceBrush}">
     <v:HistoryView Name="HistoryPanel" IsVisible="False" />
     <v:SnippetsView Name="SnippetsPanel" IsVisible="False" />
-    <Grid Name="ExplorerPanel" RowDefinitions="Auto,*,Auto,2*">
-    <TextBlock Text="Connections" Margin="8,6" FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" />
-    <ListBox Grid.Row="1" Name="Profiles" ItemsSource="{Binding ConnectionList.Profiles}"
-             SelectedItem="{Binding ConnectionList.SelectedProfile, Mode=TwoWay}" Background="Transparent"
-             DoubleTapped="OnProfileDoubleTapped" KeyDown="OnProfileKeyDown">
-      <ListBox.ContextMenu>
-        <ContextMenu>
-          <MenuItem Header="New connection" Command="{Binding ConnectionList.NewCommand}" />
-          <MenuItem Header="Edit" Command="{Binding ConnectionList.EditCommand}" />
-          <MenuItem Header="Delete" Command="{Binding ConnectionList.DeleteCommand}" />
-          <MenuItem Header="Connect" Command="{Binding ConnectCommand}" CommandParameter="{Binding ConnectionList.SelectedProfile}" />
-          <MenuItem Header="Disconnect" Command="{Binding DisconnectCommand}" />
-        </ContextMenu>
-      </ListBox.ContextMenu>
-      <ListBox.ItemTemplate>
-        <DataTemplate x:DataType="core:ConnectionProfile">
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <Ellipse Width="8" Height="8" VerticalAlignment="Center" Fill="{DynamicResource SquillSuccessBrush}">
-              <Ellipse.IsVisible>
-                <MultiBinding Converter="{x:Static v:ConnectedProfileConverter.Instance}">
-                  <Binding Path="." />
-                  <Binding Path="$parent[ListBox].((ws:WorkspaceViewModel)DataContext).Sessions" />
-                  <Binding Path="$parent[ListBox].((ws:WorkspaceViewModel)DataContext).Sessions.Count" />
-                </MultiBinding>
-              </Ellipse.IsVisible>
-            </Ellipse>
-            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource SquillFgBrush}" />
-          </StackPanel>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-    <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
-                IsVisible="{Binding !ConnectionList.Profiles.Count}">
-      <TextBlock Text="No connections yet" Foreground="{DynamicResource SquillFg3Brush}" />
-      <Button Content="New connection" HorizontalAlignment="Center" Command="{Binding ConnectionList.NewCommand}" />
-    </StackPanel>
-    <TextBlock Grid.Row="2" Text="Objects" Margin="8,6" FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" />
-    <v:ObjectExplorerView Grid.Row="3" DataContext="{Binding Explorer}" />
+    <Grid Name="ExplorerPanel" RowDefinitions="36,Auto,Auto,*">
+      <DockPanel Margin="14,0,8,0">
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+          <Button Name="NewConnectionButton" Classes="ghost" Width="24" Height="24" MinHeight="24" Padding="0"
+                  ToolTip.Tip="{loc:Text explorer.newConnection}" Command="{Binding ConnectionList.NewCommand}">
+            <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconPlus}" />
+          </Button>
+          <Button Name="RefreshButton" Classes="ghost" Width="24" Height="24" MinHeight="24" Padding="0"
+                  ToolTip.Tip="{loc:Text explorer.refresh}" Command="{Binding Explorer.RefreshCommand}">
+            <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconRefresh}" />
+          </Button>
+          <Button Name="CollapseButton" Classes="ghost" Width="24" Height="24" MinHeight="24" Padding="0"
+                  ToolTip.Tip="{loc:Text explorer.collapseAll}" Click="OnCollapseAllClicked">
+            <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconCollapse}" />
+          </Button>
+        </StackPanel>
+        <TextBlock Classes="caps" Text="{loc:Text explorer.title}" VerticalAlignment="Center" />
+      </DockPanel>
+      <ListBox Grid.Row="1" Name="Profiles" Classes="connections" Background="Transparent" MaxHeight="220"
+               DoubleTapped="OnProfileDoubleTapped" KeyDown="OnProfileKeyDown" SelectionChanged="OnProfileSelectionChanged">
+        <ListBox.ContextMenu>
+          <ContextMenu>
+            <MenuItem Header="New connection" Command="{Binding ConnectionList.NewCommand}" />
+            <MenuItem Header="Edit" Command="{Binding ConnectionList.EditCommand}" />
+            <MenuItem Header="Delete" Command="{Binding ConnectionList.DeleteCommand}" />
+            <MenuItem Header="Connect" Command="{Binding ConnectCommand}" CommandParameter="{Binding ConnectionList.SelectedProfile}" />
+            <MenuItem Header="Disconnect" Command="{Binding DisconnectCommand}" />
+          </ContextMenu>
+        </ListBox.ContextMenu>
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="v:ConnectionRow">
+            <Grid>
+              <Grid IsVisible="{Binding IsHeader}" ColumnDefinitions="Auto,Auto,*,Auto" Height="28" Margin="-2,0,0,0">
+                <Path Classes="icon" Width="12" Height="12" Data="{StaticResource SquillIconCollapse}" Margin="0,0,6,0"
+                      Stroke="{DynamicResource SquillFg3Brush}" />
+                <Path Grid.Column="1" Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconFolder}" Margin="0,0,6,0"
+                      Stroke="{DynamicResource SquillFg3Brush}" />
+                <TextBlock Grid.Column="2" Text="{Binding Folder}" FontWeight="SemiBold" VerticalAlignment="Center"
+                           Foreground="{DynamicResource SquillFgBrush}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Column="3" Text="{Binding Count}" VerticalAlignment="Center" Foreground="{DynamicResource SquillFg3Brush}" />
+              </Grid>
+              <Grid IsVisible="{Binding IsProfile}" ColumnDefinitions="Auto,*,Auto,Auto" Height="28" Margin="{Binding Indent}">
+                <Border Classes="engine mini" Classes.postgres="{Binding IsPostgres}" Classes.mysql="{Binding IsMySql}"
+                        Classes.sqlserver="{Binding IsSqlServer}" Classes.sqlite="{Binding IsSqlite}">
+                  <TextBlock Text="{Binding EngineLetters}" />
+                </Border>
+                <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"
+                           Foreground="{DynamicResource SquillFgBrush}" TextTrimming="CharacterEllipsis" />
+                <Border Grid.Column="2" Classes="badge" Margin="8,0,0,0" IsVisible="{Binding HasEnvironment}"
+                        Classes.env-prod="{Binding IsProd}" Classes.env-staging="{Binding IsStaging}"
+                        Classes.env-dev="{Binding IsDev}" Classes.env-local="{Binding IsLocal}">
+                  <TextBlock Text="{Binding EnvironmentText}" />
+                </Border>
+                <Ellipse Grid.Column="3" Width="7" Height="7" Margin="8,0,0,0" VerticalAlignment="Center"
+                         Fill="{DynamicResource SquillSuccessBrush}">
+                  <Ellipse.IsVisible>
+                    <MultiBinding Converter="{x:Static v:ConnectedProfileConverter.Instance}">
+                      <Binding Path="Profile" />
+                      <Binding Path="$parent[ListBox].((ws:WorkspaceViewModel)DataContext).Sessions" />
+                      <Binding Path="$parent[ListBox].((ws:WorkspaceViewModel)DataContext).Sessions.Count" />
+                    </MultiBinding>
+                  </Ellipse.IsVisible>
+                </Ellipse>
+              </Grid>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8" Margin="0,12"
+                  IsVisible="{Binding !ConnectionList.Profiles.Count}">
+        <TextBlock Text="No connections yet" Foreground="{DynamicResource SquillFg3Brush}" />
+        <Button Content="New connection" HorizontalAlignment="Center" Command="{Binding ConnectionList.NewCommand}" />
+      </StackPanel>
+      <Border Grid.Row="2" Height="1" Margin="0,6" Background="{DynamicResource SquillBorderSubtleBrush}" />
+      <v:ObjectExplorerView Grid.Row="3" Name="ObjectExplorer" DataContext="{Binding Explorer}" />
     </Grid>
   </Grid>
 </UserControl>

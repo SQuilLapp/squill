@@ -51,6 +51,46 @@
     <Style Selector="RadioButton.rail:checked Path.icon">
       <Setter Property="Stroke" Value="{DynamicResource SquillAccentBrush}" />
     </Style>
+    <Style Selector="ListBox.tabstrip ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="MinHeight" Value="35" />
+      <Setter Property="CornerRadius" Value="0" />
+    </Style>
+    <Style Selector="ListBox.tabstrip ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.tabstrip ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.tabstrip ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.tabstrip ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.tab">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.tab:pointerover">
+      <Setter Property="Background" Value="{DynamicResource SquillBgHoverBrush}" />
+    </Style>
+    <Style Selector="Border.tab.active">
+      <Setter Property="Background" Value="{DynamicResource SquillBgBaseBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SquillAccentBrush}" />
+    </Style>
+    <Style Selector="Border.tab.active.env-prod"><Setter Property="BorderBrush" Value="{DynamicResource SquillEnvProdBrush}" /></Style>
+    <Style Selector="Border.tab.active.env-staging"><Setter Property="BorderBrush" Value="{DynamicResource SquillEnvStagingBrush}" /></Style>
+    <Style Selector="Border.tab.active.env-dev"><Setter Property="BorderBrush" Value="{DynamicResource SquillEnvDevBrush}" /></Style>
+    <Style Selector="Border.tab.active.env-local"><Setter Property="BorderBrush" Value="{DynamicResource SquillEnvLocalBrush}" /></Style>
+    <Style Selector="Border.tab Border.envsquare"><Setter Property="Background" Value="{DynamicResource SquillFg3Brush}" /></Style>
+    <Style Selector="Border.tab.env-prod Border.envsquare"><Setter Property="Background" Value="{DynamicResource SquillEnvProdBrush}" /></Style>
+    <Style Selector="Border.tab.env-staging Border.envsquare"><Setter Property="Background" Value="{DynamicResource SquillEnvStagingBrush}" /></Style>
+    <Style Selector="Border.tab.env-dev Border.envsquare"><Setter Property="Background" Value="{DynamicResource SquillEnvDevBrush}" /></Style>
+    <Style Selector="Border.tab.env-local Border.envsquare"><Setter Property="Background" Value="{DynamicResource SquillEnvLocalBrush}" /></Style>
+    <Style Selector="Border.tab Button.close"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="Border.tab:pointerover Button.close"><Setter Property="Opacity" Value="1" /></Style>
+    <Style Selector="Border.tab.active Button.close"><Setter Property="Opacity" Value="1" /></Style>
     <Style Selector="Button.rail">
       <Setter Property="Width" Value="36" />
       <Setter Property="Height" Value="36" />
@@ -59,8 +99,8 @@
       <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
   </Window.Styles>
-  <Grid RowDefinitions="41,*,Auto" ColumnDefinitions="45,260,Auto,*">
-    <Border Name="TitleBar" Grid.ColumnSpan="4" Background="{DynamicResource SquillBgBaseBrush}"
+  <Grid RowDefinitions="41,*,Auto" ColumnDefinitions="45,270,Auto,*,Auto">
+    <Border Name="TitleBar" Grid.ColumnSpan="5" Background="{DynamicResource SquillBgBaseBrush}"
             BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
       <Grid>
         <StackPanel Orientation="Horizontal" Margin="14,0,0,0">
@@ -155,76 +195,47 @@
     <v:SidebarView Grid.Row="1" Grid.Column="1" Name="Sidebar" />
     <GridSplitter Grid.Row="1" Grid.Column="2" Width="4" Background="{DynamicResource SquillBorderBrush}" />
     <Grid Grid.Row="1" Grid.Column="3" RowDefinitions="Auto,*">
-      <StackPanel Orientation="Horizontal">
-        <ListBox Name="QueryStrip" ItemsSource="{Binding Tabs}" SelectedItem="{Binding ActiveTab, Mode=TwoWay}" Background="Transparent">
-          <ListBox.ItemsPanel>
-            <ItemsPanelTemplate>
-              <StackPanel Orientation="Horizontal" />
-            </ItemsPanelTemplate>
-          </ListBox.ItemsPanel>
-          <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="q:QueryTabViewModel">
-              <StackPanel Orientation="Horizontal" Spacing="6">
-                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
-                <Button Content="x" Padding="4,0" Background="Transparent" Click="OnCloseTabClicked" />
-              </StackPanel>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
-        <ListBox Name="TerminalStrip" ItemsSource="{Binding Terminals}" Background="Transparent"
-                 SelectionChanged="OnTerminalSelectionChanged">
-          <ListBox.ItemsPanel>
-            <ItemsPanelTemplate>
-              <StackPanel Orientation="Horizontal" />
-            </ItemsPanelTemplate>
-          </ListBox.ItemsPanel>
-          <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="t:TerminalTabViewModel">
-              <StackPanel Orientation="Horizontal" Spacing="6">
-                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
-                <Button Content="x" Padding="4,0" Background="Transparent" Click="OnCloseTerminalClicked" />
-              </StackPanel>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
-        <ListBox Name="DiagramStrip" ItemsSource="{Binding Diagrams}" Background="Transparent"
-                 SelectionChanged="OnExtraSelectionChanged">
-          <ListBox.ItemsPanel>
-            <ItemsPanelTemplate>
-              <StackPanel Orientation="Horizontal" />
-            </ItemsPanelTemplate>
-          </ListBox.ItemsPanel>
-          <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="dg:DiagramTabViewModel">
-              <StackPanel Orientation="Horizontal" Spacing="6">
-                <TextBlock Text="Diagrams" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
-                <Button Content="x" Padding="4,0" Background="Transparent" Click="OnCloseDiagramClicked" />
-              </StackPanel>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
-        <ListBox Name="DesignerStrip" ItemsSource="{Binding Designers}" Background="Transparent"
-                 SelectionChanged="OnExtraSelectionChanged">
-          <ListBox.ItemsPanel>
-            <ItemsPanelTemplate>
-              <StackPanel Orientation="Horizontal" />
-            </ItemsPanelTemplate>
-          </ListBox.ItemsPanel>
-          <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="dz:TableDesignerViewModel">
-              <StackPanel Orientation="Horizontal" Spacing="6">
-                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
-                <Button Content="x" Padding="4,0" Background="Transparent" Click="OnCloseDesignerClicked" />
-              </StackPanel>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
-      </StackPanel>
+      <Border Name="TabStripBar" Background="{DynamicResource SquillBgSurfaceBrush}" Height="36"
+              BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
+        <DockPanel>
+          <Button DockPanel.Dock="Right" Name="NewTabButton" Classes="ghost" Width="36" Padding="0" CornerRadius="0"
+                  ToolTip.Tip="{loc:Text menu.newTab}" Command="{Binding NewTabCommand}">
+            <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconPlus}" />
+          </Button>
+          <ListBox Name="TabStrip" Classes="tabstrip" Background="Transparent" Padding="0" BorderThickness="0"
+                   ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="v:WorkspaceTab">
+                <Border BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,1,0">
+                  <Border Classes="tab" Classes.active="{Binding $parent[ListBoxItem].IsSelected}" Classes.env-prod="{Binding IsProd}"
+                          Classes.env-staging="{Binding IsStaging}" Classes.env-dev="{Binding IsDev}" Classes.env-local="{Binding IsLocal}"
+                          BorderThickness="0,2,0,0" Padding="12,0,6,0" Height="35">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                      <Border Classes="envsquare" Width="8" Height="8" CornerRadius="2" />
+                      <TextBlock Text="{Binding Title}" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
+                      <Ellipse Width="6" Height="6" Fill="{DynamicResource SquillFg3Brush}" IsVisible="{Binding IsDirty}" VerticalAlignment="Center" />
+                      <Button Classes="ghost close" Width="20" Height="20" MinHeight="20" Padding="0" CornerRadius="4" Click="OnCloseTabClicked">
+                        <Path Classes="icon" Width="10" Height="10" Data="{StaticResource SquillIconClose}" />
+                      </Button>
+                    </StackPanel>
+                  </Border>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </Border>
       <v:QueryTabView Grid.Row="1" Name="ActiveTabView" DataContext="{Binding ActiveTab}" />
       <v:DiagramTabView Grid.Row="1" Name="DiagramArea" IsVisible="False" />
       <v:TableDesignerView Grid.Row="1" Name="DesignerArea" IsVisible="False" />
       <Grid Name="TerminalArea" Grid.Row="1" IsVisible="False" Background="{DynamicResource SquillBgBaseBrush}" />
     </Grid>
-    <v:StatusBar Grid.Row="2" Name="Status" Grid.ColumnSpan="4" />
+    <v:PropertiesPanel Grid.Row="1" Grid.Column="4" Name="Properties" />
+    <v:StatusBar Grid.Row="2" Name="Status" Grid.ColumnSpan="5" />
   </Grid>
 </Window>
