@@ -1,6 +1,6 @@
 # P8-18 - Documentation: grid editing ADR, README and architecture note
 
-Status: todo
+Status: done
 Depends on: P8-15, P8-17, P8-13, P7-27
 
 ## Goal
@@ -16,7 +16,7 @@ Record the design decisions of phase 8 and document the feature for users.
 - New features, screenshots that cannot be produced in the session.
 
 ## Tasks
-- [ ] Write the ADR, update the README and architecture note, check every link.
+- [x] Write the ADR, update the README and architecture note, check every link.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings (no code touched; confirms the tree is still green).
