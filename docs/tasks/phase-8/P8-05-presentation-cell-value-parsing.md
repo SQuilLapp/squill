@@ -1,6 +1,6 @@
 # P8-05 - Presentation: parsing edited cell text into typed values
 
-Status: todo
+Status: done
 Depends on: P4-06
 
 ## Goal
@@ -18,8 +18,8 @@ Convert the text a user types into a cell into the CLR value passed as a stateme
 - Any UI.
 
 ## Tasks
-- [ ] Implement `CellValueParser`.
-- [ ] Tests in `tests/Squill.Presentation.Tests`: a table per type (valid, invalid, boundary, null/empty rules) and the round trip with `CellFormatter`.
+- [x] Implement `CellValueParser`.
+- [x] Tests in `tests/Squill.Presentation.Tests`: a table per type (valid, invalid, boundary, null/empty rules) and the round trip with `CellFormatter`.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
