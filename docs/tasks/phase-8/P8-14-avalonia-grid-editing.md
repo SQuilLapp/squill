@@ -1,6 +1,6 @@
 # P8-14 - Avalonia head: in-place cell editing in the grid
 
-Status: todo
+Status: done
 Depends on: P8-12, P5-06
 
 ## Goal
@@ -16,8 +16,8 @@ Depends on: P8-12, P5-06
 - Toolbar and commit buttons (P8-15), WinUI (P8-16), drag-fill, undo.
 
 ## Tasks
-- [ ] Implement the editing overlay, key handling and drawing.
-- [ ] Headless tests in `tests/Squill.App.Avalonia.Tests` with a fake editable source: F2 shows the text box over the active cell, typing then Enter commits and moves down, Esc cancels, an invalid value keeps the box open with the error, Delete sets NULL, a read-only column does not start an edit, no controller means no editing, rendering does not throw for each `RowState`.
+- [x] Implement the editing overlay, key handling and drawing.
+- [x] Headless tests in `tests/Squill.App.Avalonia.Tests` with a fake editable source: F2 shows the text box over the active cell, typing then Enter commits and moves down, Esc cancels, an invalid value keeps the box open with the error, Delete sets NULL, a read-only column does not start an edit, no controller means no editing, rendering does not throw for each `RowState`.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

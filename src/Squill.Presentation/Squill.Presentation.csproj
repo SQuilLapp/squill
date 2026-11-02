@@ -6,5 +6,6 @@
     <ProjectReference Include="..\Squill.Sql\Squill.Sql.csproj" />
     <ProjectReference Include="..\Squill.Platform\Squill.Platform.csproj" />
     <InternalsVisibleTo Include="Squill.Presentation.Tests" />
+    <InternalsVisibleTo Include="Squill.App.Avalonia.Tests" />
   </ItemGroup>
 </Project>
