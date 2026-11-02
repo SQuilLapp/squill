@@ -1,6 +1,6 @@
 # P7-12 - Sql: ALTER TABLE for MySQL
 
-Status: todo
+Status: done
 Depends on: P7-10, P7-07
 
 ## Goal
@@ -21,9 +21,9 @@ Replace the MySQL `Alter` stub.
 - Other dialects.
 
 ## Tasks
-- [ ] Implement `Alter` for MySQL and remove its stub.
-- [ ] Tests in `tests/Squill.Sql.Tests` with exact strings: one per operation, `MODIFY COLUMN` keeps `AUTO_INCREMENT`/default/nullability of the edited column, mixed edit order.
-- [ ] Docker-gated test (as in `tests/Squill.Data.MySql.Tests`): create, edit (rename column, change type, drop primary key, add index and foreign key), `Alter`, read back and compare.
+- [x] Implement `Alter` for MySQL and remove its stub.
+- [x] Tests in `tests/Squill.Sql.Tests` with exact strings: one per operation, `MODIFY COLUMN` keeps `AUTO_INCREMENT`/default/nullability of the edited column, mixed edit order.
+- [x] Docker-gated test (as in `tests/Squill.Data.MySql.Tests`): create, edit (rename column, change type, drop primary key, add index and foreign key), `Alter`, read back and compare.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

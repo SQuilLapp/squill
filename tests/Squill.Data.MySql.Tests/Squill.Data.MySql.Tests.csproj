@@ -10,5 +10,6 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Testcontainers.MySql" />
     <ProjectReference Include="..\..\src\Squill.Data.MySql\Squill.Data.MySql.csproj" />
+    <ProjectReference Include="..\..\src\Squill.Sql\Squill.Sql.csproj" />
   </ItemGroup>
 </Project>
