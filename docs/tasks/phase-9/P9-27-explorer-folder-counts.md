@@ -1,7 +1,7 @@
-# P9-26 - Explorer: object counts on schema and folder rows
+# P9-27 - Explorer: object counts on schema and folder rows
 
 Status: todo
-Depends on: P9-08, P9-10
+Depends on: P9-26
 
 ## Goal
 Schema and folder rows of the object explorer show a right-aligned count in both heads, as in M03 (`docs/design/visual-spec.md` section 3: "counts right-aligned `fg-3`"). P9-08 and P9-10 left this out because `ExplorerNode` carries no count.
