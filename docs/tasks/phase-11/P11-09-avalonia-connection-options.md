@@ -1,6 +1,6 @@
 # P11-09 - Avalonia head: connection options in the connection manager
 
-Status: todo
+Status: done
 Depends on: P11-08
 
 ## Goal
@@ -14,7 +14,8 @@ Same fields as P11-08 in the Avalonia connection manager window, bound to the sa
 - Anything else in the Avalonia head.
 
 ## Tasks
-- [ ] AXAML, headless tests, capture of two dialects (SQL Server and SQLite) in `en` and `fr`.
+- [x] AXAML (Advanced expander on the General tab), headless test per dialect.
+- [ ] (not driven: the automated session cannot open the editor window without clicking blind on the desktop; do it by hand) Capture SQL Server and SQLite in `en` and `fr` with `tools/visual`.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green.

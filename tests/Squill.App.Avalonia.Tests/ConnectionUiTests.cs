@@ -47,6 +47,28 @@ public sealed class ConnectionUiTests
         }, TestContext.Current.CancellationToken);
     }
 
+    [Theory]
+    [InlineData(DatabaseDialect.PostgreSql, true, false, true)]
+    [InlineData(DatabaseDialect.MySql, true, false, true)]
+    [InlineData(DatabaseDialect.SqlServer, true, true, true)]
+    [InlineData(DatabaseDialect.Sqlite, false, false, false)]
+    public async Task Editor_AdvancedFields_FollowDialectSupport(DatabaseDialect dialect, bool tls, bool trust, bool connectTimeout)
+    {
+        await Headless.Session.Dispatch(() =>
+        {
+            var editor = new ConnectionEditorViewModel(null, new NullStore(), new ProviderRegistry(), new Dialogs());
+            var window = new ConnectionEditorWindow { DataContext = editor };
+            editor.Dialect = dialect;
+            Assert.Equal(tls, window.FindControl<StackPanel>("TlsFields")!.IsVisible);
+            Assert.Equal(trust, window.FindControl<CheckBox>("TrustBox")!.IsVisible);
+            Assert.Equal(connectTimeout, window.FindControl<StackPanel>("ConnectTimeoutFields")!.IsVisible);
+            window.FindControl<ComboBox>("TlsBox")!.SelectedIndex = (int)TlsMode.VerifyFull;
+            Assert.Equal(TlsMode.VerifyFull, editor.Tls);
+            window.FindControl<TextBox>("CommandTimeoutBox")!.Text = "30";
+            Assert.Equal("30", editor.CommandTimeoutText);
+        }, TestContext.Current.CancellationToken);
+    }
+
     [Fact]
     public async Task Editor_EngineTile_SetsDialect()
     {

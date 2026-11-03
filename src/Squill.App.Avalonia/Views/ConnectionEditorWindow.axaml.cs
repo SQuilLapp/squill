@@ -24,6 +24,11 @@ public sealed partial class ConnectionEditorWindow : Window
     {
         InitializeComponent();
         SshAuthBox.ItemsSource = new[] { SshAuthMethod.Password, SshAuthMethod.PrivateKey };
+        TlsBox.ItemsSource = new[]
+        {
+            UiText.Get("connections.tlsDefault"), UiText.Get("connections.tlsDisable"),
+            UiText.Get("connections.tlsRequire"), UiText.Get("connections.tlsVerifyFull"),
+        };
         DataContextChanged += (_, _) => Attach();
         Opened += (_, _) => RebuildList();
     }
@@ -67,6 +72,12 @@ public sealed partial class ConnectionEditorWindow : Window
     private void OnEditorChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) => Refresh();
 
     private void OnSaved(object? sender, EventArgs e) => Close(true);
+
+    private void OnTlsChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_editor is not null && TlsBox.SelectedIndex is >= 0 and <= 3)
+            _editor.Tls = (TlsMode)TlsBox.SelectedIndex;
+    }
 
     private void OnCancel(object? sender, RoutedEventArgs e) => Close(false);
 
@@ -129,6 +140,11 @@ public sealed partial class ConnectionEditorWindow : Window
             tile.Classes.Set("selected", tile.Tag is DatabaseDialect d && d == editor.Dialect);
         foreach (var tile in new[] { EnvProduction, EnvStaging, EnvDevelopment, EnvLocal })
             tile.Classes.Set("selected", tile.Tag is ConnectionEnvironment env && env == editor.Environment);
+
+        TlsBox.SelectedIndex = (int)editor.Tls;
+        TlsFields.IsVisible = editor.SupportsTls;
+        TrustBox.IsVisible = editor.SupportsTrustCertificate;
+        ConnectTimeoutFields.IsVisible = editor.SupportsTimeouts;
 
         SshSummary.Text = $"{editor.SshHost}:{editor.SshPort} · {editor.SshUserName}";
 
