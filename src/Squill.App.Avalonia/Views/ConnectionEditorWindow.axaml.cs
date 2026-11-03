@@ -245,19 +245,19 @@ public sealed partial class ConnectionEditorWindow : Window
 
     private async void OnBrowseDatabase(object? sender, RoutedEventArgs e)
     {
-        if (_editor is not null && await PickAsync("Select the database file") is { } path)
+        if (_editor is not null && await PickAsync(UiText.Get("connections.pickDatabase"), [new FilePickerFileType(UiText.Get("connections.fileTypeSqlite")) { Patterns = ["*.db", "*.sqlite", "*.sqlite3", "*.db3"] }, new FilePickerFileType(UiText.Get("connections.fileTypeAll")) { Patterns = ["*"] }]) is { } path)
             _editor.FilePath = path;
     }
 
     private async void OnBrowseKey(object? sender, RoutedEventArgs e)
     {
-        if (_editor is not null && await PickAsync("Select the private key file") is { } path)
+        if (_editor is not null && await PickAsync(UiText.Get("connections.pickKey")) is { } path)
             _editor.SshPrivateKeyPath = path;
     }
 
-    private async Task<string?> PickAsync(string title)
+    private async Task<string?> PickAsync(string title, IReadOnlyList<FilePickerFileType>? fileTypes = null)
     {
-        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = title, AllowMultiple = false });
+        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = title, AllowMultiple = false, FileTypeFilter = fileTypes });
         return files.Count == 0 ? null : files[0].TryGetLocalPath();
     }
 }

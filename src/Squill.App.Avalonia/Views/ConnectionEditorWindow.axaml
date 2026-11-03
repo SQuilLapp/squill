@@ -236,7 +236,7 @@
             <Button Name="TestButton" Command="{Binding TestCommand}">
               <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock Text="{loc:Text connections.test}" />
-                <Border Classes="kbd"><TextBlock Text="Ctrl+Entrée" /></Border>
+                <Border Classes="kbd"><TextBlock Text="{loc:Text connections.testShortcut}" /></Border>
               </StackPanel>
             </Button>
             <Button Content="{loc:Text connections.cancel}" Click="OnCancel" />

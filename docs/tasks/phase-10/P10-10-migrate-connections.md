@@ -1,6 +1,6 @@
 # P10-10 - Migrate strings: connection editor, validation and connection list
 
-Status: todo
+Status: done
 Depends on: P10-03, P10-04, P10-07, P10-08
 
 ## Goal
@@ -18,9 +18,9 @@ Follow `docs/tasks/phase-10/migration-recipe.md`. Area `connections` of `invento
 - Dialog buttons shared by all dialogs (OK/Cancel in the dialog services: P10-16), explorer connection node text (P10-11).
 
 ## Tasks
-- [ ] Migrate every `connections` inventory line and tick it.
-- [ ] Tests per recipe rule 7, including: each validation message in French and English for an invalid profile; a SQLite profile without a file; a test that a driver exception message is passed through unchanged.
-- [ ] English captures of the editor (every tab/section) and the list, both heads.
+- [x] Migrate every `connections` inventory line and tick it.
+- [x] Tests per recipe rule 7, including: each validation message in French and English for an invalid profile; a SQLite profile without a file; a test that a driver exception message is passed through unchanged.
+- [ ] English captures of the editor (every tab/section) and the list, both heads. NOT DONE: the windows cannot be driven from the agent session; to check by hand with `SQUILL_LANGUAGE=en` (see `tools/visual/README.md`).
 
 ## Acceptance criteria
 - Common criteria of the recipe. No English validation message appears in the French UI and no French one in the English UI (the report quotes the check).

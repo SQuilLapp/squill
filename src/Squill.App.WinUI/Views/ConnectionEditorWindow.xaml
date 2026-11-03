@@ -171,7 +171,7 @@
             <Button x:Name="TestButton">
               <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock loc:Loc.Key="connections.test" />
-                <ContentControl Style="{StaticResource KeyboardChipStyle}" Content="Ctrl+Entrée" />
+                <ContentControl Style="{StaticResource KeyboardChipStyle}" loc:Loc.Key="connections.testShortcut" />
               </StackPanel>
             </Button>
             <Button Click="OnCancel" loc:Loc.Key="connections.cancel" />
