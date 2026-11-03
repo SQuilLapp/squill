@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:v="using:Squill.App.WinUI.Views"
         Title="SQuilL">
-  <Grid x:Name="Root" Background="{ThemeResource SquillBgBaseBrush}">
+  <Grid x:Name="Root" Background="{ThemeResource SquillBgBaseBrush}" KeyboardAcceleratorPlacementMode="Hidden">
     <Grid.KeyboardAccelerators>
       <KeyboardAccelerator Key="F5" Invoked="OnRunAccelerator" />
       <KeyboardAccelerator Key="Enter" Modifiers="Control" Invoked="OnRunAccelerator" />

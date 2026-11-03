@@ -351,14 +351,28 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
         }
 
         // Providers parse the text they get; handing them only the statement at the caret keeps a 100,000-statement script interactive.
+        // The splitter trims trailing blanks, so a caret after "FROM " lies past the end of its statement: that statement is extended to the caret.
         private static (string Text, int Shift) CurrentStatement(string text, int offset, DatabaseDialect dialect)
         {
+            SqlStatementSpan? previous = null;
             foreach (var span in SqlStatementSplitter.Split(text, dialect))
             {
-                if (offset >= span.Start && offset <= span.Start + span.Length)
+                if (span.Start > offset)
+                {
+                    break;
+                }
+
+                if (offset <= span.Start + span.Length)
                 {
                     return (text.Substring(span.Start, span.Length), span.Start);
                 }
+
+                previous = span;
+            }
+
+            if (previous is { } last && text[last.End - 1] != ';')
+            {
+                return (text.Substring(last.Start, offset - last.Start), last.Start);
             }
 
             return ("", offset);
