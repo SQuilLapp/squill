@@ -23,13 +23,22 @@ public sealed class PostgresDatabaseProvider : IDatabaseProvider
             Database = profile.Database,
             Username = profile.UserName,
             Password = password,
+            Timeout = profile.ConnectTimeoutSeconds,
+            CommandTimeout = profile.CommandTimeoutSeconds,
         };
+        if (profile.Tls != TlsMode.Default)
+            builder.SslMode = profile.Tls switch
+            {
+                TlsMode.Disable => SslMode.Disable,
+                TlsMode.Require => SslMode.Require,
+                _ => SslMode.VerifyFull,
+            };
         return builder.ConnectionString;
     }
 
-    // The slim builder keeps the AOT footprint small; arrays are needed by the schema queries and array columns.
+    // The slim builder keeps the AOT footprint small; arrays are needed by the schema queries and array columns, TLS by the Tls profile option.
     private static NpgsqlDataSource BuildDataSource(string connectionString) =>
-        new NpgsqlSlimDataSourceBuilder(connectionString).EnableArrays().Build();
+        new NpgsqlSlimDataSourceBuilder(connectionString).EnableArrays().EnableTransportSecurity().Build();
 
     /// <inheritdoc />
     public async ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken)
@@ -38,7 +47,7 @@ public sealed class PostgresDatabaseProvider : IDatabaseProvider
         try
         {
             var connection = await dataSource.OpenConnectionAsync(cancellationToken);
-            return new PostgresDatabaseConnection(dataSource, connection);
+            return new PostgresDatabaseConnection(dataSource, connection, profile.CommandTimeoutSeconds);
         }
         catch
         {

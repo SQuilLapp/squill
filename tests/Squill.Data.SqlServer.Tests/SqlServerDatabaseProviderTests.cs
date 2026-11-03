@@ -7,11 +7,17 @@ namespace Squill.Data.SqlServer.Tests;
 public sealed class SqlServerDatabaseProviderTests(SqlServerFixture server) : IClassFixture<SqlServerFixture>
 {
     // The container presents a self-signed certificate; the provider trusts it only for loopback hosts.
-    private ValueTask<IDatabaseConnection> OpenAsync() =>
-        new SqlServerDatabaseProvider().OpenAsync(
-            new ConnectionProfile(Guid.NewGuid(), "ms", DatabaseDialect.SqlServer, server.Host, server.Port, SqlServerFixture.Database, SqlServerFixture.UserName, null, null),
-            SqlServerFixture.Password,
-            CancellationToken.None);
+    private ConnectionProfile Profile() =>
+        new(Guid.NewGuid(), "ms", DatabaseDialect.SqlServer, server.Host, server.Port, SqlServerFixture.Database, SqlServerFixture.UserName, null, null);
+
+    private ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile? profile = null) =>
+        new SqlServerDatabaseProvider().OpenAsync(profile ?? Profile(), SqlServerFixture.Password, CancellationToken.None);
+
+    private static async Task<List<object?[]>> QueryAsync(IDatabaseConnection connection, string sql)
+    {
+        await using var reader = await connection.ExecuteAsync(sql, [], CancellationToken.None);
+        return await reader.ReadAllAsync(100, CancellationToken.None);
+    }
 
     [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
     public async Task ExecuteAsync_TypedValuesAndNull_AreReadBack()
@@ -65,5 +71,24 @@ public sealed class SqlServerDatabaseProviderTests(SqlServerFixture server) : IC
     {
         await using var connection = await OpenAsync();
         await Assert.ThrowsAsync<SqlException>(async () => await connection.ExecuteAsync("selec nope", [], CancellationToken.None));
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task OpenAsync_LoopbackIpWithTrustFlag_ConnectsEncrypted()
+    {
+        await using var connection = await OpenAsync(Profile() with { Host = "127.0.0.1", Tls = TlsMode.Require, TrustServerCertificate = true });
+        var rows = await QueryAsync(connection, "select encrypt_option from sys.dm_exec_connections where session_id = @@spid");
+        Assert.Equal("TRUE", Assert.Single(rows)[0]);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task OpenAsync_TlsVerifyFull_RejectsSelfSignedCertificate() =>
+        await Assert.ThrowsAnyAsync<Exception>(async () => await OpenAsync(Profile() with { Host = "127.0.0.1", Tls = TlsMode.VerifyFull }));
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ExecuteAsync_SlowStatement_FailsAfterCommandTimeout()
+    {
+        await using var connection = await OpenAsync(Profile() with { CommandTimeoutSeconds = 1 });
+        await Assert.ThrowsAnyAsync<Exception>(async () => await QueryAsync(connection, "waitfor delay '00:00:05'"));
     }
 }

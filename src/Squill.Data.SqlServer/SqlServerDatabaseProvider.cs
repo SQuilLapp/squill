@@ -10,7 +10,7 @@ public sealed class SqlServerDatabaseProvider : IDatabaseProvider
     public DatabaseDialect Dialect => DatabaseDialect.SqlServer;
 
     /// <summary>Builds the SqlClient connection string for a profile.</summary>
-    /// <remarks>The server certificate is trusted without validation only when the host is <c>localhost</c>, <c>127.0.0.1</c> or <c>::1</c>.</remarks>
+    /// <remarks>The server certificate is trusted without validation when the profile asks for it, for <see cref="TlsMode.Require"/>, or when the host is <c>localhost</c>, <c>127.0.0.1</c> or <c>::1</c>; never for <see cref="TlsMode.VerifyFull"/>.</remarks>
     public static string BuildConnectionString(ConnectionProfile profile, string? password)
     {
         ArgumentNullException.ThrowIfNull(profile);
@@ -23,8 +23,12 @@ public sealed class SqlServerDatabaseProvider : IDatabaseProvider
             InitialCatalog = profile.Database ?? string.Empty,
             UserID = profile.UserName ?? string.Empty,
             Password = password ?? string.Empty,
-            TrustServerCertificate = IsLoopback(profile.Host),
+            ConnectTimeout = profile.ConnectTimeoutSeconds,
+            CommandTimeout = profile.CommandTimeoutSeconds,
+            TrustServerCertificate = profile.Tls != TlsMode.VerifyFull && (profile.TrustServerCertificate || profile.Tls == TlsMode.Require || IsLoopback(profile.Host)),
         };
+        if (profile.Tls != TlsMode.Default)
+            builder.Encrypt = profile.Tls == TlsMode.Disable ? SqlConnectionEncryptOption.Optional : SqlConnectionEncryptOption.Mandatory;
         return builder.ConnectionString;
     }
 
@@ -39,7 +43,7 @@ public sealed class SqlServerDatabaseProvider : IDatabaseProvider
         try
         {
             await connection.OpenAsync(cancellationToken);
-            return new SqlServerDatabaseConnection(connection);
+            return new SqlServerDatabaseConnection(connection, profile.CommandTimeoutSeconds);
         }
         catch
         {

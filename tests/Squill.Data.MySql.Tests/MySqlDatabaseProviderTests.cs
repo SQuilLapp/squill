@@ -6,11 +6,11 @@ namespace Squill.Data.MySql.Tests;
 
 public sealed class MySqlDatabaseProviderTests(MySqlFixture server) : IClassFixture<MySqlFixture>
 {
-    private ValueTask<IDatabaseConnection> OpenAsync() =>
-        new MySqlDatabaseProvider().OpenAsync(
-            new ConnectionProfile(Guid.NewGuid(), "my", DatabaseDialect.MySql, server.Host, server.Port, MySqlFixture.Database, MySqlFixture.UserName, null, null),
-            MySqlFixture.Password,
-            CancellationToken.None);
+    private ConnectionProfile Profile() =>
+        new(Guid.NewGuid(), "my", DatabaseDialect.MySql, server.Host, server.Port, MySqlFixture.Database, MySqlFixture.UserName, null, null);
+
+    private ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile? profile = null) =>
+        new MySqlDatabaseProvider().OpenAsync(profile ?? Profile(), MySqlFixture.Password, CancellationToken.None);
 
     private static async Task<List<object?[]>> QueryAsync(IDatabaseConnection connection, string sql, params QueryParameter[] parameters)
     {
@@ -71,5 +71,24 @@ public sealed class MySqlDatabaseProviderTests(MySqlFixture server) : IClassFixt
     {
         await using var connection = await OpenAsync();
         await Assert.ThrowsAsync<MySqlException>(async () => await connection.ExecuteAsync("selec nope", [], CancellationToken.None));
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task OpenAsync_TlsRequire_ConnectsWithSelfSignedCertificate()
+    {
+        await using var connection = await OpenAsync(Profile() with { Tls = TlsMode.Require });
+        var rows = await QueryAsync(connection, "show session status like 'Ssl_cipher'");
+        Assert.False(string.IsNullOrEmpty((string?)Assert.Single(rows)[1]));
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task OpenAsync_TlsVerifyFull_RejectsSelfSignedCertificate() =>
+        await Assert.ThrowsAnyAsync<Exception>(async () => await OpenAsync(Profile() with { Tls = TlsMode.VerifyFull }));
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ExecuteAsync_SlowStatement_FailsAfterCommandTimeout()
+    {
+        await using var connection = await OpenAsync(Profile() with { CommandTimeoutSeconds = 1 });
+        await Assert.ThrowsAnyAsync<Exception>(async () => await QueryAsync(connection, "select count(*) from information_schema.columns a, information_schema.columns b, information_schema.columns c, information_schema.columns d"));
     }
 }

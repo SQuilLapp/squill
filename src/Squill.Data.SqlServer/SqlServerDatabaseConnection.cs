@@ -4,7 +4,7 @@ using Squill.Core;
 namespace Squill.Data.SqlServer;
 
 /// <summary>SQL Server implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class SqlServerDatabaseConnection(SqlConnection connection) : IDatabaseConnection
+internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection
 {
     /// <inheritdoc />
     public string ServerVersion => connection.ServerVersion;
@@ -12,7 +12,7 @@ internal sealed class SqlServerDatabaseConnection(SqlConnection connection) : ID
     /// <inheritdoc />
     public async ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken)
     {
-        var command = new SqlCommand(sql, connection);
+        var command = new SqlCommand(sql, connection) { CommandTimeout = commandTimeoutSeconds };
         try
         {
             foreach (var parameter in parameters)

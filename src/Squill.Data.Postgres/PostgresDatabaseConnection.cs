@@ -4,7 +4,7 @@ using Squill.Core;
 namespace Squill.Data.Postgres;
 
 /// <summary>Postgres implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, NpgsqlConnection connection) : IDatabaseConnection
+internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, NpgsqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection
 {
     /// <inheritdoc />
     public string ServerVersion => connection.PostgreSqlVersion.ToString();
@@ -12,7 +12,7 @@ internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, Np
     /// <inheritdoc />
     public async ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken)
     {
-        var command = new NpgsqlCommand(sql, connection);
+        var command = new NpgsqlCommand(sql, connection) { CommandTimeout = commandTimeoutSeconds };
         try
         {
             foreach (var parameter in parameters)

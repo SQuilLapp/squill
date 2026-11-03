@@ -4,7 +4,7 @@ using Squill.Core;
 namespace Squill.Data.MySql;
 
 /// <summary>MySQL implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class MySqlDatabaseConnection(MySqlConnection connection) : IDatabaseConnection
+internal sealed class MySqlDatabaseConnection(MySqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection
 {
     /// <inheritdoc />
     public string ServerVersion => connection.ServerVersion;
@@ -12,7 +12,7 @@ internal sealed class MySqlDatabaseConnection(MySqlConnection connection) : IDat
     /// <inheritdoc />
     public async ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken)
     {
-        var command = new MySqlCommand(sql, connection);
+        var command = new MySqlCommand(sql, connection) { CommandTimeout = commandTimeoutSeconds };
         try
         {
             foreach (var parameter in parameters)

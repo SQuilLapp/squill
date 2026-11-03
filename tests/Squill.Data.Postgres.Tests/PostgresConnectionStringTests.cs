@@ -33,4 +33,23 @@ public sealed class PostgresConnectionStringTests
     [InlineData("")]
     public void BuildConnectionString_MissingHost_ThrowsArgumentException(string? host) =>
         Assert.Throws<ArgumentException>(() => PostgresDatabaseProvider.BuildConnectionString(Profile with { Host = host }, null));
+
+    [Theory]
+    [InlineData(TlsMode.Disable, SslMode.Disable)]
+    [InlineData(TlsMode.Require, SslMode.Require)]
+    [InlineData(TlsMode.VerifyFull, SslMode.VerifyFull)]
+    public void BuildConnectionString_Tls_MapsToSslMode(TlsMode tls, SslMode expected) =>
+        Assert.Equal(expected, new NpgsqlConnectionStringBuilder(PostgresDatabaseProvider.BuildConnectionString(Profile with { Tls = tls }, null)).SslMode);
+
+    [Fact]
+    public void BuildConnectionString_TlsDefault_KeepsDriverDefault() =>
+        Assert.Equal(new NpgsqlConnectionStringBuilder().SslMode, new NpgsqlConnectionStringBuilder(PostgresDatabaseProvider.BuildConnectionString(Profile, null)).SslMode);
+
+    [Fact]
+    public void BuildConnectionString_Timeouts_AreMapped()
+    {
+        var builder = new NpgsqlConnectionStringBuilder(PostgresDatabaseProvider.BuildConnectionString(Profile with { ConnectTimeoutSeconds = 7, CommandTimeoutSeconds = 9 }, null));
+        Assert.Equal(7, builder.Timeout);
+        Assert.Equal(9, builder.CommandTimeout);
+    }
 }

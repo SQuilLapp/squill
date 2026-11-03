@@ -1,6 +1,6 @@
 # P11-07 - Data: apply the connection options in the four providers
 
-Status: todo
+Status: done
 Depends on: P11-06, P11-04
 
 ## Goal
@@ -19,8 +19,8 @@ Each provider turns `TlsMode`, `TrustServerCertificate` and the timeouts into it
 - UI, SSH.
 
 ## Tasks
-- [ ] Implement the mapping in the four providers; unit tests per provider that parse the produced string back with the builder (no server).
-- [ ] Docker-gated tests (run with P11-01 script): TLS `Require` connects on each server (PostgreSQL and MySQL images support TLS with their self-signed certificate: `Require` must work, `VerifyFull` must fail with a certificate error, and the test asserts the failure); SQL Server connects with `TrustServerCertificate=true` through host `127.0.0.1`.
+- [x] Implement the mapping in the four providers; unit tests per provider that parse the produced string back with the builder (no server).
+- [x] Docker-gated tests (run with P11-01 script): TLS `Require` connects on each server (PostgreSQL and MySQL images support TLS with their self-signed certificate: `Require` must work, `VerifyFull` must fail with a certificate error, and the test asserts the failure); SQL Server connects with `TrustServerCertificate=true` through host `127.0.0.1`.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; default test run green.

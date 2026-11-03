@@ -6,11 +6,11 @@ namespace Squill.Data.Postgres.Tests;
 
 public sealed class PostgresDatabaseProviderTests(PostgresFixture server) : IClassFixture<PostgresFixture>
 {
-    private ValueTask<IDatabaseConnection> OpenAsync() =>
-        new PostgresDatabaseProvider().OpenAsync(
-            new ConnectionProfile(Guid.NewGuid(), "pg", DatabaseDialect.PostgreSql, server.Host, server.Port, PostgresFixture.Database, PostgresFixture.UserName, null, null),
-            PostgresFixture.Password,
-            CancellationToken.None);
+    private ConnectionProfile Profile() =>
+        new(Guid.NewGuid(), "pg", DatabaseDialect.PostgreSql, server.Host, server.Port, PostgresFixture.Database, PostgresFixture.UserName, null, null);
+
+    private ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile? profile = null) =>
+        new PostgresDatabaseProvider().OpenAsync(profile ?? Profile(), PostgresFixture.Password, CancellationToken.None);
 
     private static async Task<List<object?[]>> QueryAsync(IDatabaseConnection connection, string sql, params QueryParameter[] parameters)
     {
@@ -68,5 +68,24 @@ public sealed class PostgresDatabaseProviderTests(PostgresFixture server) : ICla
     {
         await using var connection = await OpenAsync();
         await Assert.ThrowsAsync<PostgresException>(async () => await connection.ExecuteAsync("selec nope", [], CancellationToken.None));
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task OpenAsync_TlsRequire_ConnectsWithSelfSignedCertificate()
+    {
+        await using var connection = await OpenAsync(Profile() with { Tls = TlsMode.Require });
+        var rows = await QueryAsync(connection, "select ssl from pg_stat_ssl where pid = pg_backend_pid()");
+        Assert.Equal(true, Assert.Single(rows)[0]);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task OpenAsync_TlsVerifyFull_RejectsSelfSignedCertificate() =>
+        await Assert.ThrowsAnyAsync<Exception>(async () => await OpenAsync(Profile() with { Tls = TlsMode.VerifyFull }));
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ExecuteAsync_SlowStatement_FailsAfterCommandTimeout()
+    {
+        await using var connection = await OpenAsync(Profile() with { CommandTimeoutSeconds = 1 });
+        await Assert.ThrowsAnyAsync<Exception>(async () => await QueryAsync(connection, "select pg_sleep(5)"));
     }
 }

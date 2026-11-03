@@ -26,6 +26,6 @@ public sealed class SqliteDatabaseProvider : IDatabaseProvider
             await connection.DisposeAsync();
             throw;
         }
-        return new SqliteDatabaseConnection(connection);
+        return new SqliteDatabaseConnection(connection, profile.CommandTimeoutSeconds);
     }
 }

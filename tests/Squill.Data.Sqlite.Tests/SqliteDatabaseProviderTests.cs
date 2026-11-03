@@ -92,4 +92,27 @@ public sealed class SqliteDatabaseProviderTests
         await using var connection = await OpenAsync();
         await Assert.ThrowsAsync<SqliteException>(async () => await connection.ExecuteAsync("SELEC nope", [], CancellationToken.None));
     }
+
+    [Fact]
+    public async Task ExecuteAsync_LockedDatabase_FailsAfterCommandTimeout()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"squill-timeout-{Guid.NewGuid():N}.db");
+        try
+        {
+            var profile = Memory with { FilePath = path, CommandTimeoutSeconds = 1 };
+            await using var holder = await OpenAsync(profile);
+            await QueryAsync(holder, "CREATE TABLE t (i INTEGER)");
+            await QueryAsync(holder, "BEGIN EXCLUSIVE");
+            await using var waiter = await OpenAsync(profile);
+
+            var started = System.Diagnostics.Stopwatch.StartNew();
+            await Assert.ThrowsAsync<SqliteException>(async () => await QueryAsync(waiter, "INSERT INTO t VALUES (1)"));
+            Assert.InRange(started.Elapsed, TimeSpan.FromMilliseconds(500), TimeSpan.FromSeconds(10));
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            File.Delete(path);
+        }
+    }
 }

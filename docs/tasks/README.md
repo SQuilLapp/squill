@@ -196,7 +196,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-04](phase-11/P11-04-sqlserver-container-tests.md) | SQL Server container tests run and pass | P11-01 | done |
 | [P11-05](phase-11/P11-05-ci-docker-tests.md) | CI runs the Docker-gated tests on Linux | P11-02 ... P11-04 | done |
 | [P11-06](phase-11/P11-06-core-connection-options.md) | Core: connection options (TLS, timeouts) | none | done |
-| [P11-07](phase-11/P11-07-data-connection-options.md) | Data: apply the connection options in the four providers | P11-06, P11-04 | todo |
+| [P11-07](phase-11/P11-07-data-connection-options.md) | Data: apply the connection options in the four providers | P11-06, P11-04 | done |
 | [P11-08](phase-11/P11-08-winui-connection-options.md) | WinUI head: connection options in the connection editor | P11-06, P11-07 | todo |
 | [P11-09](phase-11/P11-09-avalonia-connection-options.md) | Avalonia head: connection options in the connection manager | P11-08 | todo |
 | [P11-10](phase-11/P11-10-cancel-and-timeout.md) | Cancel and timeout proven on every engine | P11-07 | todo |

@@ -4,7 +4,7 @@ using Squill.Core;
 namespace Squill.Data.Sqlite;
 
 /// <summary>SQLite implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class SqliteDatabaseConnection(SqliteConnection connection) : IDatabaseConnection
+internal sealed class SqliteDatabaseConnection(SqliteConnection connection, int commandTimeoutSeconds) : IDatabaseConnection
 {
     /// <inheritdoc />
     public string ServerVersion => connection.ServerVersion;
@@ -16,6 +16,7 @@ internal sealed class SqliteDatabaseConnection(SqliteConnection connection) : ID
         try
         {
             command.CommandText = sql;
+            command.CommandTimeout = commandTimeoutSeconds;
             foreach (var parameter in parameters)
                 command.Parameters.AddWithValue("@" + parameter.Name, parameter.Value ?? DBNull.Value);
             var reader = await command.ExecuteReaderAsync(cancellationToken);
