@@ -76,6 +76,7 @@ public sealed partial class QueryTabView : UserControl
         var toolbar = BuildToolbar();
         var editor = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(3) }, new ColumnDefinition() } };
         Grid.SetColumn(_editorHost, 1);
+        _editorHost.PreviewKeyDown += OnEditorPreviewKeyDown;
         editor.Children.Add(_envStripe);
         editor.Children.Add(_editorHost);
         Grid.SetRow(editor, 1);
@@ -423,6 +424,23 @@ public sealed partial class QueryTabView : UserControl
             ShowGrid();
         else if (e.PropertyName is nameof(ResultViewModel.Editor) or nameof(ResultViewModel.ReadOnlyReason) && sender == _result)
             ShowEditBar();
+    }
+
+    // The editor consumes Ctrl+Enter as a new line before the window accelerators run, so the run keys are taken on the way down.
+    private void OnEditorPreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (_tab is null || e.Key is not (VirtualKey.Enter or VirtualKey.F5))
+            return;
+        var down = Windows.UI.Core.CoreVirtualKeyStates.Down;
+        var ctrl = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(down);
+        var shift = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(down);
+        if (e.Key == VirtualKey.F5 || ctrl && !shift)
+            _tab.RunCommand.Execute(null);
+        else if (ctrl)
+            _tab.RunAllCommand.Execute(null);
+        else
+            return;
+        e.Handled = true;
     }
 
     private void OnTabPropertyChanged(object? sender, PropertyChangedEventArgs e)

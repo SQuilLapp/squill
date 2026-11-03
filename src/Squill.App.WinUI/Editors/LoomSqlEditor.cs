@@ -32,6 +32,9 @@ namespace Squill.App.WinUI.Editors;
 public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
 {
     private const string LanguageId = "sql";
+
+    // LoomEditor has no "sql" language, so the model of an unknown id is plain text and only providers registered for that id are asked.
+    private const string ModelLanguageId = "plaintext";
     private const string MarkerOwner = "squill";
     private const int WindowPadding = 150;
 
@@ -53,6 +56,8 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
         _highlight = _editor.CreateDecorationsCollection();
         _providers = new SqlProviders(this);
         _editor.LanguageFeatures.CompletionProviders.Register(LanguageId, _providers);
+        _editor.LanguageFeatures.CompletionProviders.Register(ModelLanguageId, _providers);
+        _editor.LanguageFeatures.HoverProviders.Register(ModelLanguageId, _providers);
         _editor.LanguageFeatures.HoverProviders.Register(LanguageId, _providers);
         _debounce = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _debounce.Interval = TimeSpan.FromMilliseconds(120);
