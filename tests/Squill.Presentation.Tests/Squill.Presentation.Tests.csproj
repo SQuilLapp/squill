@@ -10,5 +10,6 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <ProjectReference Include="..\..\src\Squill.Presentation\Squill.Presentation.csproj" />
     <ProjectReference Include="..\..\src\Squill.Data.Sqlite\Squill.Data.Sqlite.csproj" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

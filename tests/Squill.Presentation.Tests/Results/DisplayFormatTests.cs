@@ -43,7 +43,8 @@ public sealed class DisplayFormatTests
     {
         var d = new DateTime(2026, 11, 3, 14, 5, 9);
         Assert.Equal("03/11/2026 14:05:09", Display(d, UiLanguage.French));
-        Assert.Equal("11/3/2026 2:05:09 PM", Display(d, UiLanguage.English));
+        // ICU puts a narrow no-break space before PM on some platforms.
+        Assert.Equal("11/3/2026 2:05:09 PM", Display(d, UiLanguage.English)!.Replace(' ', ' '));
         Assert.Equal("03/11/2026", Display(new DateOnly(2026, 11, 3), UiLanguage.French));
         Assert.Equal("11/3/2026", Display(new DateOnly(2026, 11, 3), UiLanguage.English));
     }
