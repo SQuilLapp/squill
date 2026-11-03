@@ -1,6 +1,6 @@
 # P10-05 - Avalonia head: language choice in the settings window
 
-Status: todo
+Status: done
 Depends on: P10-04
 
 ## Goal
@@ -17,9 +17,9 @@ Let the user pick System default / Français / English in the Avalonia settings 
 - Live switching, other settings rows, WinUI.
 
 ## Tasks
-- [ ] XAML row and note, `visual-spec.md` lines.
-- [ ] Test in `tests/Squill.App.Avalonia.Tests` that the window's ComboBox lists the three options and that selecting one sets `SettingsViewModel.Language` and `RestartRequired` (headless, in the style of the existing head tests).
-- [ ] Capture the settings window with `SQUILL_LANGUAGE=en` and `fr` (tools of P9-02) and check the row alignment.
+- [x] XAML row and note, `visual-spec.md` lines.
+- [x] Test in `tests/Squill.App.Avalonia.Tests` that the window's ComboBox lists the three options and that selecting one sets `SettingsViewModel.Language` and `RestartRequired` (headless, in the style of the existing head tests).
+- [ ] (not done: window not driven, owner to check by hand) Capture the settings window with `SQUILL_LANGUAGE=en` and `fr` (tools of P9-02) and check the row alignment.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` is green.

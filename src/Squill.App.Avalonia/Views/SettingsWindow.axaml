@@ -112,6 +112,17 @@
       <Panel Margin="0,0,40,32" MaxWidth="860" HorizontalAlignment="Left">
         <StackPanel Name="PageAppearance" Classes="page">
           <TextBlock Classes="pageTitle" Text="{loc:Text settings.appearance}" />
+          <Border Classes="card">
+            <StackPanel Margin="20,10">
+              <Grid Classes="row" ColumnDefinitions="*,Auto">
+                <TextBlock Classes="rowTitle" VerticalAlignment="Center" Text="{loc:Text settings.language}" />
+                <ComboBox Name="LanguageBox" Grid.Column="1" Width="180" VerticalAlignment="Center"
+                          ItemsSource="{Binding LanguageOptions}" DisplayMemberBinding="{Binding Label}"
+                          SelectedValueBinding="{Binding Value}" SelectedValue="{Binding Language, Mode=TwoWay}" />
+              </Grid>
+              <TextBlock Classes="rowDesc" Text="{loc:Text settings.restartNeeded}" IsVisible="{Binding RestartRequired}" Margin="0,0,0,6" />
+            </StackPanel>
+          </Border>
           <Border Classes="card" Padding="20">
             <StackPanel Spacing="14">
               <StackPanel>

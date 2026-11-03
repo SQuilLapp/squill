@@ -175,7 +175,7 @@ Depends on: <card ids, ranges allowed>
 | [P10-02](phase-10/P10-02-bilingual-catalog.md) | Presentation: bilingual string catalog (fr and en, plurals, parity tests) | P10-01 | done |
 | [P10-03](phase-10/P10-03-string-inventory.md) | Tests: hard-coded string scanner and inventory | none | done |
 | [P10-04](phase-10/P10-04-startup-language-and-settings-vm.md) | Presentation: language at startup and in the settings view-model | P10-01, P10-02 | done |
-| [P10-05](phase-10/P10-05-avalonia-settings-language.md) | Avalonia head: language choice in the settings window | P10-04 | todo |
+| [P10-05](phase-10/P10-05-avalonia-settings-language.md) | Avalonia head: language choice in the settings window | P10-04 | done |
 | [P10-06](phase-10/P10-06-winui-settings-language.md) | WinUI head: language choice in the settings window | P10-04 | todo |
 | [P10-07](phase-10/P10-07-formatting-culture.md) | Heads and Presentation: number and date formatting follows the language | P10-02 | todo |
 | [P10-08](phase-10/P10-08-winui-loc-properties.md) | WinUI head: catalog markup for tooltips, headers, titles and menus | P10-02 | todo |
