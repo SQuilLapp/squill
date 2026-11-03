@@ -181,6 +181,16 @@ internal static class UiTextCatalogFr
         ("editor.snippetInsert", "Insérer"),
         ("editor.snippetRename", "Renommer"),
         ("editor.snippetDelete", "Supprimer"),
+        ("history.clearTitle", "Effacer l'historique"),
+        ("history.clearConfirm", "Supprimer tout l'historique des requêtes ?"),
+        ("snippets.saveTitle", "Enregistrer le script"),
+        ("snippets.name", "Nom du script"),
+        ("snippets.renameTitle", "Renommer le script"),
+        ("snippets.deleteTitle", "Supprimer le script"),
+        ("snippets.deleteConfirm", "Supprimer le script '{0}' ?"),
+        ("terminal.localShell", "Shell local"),
+        ("terminal.noDatabaseFile", "La connexion '{0}' n'a pas de fichier de base de données."),
+        ("terminal.cliNotFound", "'{0}' est introuvable dans le PATH ; installez-le pour ouvrir un terminal {1}."),
 
         // Connections window
         ("connections.title", "Connexions — SQuilL"),

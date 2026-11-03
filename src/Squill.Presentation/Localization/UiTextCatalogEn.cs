@@ -181,6 +181,16 @@ internal static class UiTextCatalogEn
         ("editor.snippetInsert", "Insert"),
         ("editor.snippetRename", "Rename"),
         ("editor.snippetDelete", "Delete"),
+        ("history.clearTitle", "Clear history"),
+        ("history.clearConfirm", "Delete the whole query history?"),
+        ("snippets.saveTitle", "Save snippet"),
+        ("snippets.name", "Snippet name"),
+        ("snippets.renameTitle", "Rename snippet"),
+        ("snippets.deleteTitle", "Delete snippet"),
+        ("snippets.deleteConfirm", "Delete the snippet '{0}'?"),
+        ("terminal.localShell", "Local shell"),
+        ("terminal.noDatabaseFile", "Connection '{0}' has no database file."),
+        ("terminal.cliNotFound", "'{0}' was not found on PATH; install it to open a {1} terminal."),
 
         // Connections window
         ("connections.title", "Connections — SQuilL"),

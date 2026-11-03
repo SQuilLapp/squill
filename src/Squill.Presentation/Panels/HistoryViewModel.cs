@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Platform.Storage;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Workspace;
 
 namespace Squill.Presentation.Panels;
@@ -46,7 +47,7 @@ public sealed partial class HistoryViewModel(IQueryHistoryStore store, Workspace
     [RelayCommand]
     private async Task ClearAsync(CancellationToken ct)
     {
-        if (!await dialogs.ConfirmAsync("Clear history", "Delete the whole query history?"))
+        if (!await dialogs.ConfirmAsync(UiText.Get("history.clearTitle"), UiText.Get("history.clearConfirm")))
             return;
         await store.ClearAsync(ct);
         _all = [];

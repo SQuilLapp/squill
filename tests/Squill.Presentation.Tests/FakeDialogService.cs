@@ -14,6 +14,8 @@ internal sealed class FakeDialogService : IDialogService
 
     public List<(string Title, string Message)> Confirms { get; } = [];
 
+    public List<(string Title, string Message)> Prompts { get; } = [];
+
     public ValueTask<bool> ConfirmAsync(string title, string message)
     {
         Confirms.Add((title, message));
@@ -21,7 +23,13 @@ internal sealed class FakeDialogService : IDialogService
     }
 
     public ValueTask<string?> PromptAsync(string title, string message, string? initial) =>
-        ValueTask.FromResult(PromptResult ?? initial);
+        Record(title, message, initial);
+
+    private ValueTask<string?> Record(string title, string message, string? initial)
+    {
+        Prompts.Add((title, message));
+        return ValueTask.FromResult(PromptResult ?? initial);
+    }
 
     public ValueTask<string?> PickSaveFileAsync(string suggestedName, string extension) =>
         ValueTask.FromResult(SavePathResult);

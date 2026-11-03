@@ -1,6 +1,6 @@
 # P10-15 - Migrate strings: history, snippets, search box and terminal tabs
 
-Status: todo
+Status: done
 Depends on: P10-03, P10-04, P10-07, P10-08
 
 ## Goal
@@ -16,9 +16,9 @@ Follow `docs/tasks/phase-10/migration-recipe.md`. Area `history-snippets-termina
 - Workspace "terminal unavailable" errors (P10-16).
 
 ## Tasks
-- [ ] Migrate every `history-snippets-terminal` inventory line and tick it.
-- [ ] Tests per recipe rule 7 (relative-time and plural wording in both languages, each prompt and confirmation).
-- [ ] English captures: history list (today / older entries), snippets list, rename prompt, terminal tab, both heads.
+- [x] Migrate every `history-snippets-terminal` inventory line and tick it.
+- [x] Tests per recipe rule 7 (relative-time and plural wording in both languages, each prompt and confirmation).
+- [x] English captures: history list (today / older entries), snippets list, rename prompt, terminal tab, both heads.
 
 ## Acceptance criteria
 - Common criteria of the recipe.

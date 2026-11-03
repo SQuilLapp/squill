@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Platform.Storage;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Workspace;
 
 namespace Squill.Presentation.Panels;
@@ -32,7 +33,7 @@ public sealed partial class SnippetsViewModel(ISnippetStore store, WorkspaceView
         var sql = sel.Length > 0 ? editor.Text.Substring(sel.Start, sel.Length) : editor.Text;
         if (string.IsNullOrWhiteSpace(sql))
             return;
-        var name = await dialogs.PromptAsync("Save snippet", "Snippet name", null);
+        var name = await dialogs.PromptAsync(UiText.Get("snippets.saveTitle"), UiText.Get("snippets.name"), null);
         if (string.IsNullOrWhiteSpace(name))
             return;
         await store.SaveAsync(new Snippet(Guid.NewGuid(), name.Trim(), sql), ct);
@@ -56,7 +57,7 @@ public sealed partial class SnippetsViewModel(ISnippetStore store, WorkspaceView
     [RelayCommand]
     private async Task DeleteAsync(Snippet? snippet, CancellationToken ct)
     {
-        if (snippet is null || !await dialogs.ConfirmAsync("Delete snippet", $"Delete the snippet '{snippet.Name}'?"))
+        if (snippet is null || !await dialogs.ConfirmAsync(UiText.Get("snippets.deleteTitle"), UiText.Format("snippets.deleteConfirm", snippet.Name)))
             return;
         await store.DeleteAsync(snippet.Id, ct);
         Snippets.Remove(snippet);
@@ -67,7 +68,7 @@ public sealed partial class SnippetsViewModel(ISnippetStore store, WorkspaceView
     {
         if (snippet is null)
             return;
-        var name = await dialogs.PromptAsync("Rename snippet", "Snippet name", snippet.Name);
+        var name = await dialogs.PromptAsync(UiText.Get("snippets.renameTitle"), UiText.Get("snippets.name"), snippet.Name);
         if (string.IsNullOrWhiteSpace(name) || name.Trim() == snippet.Name)
             return;
         await store.SaveAsync(snippet with { Name = name.Trim() }, ct);

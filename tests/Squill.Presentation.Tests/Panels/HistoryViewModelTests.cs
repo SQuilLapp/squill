@@ -1,4 +1,5 @@
 using Squill.Platform.Storage;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Panels;
 using Xunit;
 
@@ -54,6 +55,18 @@ public sealed class HistoryViewModelTests
         await _history.ClearCommand.ExecuteAsync(null);
         Assert.Empty(_history.Entries);
         Assert.Empty(_store.Entries);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Effacer l'historique", "Supprimer tout l'historique des requêtes ?")]
+    [InlineData(UiLanguage.English, "Clear history", "Delete the whole query history?")]
+    public async Task Clear_AsksConfirmationInTheCurrentLanguage(UiLanguage language, string title, string message)
+    {
+        using var scope = UiText.Override(language);
+
+        await _history.ClearCommand.ExecuteAsync(null);
+
+        Assert.Equal((title, message), Assert.Single(_host.Dialogs.Confirms));
     }
 
     [Fact]
