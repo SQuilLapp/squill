@@ -460,12 +460,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         Script = DdlGenerators.ToScript(_statements);
         UpdateRowStates(design);
         DraftChangeCount = Baseline is { } baseline ? TableDiff.Compute(baseline, design).Count : 0;
-        DraftText = DraftChangeCount switch
-        {
-            0 => "",
-            1 => UiText.Format("designer.draftChanges.one", 1),
-            var n => UiText.Format("designer.draftChanges.other", n),
-        };
+        DraftText = DraftChangeCount == 0 ? "" : UiText.FormatPlural("designer.draftChanges", DraftChangeCount);
         var connection = _session.Profile;
         Subtitle = string.Join(" · ", new[] { connection.Name, connection.Database ?? connection.FilePath, design.Schema }.Where(x => !string.IsNullOrEmpty(x)));
         UpdateSelectedTitle();

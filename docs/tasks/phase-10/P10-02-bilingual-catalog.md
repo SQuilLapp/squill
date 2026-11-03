@@ -1,6 +1,6 @@
 # P10-02 - Presentation: bilingual string catalog
 
-Status: todo
+Status: done
 Depends on: P10-01
 
 ## Goal
@@ -22,9 +22,9 @@ Turn the French-only catalog into two catalogs (French and English) with identic
 - Reading the setting and calling `Initialize` (P10-04), culture of other formatters (P10-07), any new string.
 
 ## Tasks
-- [ ] Split the catalog, write the 234 English values, extend `UiText`.
-- [ ] Parity, placeholder, plural and `Override` tests.
-- [ ] Update `docs/architecture.md` only if it describes the catalog (one line).
+- [x] Split the catalog, write the 234 English values, extend `UiText`.
+- [x] Parity, placeholder, plural and `Override` tests.
+- [x] Update `docs/architecture.md` only if it describes the catalog (one line).
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.

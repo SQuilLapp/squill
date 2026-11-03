@@ -184,7 +184,7 @@ public sealed partial class QueryTabView : UserControl
         if (_editor is null)
             return;
         var count = _editor.PendingCount;
-        EditStatus.Text = UiText.Format(count == 1 ? "results.pendingChanges.one" : "results.pendingChanges.other", count);
+        EditStatus.Text = UiText.FormatPlural("results.pendingChanges", count);
         EditDetail.Text = DescribeChanges(_editor);
         var issues = _editor.Issues.Count;
         IssuesButton.IsVisible = issues > 0;
@@ -204,7 +204,7 @@ public sealed partial class QueryTabView : UserControl
         static void Add(List<string> parts, int n, string key)
         {
             if (n > 0)
-                parts.Add(UiText.Format(n == 1 ? key + ".one" : key + ".other", n));
+                parts.Add(UiText.FormatPlural(key, n));
         }
     }
 

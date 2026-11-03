@@ -1,7 +1,7 @@
 namespace Squill.Presentation.Localization;
 
-/// <summary>The French strings of the phase 9 mockups (<c>docs/design/visual-spec.md</c> sections 4 to 9), keyed by English identifier.</summary>
-internal static class UiTextCatalog
+/// <summary>The French strings of the application (phase 9 mockups, <c>docs/design/visual-spec.md</c> sections 4 to 9), keyed by English identifier.</summary>
+internal static class UiTextCatalogFr
 {
     /// <summary>Every entry; kept as pairs so that a test can detect duplicate keys.</summary>
     internal static readonly (string Key, string Value)[] Entries =
