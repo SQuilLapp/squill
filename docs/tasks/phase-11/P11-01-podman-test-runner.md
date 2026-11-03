@@ -1,6 +1,6 @@
 # P11-01 - Podman runner for the Docker-gated tests
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -16,9 +16,9 @@ The Testcontainers tests gated by `SQUILL_DOCKER_TESTS=1` (Postgres, MySQL, SQL 
 - Making the tests pass (P11-02 ... P11-04). Docker Desktop support beyond not breaking it (if `DOCKER_HOST` is already set the script keeps it).
 
 ## Tasks
-- [ ] Write the script and `docs/testing.md`.
-- [ ] Run it for `postgres` with the existing tests: the container must start and the tests must at least begin to execute (pass or fail is P11-02). Record the exact `DOCKER_HOST` value that worked in `docs/testing.md`.
-- [ ] Run it with `-Filter` on a connection-string test to prove the exit code is forwarded.
+- [x] Write the script and `docs/testing.md`.
+- [x] Run it for `postgres` with the existing tests: the container must start and the tests must at least begin to execute (pass or fail is P11-02). Record the exact `DOCKER_HOST` value that worked in `docs/testing.md`.
+- [x] Run it with `-Filter` on a connection-string test to prove the exit code is forwarded.
 
 ## Acceptance criteria
 - `rtk pwsh eng/run-docker-tests.ps1 -Engine postgres` pulls the image, starts a container, runs the tests and leaves no container (`podman ps -a` empty).

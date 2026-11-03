@@ -58,7 +58,7 @@ Tests that need Docker (PostgreSQL, MySQL, SQL Server containers through Testcon
 SQUILL_DOCKER_TESTS=1 dotnet test --solution Squill.slnx -c Release
 ```
 
-On PowerShell use `$env:SQUILL_DOCKER_TESTS = '1'` before the command.
+On PowerShell use `$env:SQUILL_DOCKER_TESTS = '1'` before the command. With Podman and no Docker, `pwsh eng/run-docker-tests.ps1` does it all; see [docs/testing.md](docs/testing.md).
 
 Native AOT publish of a head (zero IL2xxx/IL3xxx warnings expected):
 

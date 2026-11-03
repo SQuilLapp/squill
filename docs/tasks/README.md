@@ -190,7 +190,7 @@ Depends on: <card ids, ranges allowed>
 | [P10-16](phase-10/P10-16-migrate-settings-dialogs-errors.md) | Migrate strings: settings, dialogs, errors and leftovers | P10-10 ... P10-15, P10-05, P10-06 | done |
 | [P10-17](phase-10/P10-17-enforcement-tests.md) | Tests: completeness guards for localization | P10-16 | done |
 | [P10-18](phase-10/P10-18-docs-and-adr.md) | Documentation: localization ADR 0007, README and architecture note | P10-17 | done |
-| [P11-01](phase-11/P11-01-podman-test-runner.md) | Podman runner for the Docker-gated tests | none | todo |
+| [P11-01](phase-11/P11-01-podman-test-runner.md) | Podman runner for the Docker-gated tests | none | done |
 | [P11-02](phase-11/P11-02-postgres-container-tests.md) | PostgreSQL container tests run and pass | P11-01 | todo |
 | [P11-03](phase-11/P11-03-mysql-container-tests.md) | MySQL container tests run and pass | P11-01 | todo |
 | [P11-04](phase-11/P11-04-sqlserver-container-tests.md) | SQL Server container tests run and pass | P11-01 | todo |
