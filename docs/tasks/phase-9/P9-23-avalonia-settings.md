@@ -1,6 +1,6 @@
 # P9-23 - Avalonia head: settings window
 
-Status: todo
+Status: done
 Depends on: P9-05, P9-03, P9-02
 
 ## Goal
@@ -15,8 +15,8 @@ The settings window matches the structure and look of M14 for the settings that 
 - Accent color, window material, density, UI font, ligatures, animations, shortcuts, drivers, profile header, search box behavior (no settings behind them; the nav search box is not drawn).
 
 ## Tasks
-- [ ] Rework `SettingsWindow.axaml`.
-- [ ] Headless tests: theme card sets `Theme`, nav switches page, values round-trip through the view-model.
+- [x] Rework `SettingsWindow.axaml`.
+- [x] Headless tests: theme card sets `Theme`, nav switches page, values round-trip through the view-model.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

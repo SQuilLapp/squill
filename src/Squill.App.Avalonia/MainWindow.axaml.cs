@@ -63,7 +63,7 @@ public sealed partial class MainWindow : Window
     private void OpenSettings()
     {
         if (_settings is not null)
-            new SettingsWindow { DataContext = _settings }.Show(this);
+            new SettingsWindow { DataContext = _settings, DataDirectory = _dataDirectory }.Show(this);
     }
 
     private void OnSettingsClicked(object? sender, RoutedEventArgs e) => OpenSettings();

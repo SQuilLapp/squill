@@ -235,5 +235,16 @@ internal static class UiTextCatalog
         ("settings.themeSystem", "Système"),
         ("settings.themeLight", "Clair"),
         ("settings.themeDark", "Sombre"),
+        ("settings.themeTitle", "Thème"),
+        ("settings.themeDesc", "Suit le thème de Windows par défaut."),
+        ("settings.fontSizeTitle", "Taille de la police de l'éditeur"),
+        ("settings.fontSizeDesc", "Taille du texte SQL, en points (de 8 à 32)."),
+        ("settings.keywordCaseTitle", "Casse des mots-clés"),
+        ("settings.keywordCaseDesc", "Appliquée par la commande Formater le SQL."),
+        ("settings.maxRowsTitle", "Nombre maximal de lignes"),
+        ("settings.maxRowsDesc", "Lignes conservées en mémoire pour un résultat."),
+        ("settings.dataFolderTitle", "Dossier de données"),
+        ("settings.dataFolderDesc", "Contient les profils, les paramètres et l'historique."),
+        ("settings.back", "Retour"),
     ];
 }

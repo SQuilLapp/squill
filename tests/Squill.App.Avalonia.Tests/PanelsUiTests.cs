@@ -54,6 +54,30 @@ public sealed class PanelsUiTests
             Assert.Equal(14d, settings.EditorFontSize);
             window.FindControl<RadioButton>("ThemeDark")!.IsChecked = true;
             Assert.Equal(ThemeMode.Dark, settings.Theme);
+            window.FindControl<RadioButton>("ThemeLight")!.IsChecked = true;
+            Assert.Equal(ThemeMode.Light, settings.Theme);
+            window.FindControl<RadioButton>("ThemeSystem")!.IsChecked = true;
+            Assert.Equal(ThemeMode.System, settings.Theme);
+            return Task.CompletedTask;
+        });
+    }
+
+    [Fact]
+    public async Task SettingsWindow_NavSwitchesPage()
+    {
+        await WithServicesAsync(services =>
+        {
+            var window = new SettingsWindow { DataContext = services.Settings, DataDirectory = "C:/data" };
+            Assert.True(window.FindControl<StackPanel>("PageAppearance")!.IsVisible);
+            Assert.False(window.FindControl<StackPanel>("PageGrid")!.IsVisible);
+
+            window.FindControl<RadioButton>("NavGrid")!.IsChecked = true;
+            Assert.False(window.FindControl<StackPanel>("PageAppearance")!.IsVisible);
+            Assert.True(window.FindControl<StackPanel>("PageGrid")!.IsVisible);
+
+            window.FindControl<RadioButton>("NavAdvanced")!.IsChecked = true;
+            Assert.True(window.FindControl<StackPanel>("PageAdvanced")!.IsVisible);
+            Assert.Equal("C:/data", window.FindControl<TextBlock>("DataFolderPath")!.Text);
             return Task.CompletedTask;
         });
     }

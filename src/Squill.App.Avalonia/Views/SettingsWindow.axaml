@@ -2,26 +2,201 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:se="using:Squill.Presentation.Settings"
         xmlns:ps="using:Squill.Platform.Settings"
+        xmlns:loc="using:Squill.App.Avalonia.Localization"
         x:Class="Squill.App.Avalonia.Views.SettingsWindow"
         x:DataType="se:SettingsViewModel"
-        Title="Settings" Width="360" SizeToContent="Height" CanResize="False"
+        Title="{loc:Text settings.title}" Width="1100" Height="720" MinWidth="760" MinHeight="480"
         WindowStartupLocation="CenterOwner"
-        Background="{DynamicResource SquillBgSurfaceBrush}">
-  <StackPanel Margin="16" Spacing="6">
-    <TextBlock Text="Theme" Foreground="{DynamicResource SquillFg2Brush}" />
-    <StackPanel Orientation="Horizontal" Spacing="8">
-      <RadioButton Name="ThemeSystem" GroupName="Theme" Content="System" Tag="{x:Static ps:ThemeMode.System}" IsCheckedChanged="OnThemeChecked"
-                   IsChecked="{Binding Theme, Mode=OneWay, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static ps:ThemeMode.System}}" />
-      <RadioButton Name="ThemeLight" GroupName="Theme" Content="Light" Tag="{x:Static ps:ThemeMode.Light}" IsCheckedChanged="OnThemeChecked"
-                   IsChecked="{Binding Theme, Mode=OneWay, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static ps:ThemeMode.Light}}" />
-      <RadioButton Name="ThemeDark" GroupName="Theme" Content="Dark" Tag="{x:Static ps:ThemeMode.Dark}" IsCheckedChanged="OnThemeChecked"
-                   IsChecked="{Binding Theme, Mode=OneWay, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static ps:ThemeMode.Dark}}" />
+        Background="{DynamicResource SquillBgBaseBrush}">
+  <Window.Styles>
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource SquillBgRaisedBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SquillBorderSubtleBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusLg}" />
+    </Style>
+    <Style Selector="Grid.row"><Setter Property="MinHeight" Value="56" /></Style>
+    <Style Selector="TextBlock.pageTitle">
+      <Setter Property="FontSize" Value="{DynamicResource SquillFontSizeDisplay}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+      <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+    <Style Selector="TextBlock.rowTitle">
+      <Setter Property="FontSize" Value="{DynamicResource SquillFontSizeSubtitle}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+    </Style>
+    <Style Selector="TextBlock.rowDesc">
+      <Setter Property="FontSize" Value="{DynamicResource SquillFontSizeBody}" />
+      <Setter Property="Foreground" Value="{DynamicResource SquillFg3Brush}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="StackPanel.page"><Setter Property="Spacing" Value="12" /></Style>
+
+    <Style Selector="RadioButton.nav">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Name="Root" Height="36" CornerRadius="{DynamicResource SquillRadiusMd}" Background="Transparent">
+            <Grid ColumnDefinitions="3,*">
+              <Border Name="Bar" Width="3" Margin="0,6" CornerRadius="2" Background="Transparent" />
+              <ContentPresenter Grid.Column="1" Content="{TemplateBinding Content}" Margin="9,0" VerticalAlignment="Center" />
+            </Grid>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="RadioButton.nav:pointerover /template/ Border#Root"><Setter Property="Background" Value="{DynamicResource SquillBgHoverBrush}" /></Style>
+    <Style Selector="RadioButton.nav:checked /template/ Border#Root"><Setter Property="Background" Value="{DynamicResource SquillBgActiveBrush}" /></Style>
+    <Style Selector="RadioButton.nav:checked /template/ Border#Bar"><Setter Property="Background" Value="{DynamicResource SquillAccentBrush}" /></Style>
+
+    <!-- Theme preview card: the preview art is the Tag, the label is the Content. -->
+    <Style Selector="RadioButton.themecard">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Name="Root" ClipToBounds="True" BorderThickness="1" BorderBrush="{DynamicResource SquillBorderBrush}"
+                  CornerRadius="{DynamicResource SquillRadiusLg}" Background="{DynamicResource SquillBgRaisedBrush}">
+            <StackPanel>
+              <ContentPresenter Content="{TemplateBinding Tag}" Height="96" />
+              <StackPanel Orientation="Horizontal" Spacing="8" Margin="12,0" Height="40">
+                <Ellipse Name="Dot" Width="16" Height="16" VerticalAlignment="Center" StrokeThickness="1.5"
+                         Stroke="{DynamicResource SquillFg3Brush}" Fill="Transparent" />
+                <ContentPresenter Content="{TemplateBinding Content}" VerticalAlignment="Center" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="RadioButton.themecard:checked /template/ Border#Root">
+      <Setter Property="BorderBrush" Value="{DynamicResource SquillAccentBrush}" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="RadioButton.themecard:checked /template/ Ellipse#Dot">
+      <Setter Property="Stroke" Value="{DynamicResource SquillAccentBrush}" />
+      <Setter Property="Fill" Value="{DynamicResource SquillAccentBrush}" />
+    </Style>
+    <Style Selector="Border.previewbar"><Setter Property="Height" Value="8" /><Setter Property="CornerRadius" Value="4" /><Setter Property="HorizontalAlignment" Value="Left" /></Style>
+    <Style Selector="Border.previewbtn"><Setter Property="Height" Value="14" /><Setter Property="Width" Value="50" /><Setter Property="CornerRadius" Value="3" /><Setter Property="HorizontalAlignment" Value="Left" /><Setter Property="Margin" Value="0,22,0,0" /></Style>
+    <Style Selector="Border.previewbar.l"><Setter Property="Background" Value="#D6D8E0" /></Style>
+    <Style Selector="Border.previewbar.d"><Setter Property="Background" Value="#3A3C47" /></Style>
+    <Style Selector="Border.previewbtn.l"><Setter Property="Background" Value="#5B4FD6" /></Style>
+    <Style Selector="Border.previewbtn.d"><Setter Property="Background" Value="#8478F0" /></Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto,*" ColumnDefinitions="260,*">
+    <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal" Margin="8,6">
+      <Button Name="BackButton" Classes="icon" Click="OnBack" ToolTip.Tip="{loc:Text settings.back}">
+        <Path Classes="icon" Width="16" Height="16" Data="{StaticResource SquillIconArrowLeft}" />
+      </Button>
     </StackPanel>
-    <TextBlock Text="Editor font size" Foreground="{DynamicResource SquillFg2Brush}" />
-    <NumericUpDown Name="FontSizeBox" Minimum="8" Maximum="32" Increment="1" FormatString="0" Value="{Binding EditorFontSize, Mode=TwoWay}" />
-    <TextBlock Text="Maximum grid rows" Foreground="{DynamicResource SquillFg2Brush}" />
-    <NumericUpDown Name="MaxRowsBox" Minimum="1000" Maximum="10000000" Increment="1000" FormatString="0" Value="{Binding MaxGridRows, Mode=TwoWay}" />
-    <TextBlock Text="Formatter keyword case" Foreground="{DynamicResource SquillFg2Brush}" />
-    <ComboBox Name="KeywordCaseBox" HorizontalAlignment="Stretch" SelectedItem="{Binding FormatterKeywordCase, Mode=TwoWay}" />
-  </StackPanel>
+
+    <StackPanel Grid.Row="1" Margin="24,8,16,16" Spacing="4">
+      <RadioButton Name="NavAppearance" Classes="nav" GroupName="Nav" IsChecked="True" IsCheckedChanged="OnNavChecked">
+        <StackPanel Orientation="Horizontal" Spacing="12"><Path Classes="icon" Width="18" Height="18" Data="{StaticResource SquillIconView}" /><TextBlock Text="{loc:Text settings.appearance}" /></StackPanel>
+      </RadioButton>
+      <RadioButton Name="NavEditor" Classes="nav" GroupName="Nav" IsCheckedChanged="OnNavChecked">
+        <StackPanel Orientation="Horizontal" Spacing="12"><Path Classes="icon" Width="18" Height="18" Data="{StaticResource SquillIconSnippets}" /><TextBlock Text="{loc:Text settings.editor}" /></StackPanel>
+      </RadioButton>
+      <RadioButton Name="NavGrid" Classes="nav" GroupName="Nav" IsCheckedChanged="OnNavChecked">
+        <StackPanel Orientation="Horizontal" Spacing="12"><Path Classes="icon" Width="18" Height="18" Data="{StaticResource SquillIconTable}" /><TextBlock Text="{loc:Text settings.grid}" /></StackPanel>
+      </RadioButton>
+      <RadioButton Name="NavAdvanced" Classes="nav" GroupName="Nav" IsCheckedChanged="OnNavChecked">
+        <StackPanel Orientation="Horizontal" Spacing="12"><Path Classes="icon" Width="18" Height="18" Data="{StaticResource SquillIconSettings}" /><TextBlock Text="{loc:Text settings.advanced}" /></StackPanel>
+      </RadioButton>
+    </StackPanel>
+
+    <ScrollViewer Grid.Row="1" Grid.Column="1">
+      <Panel Margin="0,0,40,32" MaxWidth="860" HorizontalAlignment="Left">
+        <StackPanel Name="PageAppearance" Classes="page">
+          <TextBlock Classes="pageTitle" Text="{loc:Text settings.appearance}" />
+          <Border Classes="card" Padding="20">
+            <StackPanel Spacing="14">
+              <StackPanel>
+                <TextBlock Classes="rowTitle" Text="{loc:Text settings.themeTitle}" />
+                <TextBlock Classes="rowDesc" Text="{loc:Text settings.themeDesc}" />
+              </StackPanel>
+              <Grid ColumnDefinitions="*,12,*,12,*">
+                <RadioButton Name="ThemeSystem" Classes="themecard" GroupName="Theme" Content="{loc:Text settings.themeSystem}" IsCheckedChanged="OnThemeChecked"
+                             IsChecked="{Binding Theme, Mode=OneWay, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static ps:ThemeMode.System}}">
+                  <RadioButton.Tag>
+                    <Grid ColumnDefinitions="*,*">
+                      <Border Background="#F4F5F9" Padding="12"><StackPanel Spacing="6"><Border Classes="previewbar l" Width="70" /><Border Classes="previewbar l" Width="40" /><Border Classes="previewbtn l" /></StackPanel></Border>
+                      <Border Grid.Column="1" Background="#17171C" Padding="12"><StackPanel Spacing="6"><Border Classes="previewbar d" Width="70" /><Border Classes="previewbar d" Width="40" /><Border Classes="previewbtn d" /></StackPanel></Border>
+                    </Grid>
+                  </RadioButton.Tag>
+                </RadioButton>
+                <RadioButton Name="ThemeLight" Grid.Column="2" Classes="themecard" GroupName="Theme" Content="{loc:Text settings.themeLight}" IsCheckedChanged="OnThemeChecked"
+                             IsChecked="{Binding Theme, Mode=OneWay, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static ps:ThemeMode.Light}}">
+                  <RadioButton.Tag>
+                    <Border Background="#F4F5F9" Padding="12"><StackPanel Spacing="6"><Border Classes="previewbar l" Width="70" /><Border Classes="previewbar l" Width="40" /><Border Classes="previewbtn l" /></StackPanel></Border>
+                  </RadioButton.Tag>
+                </RadioButton>
+                <RadioButton Name="ThemeDark" Grid.Column="4" Classes="themecard" GroupName="Theme" Content="{loc:Text settings.themeDark}" IsCheckedChanged="OnThemeChecked"
+                             IsChecked="{Binding Theme, Mode=OneWay, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static ps:ThemeMode.Dark}}">
+                  <RadioButton.Tag>
+                    <Border Background="#17171C" Padding="12"><StackPanel Spacing="6"><Border Classes="previewbar d" Width="70" /><Border Classes="previewbar d" Width="40" /><Border Classes="previewbtn d" /></StackPanel></Border>
+                  </RadioButton.Tag>
+                </RadioButton>
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Name="PageEditor" Classes="page" IsVisible="False">
+          <TextBlock Classes="pageTitle" Text="{loc:Text settings.editor}" />
+          <Border Classes="card">
+            <Grid Classes="row" ColumnDefinitions="*,Auto" Margin="20,10">
+              <StackPanel VerticalAlignment="Center">
+                <TextBlock Classes="rowTitle" Text="{loc:Text settings.fontSizeTitle}" />
+                <TextBlock Classes="rowDesc" Text="{loc:Text settings.fontSizeDesc}" />
+              </StackPanel>
+              <NumericUpDown Name="FontSizeBox" Grid.Column="1" Width="140" VerticalAlignment="Center" Minimum="8" Maximum="32" Increment="1" FormatString="0" Value="{Binding EditorFontSize, Mode=TwoWay}" />
+            </Grid>
+          </Border>
+          <Border Classes="card">
+            <StackPanel Margin="20,14,20,10">
+              <TextBlock Classes="rowTitle" Text="{loc:Text settings.formatting}" />
+              <Grid Classes="row" ColumnDefinitions="*,Auto">
+                <StackPanel VerticalAlignment="Center">
+                  <TextBlock Text="{loc:Text settings.keywordCaseTitle}" Foreground="{DynamicResource SquillFgBrush}" />
+                  <TextBlock Classes="rowDesc" Text="{loc:Text settings.keywordCaseDesc}" />
+                </StackPanel>
+                <ComboBox Name="KeywordCaseBox" Grid.Column="1" Width="180" VerticalAlignment="Center" SelectedItem="{Binding FormatterKeywordCase, Mode=TwoWay}" />
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Name="PageGrid" Classes="page" IsVisible="False">
+          <TextBlock Classes="pageTitle" Text="{loc:Text settings.grid}" />
+          <Border Classes="card">
+            <Grid Classes="row" ColumnDefinitions="*,Auto" Margin="20,10">
+              <StackPanel VerticalAlignment="Center">
+                <TextBlock Classes="rowTitle" Text="{loc:Text settings.maxRowsTitle}" />
+                <TextBlock Classes="rowDesc" Text="{loc:Text settings.maxRowsDesc}" />
+              </StackPanel>
+              <NumericUpDown Name="MaxRowsBox" Grid.Column="1" Width="180" VerticalAlignment="Center" Minimum="1000" Maximum="10000000" Increment="1000" FormatString="0" Value="{Binding MaxGridRows, Mode=TwoWay}" />
+            </Grid>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Name="PageAdvanced" Classes="page" IsVisible="False">
+          <TextBlock Classes="pageTitle" Text="{loc:Text settings.advanced}" />
+          <Border Classes="card">
+            <Grid Classes="row" ColumnDefinitions="*,Auto" Margin="20,10">
+              <StackPanel VerticalAlignment="Center">
+                <TextBlock Classes="rowTitle" Text="{loc:Text settings.dataFolderTitle}" />
+                <TextBlock Classes="rowDesc" Text="{loc:Text settings.dataFolderDesc}" />
+                <TextBlock Name="DataFolderPath" FontFamily="{DynamicResource SquillFontMono}" FontSize="{DynamicResource SquillFontSizeBodySm}" Foreground="{DynamicResource SquillFg2Brush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+              </StackPanel>
+              <Button Name="OpenDataFolderButton" Grid.Column="1" VerticalAlignment="Center" Content="{loc:Text menu.openDataFolder}" Click="OnOpenDataFolder" />
+            </Grid>
+          </Border>
+        </StackPanel>
+      </Panel>
+    </ScrollViewer>
+  </Grid>
 </Window>
