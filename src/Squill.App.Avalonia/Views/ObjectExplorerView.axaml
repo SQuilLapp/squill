@@ -58,7 +58,7 @@
                     Classes.env-dev="{Binding IsDev}" Classes.env-local="{Binding IsLocal}">
               <TextBlock Text="{Binding EnvironmentText}" />
             </Border>
-            <TextBlock Grid.Column="3" Classes="mono" Text="{Binding Detail}" Foreground="{DynamicResource SquillFg3Brush}"
+            <TextBlock Grid.Column="3" Classes="mono" Text="{Binding Trailing}" Foreground="{DynamicResource SquillFg3Brush}"
                        Margin="8,0,0,0" VerticalAlignment="Center" />
             <Ellipse Grid.Column="3" Width="7" Height="7" Margin="8,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right"
                      Fill="{DynamicResource SquillSuccessBrush}" IsVisible="{Binding IsConnected}" />

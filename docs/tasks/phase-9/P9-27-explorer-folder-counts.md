@@ -1,6 +1,6 @@
 # P9-27 - Explorer: object counts on schema and folder rows
 
-Status: todo
+Status: done
 Depends on: P9-26
 
 ## Goal
@@ -22,11 +22,11 @@ Schema and folder rows of the object explorer show a right-aligned count in both
 - Lazy loading or live count refresh (the tree is rebuilt from the snapshot on refresh, which recomputes the counts).
 
 ## Tasks
-- [ ] `ExplorerNode`: add `Count` and `Trailing` as described; keep `Detail` unchanged.
-- [ ] `ExplorerTreeViewModel`: pass counts for the `Tables`/`Vues` folders (P9-26 added them) and the Columns/Indexes/Foreign keys folders in `Populate`/`TableNode`; the schema node count is its tables plus views.
-- [ ] WinUI `SidebarView.xaml` and Avalonia `ObjectExplorerView.axaml`: bind `Trailing`.
-- [ ] Headless tests in `tests/Squill.Presentation.Tests/Explorer/ExplorerTreeViewModelTests.cs` (extend the existing fake-schema helpers): a two-schema schema gives each `Schema` node a count equal to its tables plus views; the `Columns`, `Indexes` and `Foreign keys` folders of a table give their child counts, including a table with no index (count 0); table, view and column nodes have `Count == null`; `Trailing` returns `Detail` when set, the formatted count otherwise, and `null` when neither; the filter does not change counts; `RefreshCommand` after the fake session schema changes recomputes counts. Use a fixed culture (`CultureInfo.InvariantCulture`) in the assertions or set it for the test.
-- [ ] No head-specific tests: the binding change is checked by the screenshot (say so in the report).
+- [x] `ExplorerNode`: add `Count` and `Trailing` as described; keep `Detail` unchanged.
+- [x] `ExplorerTreeViewModel`: pass counts for the `Tables`/`Vues` folders (P9-26 added them) and the Columns/Indexes/Foreign keys folders in `Populate`/`TableNode`; the schema node count is its tables plus views.
+- [x] WinUI `SidebarView.xaml` and Avalonia `ObjectExplorerView.axaml`: bind `Trailing`.
+- [x] Headless tests in `tests/Squill.Presentation.Tests/Explorer/ExplorerTreeViewModelTests.cs` (extend the existing fake-schema helpers): a two-schema schema gives each `Schema` node a count equal to its tables plus views; the `Columns`, `Indexes` and `Foreign keys` folders of a table give their child counts, including a table with no index (count 0); table, view and column nodes have `Count == null`; `Trailing` returns `Detail` when set, the formatted count otherwise, and `null` when neither; the filter does not change counts; `RefreshCommand` after the fake session schema changes recomputes counts. Use a fixed culture (`CultureInfo.InvariantCulture`) in the assertions or set it for the test.
+- [x] No head-specific tests: the binding change is checked by the screenshot (say so in the report).
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings (and `Squill.Windows.slnx` for the WinUI head).

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Squill.Core;
 using Squill.Presentation.Localization;
@@ -45,13 +46,20 @@ public enum ExplorerNodeKind
 /// <param name="kind">What the node represents.</param>
 /// <param name="detail">Secondary text, such as a column type.</param>
 /// <param name="table">The table or view behind a table or view node.</param>
-public sealed partial class ExplorerNode(string title, ExplorerNodeKind kind, string? detail = null, TableInfo? table = null) : ViewModelBase
+/// <param name="count">The number of objects under a schema or folder node.</param>
+public sealed partial class ExplorerNode(string title, ExplorerNodeKind kind, string? detail = null, TableInfo? table = null, int? count = null) : ViewModelBase
 {
     /// <summary>Gets the text shown for the node.</summary>
     public string Title { get; } = title;
 
     /// <summary>Gets the secondary text, or <see langword="null"/>.</summary>
     public string? Detail { get; } = detail;
+
+    /// <summary>Gets the number of objects under a schema or folder node, or <see langword="null"/>. Static: the filter does not change it.</summary>
+    public int? Count { get; } = count;
+
+    /// <summary>Gets the one text the heads draw right-aligned: <see cref="Detail"/>, else the formatted <see cref="Count"/>, else <see langword="null"/>.</summary>
+    public string? Trailing => Detail ?? Count?.ToString("N0", CultureInfo.CurrentCulture);
 
     /// <summary>Gets what the node represents.</summary>
     public ExplorerNodeKind Kind { get; } = kind;

@@ -206,7 +206,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
             var parent = database;
             if (group.Key.Length > 0)
             {
-                parent = Node(group.Key, ExplorerNodeKind.Schema, session);
+                parent = Node(group.Key, ExplorerNodeKind.Schema, session, count: group.Count());
                 parent.IsExpanded = groups.Count == 1;
                 database.Children.Add(parent);
             }
@@ -218,30 +218,31 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
 
     private static void AddGroup(ExplorerNode parent, ConnectionSession session, string titleKey, IEnumerable<TableInfo> tables, bool expanded)
     {
-        var folder = Node(UiText.Get(titleKey), ExplorerNodeKind.Folder, session);
-        foreach (var table in tables)
+        var list = tables.ToList();
+        var folder = Node(UiText.Get(titleKey), ExplorerNodeKind.Folder, session, count: list.Count);
+        foreach (var table in list)
             folder.Children.Add(TableNode(session, table));
         folder.IsExpanded = expanded;
         if (folder.Children.Count > 0)
             parent.Children.Add(folder);
     }
 
-    private static ExplorerNode Node(string title, ExplorerNodeKind kind, ConnectionSession session, string? detail = null, TableInfo? table = null) =>
-        new(title, kind, detail, table) { Profile = session.Profile, Session = session };
+    private static ExplorerNode Node(string title, ExplorerNodeKind kind, ConnectionSession session, string? detail = null, TableInfo? table = null, int? count = null) =>
+        new(title, kind, detail, table, count) { Profile = session.Profile, Session = session };
 
     private static ExplorerNode TableNode(ConnectionSession session, TableInfo table)
     {
         var node = Node(table.Name, table.Kind == TableKind.View ? ExplorerNodeKind.View : ExplorerNodeKind.Table, session, table: table);
-        var columns = Node("Columns", ExplorerNodeKind.Folder, session);
+        var columns = Node("Columns", ExplorerNodeKind.Folder, session, count: table.Columns.Count);
         foreach (var c in table.Columns)
         {
             var detail = c.DataType + (c.IsPrimaryKey ? " PK" : "") + (c.IsNullable ? " NULL" : "");
             columns.Children.Add(Node(c.Name, ExplorerNodeKind.Column, session, detail));
         }
-        var indexes = Node("Indexes", ExplorerNodeKind.Folder, session);
+        var indexes = Node("Indexes", ExplorerNodeKind.Folder, session, count: table.Indexes.Count);
         foreach (var i in table.Indexes)
             indexes.Children.Add(Node(i.Name, ExplorerNodeKind.Index, session, (i.IsUnique ? "UNIQUE " : "") + string.Join(", ", i.Columns)));
-        var keys = Node("Foreign keys", ExplorerNodeKind.Folder, session);
+        var keys = Node("Foreign keys", ExplorerNodeKind.Folder, session, count: table.ForeignKeys.Count);
         foreach (var k in table.ForeignKeys)
         {
             var target = k.ReferencedSchema is { Length: > 0 } s ? $"{s}.{k.ReferencedTable}" : k.ReferencedTable;

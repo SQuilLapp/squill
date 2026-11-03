@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
@@ -252,6 +253,71 @@ public sealed class ExplorerTreeViewModelTests
 
         Assert.Equal(["users"], design);
         Assert.Equal(["users"], drop);
+    }
+
+    private static ExplorerNode Folder(ExplorerNode table, string title) => table.Children.Single(c => c.Title == title);
+
+    [Fact]
+    public void Counts_SchemasAndFolders_AreSetAndLeavesHaveNone()
+    {
+        var profile = Profile("p");
+        _list.Profiles.Add(profile);
+        var bare = new TableInfo("sales", "bare", TableKind.Table, [Id], [], []);
+        var node = Connect(profile, Table("public", "users"), Table("public", "v", TableKind.View), Table("sales", "orders"), bare);
+        var schemas = Descendants(node).Where(d => d.Kind == ExplorerNodeKind.Schema).ToDictionary(d => d.Title);
+
+        Assert.Equal(2, schemas["public"].Count);
+        Assert.Equal(2, schemas["sales"].Count);
+        var users = Descendants(node).Single(d => d.Title == "users");
+        Assert.Equal(2, Folder(users, "Columns").Count);
+        Assert.Equal(1, Folder(users, "Indexes").Count);
+        Assert.Equal(1, Folder(users, "Foreign keys").Count);
+        Assert.Equal(0, Folder(Descendants(node).Single(d => d.Title == "bare"), "Indexes").Count);
+        Assert.All(Descendants(node).Where(d => d.Kind is ExplorerNodeKind.Table or ExplorerNodeKind.View or ExplorerNodeKind.Column), d => Assert.Null(d.Count));
+    }
+
+    [Fact]
+    public void Trailing_PrefersDetail_ThenFormattedCount_ThenNull()
+    {
+        var previous = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        try
+        {
+            Assert.Equal("d", new ExplorerNode("t", ExplorerNodeKind.Column, "d", count: 3).Trailing);
+            Assert.Equal("1,208", new ExplorerNode("t", ExplorerNodeKind.Folder, count: 1208).Trailing);
+            Assert.Null(new ExplorerNode("t", ExplorerNodeKind.Table).Trailing);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previous;
+        }
+    }
+
+    [Fact]
+    public void FilterText_DoesNotChangeCounts()
+    {
+        var profile = Profile("p");
+        _list.Profiles.Add(profile);
+        var node = Connect(profile, Table("public", "users"), Table("public", "orders"));
+        var schema = Descendants(node).Single(d => d.Kind == ExplorerNodeKind.Schema);
+
+        _tree.FilterText = "users";
+
+        Assert.Equal(2, schema.Count);
+    }
+
+    [Fact]
+    public async Task RefreshCommand_RecomputesCounts()
+    {
+        var a = Profile("a");
+        _list.Profiles.Add(a);
+        _sessions.Add(Session(a, new SchemaSnapshot(null, [Table("public", "users")]), new SchemaSnapshot(null, [Table("public", "users"), Table("public", "extra")])));
+        var node = _tree.Roots.Single();
+        _tree.SelectedNode = node;
+
+        await _tree.RefreshCommand.ExecuteAsync(null);
+
+        Assert.Equal(2, Descendants(node).Single(d => d.Kind == ExplorerNodeKind.Schema).Count);
     }
 
     private sealed class FakeStore : IProfileStore

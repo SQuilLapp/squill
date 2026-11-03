@@ -79,7 +79,7 @@
                              FontWeight="{x:Bind v:ExplorerGlyphs.TitleWeight(Kind)}" />
                   <ContentControl Grid.Column="2" Style="{x:Bind v:ExplorerGlyphs.EnvironmentStyle(Profile)}" Content="{x:Bind EnvironmentText}" Margin="8,0,0,0"
                                   VerticalAlignment="Center" Visibility="{x:Bind v:ExplorerGlyphs.Show(HasEnvironment)}" />
-                  <TextBlock Grid.Column="3" Style="{StaticResource MonoTextBlockStyle}" Text="{x:Bind Detail}" Foreground="{ThemeResource SquillFg3Brush}"
+                  <TextBlock Grid.Column="3" Style="{StaticResource MonoTextBlockStyle}" Text="{x:Bind Trailing}" Foreground="{ThemeResource SquillFg3Brush}"
                              Margin="8,0,0,0" VerticalAlignment="Center" />
                   <Ellipse Grid.Column="3" Width="7" Height="7" Margin="8,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Fill="{ThemeResource SquillSuccessBrush}"
                            Visibility="{x:Bind v:ExplorerGlyphs.Show(IsConnected), Mode=OneWay}" />
