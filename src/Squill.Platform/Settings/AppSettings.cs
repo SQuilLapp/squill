@@ -7,10 +7,11 @@ namespace Squill.Platform.Settings;
 /// <param name="EditorFontSize">Editor font size in points, between 8 and 32.</param>
 /// <param name="MaxGridRows">Maximum number of rows kept in a result grid, between 1,000 and 10,000,000.</param>
 /// <param name="FormatterKeywordCase">Keyword casing applied by the SQL formatter.</param>
-public sealed record AppSettings(ThemeMode Theme, double EditorFontSize, int MaxGridRows, KeywordCase FormatterKeywordCase)
+/// <param name="Language">Requested display language; applied after a restart.</param>
+public sealed record AppSettings(ThemeMode Theme, double EditorFontSize, int MaxGridRows, KeywordCase FormatterKeywordCase, AppLanguage Language = AppLanguage.System)
 {
     /// <summary>Gets the settings used when nothing has been saved.</summary>
-    public static AppSettings Default { get; } = new(ThemeMode.System, 13, 1_000_000, KeywordCase.Upper);
+    public static AppSettings Default { get; } = new(ThemeMode.System, 13, 1_000_000, KeywordCase.Upper, AppLanguage.System);
 
     /// <summary>Returns a copy whose numeric values are forced into their allowed range.</summary>
     /// <returns>The clamped settings.</returns>

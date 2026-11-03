@@ -38,7 +38,7 @@ public sealed partial class SettingsViewModel(ISettingsStore store) : ViewModelB
     public partial KeywordCase FormatterKeywordCase { get; set; } = AppSettings.Default.FormatterKeywordCase;
 
     /// <summary>Gets the current values as a settings record.</summary>
-    public AppSettings Current => new(Theme, EditorFontSize, MaxGridRows, FormatterKeywordCase);
+    public AppSettings Current => new(Theme, EditorFontSize, MaxGridRows, FormatterKeywordCase, AppLanguage.System);
 
     [RelayCommand]
     private async Task LoadAsync(CancellationToken ct)

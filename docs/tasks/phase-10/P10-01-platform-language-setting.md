@@ -1,6 +1,6 @@
 # P10-01 - Platform: language setting
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -18,8 +18,8 @@ Store the user's language choice (System default / Français / English) in the s
 - Resolving `System`, the view-model property, any UI (P10-04 to P10-06).
 
 ## Tasks
-- [ ] Add `AppLanguage`, extend `AppSettings`, fix all construction sites.
-- [ ] Tests in `tests/Squill.Platform.Tests`: round-trip of each value, a legacy JSON file without `language` loads as `System`, an unknown value falls back as decided above, `Default.Language` is `System`.
+- [x] Add `AppLanguage`, extend `AppSettings`, fix all construction sites.
+- [x] Tests in `tests/Squill.Platform.Tests`: round-trip of each value, a legacy JSON file without `language` loads as `System`, an unknown value falls back as decided above, `Default.Language` is `System`.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings (use `Squill.Windows.slnx` when the WinUI head has a call site).
