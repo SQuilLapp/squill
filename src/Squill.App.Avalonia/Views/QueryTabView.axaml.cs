@@ -210,7 +210,7 @@ public sealed partial class QueryTabView : UserControl
     }
 
     private static string Describe(EditIssue issue) =>
-        $"Row {issue.Row + 1}{(issue.Column is null ? "" : ", " + issue.Column)}: {issue.Message}";
+        IssueText.Describe(issue);
 
     private void OnIssueSelected(object? sender, SelectionChangedEventArgs e)
     {

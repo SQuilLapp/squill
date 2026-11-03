@@ -1,10 +1,23 @@
 using System.Globalization;
+using Squill.Core.Editing;
 
 namespace Squill.Presentation.Localization;
 
 /// <summary>Renders the coded messages of Core and Sql (<c>CoreMessageCodes</c>, <c>SqlMessageCodes</c>) in the current language.</summary>
 public static class IssueText
 {
+    /// <summary>Renders an edit issue as a one-line "row, column: message" description in the current language.</summary>
+    /// <param name="issue">The issue found while validating pending grid edits.</param>
+    /// <returns>The description, with the engine message verbatim when the issue has no code.</returns>
+    public static string Describe(EditIssue issue)
+    {
+        ArgumentNullException.ThrowIfNull(issue);
+        var message = Format(issue.Code, issue.Args, issue.Message);
+        return issue.Column is null
+            ? UiText.Format("results.issueRow", issue.Row + 1, message)
+            : UiText.Format("results.issueRowColumn", issue.Row + 1, issue.Column, message);
+    }
+
     /// <summary>Renders a coded message from the <c>issue.&lt;code&gt;</c> catalog entry.</summary>
     /// <param name="code">The message code, or null when the producer set none.</param>
     /// <param name="args">Values for the placeholders; when the catalog has <c>.one</c> / <c>.other</c> texts, <c>args[0]</c> is the count.</param>

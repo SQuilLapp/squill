@@ -176,7 +176,7 @@ public sealed class EditBarUiTests
         Assert.False(f.Find<Button>("Commit").Command!.CanExecute(null));
         Assert.True(f.Find<Button>("IssuesButton").IsVisible);
         var item = Assert.Single(f.Find<ListBox>("IssueList").Items!.Cast<object>());
-        Assert.StartsWith("Row 3", item.ToString());
+        Assert.StartsWith("Ligne 3", item.ToString());
 
         editor.TrySetCell(2, 1, "c");
         Assert.True(f.Find<Button>("Commit").Command!.CanExecute(null));

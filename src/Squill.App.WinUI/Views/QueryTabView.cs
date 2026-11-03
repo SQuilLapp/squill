@@ -251,8 +251,8 @@ public sealed partial class QueryTabView : UserControl
 
     private Border BuildToolbar()
     {
-        _run.Content = ButtonLabel(UiText.Get("editor.run"), "Ctrl+Entrée", chip: false);
-        _script.Content = ButtonLabel(UiText.Get("editor.script"), "Ctrl+Maj+Entrée", chip: true);
+        _run.Content = ButtonLabel(UiText.Get("editor.run"), UiText.Get("editor.runShortcut"), chip: false);
+        _script.Content = ButtonLabel(UiText.Get("editor.script"), UiText.Get("editor.scriptShortcut"), chip: true);
         _format.Content = Icons.Create("SquillIconFormat", 14, Brush("SquillFg2Brush"));
         _historyToggle.Content = Icons.Create("SquillIconHistory", 14, Brush("SquillFg2Brush"));
         ToolTipService.SetToolTip(_format, UiText.Get("menu.format"));

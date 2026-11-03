@@ -3,6 +3,7 @@ using Squill.Data;
 using Squill.Platform.Settings;
 using Squill.Platform.Storage;
 using Squill.Presentation.Editor;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Query;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Formatting;
@@ -58,6 +59,7 @@ public sealed class QueryTabViewModelTests
         public List<FakeReader> Readers { get; } = [];
         public Func<string, CancellationToken, Task>? Gate { get; set; }
         public int SchemaReads { get; private set; }
+        public long? AffectedOverride { get; set; }
         public string ServerVersion => "1";
 
         public async ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken)
@@ -70,7 +72,7 @@ public sealed class QueryTabViewModelTests
                 throw new InvalidOperationException("boom failed");
             var reader = sql.StartsWith("SELECT", StringComparison.Ordinal)
                 ? new FakeReader(true, 3, -1)
-                : new FakeReader(false, 0, sql.StartsWith("UPDATE", StringComparison.Ordinal) ? 5 : -1);
+                : new FakeReader(false, 0, sql.StartsWith("UPDATE", StringComparison.Ordinal) ? AffectedOverride ?? 5 : -1);
             Readers.Add(reader);
             return reader;
         }
@@ -134,7 +136,7 @@ public sealed class QueryTabViewModelTests
 
         var result = Assert.Single(f.Vm.Results);
         Assert.Equal(ResultKind.Grid, result.Kind);
-        Assert.Equal("Result 1", result.Title);
+        Assert.Equal("Résultat 1", result.Title);
         Assert.Equal(3, result.Grid!.RowCount);
         Assert.Same(result, f.Vm.SelectedResult);
         Assert.False(f.Vm.IsRunning);
@@ -152,7 +154,7 @@ public sealed class QueryTabViewModelTests
 
         await f.Vm.RunAllCommand.ExecuteAsync(null);
 
-        Assert.Equal(["Result 1", "Result 2", "Result 3"], f.Vm.Results.Select(r => r.Title));
+        Assert.Equal(["Résultat 1", "Résultat 2", "Résultat 3"], f.Vm.Results.Select(r => r.Title));
         Assert.Equal(3, f.History.Entries.Count);
         Assert.Equal(3, f.Connection.Executed.Count);
     }
@@ -179,8 +181,99 @@ public sealed class QueryTabViewModelTests
 
         await f.Vm.RunCommand.ExecuteAsync(null);
 
-        Assert.Equal("5 row(s) affected", Assert.Single(f.Vm.Results).Text);
+        Assert.Equal("5 lignes affectées", Assert.Single(f.Vm.Results).Text);
         Assert.Equal(5, f.History.Entries[0].RowCount);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, 1, "1 ligne affectée")]
+    [InlineData(UiLanguage.French, 5, "5 lignes affectées")]
+    [InlineData(UiLanguage.English, 1, "1 row affected")]
+    [InlineData(UiLanguage.English, 5, "5 rows affected")]
+    public async Task Run_Dml_RowsAffectedIsPluralAndLocalized(UiLanguage language, int rows, string expected)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture("UPDATE t SET a = 1;");
+        f.Connection.AffectedOverride = rows;
+
+        await f.Vm.RunCommand.ExecuteAsync(null);
+
+        Assert.Equal(expected, Assert.Single(f.Vm.Results).Text);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Exécuter la requête", "Abandonner les modifications en attente de la grille ?", "Annulé")]
+    [InlineData(UiLanguage.English, "Run query", "Discard pending grid changes?", "Cancelled")]
+    public void DiscardConfirmationAndCancelStatus_ComeFromTheCatalog(UiLanguage language, string title, string message, string status)
+    {
+        using var _ = UiText.Override(language);
+
+        Assert.Equal(title, UiText.Get("query.run.title"));
+        Assert.Equal(message, UiText.Get("query.run.discardChanges"));
+        Assert.Equal(status, UiText.Get("query.cancelled"));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "2 instructions exécutées en ")]
+    [InlineData(UiLanguage.English, "Completed 2 statements in ")]
+    public async Task Run_Script_StatusIsLocalized(UiLanguage language, string prefix)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture("SELECT 1; SELECT 2;");
+
+        await f.Vm.RunAllCommand.ExecuteAsync(null);
+
+        Assert.Contains(prefix, f.Vm.StatusText, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Commande exécutée")]
+    [InlineData(UiLanguage.English, "Command completed")]
+    public async Task Run_StatementWithoutCount_CommandCompletedIsLocalized(UiLanguage language, string expected)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture("TRUNCATE t;");
+
+        await f.Vm.RunCommand.ExecuteAsync(null);
+
+        Assert.Equal(expected, Assert.Single(f.Vm.Results).Text);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French)]
+    [InlineData(UiLanguage.English)]
+    public async Task Run_EngineError_IsShownVerbatim(UiLanguage language)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture("boom;");
+
+        await f.Vm.RunCommand.ExecuteAsync(null);
+
+        Assert.Equal("boom failed", Assert.Single(f.Vm.Results).Text);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Résultat 1")]
+    [InlineData(UiLanguage.English, "Result 1")]
+    public async Task Run_Grid_TitleIsLocalized(UiLanguage language, string expected)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture("SELECT 1;");
+
+        await f.Vm.RunCommand.ExecuteAsync(null);
+
+        Assert.Equal(expected, Assert.Single(f.Vm.Results).Title);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Table 'nope' inconnue")]
+    [InlineData(UiLanguage.English, "Unknown table 'nope'")]
+    public void Diagnostics_UnknownTable_AreRenderedInTheCurrentLanguage(UiLanguage language, string expected)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture("SELECT * FROM nope");
+
+        Assert.Contains(f.Editor.Diagnostics, d => d.Message.Contains(expected, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -190,7 +283,7 @@ public sealed class QueryTabViewModelTests
 
         await f.Vm.RunCommand.ExecuteAsync(null);
 
-        Assert.Equal("Command completed", Assert.Single(f.Vm.Results).Text);
+        Assert.Equal("Commande exécutée", Assert.Single(f.Vm.Results).Text);
     }
 
     [Fact]
@@ -221,7 +314,7 @@ public sealed class QueryTabViewModelTests
         await run;
 
         Assert.False(f.Vm.IsRunning);
-        Assert.Equal("Cancelled", f.Vm.StatusText);
+        Assert.Equal("Annulé", f.Vm.StatusText);
         Assert.Single(f.Connection.Executed);
         Assert.False(Assert.Single(f.History.Entries).Succeeded);
     }
@@ -297,7 +390,7 @@ public sealed class QueryTabViewModelTests
 
         Assert.Empty(f.Connection.Executed);
         Assert.Empty(f.Vm.Results);
-        Assert.Equal("Cancelled", f.Vm.StatusText);
+        Assert.Equal("Annulé", f.Vm.StatusText);
         Assert.False(f.Vm.IsRunning);
     }
 
@@ -332,6 +425,6 @@ public sealed class QueryTabViewModelTests
         await f.Vm.RunCommand.ExecuteAsync(null);
 
         Assert.Empty(f.Connection.Executed);
-        Assert.Equal("Positional parameters are not supported, use :name", Assert.Single(f.Vm.Results).Text);
+        Assert.Equal("Les paramètres positionnels ne sont pas pris en charge, utilisez :nom", Assert.Single(f.Vm.Results).Text);
     }
 }

@@ -1,6 +1,6 @@
 # P10-12 - Migrate strings: query tab, parameters, status bar and editor diagnostics
 
-Status: todo
+Status: done
 Depends on: P10-03, P10-04, P10-07, P10-08, P10-09
 
 ## Goal
@@ -17,9 +17,9 @@ Follow `docs/tasks/phase-10/migration-recipe.md`. Area `query` of `inventory.md`
 - Results grid and export (P10-13), history panel (P10-14).
 
 ## Tasks
-- [ ] Migrate every `query` inventory line and tick it.
-- [ ] Tests per recipe rule 7 (affected-rows plural in both languages, discard confirmation, a diagnostic rendered in both languages, engine error passed through).
-- [ ] English captures: query tab idle / running / error / affected rows, parameters prompt, status bar disconnected and connected, a diagnostic underline hover if drivable, both heads.
+- [x] Migrate every `query` inventory line and tick it.
+- [x] Tests per recipe rule 7 (affected-rows plural in both languages, discard confirmation, a diagnostic rendered in both languages, engine error passed through).
+- [x] English captures: query tab idle / running / error / affected rows, parameters prompt, status bar disconnected and connected, a diagnostic underline hover if drivable, both heads.
 
 ## Acceptance criteria
 - Common criteria of the recipe.

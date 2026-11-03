@@ -12,7 +12,7 @@ internal static class EditBarFormat
     /// <param name="issue">The issue.</param>
     /// <returns><c>Row n, column: message</c>, without the column part for a row-level issue.</returns>
     public static string Describe(EditIssue issue) =>
-        $"Row {issue.Row + 1}{(issue.Column is null ? "" : ", " + issue.Column)}: {issue.Message}";
+        IssueText.Describe(issue);
 
     /// <summary>Finds the grid column an issue points at.</summary>
     /// <param name="issue">The issue.</param>

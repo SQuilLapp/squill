@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Presentation.Editing;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 
 namespace Squill.Presentation.Query;
@@ -113,7 +114,7 @@ public sealed partial class ResultViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
-            await _dialogs.ShowErrorAsync("Export failed", ex.Message);
+            await _dialogs.ShowErrorAsync(UiText.Get("results.exportFailed"), ex.Message);
         }
     }
 }
