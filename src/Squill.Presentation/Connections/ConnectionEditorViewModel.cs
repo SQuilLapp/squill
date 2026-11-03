@@ -129,6 +129,14 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     [ObservableProperty]
     public partial string? TestStatus { get; private set; }
 
+    /// <summary>Gets whether the last connection test succeeded, or <see langword="null"/> before any test.</summary>
+    [ObservableProperty]
+    public partial bool? TestSucceeded { get; private set; }
+
+    /// <summary>Gets the server version reported by the last successful test, or <see langword="null"/>.</summary>
+    [ObservableProperty]
+    public partial string? TestServerVersion { get; private set; }
+
     /// <summary>The longest allowed <see cref="Folder"/> name.</summary>
     public const int MaxFolderLength = 64;
 
@@ -250,6 +258,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             var profile = BuildProfile(withSsh: false);
             await using var connection = await _providers.Get(Dialect).OpenAsync(profile, NullIfBlank(Password), ct);
             TestStatus = $"Connected. Server version: {connection.ServerVersion}";
+            TestServerVersion = connection.ServerVersion;
+            TestSucceeded = true;
         }
         catch (OperationCanceledException)
         {
@@ -258,6 +268,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         catch (Exception ex)
         {
             TestStatus = $"Connection failed: {ex.Message}";
+            TestServerVersion = null;
+            TestSucceeded = false;
             await _dialogs.ShowErrorAsync("Connection test failed", ex.Message);
         }
     }

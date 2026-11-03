@@ -1,6 +1,6 @@
 # P9-17 - Avalonia head: connection manager window
 
-Status: todo
+Status: done
 Depends on: P9-04, P9-05, P9-02
 
 ## Goal
@@ -17,8 +17,8 @@ The connection editor window matches M02: folder list on the left, engine and en
 - Tags, SSL, proxy, driver tabs, generated URL, extra checkboxes (no data).
 
 ## Tasks
-- [ ] Rework `ConnectionEditorWindow.axaml`.
-- [ ] Headless tests: engine tile selection sets the dialect, environment tile sets `Environment`, grouped list order, save/test buttons enabled states.
+- [x] Rework `ConnectionEditorWindow.axaml`.
+- [x] Headless tests: engine tile selection sets the dialect, environment tile sets `Environment`, grouped list order, save/test buttons enabled states.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

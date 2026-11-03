@@ -24,6 +24,7 @@ public enum SidebarPanel
 public sealed partial class SidebarView : UserControl
 {
     private ConnectionListViewModel? _list;
+    private ConnectionEditorWindow? _editorWindow;
 
     /// <summary>Creates the view.</summary>
     public SidebarView()
@@ -83,7 +84,16 @@ public sealed partial class SidebarView : UserControl
 
     private async void OnEditRequested(object? sender, ConnectionEditorViewModel editor)
     {
-        var window = new ConnectionEditorWindow { DataContext = editor };
+        if (_editorWindow is { } open)
+        {
+            open.DataContext = editor;
+            open.Activate();
+            return;
+        }
+
+        var window = new ConnectionEditorWindow { DataContext = editor, List = _list };
+        _editorWindow = window;
+        window.Closed += (_, _) => _editorWindow = null;
         if (TopLevel.GetTopLevel(this) is Window owner)
             await window.ShowDialog(owner);
         else

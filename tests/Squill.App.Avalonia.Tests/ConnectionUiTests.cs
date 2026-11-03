@@ -22,6 +22,7 @@ public sealed class ConnectionUiTests
         {
             var editor = new ConnectionEditorViewModel(null, new NullStore(), new ProviderRegistry(), new Dialogs());
             var window = new ConnectionEditorWindow { DataContext = editor };
+            window.FindControl<TabControl>("Tabs")!.SelectedIndex = 1;
             var ssh = window.GetLogicalDescendants().OfType<StackPanel>().Single(p => p.Name == "SshFields");
             Assert.False(ssh.IsVisible);
             editor.UseSsh = true;
@@ -44,6 +45,84 @@ public sealed class ConnectionUiTests
             Assert.False(server.IsVisible);
             Assert.True(sqlite.IsVisible);
         }, TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task Editor_EngineTile_SetsDialect()
+    {
+        await Headless.Session.Dispatch(() =>
+        {
+            var editor = new ConnectionEditorViewModel(null, new NullStore(), new ProviderRegistry(), new Dialogs());
+            var window = new ConnectionEditorWindow { DataContext = editor };
+            var tile = window.FindControl<Button>("TileSqlServer")!;
+            tile.RaiseEvent(new global::Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+            Assert.Equal(DatabaseDialect.SqlServer, editor.Dialect);
+            Assert.Contains("selected", tile.Classes);
+            Assert.DoesNotContain("selected", window.FindControl<Button>("TilePostgres")!.Classes);
+        }, TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task Editor_EnvironmentTile_SetsEnvironment()
+    {
+        await Headless.Session.Dispatch(() =>
+        {
+            var editor = new ConnectionEditorViewModel(null, new NullStore(), new ProviderRegistry(), new Dialogs());
+            var window = new ConnectionEditorWindow { DataContext = editor };
+            var tile = window.FindControl<Button>("EnvStaging")!;
+            tile.RaiseEvent(new global::Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+            Assert.Equal(ConnectionEnvironment.Staging, editor.Environment);
+            Assert.Contains("selected", tile.Classes);
+        }, TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task Editor_SaveButton_EnabledOnlyWhenValid()
+    {
+        await Headless.Session.Dispatch(() =>
+        {
+            var editor = new ConnectionEditorViewModel(null, new NullStore(), new ProviderRegistry(), new Dialogs());
+            var window = new ConnectionEditorWindow { DataContext = editor };
+            var save = window.FindControl<Button>("SaveButton")!;
+            var test = window.FindControl<Button>("TestButton")!;
+            Assert.False(save.Command!.CanExecute(null));
+            Assert.True(test.Command!.CanExecute(null));
+            editor.Name = "pg";
+            editor.Host = "localhost";
+            Assert.True(save.Command!.CanExecute(null));
+        }, TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task Editor_List_GroupsFoldersFirstThenUngrouped()
+    {
+        await Headless.Session.Dispatch(async () =>
+        {
+            var store = new ListStore(
+                Profile("zeta", null), Profile("beta", "Staging"), Profile("alpha", "Production"), Profile("gamma", "Production"));
+            var list = new ConnectionListViewModel(store, new ProviderRegistry(), new Dialogs());
+            await list.LoadCommand.ExecuteAsync(null);
+            var window = new ConnectionEditorWindow
+            {
+                DataContext = new ConnectionEditorViewModel(null, store, new ProviderRegistry(), new Dialogs()),
+                List = list,
+            };
+            var host = window.FindControl<StackPanel>("ListHost")!;
+            var texts = host.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text).Where(t => !string.IsNullOrEmpty(t)).ToArray();
+            Assert.Equal(["Production", "2", "PG", "alpha", "PG", "gamma", "Staging", "1", "PG", "beta", "PG", "zeta"], texts);
+        }, TestContext.Current.CancellationToken);
+    }
+
+    private static ConnectionProfile Profile(string name, string? folder) =>
+        new(Guid.NewGuid(), name, DatabaseDialect.PostgreSql, "h", 5432, null, null, null, null, ConnectionEnvironment.None, folder);
+
+    private sealed class ListStore(params ConnectionProfile[] profiles) : IProfileStore
+    {
+        public ValueTask<IReadOnlyList<ConnectionProfile>> ListAsync(CancellationToken ct) => ValueTask.FromResult<IReadOnlyList<ConnectionProfile>>(profiles);
+        public ValueTask SaveAsync(ConnectionProfile profile, string? password, string? sshSecret, CancellationToken ct) => ValueTask.CompletedTask;
+        public ValueTask DeleteAsync(Guid id, CancellationToken ct) => ValueTask.CompletedTask;
+        public ValueTask<string?> GetPasswordAsync(Guid id, CancellationToken ct) => ValueTask.FromResult<string?>(null);
+        public ValueTask<string?> GetSshSecretAsync(Guid id, CancellationToken ct) => ValueTask.FromResult<string?>(null);
     }
 
     [Fact]
