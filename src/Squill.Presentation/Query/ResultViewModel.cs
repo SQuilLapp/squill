@@ -29,6 +29,10 @@ public sealed partial class ResultViewModel : ViewModelBase
     [ObservableProperty]
     public partial string Header { get; private set; }
 
+    /// <summary>Gets the loaded row count shown after the title in a result tab: grouped digits and a <c>+</c> when the row limit truncated the result; empty for a message.</summary>
+    [ObservableProperty]
+    public partial string CountText { get; private set; } = "";
+
     /// <summary>Gets the editor of a single-table result, otherwise <see langword="null"/>.</summary>
     [ObservableProperty]
     public partial ResultEditorViewModel? Editor { get; private set; }
@@ -81,10 +85,13 @@ public sealed partial class ResultViewModel : ViewModelBase
 
     internal void SetReadOnly(string reason) => ReadOnlyReason = reason;
 
-    private void UpdateHeader() =>
+    private void UpdateHeader()
+    {
+        CountText = Grid is null ? "" : $"{Grid.RowCount:N0}{(Grid.IsTruncated ? "+" : "")}";
         Header = Grid is null
             ? Title
-            : $"{Title} ({Grid.RowCount:N0}{(Grid.IsTruncated ? "+" : "")} rows){(HasPendingChanges ? " *" : "")}";
+            : $"{Title} ({CountText} rows){(HasPendingChanges ? " *" : "")}";
+    }
 
     internal static ResultViewModel ForGrid(string title, StreamingGridDataSource grid, IDialogService dialogs) => new(ResultKind.Grid, title, grid, "", dialogs);
 

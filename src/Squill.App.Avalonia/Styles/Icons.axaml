@@ -17,4 +17,8 @@
   <StreamGeometry x:Key="SquillIconDatabase">M5,6 C5,3.5 19,3.5 19,6 V18 C19,20.5 5,20.5 5,18 Z M5,6 C5,8.5 19,8.5 19,6 M5,12 C5,14.5 19,14.5 19,12</StreamGeometry>
   <StreamGeometry x:Key="SquillIconFolder">M3,6 H10 L12,8 H21 V19 H3 Z</StreamGeometry>
   <StreamGeometry x:Key="SquillIconFormat">M4,6 H20 M4,10 H14 M4,14 H20 M4,18 H14</StreamGeometry>
+  <StreamGeometry x:Key="SquillIconPencil">M4,20 L5,15 L16,4 L20,8 L9,19 Z M14,6 L18,10</StreamGeometry>
+  <StreamGeometry x:Key="SquillIconLock">M6,11 H18 V20 H6 Z M8,11 V8 C8,3.5 16,3.5 16,8 V11</StreamGeometry>
+  <StreamGeometry x:Key="SquillIconTrash">M4,7 H20 M9,7 V4 H15 V7 M6,7 L7,20 H17 L18,7</StreamGeometry>
+  <StreamGeometry x:Key="SquillIconUndo">M9,6 L4,11 L9,16 M4,11 H14 C18,11 20,13 20,17</StreamGeometry>
 </ResourceDictionary>

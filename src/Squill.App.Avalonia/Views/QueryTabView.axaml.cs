@@ -1,9 +1,13 @@
 using System.ComponentModel;
+using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia;
 using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Controls.Shapes;
+using Squill.Presentation.Localization;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
 using Squill.Core.Editing;
@@ -116,7 +120,8 @@ public sealed partial class QueryTabView : UserControl
         Message.IsVisible = result?.Kind == ResultKind.Message;
         Message.Text = result?.Text;
         Empty.IsVisible = result is null;
-        ExportCsv.IsEnabled = ExportJson.IsEnabled = result?.Kind == ResultKind.Grid;
+        ExportButton.IsEnabled = result?.Kind == ResultKind.Grid;
+        RefreshFooter();
     }
 
     private void OnResultPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -125,6 +130,19 @@ public sealed partial class QueryTabView : UserControl
             ShowGrid();
         else if (e.PropertyName is nameof(ResultViewModel.Editor) or nameof(ResultViewModel.ReadOnlyReason))
             ShowEditBar();
+        else if (e.PropertyName == nameof(ResultViewModel.CountText))
+            RefreshFooter();
+    }
+
+    private void RefreshFooter()
+    {
+        var grid = _result?.Kind == ResultKind.Grid ? _result.DisplayGrid : null;
+        Footer.IsVisible = grid is not null;
+        if (grid is null)
+            return;
+        var loaded = grid.RowCount.ToString("N0", CultureInfo.GetCultureInfo("fr-FR"));
+        FooterText.Text = UiText.Format("results.footer", loaded, grid.IsTruncated ? loaded + "+" : loaded);
+        ExportTitle.Text = UiText.Format("results.exportRows", loaded);
     }
 
     private void ShowEditBar()
@@ -136,18 +154,24 @@ public sealed partial class QueryTabView : UserControl
         }
 
         _editor = _result?.Editor;
-        var reason = _editor is null ? _result?.ReadOnlyReason : null;
-        EditBar.IsVisible = _editor is not null;
-        ReadOnlyLabel.IsVisible = reason is not null;
-        ReadOnlyLabel.Text = reason is null ? null : $"Read-only: {reason}";
+        var reason = _editor is null && _result?.ReadOnlyReason != "loading" ? _result?.ReadOnlyReason : null;
+        RowTools.IsVisible = _editor is not null;
+        Marker.IsVisible = _editor is not null || reason is not null;
+        MarkerText.Text = _editor is not null
+            ? UiText.Format("results.editable", string.Join(", ", _editor.Target.KeyColumns))
+            : reason is null ? null : UiText.Format("results.readOnly", reason);
+        MarkerIcon.Bind(global::Avalonia.Controls.Shapes.Path.DataProperty, this.GetResourceObservable(_editor is not null ? "SquillIconPencil" : "SquillIconLock"));
+        var brush = this.GetResourceObservable(_editor is not null ? "SquillSuccessBrush" : "SquillFg3Brush");
+        MarkerIcon.Bind(Shape.StrokeProperty, brush);
+        MarkerText.Bind(TextBlock.ForegroundProperty, brush);
         PreviewSql.Command = _editor?.PreviewScriptCommand;
         Commit.Command = _editor?.CommitCommand;
         Discard.Command = _editor?.DiscardCommand;
+        RefreshEditBar();
         if (_editor is null)
             return;
         _editor.PropertyChanged += OnEditorPropertyChanged;
         _editor.Issues.CollectionChanged += OnIssuesChanged;
-        RefreshEditBar();
     }
 
     private void OnEditorPropertyChanged(object? sender, PropertyChangedEventArgs e) => RefreshEditBar();
@@ -156,13 +180,32 @@ public sealed partial class QueryTabView : UserControl
 
     private void RefreshEditBar()
     {
+        EditBar.IsVisible = _editor?.HasPendingChanges == true;
         if (_editor is null)
             return;
-        EditStatus.Text = _editor.StatusText;
-        var count = _editor.Issues.Count;
-        IssuesButton.IsVisible = count > 0;
-        IssuesButton.Content = $"⚠ {count}";
+        var count = _editor.PendingCount;
+        EditStatus.Text = UiText.Format(count == 1 ? "results.pendingChanges.one" : "results.pendingChanges.other", count);
+        EditDetail.Text = DescribeChanges(_editor);
+        var issues = _editor.Issues.Count;
+        IssuesButton.IsVisible = issues > 0;
+        IssuesButton.Content = $"⚠ {issues}";
         IssueList.ItemsSource = _editor.Issues.Select(i => new IssueItem(i, Describe(i))).ToList();
+    }
+
+    private static string DescribeChanges(ResultEditorViewModel editor)
+    {
+        var edits = ChangeSetBuilder.Build(editor.Grid, editor.Target).Edits;
+        var parts = new List<string>(3);
+        Add(parts, edits.Count(e => e.Edit is UpdateRow), "results.updates");
+        Add(parts, edits.Count(e => e.Edit is InsertRow), "results.inserts");
+        Add(parts, edits.Count(e => e.Edit is DeleteRow), "results.deletes");
+        return string.Join(" · ", parts);
+
+        static void Add(List<string> parts, int n, string key)
+        {
+            if (n > 0)
+                parts.Add(UiText.Format(n == 1 ? key + ".one" : key + ".other", n));
+        }
     }
 
     private static string Describe(EditIssue issue) =>
@@ -199,7 +242,13 @@ public sealed partial class QueryTabView : UserControl
         ResultGrid.DataSource = result?.DisplayGrid;
     }
 
-    private void OnExportCsv(object? sender, RoutedEventArgs e) => _tab?.SelectedResult?.ExportCommand.Execute(new CsvResultExporter());
+    private void OnExportCsv(object? sender, RoutedEventArgs e) => Export(new CsvResultExporter());
 
-    private void OnExportJson(object? sender, RoutedEventArgs e) => _tab?.SelectedResult?.ExportCommand.Execute(new JsonResultExporter());
+    private void OnExportJson(object? sender, RoutedEventArgs e) => Export(new JsonResultExporter());
+
+    private void Export(IResultExporter exporter)
+    {
+        ExportButton.Flyout?.Hide();
+        _tab?.SelectedResult?.ExportCommand.Execute(exporter);
+    }
 }
