@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
@@ -53,6 +54,11 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             SshAuthMethod = ssh.AuthMethod;
             SshPrivateKeyPath = ssh.PrivateKeyPath ?? "";
         }
+
+        Tls = existing.Tls;
+        TrustServerCertificate = existing.TrustServerCertificate;
+        ConnectTimeoutText = existing.ConnectTimeoutSeconds.ToString(CultureInfo.InvariantCulture);
+        CommandTimeoutText = existing.CommandTimeoutSeconds.ToString(CultureInfo.InvariantCulture);
     }
 
     /// <summary>Raised after the profile has been saved.</summary>
@@ -126,6 +132,31 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     [ObservableProperty]
     public partial string SshSecret { get; set; } = "";
 
+    /// <summary>Gets or sets how the connection is secured (ignored for SQLite).</summary>
+    [ObservableProperty]
+    public partial TlsMode Tls { get; set; }
+
+    /// <summary>Gets or sets whether the server certificate is accepted without validation (SQL Server only).</summary>
+    [ObservableProperty]
+    public partial bool TrustServerCertificate { get; set; }
+
+    /// <summary>Gets or sets the connect timeout in seconds as typed; 0 means no timeout.</summary>
+    [ObservableProperty]
+    public partial string ConnectTimeoutText { get; set; } = "15";
+
+    /// <summary>Gets or sets the command timeout in seconds as typed; 0 means no timeout.</summary>
+    [ObservableProperty]
+    public partial string CommandTimeoutText { get; set; } = "0";
+
+    /// <summary>Gets whether <see cref="Tls"/> applies to the selected engine.</summary>
+    public bool SupportsTls => Dialect != DatabaseDialect.Sqlite;
+
+    /// <summary>Gets whether <see cref="TrustServerCertificate"/> applies to the selected engine.</summary>
+    public bool SupportsTrustCertificate => Dialect == DatabaseDialect.SqlServer;
+
+    /// <summary>Gets whether the connect timeout applies to the selected engine; the command timeout always does.</summary>
+    public bool SupportsTimeouts => Dialect != DatabaseDialect.Sqlite;
+
     /// <summary>Gets the outcome of the last connection test, or <see langword="null"/> before any test.</summary>
     [ObservableProperty]
     public partial string? TestStatus { get; private set; }
@@ -188,6 +219,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         if (Folder.Trim().Length > MaxFolderLength)
             errors.Add(UiText.Format("connections.errFolder", MaxFolderLength));
 
+        AddTimeoutErrors(errors);
+
         if (UseSsh)
         {
             if (string.IsNullOrWhiteSpace(SshHost))
@@ -212,6 +245,9 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
 
     partial void OnDialectChanged(DatabaseDialect oldValue, DatabaseDialect newValue)
     {
+        OnPropertyChanged(nameof(SupportsTls));
+        OnPropertyChanged(nameof(SupportsTrustCertificate));
+        OnPropertyChanged(nameof(SupportsTimeouts));
         if (Port is null || Port == DefaultPort(oldValue))
             Port = DefaultPort(newValue);
     }
@@ -219,6 +255,24 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     private bool CanSave() => Validate().Count == 0;
 
     private static string? NullIfBlank(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static bool TryParseTimeout(string text, out int seconds) =>
+        int.TryParse(text.Trim(), NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out seconds);
+
+    private void AddTimeoutErrors(List<string> errors)
+    {
+        var connectShown = SupportsTimeouts;
+        var connectOk = TryParseTimeout(ConnectTimeoutText, out var connect);
+        var commandOk = TryParseTimeout(CommandTimeoutText, out var command);
+        if (connectShown && !connectOk)
+            errors.Add(UiText.Get("connections.errConnectTimeout"));
+        if (!commandOk)
+            errors.Add(UiText.Get("connections.errCommandTimeout"));
+        var checkedProfile = new ConnectionProfile(Guid.Empty, "", Dialect, null, null, null, null, null, null,
+            ConnectTimeoutSeconds: connectShown && connectOk ? connect : 0, CommandTimeoutSeconds: commandOk ? command : 0);
+        foreach (var issue in checkedProfile.ValidateOptions())
+            errors.Add(IssueText.Format(issue.Code, issue.Args, issue.Message));
+    }
 
     private ConnectionProfile BuildProfile(bool withSsh)
     {
@@ -238,7 +292,11 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             sqlite ? NullIfBlank(FilePath) : null,
             ssh,
             Environment,
-            NullIfBlank(Folder));
+            NullIfBlank(Folder),
+            sqlite ? TlsMode.Default : Tls,
+            Dialect == DatabaseDialect.SqlServer && TrustServerCertificate,
+            sqlite || !TryParseTimeout(ConnectTimeoutText, out var connect) ? _existing?.ConnectTimeoutSeconds ?? 15 : connect,
+            TryParseTimeout(CommandTimeoutText, out var command) ? command : 0);
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]

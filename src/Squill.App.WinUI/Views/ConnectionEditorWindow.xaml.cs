@@ -47,6 +47,11 @@ public sealed partial class ConnectionEditorWindow : Window
         SshAuthBox.ItemsSource = new[] { SshAuthMethod.Password.ToString(), SshAuthMethod.PrivateKey.ToString() };
         GeneralTabItem.Text = UiText.Get("connections.tabGeneral");
         SshTabItem.Text = UiText.Get("connections.tabSsh");
+        TlsBox.ItemsSource = new[]
+        {
+            UiText.Get("connections.tlsDefault"), UiText.Get("connections.tlsDisable"),
+            UiText.Get("connections.tlsRequire"), UiText.Get("connections.tlsVerifyFull"),
+        };
         BuildTiles();
         PlaceModal(owner);
 
@@ -218,6 +223,10 @@ public sealed partial class ConnectionEditorWindow : Window
             var folders = ConnectionEditorFormat.Folders(_list.Groups);
             if (FolderBox.ItemsSource is not string[] shown || !shown.AsSpan().SequenceEqual(folders))
                 FolderBox.ItemsSource = folders;
+            SyncText(ConnectTimeoutBox, editor.ConnectTimeoutText);
+            SyncText(CommandTimeoutBox, editor.CommandTimeoutText);
+            TlsBox.SelectedIndex = (int)editor.Tls;
+            TrustBox.IsChecked = editor.TrustServerCertificate;
             UseSshBox.IsChecked = editor.UseSsh;
             SshAuthBox.SelectedIndex = editor.SshAuthMethod == SshAuthMethod.PrivateKey ? 1 : 0;
         }
@@ -229,6 +238,9 @@ public sealed partial class ConnectionEditorWindow : Window
         var sqlite = editor.Dialect == DatabaseDialect.Sqlite;
         SqliteFields.Visibility = sqlite ? Visibility.Visible : Visibility.Collapsed;
         ServerFields.Visibility = sqlite ? Visibility.Collapsed : Visibility.Visible;
+        TlsFields.Visibility = editor.SupportsTls ? Visibility.Visible : Visibility.Collapsed;
+        TrustBox.Visibility = editor.SupportsTrustCertificate ? Visibility.Visible : Visibility.Collapsed;
+        ConnectTimeoutFields.Visibility = editor.SupportsTimeouts ? Visibility.Visible : Visibility.Collapsed;
         SshFields.Visibility = editor.UseSsh ? Visibility.Visible : Visibility.Collapsed;
         SshCard.Visibility = editor.UseSsh ? Visibility.Visible : Visibility.Collapsed;
         SshKeyFields.Visibility = editor.SshAuthMethod == SshAuthMethod.PrivateKey ? Visibility.Visible : Visibility.Collapsed;
@@ -400,6 +412,15 @@ public sealed partial class ConnectionEditorWindow : Window
     private void OnDatabaseChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.Database = DatabaseBox.Text);
 
     private void OnUserChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.UserName = UserBox.Text);
+
+    private void OnTlsChanged(object sender, SelectionChangedEventArgs e) =>
+        Edit(editor => editor.Tls = TlsBox.SelectedIndex is >= 0 and <= 3 ? (TlsMode)TlsBox.SelectedIndex : TlsMode.Default);
+
+    private void OnTrustClicked(object sender, RoutedEventArgs e) => Edit(editor => editor.TrustServerCertificate = TrustBox.IsChecked == true);
+
+    private void OnConnectTimeoutChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.ConnectTimeoutText = ConnectTimeoutBox.Text);
+
+    private void OnCommandTimeoutChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.CommandTimeoutText = CommandTimeoutBox.Text);
 
     private void OnPasswordChanged(object sender, RoutedEventArgs e) => Edit(editor => editor.Password = PasswordInput.Password);
 

@@ -104,6 +104,27 @@
                 <PasswordBox x:Name="PasswordInput" MinHeight="30" PasswordChanged="OnPasswordChanged" />
               </StackPanel>
             </StackPanel>
+
+            <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" loc:Loc.HeaderKey="connections.advanced">
+              <StackPanel Spacing="14">
+                <StackPanel x:Name="TlsFields" Spacing="6">
+                  <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.tls" />
+                  <ComboBox x:Name="TlsBox" HorizontalAlignment="Stretch" MinHeight="30" SelectionChanged="OnTlsChanged" />
+                  <CheckBox x:Name="TrustBox" Click="OnTrustClicked" loc:Loc.Key="connections.trustCertificate" />
+                </StackPanel>
+                <Grid ColumnDefinitions="*,16,*">
+                  <StackPanel x:Name="ConnectTimeoutFields" Spacing="6">
+                    <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.connectTimeout" />
+                    <TextBox x:Name="ConnectTimeoutBox" Style="{StaticResource FieldBoxStyle}" TextChanged="OnConnectTimeoutChanged" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Spacing="6">
+                    <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.commandTimeout" />
+                    <TextBox x:Name="CommandTimeoutBox" Style="{StaticResource FieldBoxStyle}" TextChanged="OnCommandTimeoutChanged" />
+                  </StackPanel>
+                </Grid>
+                <TextBlock FontSize="{StaticResource SquillFontSizeBodySm}" Foreground="{ThemeResource SquillFg3Brush}" loc:Loc.Key="connections.timeoutHint" />
+              </StackPanel>
+            </Expander>
           </StackPanel>
 
           <StackPanel x:Name="SshTab" Grid.Row="5" Spacing="14" Margin="0,16,0,0" Visibility="Collapsed">

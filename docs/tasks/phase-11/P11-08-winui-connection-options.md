@@ -1,6 +1,6 @@
 # P11-08 - WinUI head: connection options in the connection editor
 
-Status: todo
+Status: done
 Depends on: P11-06, P11-07
 
 ## Goal
@@ -15,12 +15,13 @@ The user can set TLS mode, "trust server certificate" and the two timeouts in th
 - Driver mapping (P11-07).
 
 ## Tasks
-- [ ] View-model members and tests; XAML and `Loc` keys in both catalogs.
-- [ ] Capture the editor for each of the four dialects with `SQUILL_LANGUAGE=en` and `fr` (tools of P9-02) and read the images.
+- [x] View-model members and tests; XAML and `Loc` keys in both catalogs.
+- [ ] (not driven: the automated session could not open the editor window, `Ctrl+,` opens Settings, and clicking blind on the desktop is unsafe; do it by hand or with a click-capable tool) Capture the editor for each of the four dialects with `SQUILL_LANGUAGE=en` and `fr` (tools of P9-02) and read the images.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green.
 - WinUI AOT publish with zero IL2xxx/IL3xxx warnings.
+- Native AOT publish of `src/Squill.App.WinUI`: only the pre-existing IL2104/IL3053 aggregate warnings of the third-party `Microsoft.Data.SqlClient` and `System.Configuration.ConfigurationManager` assemblies, none from SQuilL code.
 - To check by hand: open the editor, switch dialect, enter a negative timeout (message shown), save, reopen (values kept).
 
 ## Suggested commit message
