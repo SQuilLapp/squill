@@ -68,10 +68,10 @@ public sealed class DesignerUiTests
             var view = window.GetLogicalDescendants().OfType<TableDesignerView>().Single();
             Assert.True(view.IsVisible);
             Assert.Same(designer, view.DataContext);
-            var box = view.GetVisualDescendants().OfType<TextBox>().Single(t => t.Name == "ScriptBox");
-            Assert.DoesNotContain("new_column", box.Text);
+            var editor = view.GetVisualDescendants().OfType<AvaloniaEdit.TextEditor>().Single(t => t.Name == "ScriptEditor");
+            Assert.DoesNotContain("new_column", editor.Text);
             designer.AddColumnCommand.Execute(null);
-            Assert.Contains("new_column", box.Text);
+            Assert.Contains("new_column", editor.Text);
             return Task.CompletedTask;
         });
     }
@@ -82,7 +82,7 @@ public sealed class DesignerUiTests
         await WithDesignerAsync((window, _, designer) =>
         {
             var view = window.GetLogicalDescendants().OfType<TableDesignerView>().Single();
-            var apply = view.GetVisualDescendants().OfType<Button>().Single(b => b.Content as string == "Apply");
+            var apply = view.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "ApplyButton");
             Assert.True(apply.Command!.CanExecute(null));
             designer.Name = "";
             Assert.True(designer.HasErrors);
@@ -91,6 +91,31 @@ public sealed class DesignerUiTests
             Assert.True(issues.ItemCount > 0);
             Assert.False(apply.Command!.CanExecute(null));
             return Task.CompletedTask;
+        });
+    }
+
+    [Fact]
+    public async Task ModifiedAndNewRows_ShowTheirTagAndDraftState()
+    {
+        await WithDesignerAsync(async (window, services, designer) =>
+        {
+            designer.Name = "tagged";
+            await designer.ApplyCommand.ExecuteAsync(null);
+            Assert.NotNull(designer.Original);
+            var view = window.GetLogicalDescendants().OfType<TableDesignerView>().Single();
+            IEnumerable<string?> VisibleTags() => view.GetVisualDescendants().OfType<TextBlock>()
+                .Where(t => t.IsEffectivelyVisible && t.Text is "MODIFIÉE" or "NOUVELLE").Select(t => t.Text);
+            Assert.Empty(VisibleTags());
+            Assert.Equal("", designer.DraftText);
+
+            designer.Columns[0].DataType = "text";
+            designer.AddColumnCommand.Execute(null);
+            window.UpdateLayout();
+            Assert.Equal(["MODIFIÉE", "NOUVELLE"], VisibleTags().Order(StringComparer.Ordinal).Reverse());
+            Assert.True(designer.Columns[0].IsModified);
+            Assert.True(designer.Columns[1].IsNew);
+            Assert.Contains("brouillon", designer.DraftText);
+            Assert.Same(designer.Columns[1], designer.SelectedColumn);
         });
     }
 

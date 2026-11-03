@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
 using Squill.Core.Design;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Ddl;
 
@@ -50,6 +51,51 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
 
     /// <summary>Gets the tab title.</summary>
     public string Title => Original is null ? "New table" : $"Design {Original.Name}";
+
+    /// <summary>Gets the environment of the connection the table lives in.</summary>
+    public ConnectionEnvironment Environment => _session.Profile.Environment;
+
+    /// <summary>Gets whether the connection is a production one.</summary>
+    public bool IsProd => Environment == ConnectionEnvironment.Production;
+
+    /// <summary>Gets whether the connection is a staging one.</summary>
+    public bool IsStaging => Environment == ConnectionEnvironment.Staging;
+
+    /// <summary>Gets whether the connection is a development one.</summary>
+    public bool IsDev => Environment == ConnectionEnvironment.Development;
+
+    /// <summary>Gets whether the connection is a local one.</summary>
+    public bool IsLocal => Environment == ConnectionEnvironment.Local;
+
+    /// <summary>Gets the caps label of the environment, or null when none is set.</summary>
+    public string? EnvironmentLabel => Environment switch
+    {
+        ConnectionEnvironment.Production => UiText.Get("status.production"),
+        ConnectionEnvironment.Staging => UiText.Get("status.staging"),
+        ConnectionEnvironment.Development => UiText.Get("status.dev"),
+        ConnectionEnvironment.Local => UiText.Get("status.local"),
+        _ => null,
+    };
+
+    /// <summary>Gets the connection, database and schema line under the table name.</summary>
+    [ObservableProperty]
+    public partial string Subtitle { get; private set; } = "";
+
+    /// <summary>Gets the number of differences between the draft and the table in the database; 0 for a new table.</summary>
+    [ObservableProperty]
+    public partial int DraftChangeCount { get; private set; }
+
+    /// <summary>Gets the draft state line, empty when the draft equals the table or the table is new.</summary>
+    [ObservableProperty]
+    public partial string DraftText { get; private set; } = "";
+
+    /// <summary>Gets the column whose details are shown under the columns table.</summary>
+    [ObservableProperty]
+    public partial ColumnRowViewModel? SelectedColumn { get; set; }
+
+    /// <summary>Gets the title of the selected column card.</summary>
+    [ObservableProperty]
+    public partial string SelectedColumnTitle { get; private set; } = "";
 
     /// <summary>Gets the data type suggestions of the dialect.</summary>
     public IReadOnlyList<string> TypeSuggestions { get; }
@@ -114,12 +160,27 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
 
     partial void OnIsApplyingChanged(bool value) => ApplyCommand.NotifyCanExecuteChanged();
 
-    [RelayCommand]
-    private void AddColumn() =>
-        Columns.Add(Wire(new ColumnRowViewModel(new ColumnDesign(null, Unique("new_column", Columns.Select(c => c.Name)), TypeSuggestions[0], true, null, false), false)));
+    partial void OnSelectedColumnChanged(ColumnRowViewModel? value) => UpdateSelectedTitle();
+
+    private void UpdateSelectedTitle() =>
+        SelectedColumnTitle = SelectedColumn is { } c ? UiText.Format("designer.selectedColumn", c.Name) : "";
 
     [RelayCommand]
-    private void RemoveColumn(ColumnRowViewModel row) => Columns.Remove(row);
+    private void AddColumn()
+    {
+        var row = Wire(new ColumnRowViewModel(new ColumnDesign(null, Unique("new_column", Columns.Select(c => c.Name)), TypeSuggestions[0], true, null, false), false));
+        Columns.Add(row);
+        SelectedColumn = row;
+    }
+
+    [RelayCommand]
+    private void RemoveColumn(ColumnRowViewModel row)
+    {
+        var i = Columns.IndexOf(row);
+        Columns.Remove(row);
+        if (ReferenceEquals(SelectedColumn, row) || SelectedColumn is null)
+            SelectedColumn = Columns.Count == 0 ? null : Columns[Math.Min(Math.Max(i, 0), Columns.Count - 1)];
+    }
 
     [RelayCommand]
     private void MoveColumnUp(ColumnRowViewModel row)
@@ -228,7 +289,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
             var message = ex is OperationCanceledException ? "Cancelled" : ex.Message;
             if (!transactional)
             {
-                message += $"{Environment.NewLine}{MySqlWarning}";
+                message += $"{System.Environment.NewLine}{MySqlWarning}";
                 try
                 {
                     await _session.RefreshSchemaAsync(CancellationToken.None);
@@ -309,6 +370,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
             _loading = false;
         }
 
+        SelectedColumn = Columns.FirstOrDefault();
         Recompute();
     }
 
@@ -328,6 +390,26 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         }
 
         return row;
+    }
+
+    // The original design as the rows present it: a primary key column cannot be nullable, so an untouched key row is not a draft change.
+    private TableDesign? Baseline => Original is null ? null : Original with
+    {
+        Columns = [.. Original.Columns.Select(c => Original.PrimaryKey.Contains(c.Name, StringComparer.OrdinalIgnoreCase) ? c with { IsNullable = false } : c)],
+    };
+
+    private void UpdateRowStates(TableDesign design)
+    {
+        foreach (var row in Columns)
+        {
+            var before = Baseline?.Columns.FirstOrDefault(c => c.OriginalName is not null && string.Equals(c.OriginalName, row.OriginalName, StringComparison.Ordinal));
+            row.IsNew = Baseline is not null && row.OriginalName is null;
+            row.IsModified = before is not null
+                && (before != row.ToDesign() || Baseline!.PrimaryKey.Contains(before.Name, StringComparer.OrdinalIgnoreCase) != row.IsPrimaryKey);
+            row.ForeignKeyTarget = design.ForeignKeys
+                .Where(f => f.Columns.Contains(row.Name, StringComparer.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(f.ReferencedTable))
+                .Select(f => f.ReferencedTable).FirstOrDefault();
+        }
     }
 
     private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => Recompute();
@@ -376,6 +458,17 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
             ? DdlGenerators.For(_dialect).CreateTable(design)
             : DdlGenerators.For(_dialect).Alter(Original, design);
         Script = DdlGenerators.ToScript(_statements);
+        UpdateRowStates(design);
+        DraftChangeCount = Baseline is { } baseline ? TableDiff.Compute(baseline, design).Count : 0;
+        DraftText = DraftChangeCount switch
+        {
+            0 => "",
+            1 => UiText.Format("designer.draftChanges.one", 1),
+            var n => UiText.Format("designer.draftChanges.other", n),
+        };
+        var connection = _session.Profile;
+        Subtitle = string.Join(" · ", new[] { connection.Name, connection.Database ?? connection.FilePath, design.Schema }.Where(x => !string.IsNullOrEmpty(x)));
+        UpdateSelectedTitle();
         ApplyCommand.NotifyCanExecuteChanged();
     }
 }
