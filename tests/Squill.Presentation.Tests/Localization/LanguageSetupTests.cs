@@ -74,6 +74,41 @@ public sealed class LanguageSetupTests : IDisposable
     }
 
     [Fact]
+    public void Apply_DoesNotDeadlockWhenTheCallerHasASynchronizationContext()
+    {
+        var finished = false;
+        var thread = new Thread(() =>
+        {
+            // Like the UI thread at startup: a context whose queue is never pumped while Apply blocks.
+            SynchronizationContext.SetSynchronizationContext(new NeverPumpedContext());
+            LanguageSetup.Apply(new SlowStore(), null, CultureInfo.GetCultureInfo("de-DE"));
+            finished = true;
+        });
+        thread.Start();
+
+        Assert.True(thread.Join(TimeSpan.FromSeconds(10)), "Apply must not wait for the caller's synchronization context.");
+        Assert.True(finished);
+    }
+
+    private sealed class NeverPumpedContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object? state)
+        {
+        }
+    }
+
+    private sealed class SlowStore : ISettingsStore
+    {
+        public async ValueTask<AppSettings> LoadAsync(CancellationToken ct)
+        {
+            await Task.Delay(20, ct);
+            return AppSettings.Default;
+        }
+
+        public ValueTask SaveAsync(AppSettings settings, CancellationToken ct) => ValueTask.CompletedTask;
+    }
+
+    [Fact]
     public void RestartRequired_FollowsTheSavedChoice()
     {
         UiText.Initialize(UiLanguage.English);
