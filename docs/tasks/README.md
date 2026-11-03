@@ -230,21 +230,6 @@ Depends on: <card ids, ranges allowed>
 | [P11-38](phase-11/P11-38-verify-mysql.md) | End-to-end verification: MySQL | P11-37, P11-18, P11-24, P11-27 ... P11-32 | todo |
 | [P11-39](phase-11/P11-39-verify-sqlserver.md) | End-to-end verification: SQL Server | P11-37, P11-19, P11-24, P11-27 ... P11-32 | todo |
 | [P11-40](phase-11/P11-40-docs-and-adr.md) | Documentation: engine parity ADR 0008, README and architecture note | P11-36 ... P11-39 | todo |
-| [P12-01](phase-12/P12-01-core-variable-model-resolver.md) | Core: variable model and resolver | none | todo |
-| [P12-02](phase-12/P12-02-sql-variable-scanner.md) | Sql: variable scanner, masking and highlight kind | P12-01 | todo |
-| [P12-03](phase-12/P12-03-platform-variable-store.md) | Platform: variable store and secret keys | P12-01 | todo |
-| [P12-04](phase-12/P12-04-presentation-variable-service.md) | Presentation: variable service | P12-01, P12-03 | todo |
-| [P12-05](phase-12/P12-05-presentation-run-substitution.md) | Presentation: substitution at run time | P12-02, P12-04 | todo |
-| [P12-06](phase-12/P12-06-data-substitution-engines.md) | Data: variable substitution proven on the four engines | P12-05, P11-02 ... P11-04 | todo |
-| [P12-07](phase-12/P12-07-presentation-editor-variable-contract.md) | Presentation: editor variable contract, popup content and quick actions | P12-02, P12-04 | todo |
-| [P12-08](phase-12/P12-08-winui-editor-variable-colours-hover.md) | WinUI head: variables coloured in the editor and hover popup | P12-07 | todo |
-| [P12-09](phase-12/P12-09-winui-variable-actions-chips.md) | WinUI head: quick actions, chip row and the variable dialog | P12-08 | todo |
-| [P12-10](phase-12/P12-10-winui-variables-manager.md) | WinUI head: variables manager | P12-09 | todo |
-| [P12-11](phase-12/P12-11-avalonia-editor-variables.md) | Avalonia head: coloured variables, hover popup with actions, chip row | P12-09 | todo |
-| [P12-12](phase-12/P12-12-avalonia-variables-manager.md) | Avalonia head: variables manager | P12-10, P12-11 | todo |
-| [P12-13](phase-12/P12-13-guards-localization-secrets.md) | Tests: localization and secret-leak guards for variables | P12-10, P12-12 | todo |
-| [P12-14](phase-12/P12-14-verify-variables.md) | End-to-end verification of query variables | P12-06, P12-10, P12-12, P12-13 | todo |
-| [P12-15](phase-12/P12-15-docs-and-adr.md) | Documentation: query variables ADR 0009, README and architecture note | P12-14 | todo |
 
 ### Phase 9 - Visual conformance
 
@@ -270,11 +255,3 @@ Goal: every feature works fully and is **verified against a real server** on the
 - Order: P11-01 ... P11-05 first (containers and CI, so everything after can be tested for real), then the gaps by value: connection options P11-06 ... P11-09, cancel and timeout P11-10, result sets P11-11 ... P11-14, schema objects P11-15 ... P11-22, databases P11-23/24, then the per-feature verification cards P11-25 ... P11-35 (types, SQL corpus, designer, ER, export, grid edit, terminal, SSH), then one end-to-end card per engine P11-36 ... P11-39 (WinUI driven first, Avalonia smoke), last P11-40 (docs and support matrix). WinUI cards come before their Avalonia twins.
 - Shared procedures (containers, verification report format, sample schemas): [verification-recipe.md](phase-11/verification-recipe.md).
 - Cards that need a container use `rtk pwsh eng/run-docker-tests.ps1` (P11-01); a card must stop and report when Podman is unavailable and never mark Docker-gated tests as verified when they were skipped. Bugs found by verification cards that are too big for the card get a new card `P11-41` onwards (added to this index).
-
-### Phase 12 - Query variables
-
-Goal: variables live in the query text like Postman and Bruno: `{{name}}` is coloured by state in the editor, hovering explains it, clicking offers to create or edit it in a scope. Decisions (final, detail in [phase-12/variables-spec.md](phase-12/variables-spec.md), ADR 0009 written by P12-15): syntax `{{name}}` (bound parameter), `{{ident:name}}` (quoted identifier), `{{raw:name}}` (pasted text, opt-in per variable, never for secrets); not recognised inside strings or comments; scopes Tab > Connection > Environment kind > Global; definitions in `variables.json`, secret values in the secret store; substitution in Presentation before the existing `:name` prompt, unresolved variables are prompted, never silently empty; LoomEditor cannot host actions inside the hover (no public widget or link handler), so the WinUI head shows the hover text and offers the actions on click / `Ctrl+.` and in a chip row, while Avalonia gets a real popup with buttons.
-
-- Branch: implement phase 12 on the branch of the phase 11 work (`phase-11-engine-parity`) unless the owner says otherwise; do not create another branch.
-- Order: P12-01 ... P12-04 foundations (P12-02 and P12-03 independent), P12-05, P12-06 and P12-07, then WinUI P12-08 ... P12-10, Avalonia P12-11/12, guards P12-13, verification P12-14, docs P12-15. WinUI cards come before their Avalonia twins.
-- Cards that change what is on screen are captured with `SQUILL_LANGUAGE=en` and `fr` (tools of P9-02); what cannot be driven is listed "to check by hand".
