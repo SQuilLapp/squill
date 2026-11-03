@@ -74,7 +74,10 @@
 
             <StackPanel x:Name="SqliteFields" Spacing="6">
               <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.file" />
-              <TextBox x:Name="FileBox" Style="{StaticResource FieldBoxStyle}" TextChanged="OnFileChanged" />
+              <Grid ColumnDefinitions="*,8,Auto">
+                <TextBox x:Name="FileBox" Style="{StaticResource FieldBoxStyle}" TextChanged="OnFileChanged" />
+                <Button Grid.Column="2" Height="30" MinHeight="30" Click="OnBrowseDatabase" loc:Loc.Key="connections.browse" />
+              </Grid>
             </StackPanel>
 
             <StackPanel x:Name="ServerFields" Spacing="14">
