@@ -1,6 +1,6 @@
 # P9-21 - Avalonia head: ER diagram view
 
-Status: todo
+Status: done
 Depends on: P9-08, P9-02
 
 ## Goal
@@ -16,8 +16,8 @@ The ER diagram tab matches M08: toolbar, table list, node drawing, relations, to
 - PNG/PDF/Mermaid export, layout modes not in the engine (no feature).
 
 ## Tasks
-- [ ] Rework `DiagramTabView.axaml` and `Controls/ErDiagramCanvas.cs`.
-- [ ] Headless tests: toolbar commands bound, canvas renders a 3-table model without exception, pixel sample on a PK tag is `accent`.
+- [x] Rework `DiagramTabView.axaml` and `Controls/ErDiagramCanvas.cs`.
+- [x] Headless tests: toolbar commands bound, canvas renders a 3-table model without exception, pixel sample on a PK tag is `accent`.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
@@ -28,3 +28,7 @@ The ER diagram tab matches M08: toolbar, table list, node drawing, relations, to
 
 ## Suggested commit message
 Avalonia: ER diagram view
+
+## Report
+- Visual check done in light and dark (AOT exe, sample profile, composites `p21-light-cmp.png` / `p21-dark-cmp.png` in `%TEMP%\squill-visual`). Not drawn on purpose (no data or feature): row counts in node headers, `Commentaires` and `Clés seulement si replié` checkboxes, layout modes, table-list visibility checkboxes (plain list focusing the table), PNG/PDF/Mermaid export, the left drawing hint. The mockup shows the explorer closed and a hovered tooltip; the capture shows the explorer open. The relation tooltip (FK name and columns; no referential actions, the model lacks them) and hover states were not driven: the owner should hover a relation by hand.
+- Shared layout defaults changed in `ErLayoutOptions` (header 33, row 24, min width 210) to match M08; Presentation layout/router/SVG tests now pin the old values explicitly. The WinUI canvas picks the new metrics up (P9-22 must draw with them).

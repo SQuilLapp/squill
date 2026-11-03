@@ -212,6 +212,14 @@ internal static class UiTextCatalog
         ("er.exportSvg", "SVG vectoriel"),
         ("er.tables", "TABLES · {0} / {1}"),
         ("er.hint", "Molette : zoom · Espace + glisser : déplacer"),
+        ("er.filter", "Filtrer les tables"),
+        ("er.views", "Vues"),
+        ("er.hops", "Sauts de relation"),
+        ("er.focus", "Focaliser"),
+        ("er.showAll", "Tout afficher"),
+        ("er.zoomOut", "Dézoomer"),
+        ("er.zoomIn", "Zoomer"),
+        ("er.relationFrom", "{0} n — 1 {1}"),
 
         // Settings
         ("settings.title", "Paramètres — SQuilL"),

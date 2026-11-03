@@ -6,7 +6,7 @@ namespace Squill.Presentation.Tests.Diagram;
 
 public sealed class ErLayoutTests
 {
-    private static readonly ErLayoutOptions Opts = new(s => s.Length * 7);
+    private static readonly ErLayoutOptions Opts = new(s => s.Length * 7, HeaderHeight: 28, RowHeight: 20, MinWidth: 160);
 
     private static readonly string[] IsoKeys = ["a", "b", "c", "d", "e"];
 

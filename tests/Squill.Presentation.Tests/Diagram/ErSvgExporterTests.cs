@@ -8,7 +8,7 @@ namespace Squill.Presentation.Tests.Diagram;
 public sealed class ErSvgExporterTests
 {
     private static readonly XNamespace Ns = "http://www.w3.org/2000/svg";
-    private static readonly ErLayoutOptions Options = new(s => s.Length * 7);
+    private static readonly ErLayoutOptions Options = new(s => s.Length * 7, HeaderHeight: 28, RowHeight: 20, MinWidth: 160);
 
     private static ErEntity Entity(string name, params ErColumn[] cols) => new(name, null, name, TableKind.Table, cols);
 
