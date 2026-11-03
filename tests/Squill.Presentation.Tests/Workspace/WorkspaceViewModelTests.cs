@@ -1,3 +1,4 @@
+using System.Globalization;
 using Squill.Presentation.Localization;
 using Squill.Core;
 using Squill.Data;
@@ -157,6 +158,10 @@ public sealed class WorkspaceViewModelTests
     public void AppCompositionCreate_TempDirectory_BuildsWorkspace()
     {
         var dir = Path.Combine(Path.GetTempPath(), "squill-" + Guid.NewGuid().ToString("N"));
+        // Create applies the language of the OS, which must not leak into the other tests.
+        var language = UiText.Language;
+        var culture = CultureInfo.CurrentCulture;
+        var uiCulture = CultureInfo.CurrentUICulture;
         try
         {
             var services = AppComposition.Create(new Platform(new ProviderRegistry(), _dialogs), new AppPaths(dir));
@@ -168,6 +173,11 @@ public sealed class WorkspaceViewModelTests
         }
         finally
         {
+            UiText.Initialize(language);
+            CultureInfo.DefaultThreadCurrentCulture = null;
+            CultureInfo.DefaultThreadCurrentUICulture = null;
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = uiCulture;
             try
             {
                 Directory.Delete(dir, true);
