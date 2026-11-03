@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
+using Squill.Presentation.Localization;
 
 namespace Squill.Presentation.Connections;
 
@@ -170,33 +171,33 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     {
         List<string> errors = [];
         if (string.IsNullOrWhiteSpace(Name))
-            errors.Add("Name is required.");
+            errors.Add(UiText.Get("connections.errName"));
         if (Dialect == DatabaseDialect.Sqlite)
         {
             if (string.IsNullOrWhiteSpace(FilePath))
-                errors.Add("File path is required.");
+                errors.Add(UiText.Get("connections.errFile"));
         }
         else
         {
             if (string.IsNullOrWhiteSpace(Host))
-                errors.Add("Host is required.");
+                errors.Add(UiText.Get("connections.errHost"));
             if (Port is { } port and (< 1 or > 65535))
-                errors.Add("Port must be between 1 and 65535.");
+                errors.Add(UiText.Get("connections.errPort"));
         }
 
         if (Folder.Trim().Length > MaxFolderLength)
-            errors.Add($"Folder must be at most {MaxFolderLength} characters.");
+            errors.Add(UiText.Format("connections.errFolder", MaxFolderLength));
 
         if (UseSsh)
         {
             if (string.IsNullOrWhiteSpace(SshHost))
-                errors.Add("SSH host is required.");
+                errors.Add(UiText.Get("connections.errSshHost"));
             if (SshPort is not (>= 1 and <= 65535))
-                errors.Add("SSH port must be between 1 and 65535.");
+                errors.Add(UiText.Get("connections.errSshPort"));
             if (string.IsNullOrWhiteSpace(SshUserName))
-                errors.Add("SSH user name is required.");
+                errors.Add(UiText.Get("connections.errSshUser"));
             if (SshAuthMethod == SshAuthMethod.PrivateKey && string.IsNullOrWhiteSpace(SshPrivateKeyPath))
-                errors.Add("SSH private key path is required.");
+                errors.Add(UiText.Get("connections.errSshKey"));
         }
 
         return errors;

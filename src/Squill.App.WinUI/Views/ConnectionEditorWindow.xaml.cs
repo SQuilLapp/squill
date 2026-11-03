@@ -10,6 +10,7 @@ using Squill.Platform.Profiles;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Localization;
 using Windows.Graphics;
+using Windows.Storage.Pickers;
 using Windows.System;
 using WinRT.Interop;
 
@@ -372,6 +373,21 @@ public sealed partial class ConnectionEditorWindow : Window
         Padding = padding,
         MinHeight = 0,
     };
+
+    private async void OnBrowseDatabase(object sender, RoutedEventArgs e)
+    {
+        var picker = new FileOpenPicker();
+        picker.FileTypeFilter.Add(".db");
+        picker.FileTypeFilter.Add(".sqlite");
+        picker.FileTypeFilter.Add(".sqlite3");
+        picker.FileTypeFilter.Add(".db3");
+        picker.FileTypeFilter.Add("*");
+        // An unpackaged app must tell the picker which window owns it.
+        InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(this));
+        var file = await picker.PickSingleFileAsync();
+        if (file is not null && _editor is { } editor)
+            editor.FilePath = file.Path;
+    }
 
     private void OnNameChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.Name = NameBox.Text);
 

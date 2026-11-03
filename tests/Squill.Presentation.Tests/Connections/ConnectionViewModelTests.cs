@@ -2,6 +2,7 @@ using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
 using Squill.Presentation.Connections;
+using Squill.Presentation.Localization;
 using Xunit;
 
 namespace Squill.Presentation.Tests.Connections;
@@ -50,7 +51,13 @@ public sealed class ConnectionViewModelTests
     {
         var errors = NewEditor().Validate();
 
-        Assert.Equal(["Name is required.", "Host is required."], errors);
+        Assert.Equal([UiText.Get("connections.errName"), UiText.Get("connections.errHost")], errors);
+    }
+
+    [Fact]
+    public void Validate_Messages_AreFrench()
+    {
+        Assert.Equal(["Le nom est obligatoire.", "L'hôte est obligatoire."], NewEditor().Validate());
     }
 
     [Fact]
@@ -60,7 +67,7 @@ public sealed class ConnectionViewModelTests
         editor.Name = "Local";
         editor.Dialect = DatabaseDialect.Sqlite;
 
-        Assert.Equal(["File path is required."], editor.Validate());
+        Assert.Equal([UiText.Get("connections.errFile")], editor.Validate());
 
         editor.FilePath = "a.db";
         Assert.Empty(editor.Validate());
@@ -76,7 +83,7 @@ public sealed class ConnectionViewModelTests
         editor.Host = "h";
         editor.Port = port;
 
-        Assert.Equal(["Port must be between 1 and 65535."], editor.Validate());
+        Assert.Equal([UiText.Get("connections.errPort")], editor.Validate());
     }
 
     [Fact]
@@ -89,7 +96,7 @@ public sealed class ConnectionViewModelTests
         editor.SshAuthMethod = SshAuthMethod.PrivateKey;
 
         Assert.Equal(
-            ["SSH host is required.", "SSH user name is required.", "SSH private key path is required."],
+            [UiText.Get("connections.errSshHost"), UiText.Get("connections.errSshUser"), UiText.Get("connections.errSshKey")],
             editor.Validate());
     }
 
@@ -199,7 +206,7 @@ public sealed class ConnectionViewModelTests
         var editor = NewEditor(Existing());
         editor.Folder = new string('f', 65);
 
-        Assert.Contains("Folder must be at most 64 characters.", editor.Validate());
+        Assert.Contains(UiText.Format("connections.errFolder", 64), editor.Validate());
         editor.Folder = new string('f', 64);
         Assert.Empty(editor.Validate());
     }
