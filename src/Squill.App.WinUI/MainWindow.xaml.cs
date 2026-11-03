@@ -24,6 +24,7 @@ public sealed partial class MainWindow : Window
     private readonly Dictionary<QueryTabViewModel, TabViewItem> _items = [];
     private WorkspaceViewModel? _workspace;
     private SettingsViewModel? _settings;
+    private ConnectionEditorWindow? _editorWindow;
     private bool _syncing;
 
     /// <summary>Initializes the window and sets its icon.</summary>
@@ -85,8 +86,20 @@ public sealed partial class MainWindow : Window
         _ => ElementTheme.Default,
     };
 
-    private async void OnEditRequested(object? sender, ConnectionEditorViewModel editor) =>
-        await new ConnectionEditorDialog(editor, Root.XamlRoot).ShowAsync();
+    private void OnEditRequested(object? sender, ConnectionEditorViewModel editor)
+    {
+        if (_editorWindow is { } open)
+        {
+            open.SetEditor(editor);
+            open.Activate();
+            return;
+        }
+
+        var window = new ConnectionEditorWindow(this, Root.RequestedTheme, Workspace.ConnectionList, editor);
+        _editorWindow = window;
+        window.Closed += (_, _) => _editorWindow = null;
+        window.Activate();
+    }
 
     private void OnWorkspaceChanged(object? sender, PropertyChangedEventArgs e)
     {

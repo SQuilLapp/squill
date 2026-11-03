@@ -14,6 +14,7 @@ public class XamlHandlerTests
     [InlineData("PropertiesPanel")]
     [InlineData("DiagramTabView")]
     [InlineData("TableDesignerView")]
+    [InlineData("ConnectionEditorWindow")]
     public void Every_event_handler_named_in_xaml_exists_in_the_code_behind(string view)
     {
         var xaml = XDocument.Load($"Xaml/{view}.xaml");

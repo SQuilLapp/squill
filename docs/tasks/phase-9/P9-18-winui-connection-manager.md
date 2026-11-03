@@ -1,6 +1,6 @@
 # P9-18 - WinUI head: connection manager dialog
 
-Status: todo
+Status: done
 Depends on: P9-04, P9-06, P9-02
 
 ## Goal
@@ -15,8 +15,8 @@ The WinUI connection editor matches M02.
 - Tags, SSL, proxy, driver tabs, generated URL, extra checkboxes (no data).
 
 ## Tasks
-- [ ] Rebuild the editor window as XAML.
-- [ ] Tests for the testable helpers (tile selection model, folder list), state what needs the screenshot.
+- [x] Rebuild the editor window as XAML.
+- [x] Tests for the testable helpers (tile selection model, folder list), state what needs the screenshot.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.

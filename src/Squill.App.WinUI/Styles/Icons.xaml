@@ -13,5 +13,6 @@
   <x:String x:Key="SquillIconTrash">M4,7 H20 M9,7 V4 H15 V7 M6,7 L7,20 H17 L18,7</x:String>
   <x:String x:Key="SquillIconUndo">M9,6 L4,11 L9,16 M4,11 H14 C18,11 20,13 20,17</x:String>
   <x:String x:Key="SquillIconPlus">M12,5 V19 M5,12 H19</x:String>
+  <x:String x:Key="SquillIconFolder">M3,6 H9 L11,8 H21 V19 H3 Z</x:String>
   <x:String x:Key="SquillIconCollapse">M6,9 L12,15 L18,9</x:String>
 </ResourceDictionary>
