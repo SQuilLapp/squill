@@ -7,4 +7,7 @@ internal interface IEditorControl
 {
     /// <summary>Gets the element to place in a view.</summary>
     FrameworkElement Control { get; }
+
+    /// <summary>Sets whether the user can edit the text; the text can still be replaced from code.</summary>
+    bool IsReadOnly { set; }
 }

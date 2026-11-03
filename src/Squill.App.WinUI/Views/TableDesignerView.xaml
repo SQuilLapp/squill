@@ -3,112 +3,289 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:dz="using:Squill.Presentation.Designer"
              xmlns:dc="using:Squill.Core.Design"
+             xmlns:loc="using:Squill.App.WinUI.Localization"
              xmlns:v="using:Squill.App.WinUI.Views">
-  <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="6">
-    <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,0,6">
-      <TextBox Width="120" PlaceholderText="Schema" Text="{x:Bind ViewModel.Schema, Mode=TwoWay}" />
-      <TextBox Width="200" PlaceholderText="Name" Text="{x:Bind ViewModel.Name, Mode=TwoWay}" />
-      <Button Content="Apply" ToolTipService.ToolTip="Ctrl+S" Command="{x:Bind ViewModel.ApplyCommand}" />
-      <Button Content="Revert" Command="{x:Bind ViewModel.RevertCommand}" />
-      <Button Content="Open script" Command="{x:Bind ViewModel.OpenScriptCommand}" />
-      <Button Content="Cancel" Command="{x:Bind ViewModel.CancelCommand}" />
-    </StackPanel>
-    <Pivot Grid.Row="1">
-      <PivotItem Header="Columns">
-        <Grid RowDefinitions="*,Auto">
-          <ScrollViewer HorizontalScrollBarVisibility="Auto">
-            <ItemsControl x:Name="ColumnRows" ItemsSource="{x:Bind ViewModel.Columns}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="dz:ColumnRowViewModel">
-                  <Grid Margin="0,1" Loaded="OnRowLoaded">
-                    <Border IsHitTestVisible="False" CornerRadius="3" BorderThickness="1" Visibility="Collapsed"
-                            BorderBrush="{ThemeResource SquillDangerBrush}" Background="{ThemeResource SquillDangerSoftBrush}" />
-                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="2">
-                      <TextBox Width="160" Text="{x:Bind Name, Mode=TwoWay}" />
-                      <AutoSuggestBox Width="160" Text="{x:Bind DataType, Mode=TwoWay}" TextChanged="OnTypeTextChanged" GotFocus="OnTypeGotFocus" />
-                      <CheckBox Content="Nullable" MinWidth="0" IsChecked="{x:Bind IsNullable, Mode=TwoWay}" />
-                      <CheckBox Content="PK" MinWidth="0" IsChecked="{x:Bind IsPrimaryKey, Mode=TwoWay}" />
-                      <CheckBox Content="Auto" MinWidth="0" IsChecked="{x:Bind IsAutoIncrement, Mode=TwoWay}" />
-                      <TextBox Width="140" PlaceholderText="Default" Text="{x:Bind DefaultExpression, Mode=TwoWay}" />
-                      <Button Content="Up" Click="OnMoveColumnUp" />
-                      <Button Content="Down" Click="OnMoveColumnDown" />
-                      <Button Content="Delete" Click="OnRemoveColumn" />
-                    </StackPanel>
+  <UserControl.Resources>
+    <!-- Sub-tabs are 13 px as drawn in M07, not the 24 px Pivot default. -->
+    <Style TargetType="PivotHeaderItem">
+      <Setter Property="FontSize" Value="{StaticResource SquillFontSizeBody}" />
+      <Setter Property="Padding" Value="0,0,16,0" />
+    </Style>
+    <!-- Cells are flat at rest (the TextBox template draws its own hover and focus states), mono 12 as the grid. -->
+    <Style x:Key="CellBoxStyle" TargetType="TextBox">
+      <Setter Property="FontFamily" Value="{StaticResource SquillFontMono}" />
+      <Setter Property="FontSize" Value="{StaticResource SquillFontSizeMonoGrid}" />
+      <Setter Property="MinHeight" Value="28" />
+      <Setter Property="Height" Value="28" />
+      <Setter Property="Padding" Value="8,4,6,4" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style x:Key="TypeInnerBoxStyle" TargetType="TextBox" BasedOn="{StaticResource CellBoxStyle}">
+      <Setter Property="Foreground" Value="{ThemeResource SquillSynTypeBrush}" />
+      <Setter Property="TextAlignment" Value="Left" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+    </Style>
+    <Style x:Key="TypeBoxStyle" TargetType="AutoSuggestBox">
+      <Setter Property="TextBoxStyle" Value="{StaticResource TypeInnerBoxStyle}" />
+      <Setter Property="FontFamily" Value="{StaticResource SquillFontMono}" />
+      <Setter Property="FontSize" Value="{StaticResource SquillFontSizeMonoGrid}" />
+      <Setter Property="Foreground" Value="{ThemeResource SquillSynTypeBrush}" />
+      <Setter Property="MinHeight" Value="28" />
+    </Style>
+    <Style x:Key="ColHeadStyle" TargetType="TextBlock">
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{ThemeResource SquillFg2Brush}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="8,0" />
+    </Style>
+    <Style x:Key="LabelStyle" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="{ThemeResource SquillFg2Brush}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="RowTagStyle" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="10" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Margin" Value="0,0,8,0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="CountStyle" TargetType="TextBlock" BasedOn="{StaticResource MonoTextBlockStyle}">
+      <Setter Property="FontSize" Value="{StaticResource SquillFontSizeCaption}" />
+      <Setter Property="Foreground" Value="{ThemeResource SquillFg3Brush}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </UserControl.Resources>
+  <Grid ColumnDefinitions="*,264" Background="{ThemeResource SquillBgBaseBrush}" KeyDown="OnViewKeyDown">
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="20,16,20,6">
+      <!-- Header -->
+      <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
+        <Viewbox Width="32" Height="32" Margin="0,0,12,0" VerticalAlignment="Top">
+          <Canvas Width="24" Height="24">
+            <Path Data="M3,5 H21 V19 H3 Z M3,10 H21 M3,15 H21 M9,5 V19" Stroke="{ThemeResource SquillFg2Brush}" StrokeThickness="1.5" StrokeLineJoin="Round" />
+          </Canvas>
+        </Viewbox>
+        <StackPanel Grid.Column="1" Spacing="4">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBox Width="80" Style="{StaticResource CellBoxStyle}" FontFamily="{StaticResource SquillFontUi}" FontSize="16"
+                     loc:Loc.Key="designer.schema" Text="{x:Bind ViewModel.Schema, Mode=TwoWay}" />
+            <TextBox x:Name="NameBox" Width="170" Style="{StaticResource CellBoxStyle}" FontFamily="{StaticResource SquillFontUi}" FontSize="16" FontWeight="SemiBold"
+                     loc:Loc.Key="designer.name" Text="{x:Bind ViewModel.Name, Mode=TwoWay}" />
+            <ContentControl x:Name="EnvPill" VerticalAlignment="Center" Visibility="Collapsed" />
+          </StackPanel>
+          <TextBlock Foreground="{ThemeResource SquillFg3Brush}" TextTrimming="CharacterEllipsis" Text="{x:Bind ViewModel.Subtitle, Mode=OneWay}" />
+        </StackPanel>
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Top">
+          <StackPanel x:Name="DraftPanel" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Visibility="Collapsed">
+            <Ellipse Width="6" Height="6" Fill="{ThemeResource SquillInfoBrush}" />
+            <TextBlock MaxWidth="150" TextWrapping="Wrap" Foreground="{ThemeResource SquillInfoBrush}" FontWeight="SemiBold" Text="{x:Bind ViewModel.DraftText, Mode=OneWay}" />
+          </StackPanel>
+          <Button loc:Loc.Key="results.cancel" Command="{x:Bind ViewModel.CancelCommand}" Visibility="{x:Bind ViewModel.IsApplying, Mode=OneWay}" />
+          <Button x:Name="RevertButton" loc:Loc.Key="designer.discard" Command="{x:Bind ViewModel.RevertCommand}" />
+          <Button x:Name="ApplyButton" Style="{StaticResource PrimaryButtonStyle}" Command="{x:Bind ViewModel.ApplyCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock loc:Loc.Key="designer.apply" />
+              <TextBlock Style="{StaticResource MonoTextBlockStyle}" FontSize="{StaticResource SquillFontSizeCaption}" Opacity="0.7" VerticalAlignment="Center" Text="Ctrl+S" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </Grid>
+      <Pivot x:Name="Tabs" Grid.Row="1">
+        <PivotItem>
+          <PivotItem.Header>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock loc:Loc.Key="designer.tabColumns" />
+              <TextBlock Style="{StaticResource CountStyle}" Text="{x:Bind ViewModel.Columns.Count, Mode=OneWay}" />
+            </StackPanel>
+          </PivotItem.Header>
+          <ScrollViewer>
+            <StackPanel Margin="0,8,0,0">
+              <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*" Margin="0,0,0,8">
+                <Button Height="28" MinHeight="28" Command="{x:Bind ViewModel.AddColumnCommand}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Viewbox Width="14" Height="14">
+                      <Canvas Width="24" Height="24"><Path Data="M12,5 V19 M5,12 H19" Stroke="{ThemeResource SquillFg2Brush}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" /></Canvas>
+                    </Viewbox>
+                    <TextBlock loc:Loc.Key="designer.addColumn" />
+                    <ContentControl Style="{StaticResource KeyboardChipStyle}" Content="Ctrl+Inser" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="1" Margin="6,0,0,0" Height="28" MinHeight="28" loc:Loc.Key="designer.delete"
+                        Command="{x:Bind ViewModel.RemoveColumnCommand}" CommandParameter="{x:Bind ViewModel.SelectedColumn, Mode=OneWay}" />
+                <Button x:Name="MoveUpButton" Grid.Column="2" Margin="12,0,0,0" Style="{StaticResource IconButtonStyle}"
+                        Command="{x:Bind ViewModel.MoveColumnUpCommand}" CommandParameter="{x:Bind ViewModel.SelectedColumn, Mode=OneWay}">
+                  <Viewbox Width="14" Height="14">
+                    <Canvas Width="24" Height="24"><Path Data="M12,19 V5 M6,11 L12,5 L18,11" Stroke="{ThemeResource SquillFg2Brush}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" /></Canvas>
+                  </Viewbox>
+                </Button>
+                <Button x:Name="MoveDownButton" Grid.Column="3" Style="{StaticResource IconButtonStyle}"
+                        Command="{x:Bind ViewModel.MoveColumnDownCommand}" CommandParameter="{x:Bind ViewModel.SelectedColumn, Mode=OneWay}">
+                  <Viewbox Width="14" Height="14">
+                    <Canvas Width="24" Height="24"><Path Data="M12,5 V19 M6,13 L12,19 L18,13" Stroke="{ThemeResource SquillFg2Brush}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" /></Canvas>
+                  </Viewbox>
+                </Button>
+                <TextBlock Grid.Column="5" loc:Loc.Key="designer.shortcutsHint" Foreground="{ThemeResource SquillFg3Brush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="12,0,0,0" />
+              </Grid>
+              <Border BorderBrush="{ThemeResource SquillBorderSubtleBrush}" BorderThickness="1" CornerRadius="{StaticResource SquillRadiusLg}" VerticalAlignment="Top">
+                <StackPanel>
+                  <Border Height="28" Background="{ThemeResource SquillBgSurfaceBrush}" BorderBrush="{ThemeResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1"
+                          CornerRadius="7,7,0,0">
+                    <Grid ColumnDefinitions="30,40,*,120,54,100,80">
+                      <TextBlock Grid.Column="1" Style="{StaticResource ColHeadStyle}" loc:Loc.Key="designer.colPk" />
+                      <TextBlock Grid.Column="2" Style="{StaticResource ColHeadStyle}" loc:Loc.Key="designer.colName" />
+                      <TextBlock Grid.Column="3" Style="{StaticResource ColHeadStyle}" loc:Loc.Key="designer.colType" />
+                      <TextBlock Grid.Column="4" Style="{StaticResource ColHeadStyle}" loc:Loc.Key="designer.colNull" />
+                      <TextBlock Grid.Column="5" Style="{StaticResource ColHeadStyle}" loc:Loc.Key="designer.colDefault" />
+                      <TextBlock Grid.Column="6" Style="{StaticResource ColHeadStyle}" loc:Loc.Key="designer.colFk" />
+                    </Grid>
+                  </Border>
+                  <ItemsControl x:Name="ColumnRows" ItemsSource="{x:Bind ViewModel.Columns}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="dz:ColumnRowViewModel">
+                        <Grid Height="30" Loaded="OnRowLoaded" GotFocus="OnRowGotFocus">
+                          <Border IsHitTestVisible="False" BorderThickness="1" Visibility="Collapsed"
+                                  BorderBrush="{ThemeResource SquillDangerBrush}" Background="{ThemeResource SquillDangerSoftBrush}" />
+                          <Border IsHitTestVisible="False" Visibility="Collapsed" Background="{ThemeResource SquillSelectionBrush}" />
+                          <Border IsHitTestVisible="False" Background="{ThemeResource SquillCellModifiedBrush}" Visibility="{x:Bind IsModified, Mode=OneWay}" />
+                          <Border IsHitTestVisible="False" Background="{ThemeResource SquillCellAddedBrush}" Visibility="{x:Bind IsNew, Mode=OneWay}" />
+                          <Border IsHitTestVisible="False" BorderBrush="{ThemeResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1" />
+                          <Grid ColumnDefinitions="30,40,*,120,54,100,80">
+                            <CheckBox Grid.Column="1" HorizontalAlignment="Center" MinWidth="0" Padding="0" IsChecked="{x:Bind IsPrimaryKey, Mode=TwoWay}" />
+                            <Grid Grid.Column="2" ColumnDefinitions="*,Auto">
+                              <TextBox Style="{StaticResource CellBoxStyle}" Text="{x:Bind Name, Mode=TwoWay}" />
+                              <TextBlock Grid.Column="1" Style="{StaticResource RowTagStyle}" Foreground="{ThemeResource SquillInfoBrush}"
+                                         loc:Loc.Key="designer.tagModified" Visibility="{x:Bind IsModified, Mode=OneWay}" />
+                              <TextBlock Grid.Column="1" Style="{StaticResource RowTagStyle}" Foreground="{ThemeResource SquillSuccessBrush}"
+                                         loc:Loc.Key="designer.tagNew" Visibility="{x:Bind IsNew, Mode=OneWay}" />
+                            </Grid>
+                            <AutoSuggestBox Grid.Column="3" Style="{StaticResource TypeBoxStyle}" Text="{x:Bind DataType, Mode=TwoWay}"
+                                            TextChanged="OnTypeTextChanged" GotFocus="OnTypeGotFocus" />
+                            <CheckBox Grid.Column="4" HorizontalAlignment="Center" MinWidth="0" Padding="0" IsChecked="{x:Bind IsNullable, Mode=TwoWay}" />
+                            <TextBox Grid.Column="5" Style="{StaticResource CellBoxStyle}" Text="{x:Bind DefaultExpression, Mode=TwoWay}" />
+                            <TextBlock Grid.Column="6" Style="{StaticResource MonoTextBlockStyle}" Margin="8,0" VerticalAlignment="Center" FontSize="12" TextTrimming="CharacterEllipsis"
+                                       Foreground="{ThemeResource SquillAccentTextBrush}" Text="{x:Bind ForeignKeyTarget, Mode=OneWay}" />
+                          </Grid>
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </Border>
+              <Border x:Name="SelectedCard" Margin="0,12,0,0" Padding="14" Background="{ThemeResource SquillBgRaisedBrush}" BorderBrush="{ThemeResource SquillBorderSubtleBrush}"
+                      BorderThickness="1" CornerRadius="{StaticResource SquillRadiusLg}" Visibility="Collapsed">
+                <StackPanel Spacing="8">
+                  <TextBlock FontWeight="SemiBold" Text="{x:Bind ViewModel.SelectedColumnTitle, Mode=OneWay}" />
+                  <Grid ColumnDefinitions="90,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                    <TextBlock Style="{StaticResource LabelStyle}" loc:Loc.Key="designer.colType" />
+                    <AutoSuggestBox x:Name="SelectedType" Grid.Column="1" Style="{StaticResource TypeBoxStyle}" Text="{x:Bind ViewModel.SelectedColumn.DataType, Mode=TwoWay, FallbackValue=''}"
+                                    TextChanged="OnTypeTextChanged" GotFocus="OnTypeGotFocus" />
+                    <TextBlock Grid.Row="1" Style="{StaticResource LabelStyle}" loc:Loc.Key="designer.colDefault" />
+                    <TextBox x:Name="SelectedDefault" Grid.Row="1" Grid.Column="1" FontFamily="{StaticResource SquillFontMono}"
+                             Text="{x:Bind ViewModel.SelectedColumn.DefaultExpression, Mode=TwoWay, FallbackValue=''}" />
+                    <CheckBox Grid.Row="2" Grid.Column="1" loc:Loc.Key="designer.autoIncrement" IsChecked="{x:Bind ViewModel.SelectedColumn.IsAutoIncrement, Mode=TwoWay, FallbackValue=False}" />
                   </Grid>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                </StackPanel>
+              </Border>
+            </StackPanel>
           </ScrollViewer>
-          <Button Grid.Row="1" Content="Add column" Margin="0,4,0,0" Command="{x:Bind ViewModel.AddColumnCommand}" />
-        </Grid>
-      </PivotItem>
-      <PivotItem Header="Indexes">
-        <Grid RowDefinitions="*,Auto">
-          <ScrollViewer HorizontalScrollBarVisibility="Auto">
-            <ItemsControl x:Name="IndexRows" ItemsSource="{x:Bind ViewModel.Indexes}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="dz:IndexRowViewModel">
-                  <Grid Margin="0,1" Loaded="OnRowLoaded">
-                    <Border IsHitTestVisible="False" CornerRadius="3" BorderThickness="1" Visibility="Collapsed"
-                            BorderBrush="{ThemeResource SquillDangerBrush}" Background="{ThemeResource SquillDangerSoftBrush}" />
-                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="2">
-                      <TextBox Width="160" Text="{x:Bind Name, Mode=TwoWay}" />
-                      <CheckBox Content="Unique" MinWidth="0" IsChecked="{x:Bind IsUnique, Mode=TwoWay}" />
-                      <TextBox Width="260" PlaceholderText="Columns, comma separated" Text="{x:Bind ColumnsText, Mode=TwoWay}" />
-                      <Button Content="Delete" Click="OnRemoveIndex" />
-                    </StackPanel>
-                  </Grid>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </ScrollViewer>
-          <Button Grid.Row="1" Content="Add index" Margin="0,4,0,0" Command="{x:Bind ViewModel.AddIndexCommand}" />
-        </Grid>
-      </PivotItem>
-      <PivotItem Header="Foreign keys">
-        <Grid RowDefinitions="*,Auto">
-          <ScrollViewer HorizontalScrollBarVisibility="Auto">
-            <ItemsControl x:Name="ForeignKeyRows" ItemsSource="{x:Bind ViewModel.ForeignKeys}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="dz:ForeignKeyRowViewModel">
-                  <Grid Margin="0,1" Loaded="OnRowLoaded">
-                    <Border IsHitTestVisible="False" CornerRadius="3" BorderThickness="1" Visibility="Collapsed"
-                            BorderBrush="{ThemeResource SquillDangerBrush}" Background="{ThemeResource SquillDangerSoftBrush}" />
-                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="2">
-                      <TextBox Width="120" PlaceholderText="Name" Text="{x:Bind Name, Mode=TwoWay}" />
-                      <TextBox Width="120" PlaceholderText="Columns" Text="{x:Bind ColumnsText, Mode=TwoWay}" />
-                      <TextBox Width="90" PlaceholderText="Ref. schema" Text="{x:Bind ReferencedSchema, Mode=TwoWay}" />
-                      <TextBox Width="120" PlaceholderText="Ref. table" Text="{x:Bind ReferencedTable, Mode=TwoWay}" />
-                      <TextBox Width="120" PlaceholderText="Ref. columns" Text="{x:Bind ReferencedColumnsText, Mode=TwoWay}" />
-                      <ComboBox Width="150" ToolTipService.ToolTip="ON DELETE" ItemsSource="{x:Bind v:TableDesignerView.Actions}"
-                                SelectedItem="{x:Bind OnDelete, Mode=TwoWay}" />
-                      <ComboBox Width="150" ToolTipService.ToolTip="ON UPDATE" ItemsSource="{x:Bind v:TableDesignerView.Actions}"
-                                SelectedItem="{x:Bind OnUpdate, Mode=TwoWay}" />
-                      <Button Content="Delete" Click="OnRemoveForeignKey" />
-                    </StackPanel>
-                  </Grid>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </ScrollViewer>
-          <Button Grid.Row="1" Content="Add foreign key" Margin="0,4,0,0" Command="{x:Bind ViewModel.AddForeignKeyCommand}" />
-        </Grid>
-      </PivotItem>
-    </Pivot>
-    <Grid Grid.Row="2" ColumnDefinitions="*,*" Height="160" Margin="0,6,0,0">
-      <TextBox x:Name="ScriptBox" IsReadOnly="True" AcceptsReturn="True" FontFamily="Cascadia Mono, Consolas"
-               ScrollViewer.VerticalScrollBarVisibility="Auto" Text="{x:Bind ViewModel.Script, Mode=OneWay}" />
-      <ListView x:Name="IssueList" Grid.Column="1" Margin="6,0,0,0" SelectionMode="None" ItemsSource="{x:Bind ViewModel.Issues, Mode=OneWay}">
+        </PivotItem>
+        <PivotItem>
+          <PivotItem.Header>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock loc:Loc.Key="designer.tabIndexes" />
+              <TextBlock Style="{StaticResource CountStyle}" Text="{x:Bind ViewModel.Indexes.Count, Mode=OneWay}" />
+            </StackPanel>
+          </PivotItem.Header>
+          <Grid RowDefinitions="*,Auto">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto">
+              <ItemsControl x:Name="IndexRows" ItemsSource="{x:Bind ViewModel.Indexes}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="dz:IndexRowViewModel">
+                    <Grid Margin="0,1" Loaded="OnRowLoaded">
+                      <Border IsHitTestVisible="False" CornerRadius="3" BorderThickness="1" Visibility="Collapsed"
+                              BorderBrush="{ThemeResource SquillDangerBrush}" Background="{ThemeResource SquillDangerSoftBrush}" />
+                      <StackPanel Orientation="Horizontal" Spacing="4" Margin="2">
+                        <TextBox Width="160" Text="{x:Bind Name, Mode=TwoWay}" />
+                        <CheckBox loc:Loc.Key="designer.unique" MinWidth="0" IsChecked="{x:Bind IsUnique, Mode=TwoWay}" />
+                        <TextBox Width="260" loc:Loc.Key="designer.indexColumns" Text="{x:Bind ColumnsText, Mode=TwoWay}" />
+                        <Button loc:Loc.Key="designer.delete" Click="OnRemoveIndex" />
+                      </StackPanel>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+            <Button Grid.Row="1" loc:Loc.Key="designer.addIndex" Margin="0,4,0,0" Command="{x:Bind ViewModel.AddIndexCommand}" />
+          </Grid>
+        </PivotItem>
+        <PivotItem>
+          <PivotItem.Header>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock loc:Loc.Key="designer.tabForeignKeys" />
+              <TextBlock Style="{StaticResource CountStyle}" Text="{x:Bind ViewModel.ForeignKeys.Count, Mode=OneWay}" />
+            </StackPanel>
+          </PivotItem.Header>
+          <Grid RowDefinitions="*,Auto">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto">
+              <ItemsControl x:Name="ForeignKeyRows" ItemsSource="{x:Bind ViewModel.ForeignKeys}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="dz:ForeignKeyRowViewModel">
+                    <Grid Margin="0,1" Loaded="OnRowLoaded">
+                      <Border IsHitTestVisible="False" CornerRadius="3" BorderThickness="1" Visibility="Collapsed"
+                              BorderBrush="{ThemeResource SquillDangerBrush}" Background="{ThemeResource SquillDangerSoftBrush}" />
+                      <StackPanel Orientation="Horizontal" Spacing="4" Margin="2">
+                        <TextBox Width="120" loc:Loc.Key="designer.name" Text="{x:Bind Name, Mode=TwoWay}" />
+                        <TextBox Width="120" loc:Loc.Key="designer.fkColumns" Text="{x:Bind ColumnsText, Mode=TwoWay}" />
+                        <TextBox Width="90" loc:Loc.Key="designer.fkRefSchema" Text="{x:Bind ReferencedSchema, Mode=TwoWay}" />
+                        <TextBox Width="120" loc:Loc.Key="designer.fkRefTable" Text="{x:Bind ReferencedTable, Mode=TwoWay}" />
+                        <TextBox Width="120" loc:Loc.Key="designer.fkRefColumns" Text="{x:Bind ReferencedColumnsText, Mode=TwoWay}" />
+                        <ComboBox Width="150" ToolTipService.ToolTip="ON DELETE" ItemsSource="{x:Bind v:TableDesignerView.Actions}"
+                                  SelectedItem="{x:Bind OnDelete, Mode=TwoWay}" />
+                        <ComboBox Width="150" ToolTipService.ToolTip="ON UPDATE" ItemsSource="{x:Bind v:TableDesignerView.Actions}"
+                                  SelectedItem="{x:Bind OnUpdate, Mode=TwoWay}" />
+                        <Button loc:Loc.Key="designer.delete" Click="OnRemoveForeignKey" />
+                      </StackPanel>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+            <Button Grid.Row="1" loc:Loc.Key="designer.addForeignKey" Margin="0,4,0,0" Command="{x:Bind ViewModel.AddForeignKeyCommand}" />
+          </Grid>
+        </PivotItem>
+      </Pivot>
+      <ListView x:Name="IssueList" Grid.Row="2" Margin="0,8,0,0" MaxHeight="120" SelectionMode="None">
         <ListView.ItemTemplate>
           <DataTemplate x:DataType="dc:DesignIssue">
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <TextBlock Text="{x:Bind Severity}" Foreground="{ThemeResource SquillFg3Brush}" />
-              <TextBlock Text="{x:Bind Message}" Foreground="{ThemeResource SquillFgBrush}" TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <ContentControl Style="{StaticResource BadgeDangerStyle}" loc:Loc.Key="designer.issueError" Visibility="{x:Bind v:TableDesignerView.ErrorVisibility(Severity)}" />
+              <ContentControl Style="{StaticResource BadgeWarningStyle}" loc:Loc.Key="designer.issueWarning" Visibility="{x:Bind v:TableDesignerView.WarningVisibility(Severity)}" />
+              <TextBlock Text="{x:Bind Message}" Foreground="{ThemeResource SquillFgBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
             </StackPanel>
           </DataTemplate>
         </ListView.ItemTemplate>
       </ListView>
+      <TextBlock Grid.Row="3" Margin="2,4" Foreground="{ThemeResource SquillFg2Brush}" Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
     </Grid>
-    <TextBlock Grid.Row="3" Margin="2,4" Foreground="{ThemeResource SquillFg2Brush}" Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
+    <!-- DDL preview -->
+    <Border Grid.Column="1" Background="{ThemeResource SquillBgSurfaceBrush}" BorderBrush="{ThemeResource SquillBorderSubtleBrush}" BorderThickness="1,0,0,0">
+      <Grid RowDefinitions="Auto,*">
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="14,10,8,6">
+          <TextBlock Style="{StaticResource CapsTextBlockStyle}" VerticalAlignment="Center" loc:Loc.Key="designer.ddlPreview" />
+          <TextBlock Grid.Column="1" Margin="8,0,0,0" FontSize="12" Foreground="{ThemeResource SquillFg3Brush}" VerticalAlignment="Center"
+                     TextTrimming="CharacterEllipsis" loc:Loc.Key="designer.ddlGenerated" />
+          <Button x:Name="CopyScriptButton" Grid.Column="2" Style="{StaticResource IconButtonStyle}" Click="OnCopyScriptClicked">
+            <Viewbox Width="14" Height="14">
+              <Canvas Width="24" Height="24"><Path Data="M9,9 H20 V20 H9 Z M5,15 V4 H15" Stroke="{ThemeResource SquillFg2Brush}" StrokeThickness="1.5" StrokeLineJoin="Round" /></Canvas>
+            </Viewbox>
+          </Button>
+          <Button x:Name="OpenScriptButton" Grid.Column="3" Style="{StaticResource IconButtonStyle}" Command="{x:Bind ViewModel.OpenScriptCommand}">
+            <Viewbox Width="14" Height="14">
+              <Canvas Width="24" Height="24"><Path Data="M14,4 H20 V10 M20,4 L11,13 M18,14 V20 H4 V6 H10" Stroke="{ThemeResource SquillFg2Brush}" StrokeThickness="1.5" StrokeLineJoin="Round" /></Canvas>
+            </Viewbox>
+          </Button>
+        </Grid>
+        <Border x:Name="ScriptHost" Grid.Row="1" Margin="6,0,0,0" />
+      </Grid>
+    </Border>
   </Grid>
 </UserControl>

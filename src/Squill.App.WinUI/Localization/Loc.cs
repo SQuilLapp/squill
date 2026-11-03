@@ -4,7 +4,7 @@ using Squill.Presentation.Localization;
 
 namespace Squill.App.WinUI.Localization;
 
-/// <summary>Attached property <c>loc:Loc.Key</c> that fills a <see cref="TextBlock"/> text or a <see cref="ContentControl"/> content from the string catalog; plain dependency property, AOT-safe.</summary>
+/// <summary>Attached property <c>loc:Loc.Key</c> that fills a <see cref="TextBlock"/> text, a <see cref="TextBox"/> placeholder or a <see cref="ContentControl"/> content from the string catalog; plain dependency property, AOT-safe.</summary>
 public static class Loc
 {
     /// <summary>Catalog key of the element.</summary>
@@ -29,6 +29,9 @@ public static class Loc
         {
             case TextBlock text:
                 text.Text = UiText.Get(key);
+                break;
+            case TextBox box:
+                box.PlaceholderText = UiText.Get(key);
                 break;
             case ContentControl content:
                 content.Content = UiText.Get(key);

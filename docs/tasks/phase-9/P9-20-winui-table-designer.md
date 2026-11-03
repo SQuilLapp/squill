@@ -1,6 +1,6 @@
 # P9-20 - WinUI head: table designer view
 
-Status: todo
+Status: done
 Depends on: P9-10, P9-02
 
 ## Goal
@@ -13,8 +13,8 @@ The WinUI table designer matches M07.
 - Impact card, extra tabs, rollback option (no feature).
 
 ## Tasks
-- [ ] Rework `TableDesignerView.xaml(.cs)`.
-- [ ] Tests for the testable helpers; state what needs the screenshot.
+- [x] Rework `TableDesignerView.xaml(.cs)`.
+- [x] Tests for the testable helpers; state what needs the screenshot.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.
@@ -25,3 +25,10 @@ The WinUI table designer matches M07.
 
 ## Suggested commit message
 WinUI: table designer view
+
+## Report
+- Visual check on the published AOT exe (dark theme, window 1440 x 900 logical = 2160 x 1350 px, `commandes` of the sample `ventes.db`) against M07; compared by eye with the Compare-Mockup output. The light theme could not be captured: the app kept the dark theme after `settings.json` was switched, so the owner must check light by hand. Row tags `MODIFIÉE`/`NOUVELLE`, the draft state, the environment pill and the issue badges were not exercised in the live window (no edit was driven); they are bound to the same view-model state as P9-19.
+- Not drawn (no data or feature): `Commentaire` column, `Impact estimé`, Contraintes/Déclencheurs/DDL tabs, DDL footer checkboxes. At 1440 px the columns table is narrow because both side panels are open; columns are 30/40/*/120/54/100/80.
+- The DDL preview uses the head's SQL editor (`EditorFactory`: LoomEditor), made read-only through a new `IEditorControl.IsReadOnly`. Sub-tabs use `Pivot` with a 13 px `PivotHeaderItem` style; counts are not mono-muted per tab beyond the count text.
+- Bug found and worked around: `ItemsSource = IReadOnlyList<DesignIssue>` (an empty collection expression) throws E_INVALIDARG under AOT and crashed the app when a designer opened; the issue list is now given as a `List`.
+- Third-party IL2104/IL3053 warnings (Microsoft.Data.SqlClient, System.Configuration.ConfigurationManager) come from NuGet assemblies, none from SQuilL code.

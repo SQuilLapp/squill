@@ -163,7 +163,7 @@ Depends on: <card ids, ranges allowed>
 | [P9-17](phase-9/P9-17-avalonia-connection-manager.md) | Avalonia head: connection manager window | P9-04, P9-05, P9-02 | done |
 | [P9-18](phase-9/P9-18-winui-connection-manager.md) | WinUI head: connection manager dialog | P9-04, P9-06, P9-02 | done |
 | [P9-19](phase-9/P9-19-avalonia-table-designer.md) | Avalonia head: table designer view | P9-08, P9-02 | done |
-| [P9-20](phase-9/P9-20-winui-table-designer.md) | WinUI head: table designer view | P9-10, P9-02 | todo |
+| [P9-20](phase-9/P9-20-winui-table-designer.md) | WinUI head: table designer view | P9-10, P9-02 | done |
 | [P9-21](phase-9/P9-21-avalonia-er-diagram.md) | Avalonia head: ER diagram view | P9-08, P9-02 | todo |
 | [P9-22](phase-9/P9-22-winui-er-diagram.md) | WinUI head: ER diagram view | P9-10, P9-02 | todo |
 | [P9-23](phase-9/P9-23-avalonia-settings.md) | Avalonia head: settings window | P9-05, P9-03, P9-02 | todo |

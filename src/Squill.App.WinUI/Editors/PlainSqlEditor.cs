@@ -65,6 +65,12 @@ public sealed class PlainSqlEditor : ISqlEditor, IEditorControl
     public FrameworkElement Control { get; }
 
     /// <inheritdoc />
+    public bool IsReadOnly
+    {
+        set => _box.IsReadOnly = value;
+    }
+
+    /// <inheritdoc />
     public string Text
     {
         // TextBox stores line breaks as a single '\r', so offsets stay valid after the replacement.
