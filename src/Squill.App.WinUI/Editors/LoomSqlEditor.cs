@@ -7,7 +7,12 @@ using LoomEditor.Core.Text;
 using LoomEditor.Themes;
 using LoomEditor.View.Decorations;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Shapes;
 using Squill.Core;
 using Squill.Presentation.Editor;
 using Squill.Sql.Analysis;
@@ -37,12 +42,15 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
     private const string ModelLanguageId = "plaintext";
     private const string MarkerOwner = "squill";
     private const int WindowPadding = 150;
+    private const double ErrorIconSize = 14;
 
     private static readonly Dictionary<HighlightKind, EditorDecorationOptions> KindOptions = RegisterStyles();
 
     private readonly LoomControl _editor = new() { LanguageId = LanguageId, DocumentUri = "squill://query" };
     private readonly DecorationsCollection _highlight;
-    private readonly DecorationsCollection _errorLines;
+    private readonly Grid _host = new();
+    private readonly Canvas _icons = new();
+    private IReadOnlyList<(int Line, string Message)> _errors = [];
     private readonly DispatcherQueueTimer _debounce;
     private readonly SqlProviders _providers;
     private DatabaseDialect _dialect;
@@ -55,7 +63,8 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
     public LoomSqlEditor()
     {
         _highlight = _editor.CreateDecorationsCollection();
-        _errorLines = _editor.CreateDecorationsCollection();
+        _host.Children.Add(_editor);
+        _host.Children.Add(_icons);
         _providers = new SqlProviders(this);
         _editor.LanguageFeatures.CompletionProviders.Register(LanguageId, _providers);
         _editor.LanguageFeatures.CompletionProviders.Register(ModelLanguageId, _providers);
@@ -74,12 +83,13 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
             TextChanged?.Invoke(this, EventArgs.Empty);
         };
         _editor.ScrollChanged += (_, _) => OnViewportChanged();
+        _editor.ActualThemeChanged += (_, _) => PlaceErrorIcons();
         _editor.LayoutChanged += (_, _) => OnViewportChanged();
         _editor.SelectionChanged += (_, _) => CaretChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>Gets the element to place in a view.</summary>
-    public FrameworkElement Control => _editor;
+    public FrameworkElement Control => _host;
 
     /// <inheritdoc />
     public bool IsReadOnly
@@ -164,12 +174,12 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
                 d.Code);
         }).ToArray();
         _editor.Markers.Change(MarkerOwner, markers);
-        _errorLines.Set(markers
+        _errors = markers
             .Where(m => m.Severity == MarkerSeverity.Error)
-            .Select(m => m.StartLineNumber)
-            .Distinct()
-            .Select(line => new EditorDecoration(new LoomRange(new LoomPosition(line, 1), new LoomPosition(line, 1)), ErrorLineOptions))
-            .ToList());
+            .GroupBy(m => m.StartLineNumber)
+            .Select(g => (Line: g.Key, Message: g.First().Message))
+            .ToList();
+        PlaceErrorIcons();
     }
 
     /// <inheritdoc />
@@ -192,17 +202,6 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
         var list = await _providers.ProvideCompletionItemsAsync(
             _editor.Model, _editor.Selections[0].Position, new CompletionContext(CompletionTriggerKind.Invoke), CancellationToken.None);
         return list?.Suggestions.Count ?? 0;
-    }
-
-    // LoomEditor draws no icons in its gutter (decoration classes are colors and borders only), so a line in error gets a red strip
-    // between the line numbers and the text.
-    private static readonly EditorDecorationOptions ErrorLineOptions = RegisterErrorLineStyle();
-
-    private static EditorDecorationOptions RegisterErrorLineStyle()
-    {
-        const string name = "squill-sql-error-line";
-        CustomDecorationStyles.Register(name, new CustomDecorationStyle { Background = Rgb(0xE51400), DarkBackground = Rgb(0xF14C4C) });
-        return new EditorDecorationOptions { LinesDecorationsClassName = name };
     }
 
     private static Dictionary<HighlightKind, EditorDecorationOptions> RegisterStyles()
@@ -255,8 +254,33 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
         return (Math.Clamp(first, 1, _editor.Model.LineCount), Math.Clamp(last, 1, _editor.Model.LineCount));
     }
 
+    // LoomEditor has no icon API for its gutter (decoration classes are colors and borders only), so the icons of the lines in error
+    // are drawn by SQuilL over the left of the line numbers and follow the scroll.
+    private void PlaceErrorIcons()
+    {
+        _icons.Children.Clear();
+        var lineHeight = Math.Max(_editor.LineHeight, 1);
+        foreach (var (line, message) in _errors)
+        {
+            var top = ((line - 1) * lineHeight) - _editor.ScrollTop;
+            if (top + lineHeight < 0 || top > _editor.ActualHeight)
+            {
+                continue;
+            }
+
+            var icon = new Grid { Width = ErrorIconSize, Height = ErrorIconSize };
+            icon.Children.Add(new Ellipse { Fill = Squill.App.WinUI.Views.Tokens.Brush(_editor, "SquillDangerBrush") });
+            icon.Children.Add(new TextBlock { Text = "!", FontSize = 10, FontWeight = FontWeights.Bold, Foreground = new SolidColorBrush(Colors.White), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
+            ToolTipService.SetToolTip(icon, message);
+            Canvas.SetLeft(icon, 3);
+            Canvas.SetTop(icon, top + ((lineHeight - ErrorIconSize) / 2));
+            _icons.Children.Add(icon);
+        }
+    }
+
     private void OnViewportChanged()
     {
+        PlaceErrorIcons();
         var (first, last) = VisibleLines();
         if (_spans is not null && (first < _windowFirst + WindowPadding / 2 && _windowFirst > 1 || last > _windowLast - WindowPadding / 2 && _windowLast < _editor.Model.LineCount))
         {
