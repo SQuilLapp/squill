@@ -42,6 +42,7 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
 
     private readonly LoomControl _editor = new() { LanguageId = LanguageId, DocumentUri = "squill://query" };
     private readonly DecorationsCollection _highlight;
+    private readonly DecorationsCollection _errorLines;
     private readonly DispatcherQueueTimer _debounce;
     private readonly SqlProviders _providers;
     private DatabaseDialect _dialect;
@@ -54,6 +55,7 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
     public LoomSqlEditor()
     {
         _highlight = _editor.CreateDecorationsCollection();
+        _errorLines = _editor.CreateDecorationsCollection();
         _providers = new SqlProviders(this);
         _editor.LanguageFeatures.CompletionProviders.Register(LanguageId, _providers);
         _editor.LanguageFeatures.CompletionProviders.Register(ModelLanguageId, _providers);
@@ -162,6 +164,12 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
                 d.Code);
         }).ToArray();
         _editor.Markers.Change(MarkerOwner, markers);
+        _errorLines.Set(markers
+            .Where(m => m.Severity == MarkerSeverity.Error)
+            .Select(m => m.StartLineNumber)
+            .Distinct()
+            .Select(line => new EditorDecoration(new LoomRange(new LoomPosition(line, 1), new LoomPosition(line, 1)), ErrorLineOptions))
+            .ToList());
     }
 
     /// <inheritdoc />
@@ -184,6 +192,17 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
         var list = await _providers.ProvideCompletionItemsAsync(
             _editor.Model, _editor.Selections[0].Position, new CompletionContext(CompletionTriggerKind.Invoke), CancellationToken.None);
         return list?.Suggestions.Count ?? 0;
+    }
+
+    // LoomEditor draws no icons in its gutter (decoration classes are colors and borders only), so a line in error gets a red strip
+    // between the line numbers and the text.
+    private static readonly EditorDecorationOptions ErrorLineOptions = RegisterErrorLineStyle();
+
+    private static EditorDecorationOptions RegisterErrorLineStyle()
+    {
+        const string name = "squill-sql-error-line";
+        CustomDecorationStyles.Register(name, new CustomDecorationStyle { Background = Rgb(0xE51400), DarkBackground = Rgb(0xF14C4C) });
+        return new EditorDecorationOptions { LinesDecorationsClassName = name };
     }
 
     private static Dictionary<HighlightKind, EditorDecorationOptions> RegisterStyles()
