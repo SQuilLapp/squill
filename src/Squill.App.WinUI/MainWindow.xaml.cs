@@ -85,7 +85,7 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        var window = new SettingsWindow(this, Root.RequestedTheme, _settings!, _dataDirectory!);
+        var window = new SettingsWindow(this, _settings!, _dataDirectory!);
         _settingsWindow = window;
         window.Closed += (_, _) => _settingsWindow = null;
         window.Activate();
@@ -107,7 +107,7 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        var window = new ConnectionEditorWindow(this, Root.RequestedTheme, Workspace.ConnectionList, editor);
+        var window = new ConnectionEditorWindow(this, Workspace.ConnectionList, editor);
         _editorWindow = window;
         window.Closed += (_, _) => _editorWindow = null;
         window.Activate();
