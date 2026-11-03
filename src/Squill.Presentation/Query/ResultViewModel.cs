@@ -87,7 +87,7 @@ public sealed partial class ResultViewModel : ViewModelBase
 
     private void UpdateHeader()
     {
-        CountText = Grid is null ? "" : $"{Grid.RowCount:N0}{(Grid.IsTruncated ? "+" : "")}";
+        CountText = Grid is null ? "" : DisplayFormat.Count(Grid.RowCount) + (Grid.IsTruncated ? "+" : "");
         Header = Grid is null
             ? Title
             : $"{Title} ({CountText} rows){(HasPendingChanges ? " *" : "")}";

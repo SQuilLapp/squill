@@ -177,7 +177,7 @@ Depends on: <card ids, ranges allowed>
 | [P10-04](phase-10/P10-04-startup-language-and-settings-vm.md) | Presentation: language at startup and in the settings view-model | P10-01, P10-02 | done |
 | [P10-05](phase-10/P10-05-avalonia-settings-language.md) | Avalonia head: language choice in the settings window | P10-04 | done |
 | [P10-06](phase-10/P10-06-winui-settings-language.md) | WinUI head: language choice in the settings window | P10-04 | done |
-| [P10-07](phase-10/P10-07-formatting-culture.md) | Heads and Presentation: number and date formatting follows the language | P10-02 | todo |
+| [P10-07](phase-10/P10-07-formatting-culture.md) | Heads and Presentation: number and date formatting follows the language | P10-02 | done |
 | [P10-08](phase-10/P10-08-winui-loc-properties.md) | WinUI head: catalog markup for tooltips, headers, titles and menus | P10-02 | todo |
 | [P10-09](phase-10/P10-09-message-codes.md) | Core and Sql: stable message codes for issues and diagnostics | P10-02 | todo |
 | [P10-10](phase-10/P10-10-migrate-connections.md) | Migrate strings: connection editor, validation and list | P10-03, P10-04, P10-07, P10-08 | todo |

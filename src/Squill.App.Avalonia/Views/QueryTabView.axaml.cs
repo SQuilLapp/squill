@@ -141,7 +141,7 @@ public sealed partial class QueryTabView : UserControl
         Footer.IsVisible = grid is not null;
         if (grid is null)
             return;
-        var loaded = grid.RowCount.ToString("N0", CultureInfo.GetCultureInfo("fr-FR"));
+        var loaded = DisplayFormat.Count(grid.RowCount);
         FooterText.Text = UiText.Format("results.footer", loaded, grid.IsTruncated ? loaded + "+" : loaded);
         ExportTitle.Text = UiText.Format("results.exportRows", loaded);
     }

@@ -8,6 +8,7 @@ using Squill.Core;
 using Squill.Platform.Profiles;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Results;
 
 namespace Squill.App.Avalonia.Views;
 
@@ -170,7 +171,7 @@ public sealed partial class ConnectionEditorWindow : Window
         var chevron = new global::Avalonia.Controls.Shapes.Path { Classes = { "icon" }, Width = 12, Height = 12, Data = Resource<Geometry>("SquillIconChevron"), RenderTransform = open ? null : new RotateTransform(-90) };
         var folder = new global::Avalonia.Controls.Shapes.Path { Classes = { "icon" }, Width = 14, Height = 14, Data = Resource<Geometry>("SquillIconFolder") };
         var name = new TextBlock { Text = group.Folder, Classes = { "group" }, VerticalAlignment = VerticalAlignment.Center };
-        var count = new TextBlock { Text = group.Items.Count.ToString(System.Globalization.CultureInfo.CurrentCulture), Foreground = (IBrush?)this.FindResource("SquillFg3Brush"), VerticalAlignment = VerticalAlignment.Center };
+        var count = new TextBlock { Text = DisplayFormat.Count(group.Items.Count), Foreground = (IBrush?)this.FindResource("SquillFg3Brush"), VerticalAlignment = VerticalAlignment.Center };
         var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), Height = 31 };
         name.Margin = new Thickness(8, 0, 0, 0);
         folder.Margin = new Thickness(6, 0, 0, 0);

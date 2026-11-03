@@ -9,6 +9,7 @@ using Squill.Core;
 using Squill.Platform.Profiles;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Results;
 using Windows.Graphics;
 using Windows.Storage.Pickers;
 using Windows.System;
@@ -310,7 +311,7 @@ public sealed partial class ConnectionEditorWindow : Window
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(8, 0, 0, 0),
         };
-        var count = new TextBlock { Text = group.Items.Count.ToString(System.Globalization.CultureInfo.CurrentCulture), Foreground = Token("SquillFg3Brush"), VerticalAlignment = VerticalAlignment.Center };
+        var count = new TextBlock { Text = DisplayFormat.Count(group.Items.Count), Foreground = Token("SquillFg3Brush"), VerticalAlignment = VerticalAlignment.Center };
         var row = new Grid { Height = 31, ColumnDefinitions = { new() { Width = GridLength.Auto }, new() { Width = GridLength.Auto }, new(), new() { Width = GridLength.Auto } } };
         Grid.SetColumn(folder, 1);
         Grid.SetColumn(name, 2);

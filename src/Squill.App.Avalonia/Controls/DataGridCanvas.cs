@@ -251,7 +251,7 @@ public sealed class DataGridCanvas : Control
             context.FillRectangle(b.Selection, cell);
         }
 
-        var value = CellFormatter.Format(source.GetCell(row, col), info);
+        var value = CellFormatter.FormatDisplay(source.GetCell(row, col), info);
         var placeholder = edit?.GetPlaceholder(row, col);
         var face = Face.Mono;
         var brush = b.Text;
@@ -625,7 +625,7 @@ public sealed class DataGridCanvas : Control
             var max = Text(info.Name, brush, Face.UiSemibold).Width + 6 + Text(info.DataTypeName, brush, Face.MonoSmall).Width + KeyGlyphWidth;
             for (var row = 0; row < sample; row++)
             {
-                var value = CellFormatter.Format(source.GetCell(row, col), info) ?? "NULL";
+                var value = CellFormatter.FormatDisplay(source.GetCell(row, col), info) ?? "NULL";
                 max = Math.Max(max, Text(value, brush, Face.Mono).Width);
             }
 

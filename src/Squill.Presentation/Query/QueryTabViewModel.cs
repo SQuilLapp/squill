@@ -6,6 +6,7 @@ using Squill.Data;
 using Squill.Platform.Settings;
 using Squill.Platform.Storage;
 using Squill.Presentation.Editing;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
@@ -165,7 +166,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             }
 
             StatusText = completed == statements.Count
-                ? $"Completed {completed} statement(s) in {clock.Elapsed.TotalSeconds:0.###} s"
+                ? string.Create(UiText.Culture, $"Completed {completed} statement(s) in {clock.Elapsed.TotalSeconds:0.###} s")
                 : $"Failed after {completed} statement(s)";
         }
         catch (OperationCanceledException)

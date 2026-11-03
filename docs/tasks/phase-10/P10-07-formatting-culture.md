@@ -1,6 +1,6 @@
 # P10-07 - Number, date and size formatting follows the language
 
-Status: todo
+Status: done
 Depends on: P10-02
 
 ## Goal
@@ -17,8 +17,8 @@ Every number, date, duration and size shown to the user is formatted with the ch
 - Moving literal text into the catalog (P10-10 ... P10-16).
 
 ## Tasks
-- [ ] Replace implicit culture by `UiText.Culture` at every display site; keep invariant sites untouched.
-- [ ] Tests in `tests/Squill.Presentation.Tests` and the head test projects (formatting helpers are headless): the same value formatted under `Override(French)` and `Override(English)` (`1234567.5` -> `1 234 567,5` with the culture's group separator vs `1,234,567.5`; a date; a duration), CSV/JSON export unchanged under both languages.
+- [x] Replace implicit culture by `UiText.Culture` at every display site; keep invariant sites untouched.
+- [x] Tests in `tests/Squill.Presentation.Tests` and the head test projects (formatting helpers are headless): the same value formatted under `Override(French)` and `Override(English)` (`1234567.5` -> `1 234 567,5` with the culture's group separator vs `1,234,567.5`; a date; a duration), CSV/JSON export unchanged under both languages.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` is green.
@@ -26,3 +26,7 @@ Every number, date, duration and size shown to the user is formatted with the ch
 
 ## Suggested commit message
 Format numbers and dates with the culture of the chosen language
+
+## Result
+Changed (now `UiText.Culture`): grid cell display (`CellFormatter.FormatDisplay`, both `DataGridCanvas` draw and width sites; grouped doubles, decimals at their scale, `G`/`d`/`T` date patterns), row counts and footers (`DisplayFormat.Count`, replaces the hard-coded `fr-FR`), history detail line (both heads: `t`/`g` patterns, culture duration), status bar stopwatch (`DisplayFormat.Clock`), explorer counts, connection-group counts, result tab count, the "Completed n statement(s)" message.
+Kept: `CellFormatter.Format` (invariant: CSV, JSON, clipboard, cell edit text), `CellValueParser` (invariant, unchanged), `UiText.Format` placeholders (already culture-aware), `SecretKeys`, SVG export, `Bench/EditorDemo` console output. Integers are shown ungrouped in the grid (ids, codes).

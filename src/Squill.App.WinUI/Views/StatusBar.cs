@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using ConnectionEnvironment = Squill.Core.ConnectionEnvironment;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Results;
 using Squill.Presentation.Query;
 using Squill.Presentation.Workspace;
 
@@ -195,7 +196,7 @@ public sealed partial class StatusBar : UserControl
 
         _status.Text = tab.StatusText;
         _status.Foreground = Brush("SquillFg2Brush");
-        _elapsed.Text = tab.Elapsed > TimeSpan.Zero ? tab.Elapsed.ToString(@"m\:ss\.fff", CultureInfo.InvariantCulture) : "";
+        _elapsed.Text = tab.Elapsed > TimeSpan.Zero ? DisplayFormat.Clock(tab.Elapsed) : "";
     }
 
     private void RefreshPosition() =>

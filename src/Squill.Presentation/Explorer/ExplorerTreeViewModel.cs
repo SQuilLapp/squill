@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 
 namespace Squill.Presentation.Explorer;
@@ -162,7 +163,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
                     Roots.Add(ConnectionNode(profile));
                 continue;
             }
-            var folder = new ExplorerNode(group.Folder, ExplorerNodeKind.ConnectionFolder, group.Items.Count.ToString(CultureInfo.CurrentCulture)) { IsExpanded = true };
+            var folder = new ExplorerNode(group.Folder, ExplorerNodeKind.ConnectionFolder, DisplayFormat.Count(group.Items.Count)) { IsExpanded = true };
             foreach (var profile in group.Items)
                 folder.Children.Add(ConnectionNode(profile));
             Roots.Add(folder);

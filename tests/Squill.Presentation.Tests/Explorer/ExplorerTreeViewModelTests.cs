@@ -6,6 +6,7 @@ using Squill.Platform.Profiles;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Explorer;
 using Squill.Presentation.Sessions;
+using Squill.Presentation.Localization;
 using Xunit;
 
 namespace Squill.Presentation.Tests.Explorer;
@@ -279,18 +280,10 @@ public sealed class ExplorerTreeViewModelTests
     [Fact]
     public void Trailing_PrefersDetail_ThenFormattedCount_ThenNull()
     {
-        var previous = CultureInfo.CurrentCulture;
-        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-        try
-        {
-            Assert.Equal("d", new ExplorerNode("t", ExplorerNodeKind.Column, "d", count: 3).Trailing);
-            Assert.Equal("1,208", new ExplorerNode("t", ExplorerNodeKind.Folder, count: 1208).Trailing);
-            Assert.Null(new ExplorerNode("t", ExplorerNodeKind.Table).Trailing);
-        }
-        finally
-        {
-            CultureInfo.CurrentCulture = previous;
-        }
+        using var _ = UiText.Override(UiLanguage.English);
+        Assert.Equal("d", new ExplorerNode("t", ExplorerNodeKind.Column, "d", count: 3).Trailing);
+        Assert.Equal("1,208", new ExplorerNode("t", ExplorerNodeKind.Folder, count: 1208).Trailing);
+        Assert.Null(new ExplorerNode("t", ExplorerNodeKind.Table).Trailing);
     }
 
     [Fact]

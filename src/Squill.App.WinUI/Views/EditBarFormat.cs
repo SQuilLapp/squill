@@ -1,6 +1,7 @@
 using System.Globalization;
 using Squill.Core.Editing;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Results;
 
 namespace Squill.App.WinUI.Views;
 
@@ -59,8 +60,8 @@ internal static class EditBarFormat
 
     /// <summary>Formats a loaded row count with grouped digits, as in the mockups.</summary>
     /// <param name="rows">The row count.</param>
-    /// <returns>The count in the French culture.</returns>
-    public static string Rows(long rows) => rows.ToString("N0", CultureInfo.GetCultureInfo("fr-FR"));
+    /// <returns>The count in the culture of the current language.</returns>
+    public static string Rows(long rows) => DisplayFormat.Count(rows);
 
     /// <summary>Builds the footer of the results panel.</summary>
     /// <param name="rows">The loaded row count.</param>

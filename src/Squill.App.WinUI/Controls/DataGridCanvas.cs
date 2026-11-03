@@ -250,7 +250,7 @@ public sealed partial class DataGridCanvas : Grid
                     ds.FillRectangle(left, top, colWidth, rowHeight, c.Selection);
                 }
 
-                var value = CellFormatter.Format(source.GetCell(row, col), info);
+                var value = CellFormatter.FormatDisplay(source.GetCell(row, col), info);
                 var placeholder = edit?.GetPlaceholder(row, col);
                 var face = Face.Mono;
                 var color = c.Text;
@@ -413,7 +413,7 @@ public sealed partial class DataGridCanvas : Grid
             var max = TextLayout(creator, info.Name, Face.UiSemibold).LayoutBounds.Width + 6 + TextLayout(creator, info.DataTypeName, Face.MonoSmall).LayoutBounds.Width + KeyGlyphWidth;
             for (var row = 0; row < sample; row++)
             {
-                var value = CellFormatter.Format(source.GetCell(row, col), info) ?? "NULL";
+                var value = CellFormatter.FormatDisplay(source.GetCell(row, col), info) ?? "NULL";
                 max = Math.Max(max, TextLayout(creator, value, Face.Mono).LayoutBounds.Width);
             }
 
