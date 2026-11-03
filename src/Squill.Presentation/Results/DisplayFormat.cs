@@ -1,4 +1,5 @@
 using System.Globalization;
+using Squill.Platform.Storage;
 using Squill.Presentation.Localization;
 
 namespace Squill.Presentation.Results;
@@ -30,4 +31,16 @@ public static class DisplayFormat
     /// <returns>The text in the current language's culture.</returns>
     public static string RecentTime(DateTimeOffset at, DateTimeOffset today) =>
         at.ToString(at.Date == today.Date ? "t" : "g", UiText.Culture);
+
+    /// <summary>Builds the detail line of a history entry: start time, duration and row count, separated by a middle dot.</summary>
+    /// <param name="entry">The history entry.</param>
+    /// <param name="now">The current moment; an entry of the same day shows only the time.</param>
+    /// <returns>The text; the row count is left out when it is unknown.</returns>
+    public static string HistoryDetail(HistoryEntry entry, DateTimeOffset now)
+    {
+        var parts = new List<string> { RecentTime(entry.At.ToLocalTime(), now.ToLocalTime()), Duration(entry.Elapsed) };
+        if (entry.RowCount is { } rows)
+            parts.Add($"{Count(rows)} {UiText.Get(rows == 1 ? "editor.row" : "editor.rows")}");
+        return string.Join(" · ", parts);
+    }
 }
