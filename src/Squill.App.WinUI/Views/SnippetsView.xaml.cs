@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Squill.Platform.Storage;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Panels;
 
 namespace Squill.App.WinUI.Views;
@@ -12,7 +13,14 @@ public sealed partial class SnippetsView : UserControl
     private SnippetsViewModel? _snippets;
 
     /// <summary>Creates the view.</summary>
-    public SnippetsView() => InitializeComponent();
+    public SnippetsView()
+    {
+        InitializeComponent();
+        SaveButton.Content = UiText.Get("editor.snippetSave");
+        InsertItem.Text = UiText.Get("editor.snippetInsert");
+        RenameItem.Text = UiText.Get("editor.snippetRename");
+        DeleteItem.Text = UiText.Get("editor.snippetDelete");
+    }
 
     /// <summary>Connects the view to the snippets it shows.</summary>
     /// <param name="snippets">The snippets view-model.</param>

@@ -1,6 +1,6 @@
 # P9-04 - Core and Platform: connection environment and folder
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -16,8 +16,8 @@ The mockups color tabs, pills, stripes and the status bar by environment and gro
 - Tags, read-only flag, SSL/proxy settings, any behavior tied to production, any view.
 
 ## Tasks
-- [ ] Implement model, store, view-model changes.
-- [ ] Tests in `Squill.Core.Tests`, `Squill.Platform.Tests`, `Squill.Presentation.Tests` (old profile file loads with defaults, grouping order, editor validation, `ActiveEnvironment` follows the active session).
+- [x] Implement model, store, view-model changes.
+- [x] Tests in `Squill.Core.Tests`, `Squill.Platform.Tests`, `Squill.Presentation.Tests` (old profile file loads with defaults, grouping order, editor validation, `ActiveEnvironment` follows the active session).
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.

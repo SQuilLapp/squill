@@ -1,9 +1,13 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
+using AvaloniaEdit.Rendering;
 using Squill.Core;
 using Squill.Presentation.Editor;
 using Squill.Sql.Analysis;
@@ -23,6 +27,12 @@ public sealed class AvaloniaSqlEditor : ISqlEditor
     public AvaloniaSqlEditor()
     {
         Control = new TextEditor { FontFamily = new FontFamily("Cascadia Code, Consolas, Menlo, monospace"), ShowLineNumbers = true };
+        // Frame colors follow the theme tokens; the fonts and brushes resolve once the control is in the tree.
+        Control.Bind(TemplatedControl.FontFamilyProperty, Control.GetResourceObservable("SquillFontMono"));
+        Control.Bind(TextEditor.LineNumbersForegroundProperty, Control.GetResourceObservable("SquillFg3Brush"));
+        Control.Bind(TemplatedControl.BackgroundProperty, Control.GetResourceObservable("SquillBgBaseBrush"));
+        Control.Options.HighlightCurrentLine = true;
+        Control.TextArea.TextView.Bind(TextView.CurrentLineBackgroundProperty, Control.GetResourceObservable("SquillSelectionBrush"));
         var area = Control.TextArea;
         area.TextView.LineTransformers.Add(_colorizer);
         Control.TextChanged += (_, _) =>

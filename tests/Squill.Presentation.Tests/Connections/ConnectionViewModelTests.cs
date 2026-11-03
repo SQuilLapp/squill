@@ -177,6 +177,51 @@ public sealed class ConnectionViewModelTests
     }
 
     [Fact]
+    public async Task Save_EnvironmentAndFolder_AreStoredTrimmedAndBlankFolderIsNull()
+    {
+        var editor = NewEditor();
+        editor.Name = "x";
+        editor.Host = "h";
+        editor.Environment = ConnectionEnvironment.Staging;
+        editor.Folder = "  Team  ";
+        await editor.SaveCommand.ExecuteAsync(null);
+        editor.Folder = "   ";
+        await editor.SaveCommand.ExecuteAsync(null);
+
+        Assert.Equal(ConnectionEnvironment.Staging, _store.Saved[0].Profile.Environment);
+        Assert.Equal("Team", _store.Saved[0].Profile.Folder);
+        Assert.Null(_store.Saved[1].Profile.Folder);
+    }
+
+    [Fact]
+    public void Validate_FolderLongerThan64_ReportsError()
+    {
+        var editor = NewEditor(Existing());
+        editor.Folder = new string('f', 65);
+
+        Assert.Contains("Folder must be at most 64 characters.", editor.Validate());
+        editor.Folder = new string('f', 64);
+        Assert.Empty(editor.Validate());
+    }
+
+    [Fact]
+    public async Task Groups_OrderedByFolderThenName_UngroupedLast()
+    {
+        _store.Profiles.Add(Existing() with { Name = "b", Folder = "Zed" });
+        _store.Profiles.Add(Existing() with { Name = "z" });
+        _store.Profiles.Add(Existing() with { Name = "a", Folder = "Zed", Environment = ConnectionEnvironment.Local });
+        _store.Profiles.Add(Existing() with { Name = "c", Folder = "Alpha" });
+        _store.Profiles.Add(Existing() with { Name = "y" });
+        var list = new ConnectionListViewModel(_store, _registry, _dialogs);
+        await list.LoadCommand.ExecuteAsync(null);
+
+        Assert.Equal(["Alpha", "Zed", null], list.Groups.Select(g => g.Folder));
+        Assert.Equal(["a", "b"], list.Groups[1].Items.Select(p => p.Name));
+        Assert.Equal(ConnectionEnvironment.Local, list.Groups[1].Items[0].Environment);
+        Assert.Equal(["y", "z"], list.Groups[2].Items.Select(p => p.Name));
+    }
+
+    [Fact]
     public async Task Delete_Confirmed_RemovesProfile()
     {
         var profile = Existing();

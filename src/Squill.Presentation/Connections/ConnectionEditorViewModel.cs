@@ -41,6 +41,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         Database = existing.Database ?? "";
         UserName = existing.UserName ?? "";
         FilePath = existing.FilePath ?? "";
+        Environment = existing.Environment;
+        Folder = existing.Folder ?? "";
         if (existing.Ssh is { } ssh)
         {
             UseSsh = true;
@@ -87,6 +89,14 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     [ObservableProperty]
     public partial string FilePath { get; set; } = "";
 
+    /// <summary>Gets or sets the environment the connection points at.</summary>
+    [ObservableProperty]
+    public partial ConnectionEnvironment Environment { get; set; }
+
+    /// <summary>Gets or sets the folder grouping the connection; blank means none, at most <see cref="MaxFolderLength"/> characters once trimmed.</summary>
+    [ObservableProperty]
+    public partial string Folder { get; set; } = "";
+
     /// <summary>Gets or sets whether the connection goes through an SSH tunnel.</summary>
     [ObservableProperty]
     public partial bool UseSsh { get; set; }
@@ -118,6 +128,17 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     /// <summary>Gets the outcome of the last connection test, or <see langword="null"/> before any test.</summary>
     [ObservableProperty]
     public partial string? TestStatus { get; private set; }
+
+    /// <summary>Gets whether the last connection test succeeded, or <see langword="null"/> before any test.</summary>
+    [ObservableProperty]
+    public partial bool? TestSucceeded { get; private set; }
+
+    /// <summary>Gets the server version reported by the last successful test, or <see langword="null"/>.</summary>
+    [ObservableProperty]
+    public partial string? TestServerVersion { get; private set; }
+
+    /// <summary>The longest allowed <see cref="Folder"/> name.</summary>
+    public const int MaxFolderLength = 64;
 
     /// <summary>Gets the default port of an engine.</summary>
     /// <param name="dialect">The engine.</param>
@@ -162,6 +183,9 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             if (Port is { } port and (< 1 or > 65535))
                 errors.Add("Port must be between 1 and 65535.");
         }
+
+        if (Folder.Trim().Length > MaxFolderLength)
+            errors.Add($"Folder must be at most {MaxFolderLength} characters.");
 
         if (UseSsh)
         {
@@ -211,7 +235,9 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             NullIfBlank(Database),
             sqlite ? null : NullIfBlank(UserName),
             sqlite ? NullIfBlank(FilePath) : null,
-            ssh);
+            ssh,
+            Environment,
+            NullIfBlank(Folder));
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]
@@ -232,6 +258,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             var profile = BuildProfile(withSsh: false);
             await using var connection = await _providers.Get(Dialect).OpenAsync(profile, NullIfBlank(Password), ct);
             TestStatus = $"Connected. Server version: {connection.ServerVersion}";
+            TestServerVersion = connection.ServerVersion;
+            TestSucceeded = true;
         }
         catch (OperationCanceledException)
         {
@@ -240,6 +268,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         catch (Exception ex)
         {
             TestStatus = $"Connection failed: {ex.Message}";
+            TestServerVersion = null;
+            TestSucceeded = false;
             await _dialogs.ShowErrorAsync("Connection test failed", ex.Message);
         }
     }

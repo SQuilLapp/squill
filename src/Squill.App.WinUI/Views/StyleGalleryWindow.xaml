@@ -1,0 +1,121 @@
+<Window x:Class="Squill.App.WinUI.Views.StyleGalleryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:Squill.App.WinUI.Controls"
+        Title="SQuilL style gallery">
+  <Grid x:Name="Root" Background="{ThemeResource SquillBgBaseBrush}">
+    <ScrollViewer>
+      <StackPanel Padding="24" Spacing="14">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Style="{StaticResource CapsTextBlockStyle}" Text="STYLE GALLERY" VerticalAlignment="Center" />
+          <Button Content="Light" Click="OnLight" />
+          <Button Content="Dark" Click="OnDark" />
+        </StackPanel>
+
+        <TextBlock Style="{StaticResource CapsTextBlockStyle}" Text="BUTTONS" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button Content="Secondary" />
+          <Button Style="{StaticResource PrimaryButtonStyle}" Content="Primary" />
+          <Button Style="{StaticResource OutlineSuccessButtonStyle}" Content="Valider" />
+          <Button Style="{StaticResource OutlineDangerButtonStyle}" Content="Annuler" />
+          <Button Style="{StaticResource GhostButtonStyle}" Content="Ghost" />
+          <Button Style="{StaticResource IconButtonStyle}"><FontIcon Glyph="&#xE713;" FontSize="14" /></Button>
+          <Button Content="Disabled" IsEnabled="False" />
+          <Button Style="{StaticResource PrimaryButtonStyle}" Content="Disabled" IsEnabled="False" />
+          <Button Style="{StaticResource GhostButtonStyle}" Content="Disabled" IsEnabled="False" />
+        </StackPanel>
+
+        <TextBlock Style="{StaticResource CapsTextBlockStyle}" Text="FIELDS" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBox Width="180" PlaceholderText="Placeholder" />
+          <TextBox Width="180" Text="Valeur" />
+          <TextBox Width="180" Text="Disabled" IsEnabled="False" />
+          <c:SearchBox Width="260" PlaceholderText="Rechercher objets..." ChipText="Ctrl+K" />
+          <ComboBox Width="160" SelectedIndex="0">
+            <ComboBoxItem Content="Texte" />
+            <ComboBoxItem Content="Entier" />
+            <ComboBoxItem Content="Date" />
+          </ComboBox>
+          <ComboBox Width="160" IsEnabled="False" PlaceholderText="Disabled" />
+        </StackPanel>
+
+        <TextBlock Style="{StaticResource CapsTextBlockStyle}" Text="CHECK, RADIO, SWITCH" />
+        <StackPanel Orientation="Horizontal" Spacing="16">
+          <CheckBox Content="Off" />
+          <CheckBox Content="On" IsChecked="True" />
+          <CheckBox Content="Mixed" IsThreeState="True" IsChecked="{x:Null}" />
+          <CheckBox Content="Disabled" IsEnabled="False" />
+          <RadioButton Content="Off" GroupName="a" />
+          <RadioButton Content="On" GroupName="a" IsChecked="True" />
+          <RadioButton Content="Disabled" GroupName="b" IsEnabled="False" />
+          <ToggleSwitch OnContent="" OffContent="" />
+          <ToggleSwitch OnContent="" OffContent="" IsOn="True" />
+          <ToggleSwitch OnContent="" OffContent="" IsEnabled="False" />
+        </StackPanel>
+
+        <TextBlock Style="{StaticResource CapsTextBlockStyle}" Text="TABS, SEGMENTED" />
+        <StackPanel Orientation="Horizontal" Spacing="24">
+          <SelectorBar>
+            <SelectorBarItem Text="Historique" IsSelected="True" />
+            <SelectorBarItem Text="Snippets" />
+          </SelectorBar>
+          <StackPanel Orientation="Horizontal" Spacing="4">
+            <RadioButton Style="{StaticResource SegmentedRadioButtonStyle}" GroupName="seg" Content="Clair" />
+            <RadioButton Style="{StaticResource SegmentedRadioButtonStyle}" GroupName="seg" Content="Sombre" IsChecked="True" />
+            <RadioButton Style="{StaticResource SegmentedRadioButtonStyle}" GroupName="seg" Content="Système" />
+          </StackPanel>
+        </StackPanel>
+
+        <TextBlock Style="{StaticResource CapsTextBlockStyle}" Text="LISTS, TREE, MENU, TOOLTIP, PROGRESS" />
+        <StackPanel Orientation="Horizontal" Spacing="16">
+          <ListView Width="180" Height="110" SelectedIndex="1" SelectionMode="Single">
+            <ListViewItem Content="clients" />
+            <ListViewItem Content="commandes" />
+            <ListViewItem Content="factures" />
+          </ListView>
+          <TreeView x:Name="Tree" Width="200" Height="110" />
+          <MenuBar VerticalAlignment="Top">
+            <MenuBarItem Title="Fichier">
+              <MenuFlyoutItem Text="Nouvelle requête" KeyboardAcceleratorTextOverride="Ctrl+N" />
+              <MenuFlyoutItem Text="Ouvrir" IsEnabled="False" />
+              <MenuFlyoutSeparator />
+              <MenuFlyoutSubItem Text="Récents"><MenuFlyoutItem Text="ventes.sql" /></MenuFlyoutSubItem>
+            </MenuBarItem>
+            <MenuBarItem Title="Édition" />
+          </MenuBar>
+          <Button Content="Flyout">
+            <Button.Flyout>
+              <MenuFlyout>
+                <MenuFlyoutItem Text="CSV" />
+                <MenuFlyoutItem Text="JSON" />
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+          <Button Content="Tooltip" ToolTipService.ToolTip="Exécuter (Ctrl+Entrée)" />
+          <ProgressBar Width="140" Value="60" VerticalAlignment="Center" />
+          <ProgressBar Width="140" IsIndeterminate="True" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <TextBlock Style="{StaticResource CapsTextBlockStyle}" Text="BADGES, ENGINES, KEYBOARD CHIP, MONO, DIALOG" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <ContentControl Style="{StaticResource BadgeStyle}" Content="NEUTRE" />
+          <ContentControl Style="{StaticResource BadgeInfoStyle}" Content="INFO" />
+          <ContentControl Style="{StaticResource BadgeSuccessStyle}" Content="SUCCÈS" />
+          <ContentControl Style="{StaticResource BadgeWarningStyle}" Content="ATTENTION" />
+          <ContentControl Style="{StaticResource BadgeDangerStyle}" Content="ERREUR" />
+          <ContentControl Style="{StaticResource BadgeEnvProdStyle}" Content="PRODUCTION" />
+          <ContentControl Style="{StaticResource BadgeEnvStagingStyle}" Content="STAGING" />
+          <ContentControl Style="{StaticResource BadgeEnvDevStyle}" Content="DEV" />
+          <ContentControl Style="{StaticResource BadgeEnvLocalStyle}" Content="LOCAL" />
+          <ContentControl Style="{StaticResource EngineBadgePostgresStyle}" Content="PG" />
+          <ContentControl Style="{StaticResource EngineBadgeMysqlStyle}" Content="MY" />
+          <ContentControl Style="{StaticResource EngineBadgeSqlserverStyle}" Content="MS" />
+          <ContentControl Style="{StaticResource EngineBadgeSqliteStyle}" Content="SQ" />
+          <ContentControl Style="{StaticResource KeyboardChipStyle}" Content="Ctrl+K" />
+          <TextBlock Style="{StaticResource MonoTextBlockStyle}" Text="SELECT 1;" VerticalAlignment="Center" />
+          <Button Content="Dialog" Click="OnDialog" />
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</Window>

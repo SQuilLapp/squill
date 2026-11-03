@@ -45,6 +45,18 @@ public sealed partial class ColumnRowViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool IsAutoIncrement { get; set; }
 
+    /// <summary>Gets whether the column was added in the designer.</summary>
+    [ObservableProperty]
+    public partial bool IsNew { get; internal set; }
+
+    /// <summary>Gets whether an existing column differs from the one in the database.</summary>
+    [ObservableProperty]
+    public partial bool IsModified { get; internal set; }
+
+    /// <summary>Gets the table this column references through a foreign key of the draft, or null.</summary>
+    [ObservableProperty]
+    public partial string? ForeignKeyTarget { get; internal set; }
+
     internal event Action? Edited;
 
     internal ColumnDesign ToDesign() => new(OriginalName, Name, DataType, IsNullable, DefaultExpression, IsAutoIncrement);
@@ -59,6 +71,9 @@ public sealed partial class ColumnRowViewModel : ViewModelBase
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
+        // The derived state is written by the designer's own recompute: reacting to it would loop.
+        if (e.PropertyName is nameof(IsNew) or nameof(IsModified) or nameof(ForeignKeyTarget))
+            return;
         Edited?.Invoke();
     }
 }

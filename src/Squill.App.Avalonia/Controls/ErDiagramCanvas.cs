@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Squill.Presentation.Diagram;
+using Squill.Presentation.Localization;
 
 namespace Squill.App.Avalonia.Controls;
 
@@ -13,6 +14,14 @@ public sealed class ErDiagramCanvas : Control
     private const double ColumnFontSize = 12;
     private const double HeaderFontSize = 13;
     private const double MarkerFontSize = 9;
+    private const double TagColumn = 26;
+    private const double IconSize = 14;
+    private const double DotPitch = 16;
+    private const double HitTolerance = 5;
+    private const double MinimapWidth = 209;
+    private const double MinimapHeight = 108;
+    private const double MinimapMargin = 12;
+    private const double MinimapPadding = 8;
     private const double CrowLength = 10;
     private const double CrowSpread = 6;
     private const double ZoomStep = 1.1;
@@ -22,8 +31,9 @@ public sealed class ErDiagramCanvas : Control
     public static readonly DirectProperty<ErDiagramCanvas, DiagramTabViewModel?> DiagramProperty =
         AvaloniaProperty.RegisterDirect<ErDiagramCanvas, DiagramTabViewModel?>(nameof(Diagram), o => o.Diagram, (o, v) => o.Diagram = v);
 
-    private static readonly Typeface Face = new(FontFamily.Default);
-    private static readonly Typeface BoldFace = new(FontFamily.Default, weight: FontWeight.SemiBold);
+    private static readonly FontFamily Mono = new("avares://Squill.App.Avalonia/Assets/Fonts#JetBrains Mono, Cascadia Code, monospace");
+    private static readonly Typeface Face = new(Mono);
+    private static readonly Typeface BoldFace = new(Mono, weight: FontWeight.SemiBold);
     private static readonly ErLayoutOptions Metrics = new(MeasureText);
 
     private DiagramTabViewModel? _diagram;
@@ -63,11 +73,24 @@ public sealed class ErDiagramCanvas : Control
         }
     }
 
+    /// <summary>Gets or sets whether column data types are drawn.</summary>
+    public bool ShowTypes
+    {
+        get;
+        set
+        {
+            if (field == value)
+                return;
+            field = value;
+            InvalidateVisual();
+        }
+    } = true;
+
     /// <summary>Measures a text in the diagram font so the shared layout matches the drawing.</summary>
     /// <param name="text">The text to measure.</param>
-    /// <returns>Its width in device-independent pixels.</returns>
+    /// <returns>Its width in device-independent pixels, plus the PK/FK tag column drawn before every name.</returns>
     public static double MeasureText(string text) =>
-        new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Face, ColumnFontSize, Brushes.Black).Width;
+        new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Face, ColumnFontSize, Brushes.Black).Width + TagColumn;
 
     /// <inheritdoc />
     public override void Render(DrawingContext context)
@@ -75,20 +98,30 @@ public sealed class ErDiagramCanvas : Control
         base.Render(context);
         var p = _palette ??= ResolvePalette();
         context.FillRectangle(p.Background, new Rect(Bounds.Size));
+        for (var x = 8.0; x < Bounds.Width; x += DotPitch)
+        {
+            for (var y = 8.0; y < Bounds.Height; y += DotPitch)
+                context.FillRectangle(p.Dot, new Rect(x, y, 1, 1));
+        }
+
         var d = _diagram;
         if (d is null)
             return;
         var topLeft = d.ToWorld(new ErPoint(0, 0));
         var bottomRight = d.ToWorld(new ErPoint(Bounds.Width, Bounds.Height));
         var view = new Rect(topLeft.X, topLeft.Y, bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y);
-        using var _ = context.PushTransform(Matrix.CreateScale(d.Zoom, d.Zoom) * Matrix.CreateTranslation(d.OffsetX, d.OffsetY));
-        foreach (var edge in d.Edges)
-            DrawEdge(context, edge, p);
-        foreach (var entity in d.Model.Entities)
+        using (context.PushTransform(Matrix.CreateScale(d.Zoom, d.Zoom) * Matrix.CreateTranslation(d.OffsetX, d.OffsetY)))
         {
-            if (d.Boxes.TryGetValue(entity.Key, out var box) && view.Intersects(new Rect(box.X, box.Y, box.Width, box.Height)))
-                DrawEntity(context, entity, box, string.Equals(entity.Key, d.SelectedKey, StringComparison.OrdinalIgnoreCase), p);
+            foreach (var edge in d.Edges)
+                DrawEdge(context, edge, IsHighlighted(d, edge), p);
+            foreach (var entity in d.Model.Entities)
+            {
+                if (d.Boxes.TryGetValue(entity.Key, out var box) && view.Intersects(new Rect(box.X, box.Y, box.Width, box.Height)))
+                    DrawEntity(context, entity, box, string.Equals(entity.Key, d.SelectedKey, StringComparison.OrdinalIgnoreCase), p);
+            }
         }
+
+        DrawMinimap(context, d, view, p);
     }
 
     /// <inheritdoc />
@@ -124,9 +157,15 @@ public sealed class ErDiagramCanvas : Control
     {
         base.OnPointerMoved(e);
         var d = _diagram;
-        if (d is null || (!_panning && _draggedKey is null))
+        if (d is null)
             return;
         var screen = ToPoint(e.GetPosition(this));
+        if (!_panning && _draggedKey is null)
+        {
+            UpdateRelationTip(d, d.ToWorld(screen));
+            return;
+        }
+
         if (!_moved && Math.Abs(screen.X - _pressed.X) + Math.Abs(screen.Y - _pressed.Y) < DragThreshold)
             return;
         _moved = true;
@@ -181,48 +220,116 @@ public sealed class ErDiagramCanvas : Control
 
     private void OnDiagramChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) => InvalidateVisual();
 
-    private static void DrawEntity(DrawingContext context, ErEntity entity, ErBox box, bool selected, Palette p)
+    private static bool IsHighlighted(DiagramTabViewModel d, ErEdge edge) =>
+        d.SelectedKey is { } key
+        && (string.Equals(edge.Relation.FromKey, key, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(edge.Relation.ToKey, key, StringComparison.OrdinalIgnoreCase));
+
+    private void UpdateRelationTip(DiagramTabViewModel d, ErPoint world)
+    {
+        var tolerance = HitTolerance / d.Zoom;
+        var hit = d.HitTestEntity(world) is null ? d.Edges.FirstOrDefault(edge => Near(edge, world, tolerance)) : null;
+        if (hit is null)
+        {
+            ToolTip.SetTip(this, null);
+            return;
+        }
+
+        var r = hit.Relation;
+        var from = r.FromKey + "." + string.Join(", ", r.FromColumns);
+        var to = r.ToKey + "." + string.Join(", ", r.ToColumns);
+        var card = new StackPanel { Spacing = 2 };
+        card.Children.Add(new TextBlock { Text = r.Name, FontFamily = Mono, FontWeight = FontWeight.SemiBold });
+        card.Children.Add(new TextBlock { Text = UiText.Format("er.relationFrom", from, to), FontFamily = Mono, FontSize = ColumnFontSize });
+        ToolTip.SetTip(this, card);
+    }
+
+    private static bool Near(ErEdge edge, ErPoint p, double tolerance)
+    {
+        for (var i = 1; i < edge.Points.Count; i++)
+        {
+            double ax = edge.Points[i - 1].X, ay = edge.Points[i - 1].Y;
+            double dx = edge.Points[i].X - ax, dy = edge.Points[i].Y - ay;
+            var len2 = (dx * dx) + (dy * dy);
+            var t = len2 < 1e-9 ? 0 : Math.Clamp((((p.X - ax) * dx) + ((p.Y - ay) * dy)) / len2, 0, 1);
+            double ex = p.X - (ax + (t * dx)), ey = p.Y - (ay + (t * dy));
+            if ((ex * ex) + (ey * ey) <= tolerance * tolerance)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void DrawEntity(DrawingContext context, ErEntity entity, ErBox box, bool selected, Palette p)
     {
         var rect = new Rect(box.X, box.Y, box.Width, box.Height);
         var header = new Rect(box.X, box.Y, box.Width, Metrics.HeaderHeight);
-        var border = selected ? p.Selected : p.Border;
         context.DrawRectangle(p.Surface, null, rect, p.Radius, p.Radius);
-        context.DrawRectangle(p.Header, null, header, p.Radius, p.Radius);
-        context.DrawRectangle(null, border, rect, p.Radius, p.Radius);
+        context.DrawRectangle(p.Header, null, new RoundedRect(header, new CornerRadius(p.Radius, p.Radius, 0, 0)));
+        context.DrawLine(p.Divider, new Point(box.X, header.Bottom), new Point(box.Right, header.Bottom));
+        context.DrawRectangle(null, selected ? p.Selected : p.Border, rect, p.Radius, p.Radius);
+        if (p.TableIcon is { } icon)
+        {
+            var move = Matrix.CreateScale(IconSize / 24, IconSize / 24) * Matrix.CreateTranslation(box.X + Metrics.Padding, box.Y + ((Metrics.HeaderHeight - IconSize) / 2));
+            using (context.PushTransform(move))
+                context.DrawGeometry(null, p.IconPen, icon);
+        }
+
+        var nameX = box.X + Metrics.Padding + TagColumn - 4;
         var title = Text(entity.Name, HeaderFontSize, p.Text, BoldFace);
-        context.DrawText(title, new Point(box.X + Metrics.Padding, box.Y + ((Metrics.HeaderHeight - title.Height) / 2)));
+        context.DrawText(title, new Point(nameX, box.Y + ((Metrics.HeaderHeight - title.Height) / 2)));
         for (var i = 0; i < entity.Columns.Count; i++)
         {
             var c = entity.Columns[i];
             var top = box.Y + Metrics.HeaderHeight + (Metrics.RowHeight * i);
             var name = Text(c.Name, ColumnFontSize, p.Text, Face);
             var y = top + ((Metrics.RowHeight - name.Height) / 2);
-            context.DrawText(name, new Point(box.X + Metrics.Padding, y));
-            var x = box.X + Metrics.Padding + name.Width;
-            foreach (var (on, label, brush) in new[] { (c.IsPrimaryKey, "PK", p.Accent), (c.IsForeignKey, "FK", p.Muted) })
+            if (c.IsPrimaryKey || c.IsForeignKey)
             {
-                if (!on)
-                    continue;
-                var marker = Text(label, MarkerFontSize, brush, BoldFace);
-                x += 4;
-                context.DrawText(marker, new Point(x, top + ((Metrics.RowHeight - marker.Height) / 2)));
-                x += marker.Width;
+                var marker = Text(c.IsPrimaryKey ? "PK" : "FK", MarkerFontSize, c.IsPrimaryKey ? p.Accent : p.Info, BoldFace);
+                context.DrawText(marker, new Point(box.X + Metrics.Padding - 2, top + ((Metrics.RowHeight - marker.Height) / 2)));
             }
 
-            var type = Text(c.DataType, ColumnFontSize, p.Muted, Face);
+            context.DrawText(name, new Point(nameX, y));
+            if (!ShowTypes)
+                continue;
+            var type = Text(c.DataType, ColumnFontSize, p.Type, Face);
             context.DrawText(type, new Point(box.Right - Metrics.Padding - type.Width, y));
         }
     }
 
-    private static void DrawEdge(DrawingContext context, ErEdge edge, Palette p)
+    private void DrawMinimap(DrawingContext context, DiagramTabViewModel d, Rect view, Palette p)
+    {
+        if (d.Boxes.Count == 0 || Bounds.Width < MinimapWidth + (2 * MinimapMargin) || Bounds.Height < MinimapHeight + (2 * MinimapMargin))
+            return;
+        var panel = new Rect(Bounds.Width - MinimapWidth - MinimapMargin, Bounds.Height - MinimapHeight - MinimapMargin, MinimapWidth, MinimapHeight);
+        context.DrawRectangle(p.Header, p.Border, panel, p.Radius, p.Radius);
+        var world = view;
+        foreach (var box in d.Boxes.Values)
+            world = world.Union(new Rect(box.X, box.Y, box.Width, box.Height));
+        var scale = Math.Min((panel.Width - (2 * MinimapPadding)) / world.Width, (panel.Height - (2 * MinimapPadding)) / world.Height);
+        var origin = new Point(
+            panel.X + ((panel.Width - (world.Width * scale)) / 2) - (world.X * scale),
+            panel.Y + ((panel.Height - (world.Height * scale)) / 2) - (world.Y * scale));
+        Rect Map(Rect r) => new(origin.X + (r.X * scale), origin.Y + (r.Y * scale), r.Width * scale, r.Height * scale);
+        using (context.PushClip(panel))
+        {
+            foreach (var box in d.Boxes.Values)
+                context.FillRectangle(p.MinimapNode, Map(new Rect(box.X, box.Y, box.Width, box.Height)));
+            context.DrawRectangle(p.AccentSoft, new Pen(p.Accent, 1), Map(view));
+        }
+    }
+
+    private static void DrawEdge(DrawingContext context, ErEdge edge, bool highlighted, Palette p)
     {
         if (edge.Points.Count < 2)
             return;
-        var pen = edge.Relation.IsOptional ? p.DashedEdge : p.Edge;
+        var solid = highlighted ? p.EdgeHighlight : p.Edge;
+        var pen = edge.Relation.IsOptional ? new Pen(solid.Brush, solid.Thickness, new DashStyle([4, 3], 0)) : solid;
         for (var i = 1; i < edge.Points.Count; i++)
             context.DrawLine(pen, ToPoint(edge.Points[i - 1]), ToPoint(edge.Points[i]));
-        DrawMarker(context, edge.FromAnchor, edge.Points[0], edge.Points[1], edge.Relation.Cardinality == ErCardinality.ManyToOne, p.Edge);
-        DrawMarker(context, edge.ToAnchor, edge.Points[^1], edge.Points[^2], false, p.Edge);
+        DrawMarker(context, edge.FromAnchor, edge.Points[0], edge.Points[1], edge.Relation.Cardinality == ErCardinality.ManyToOne, solid);
+        DrawMarker(context, edge.ToAnchor, edge.Points[^1], edge.Points[^2], false, solid);
     }
 
     // A crow's foot (many) or a bar (one) at an anchor, oriented along the first segment leaving it.
@@ -248,18 +355,27 @@ public sealed class ErDiagramCanvas : Control
     private Palette ResolvePalette()
     {
         var accent = Brush("SquillAccentBrush");
+        var strong = Brush("SquillBorderStrongBrush");
+        var muted = Brush("SquillFg3Brush");
         return new Palette(
             Brush("SquillBgBaseBrush"),
-            Brush("SquillBgSurfaceBrush"),
             Brush("SquillBgRaisedBrush"),
+            Brush("SquillBgSurfaceBrush"),
             Brush("SquillFgBrush"),
-            Brush("SquillFg3Brush"),
             accent,
+            Brush("SquillInfoBrush"),
+            Brush("SquillSynTypeBrush"),
+            Brush("SquillAccentSoftBrush"),
+            Brush("SquillBorderSubtleBrush"),
+            strong,
             new Pen(Brush("SquillBorderBrush")),
-            new Pen(accent, 2),
+            new Pen(Brush("SquillBorderSubtleBrush")),
             new Pen(accent, 1.5),
-            new Pen(accent, 1.5, new DashStyle([4, 3], 0)),
-            Radius("SquillRadiusSm"));
+            new Pen(strong, 1.5),
+            new Pen(accent, 1.5),
+            new Pen(muted, 1.5),
+            this.TryFindResource("SquillIconTable", ActualThemeVariant, out var icon) ? icon as Geometry : null,
+            Radius("SquillRadiusLg"));
     }
 
     private IBrush Brush(string key) =>
@@ -273,11 +389,18 @@ public sealed class ErDiagramCanvas : Control
         IBrush Surface,
         IBrush Header,
         IBrush Text,
-        IBrush Muted,
         IBrush Accent,
+        IBrush Info,
+        IBrush Type,
+        IBrush AccentSoft,
+        IBrush Dot,
+        IBrush MinimapNode,
         Pen Border,
+        Pen Divider,
         Pen Selected,
         Pen Edge,
-        Pen DashedEdge,
+        Pen EdgeHighlight,
+        Pen IconPen,
+        Geometry? TableIcon,
         double Radius);
 }

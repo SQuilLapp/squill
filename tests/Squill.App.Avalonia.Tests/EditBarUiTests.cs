@@ -36,6 +36,23 @@ public sealed class EditBarUiTests
         public ValueTask SaveAsync(AppSettings settings, CancellationToken ct) => ValueTask.CompletedTask;
     }
 
+    private sealed class RecordingDialogs(List<string> extensions) : IDialogService
+    {
+        public ValueTask<bool> ConfirmAsync(string title, string message) => ValueTask.FromResult(true);
+        public ValueTask<string?> PromptAsync(string title, string message, string? initial) => ValueTask.FromResult<string?>(null);
+
+        public ValueTask<string?> PickSaveFileAsync(string suggestedName, string extension)
+        {
+            extensions.Add(extension);
+            return ValueTask.FromResult<string?>(null);
+        }
+
+        public ValueTask ShowErrorAsync(string title, string message) => ValueTask.CompletedTask;
+        public ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(
+            IReadOnlyList<string> names,
+            IReadOnlyDictionary<string, ParameterValue> defaults) => ValueTask.FromResult<IReadOnlyList<ParameterValue>?>(null);
+    }
+
     private sealed class Fixture : IAsyncDisposable
     {
         private readonly string _file = Path.Combine(Path.GetTempPath(), $"squill-bar-{Guid.NewGuid():N}.db");
@@ -45,6 +62,7 @@ public sealed class EditBarUiTests
         public QueryTabView View { get; } = new();
         public Window Window { get; private set; } = null!;
         public List<string> Scripts { get; } = [];
+        public List<string> Extensions { get; } = [];
 
         public static async Task<Fixture> CreateAsync()
         {
@@ -59,7 +77,7 @@ public sealed class EditBarUiTests
             })
                 await (await f._connection.ExecuteAsync(sql, [], CancellationToken.None)).DisposeAsync();
             var schema = await f._connection.ReadSchemaAsync(CancellationToken.None);
-            f.Tab = new QueryTabViewModel(new ConnectionSession(profile, f._connection, schema, null), new AvaloniaSqlEditor(), new History(), new Settings(), new ImmediateDispatcher(), new Dialogs());
+            f.Tab = new QueryTabViewModel(new ConnectionSession(profile, f._connection, schema, null), new AvaloniaSqlEditor(), new History(), new Settings(), new ImmediateDispatcher(), new RecordingDialogs(f.Extensions));
             f.Tab.ScriptRequested += f.Scripts.Add;
             f.View.DataContext = f.Tab;
             f.Window = new Window { Width = 900, Height = 500, Content = f.View };
@@ -93,24 +111,32 @@ public sealed class EditBarUiTests
     private static async Task RunAsync(Func<Task> body) => await await Headless.Session.Dispatch(body, TestContext.Current.CancellationToken);
 
     [Fact]
-    public Task EditableResult_ShowsTheBarOnly() => RunAsync(async () =>
+    public Task EditableResult_ShowsTheMarkerAndRowToolsButNoBannerUntilEdited() => RunAsync(async () =>
     {
         await using var f = await Fixture.CreateAsync();
         await f.RunAsync("SELECT * FROM t");
-        Assert.True(f.Find<StackPanel>("EditBar").IsVisible);
-        Assert.False(f.Find<TextBlock>("ReadOnlyLabel").IsVisible);
+        Assert.False(f.Find<Border>("EditBar").IsVisible);
+        Assert.True(f.Find<StackPanel>("RowTools").IsVisible);
+        Assert.True(f.Find<StackPanel>("Marker").IsVisible);
+        Assert.Equal("Modifiable · clé primaire id", f.Find<TextBlock>("MarkerText").Text);
         Assert.False(f.Find<Button>("IssuesButton").IsVisible);
+        Assert.Equal("Lignes 1–2 sur 2 chargées", f.Find<TextBlock>("FooterText").Text);
+
+        f.Tab.SelectedResult!.Editor!.TrySetCell(0, 1, "z");
+        Assert.True(f.Find<Border>("EditBar").IsVisible);
+        Assert.Equal("1 modification en attente", f.Find<TextBlock>("EditStatus").Text);
+        Assert.Equal("1 mise à jour", f.Find<TextBlock>("EditDetail").Text);
     });
 
     [Fact]
-    public Task ReadOnlyResult_ShowsTheReasonAndNoButtons() => RunAsync(async () =>
+    public Task ReadOnlyResult_ShowsTheReasonAndNoTools() => RunAsync(async () =>
     {
         await using var f = await Fixture.CreateAsync();
         await f.RunAsync("SELECT * FROM nopk");
-        Assert.False(f.Find<StackPanel>("EditBar").IsVisible);
-        var label = f.Find<TextBlock>("ReadOnlyLabel");
-        Assert.True(label.IsVisible);
-        Assert.StartsWith("Read-only: ", label.Text);
+        Assert.False(f.Find<Border>("EditBar").IsVisible);
+        Assert.False(f.Find<StackPanel>("RowTools").IsVisible);
+        Assert.True(f.Find<StackPanel>("Marker").IsVisible);
+        Assert.StartsWith("Lecture seule · ", f.Find<TextBlock>("MarkerText").Text);
     });
 
     [Fact]
@@ -118,8 +144,23 @@ public sealed class EditBarUiTests
     {
         await using var f = await Fixture.CreateAsync();
         await f.RunAsync("UPDATE t SET name = name WHERE 1 = 0");
-        Assert.False(f.Find<StackPanel>("EditBar").IsVisible);
-        Assert.False(f.Find<TextBlock>("ReadOnlyLabel").IsVisible);
+        Assert.False(f.Find<Border>("EditBar").IsVisible);
+        Assert.False(f.Find<StackPanel>("Marker").IsVisible);
+        Assert.False(f.Find<Border>("Footer").IsVisible);
+    });
+
+    [Fact]
+    public Task ExportMenu_ItemsRunTheirExporter() => RunAsync(async () =>
+    {
+        await using var f = await Fixture.CreateAsync();
+        await f.RunAsync("SELECT * FROM t");
+        var menu = (StackPanel)((Flyout)f.Find<Button>("ExportButton").Flyout!).Content!;
+        Assert.Equal("EXPORTER 2 LIGNES", ((TextBlock)menu.Children[0]).Text);
+        var names = menu.Children.OfType<Button>().Select(b => b.Name).ToArray();
+        Assert.Equal(["ExportCsv", "ExportJson"], names);
+        foreach (var button in menu.Children.OfType<Button>())
+            button.RaiseEvent(new global::Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        Assert.Equal(["csv", "json"], f.Extensions);
     });
 
     [Fact]

@@ -37,6 +37,27 @@ public sealed class JsonProfileStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task ListAsync_FileFromPreviousVersion_LoadsWithDefaults()
+    {
+        Directory.CreateDirectory(_dir);
+        await File.WriteAllTextAsync(Path.Combine(_dir, "profiles.json"),
+            """[{"id":"01234567-89ab-cdef-0123-456789abcdef","name":"old","dialect":"Sqlite","filePath":"a.db"}]""", _ct);
+
+        var profile = Assert.Single(await NewStore().ListAsync(_ct));
+        Assert.Equal(ConnectionEnvironment.None, profile.Environment);
+        Assert.Null(profile.Folder);
+    }
+
+    [Fact]
+    public async Task SaveAsync_EnvironmentAndFolder_RoundTrip()
+    {
+        var profile = Profile() with { Environment = ConnectionEnvironment.Staging, Folder = "Team" };
+        await NewStore().SaveAsync(profile, null, null, _ct);
+
+        Assert.Equal([profile], await NewStore().ListAsync(_ct));
+    }
+
+    [Fact]
     public async Task SaveAsync_ExistingProfile_ReplacesItAndNullKeepsSecretEmptyDeletesIt()
     {
         var store = NewStore();

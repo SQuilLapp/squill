@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using Avalonia.Controls;
 using Squill.App.Avalonia.Views;
 using Squill.Core;
+using Squill.Presentation.Localization;
 #endif
 
 namespace Squill.App.Avalonia;
@@ -22,13 +23,14 @@ public sealed partial class MainWindow
 
     partial void AttachTerminals(WorkspaceViewModel workspace)
     {
-        var menu = new MenuFlyout();
-        menu.Opening += (_, _) => FillTerminalMenu(menu, workspace);
-        Toolbar.Children.Add(new Button { Content = "New terminal", Flyout = menu });
+        var menu = new MenuItem { Header = UiText.Get("menu.newTerminal") };
+        FillTerminalMenu(menu, workspace);
+        menu.SubmenuOpened += (_, _) => FillTerminalMenu(menu, workspace);
+        ToolsMenu.Items.Add(menu);
         workspace.Terminals.CollectionChanged += OnTerminalsChanged;
     }
 
-    private static void FillTerminalMenu(MenuFlyout menu, WorkspaceViewModel workspace)
+    private static void FillTerminalMenu(MenuItem menu, WorkspaceViewModel workspace)
     {
         menu.Items.Clear();
         AddTerminalEntry(menu, workspace, "Local shell", null);
@@ -36,7 +38,7 @@ public sealed partial class MainWindow
             AddTerminalEntry(menu, workspace, $"{session.Profile.Name} CLI", session.Profile);
     }
 
-    private static void AddTerminalEntry(MenuFlyout menu, WorkspaceViewModel workspace, string text, ConnectionProfile? profile)
+    private static void AddTerminalEntry(MenuItem menu, WorkspaceViewModel workspace, string text, ConnectionProfile? profile)
     {
         var entry = new MenuItem { Header = text };
         entry.Click += (_, _) => workspace.NewTerminalCommand.Execute(profile);
@@ -58,7 +60,8 @@ public sealed partial class MainWindow
             var view = new TerminalTabView(added) { IsVisible = false };
             _terminals[added] = view;
             TerminalArea.Children.Add(view);
-            TerminalStrip.SelectedItem = added;
+            if (_tabs?.Selected?.Source == added)
+                ShowTerminal(added);
         }
     }
 

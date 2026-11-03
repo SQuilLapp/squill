@@ -48,7 +48,12 @@ public sealed class WorkspaceViewModelTests
     private static ConnectionProfile Profile() =>
         new(Guid.NewGuid(), "p", DatabaseDialect.PostgreSql, "h", 1, "d", "u", null, null);
 
-    private async Task ConnectAsync() => await _workspace.ConnectCommand.ExecuteAsync(Profile());
+    private async Task ConnectAsync()
+    {
+        var profile = Profile();
+        _workspace.ConnectionList.Profiles.Add(profile);
+        await _workspace.ConnectCommand.ExecuteAsync(profile);
+    }
 
     [Fact]
     public async Task Connect_Succeeds_CreatesExplorerAndFirstTab()
@@ -133,7 +138,7 @@ public sealed class WorkspaceViewModelTests
         Assert.Empty(_workspace.Tabs);
         Assert.Empty(_workspace.Sessions);
         Assert.Null(_workspace.ActiveSession);
-        Assert.Null(_workspace.Explorer);
+        Assert.All(_workspace.Explorer.Roots, r => Assert.False(r.IsConnected));
     }
 
     [Fact]

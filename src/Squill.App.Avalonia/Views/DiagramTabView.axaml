@@ -2,25 +2,77 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="using:Squill.Presentation.Diagram"
              xmlns:c="using:Squill.App.Avalonia.Controls"
+             xmlns:loc="using:Squill.App.Avalonia.Localization"
              x:Class="Squill.App.Avalonia.Views.DiagramTabView"
              x:DataType="d:DiagramTabViewModel">
-  <Grid RowDefinitions="Auto,*,Auto">
-    <StackPanel Orientation="Horizontal" Spacing="4" Margin="6,4">
-      <TextBox Width="180" Text="{Binding FilterText, Mode=TwoWay}" PlaceholderText="Filter tables"
-               MinHeight="{DynamicResource SquillControlHeightStandard}" />
-      <ToggleButton Content="Include views" IsChecked="{Binding IncludeViews, Mode=TwoWay}" />
-      <Button Name="FitButton" Content="Fit" ToolTip.Tip="Ctrl+0" Click="OnFitClicked" />
-      <Button Content="Reset layout" Command="{Binding ResetLayoutCommand}" />
-      <Button Content="Focus" Command="{Binding FocusSelectedCommand}" />
-      <ComboBox Name="DepthBox" SelectedIndex="0" SelectionChanged="OnDepthChanged" ToolTip.Tip="Relation hops">
-        <ComboBoxItem Content="1 hop" />
-        <ComboBoxItem Content="2 hops" />
-        <ComboBoxItem Content="3 hops" />
-      </ComboBox>
-      <Button Content="Show all" Command="{Binding ShowAllCommand}" />
-      <Button Content="Export SVG" Command="{Binding ExportSvgCommand}" />
-    </StackPanel>
-    <c:ErDiagramCanvas Grid.Row="1" Name="Canvas" Diagram="{Binding}" />
-    <TextBlock Grid.Row="2" Margin="8,2" Foreground="{DynamicResource SquillFg2Brush}" Text="{Binding StatusText}" />
+  <Grid RowDefinitions="44,*,26" Background="{DynamicResource SquillBgBaseBrush}">
+    <Border Background="{DynamicResource SquillBgSurfaceBrush}" BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="*,Auto" Margin="12,0">
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Command="{Binding ResetLayoutCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconDiagram}" />
+              <TextBlock Text="{loc:Text er.autoLayout}" />
+            </StackPanel>
+          </Button>
+          <StackPanel Classes="segmented" ToolTip.Tip="{loc:Text er.hops}">
+            <RadioButton Name="Depth1" Classes="segment" GroupName="ErDepth" Content="1" IsChecked="True" Click="OnDepthClicked" />
+            <RadioButton Name="Depth2" Classes="segment" GroupName="ErDepth" Content="2" Click="OnDepthClicked" />
+            <RadioButton Name="Depth3" Classes="segment" GroupName="ErDepth" Content="3" Click="OnDepthClicked" />
+          </StackPanel>
+          <Button Name="ZoomOutButton" Classes="icon" ToolTip.Tip="{loc:Text er.zoomOut}" Click="OnZoomOutClicked">
+            <TextBlock Text="–" />
+          </Button>
+          <TextBlock Name="ZoomText" Classes="mono" MinWidth="40" TextAlignment="Center" VerticalAlignment="Center" Text="100 %" />
+          <Button Name="ZoomInButton" Classes="icon" ToolTip.Tip="{loc:Text er.zoomIn}" Click="OnZoomInClicked">
+            <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconPlus}" />
+          </Button>
+          <Button Name="FitButton" Click="OnFitClicked">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="{loc:Text er.fit}" />
+              <Border Classes="kbd"><TextBlock Text="Ctrl+0" /></Border>
+            </StackPanel>
+          </Button>
+          <CheckBox Name="TypesBox" IsChecked="True" Content="{loc:Text er.types}" IsCheckedChanged="OnTypesChanged" />
+          <CheckBox IsChecked="{Binding IncludeViews, Mode=TwoWay}" Content="{loc:Text er.views}" />
+          <Button Content="{loc:Text er.focus}" Command="{Binding FocusSelectedCommand}" />
+          <Button Content="{loc:Text er.showAll}" Command="{Binding ShowAllCommand}" />
+        </StackPanel>
+        <Button Grid.Column="1" VerticalAlignment="Center" Content="{loc:Text er.export}">
+          <Button.Flyout>
+            <MenuFlyout Placement="BottomEdgeAlignedRight">
+              <MenuItem Header="{loc:Text er.exportSvg}" Command="{Binding ExportSvgCommand}" />
+            </MenuFlyout>
+          </Button.Flyout>
+        </Button>
+      </Grid>
+    </Border>
+    <Grid Grid.Row="1" ColumnDefinitions="220,*">
+      <Border BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,1,0" Background="{DynamicResource SquillBgSurfaceBrush}">
+        <DockPanel Margin="0,12,0,0">
+          <TextBlock Name="TablesHeader" DockPanel.Dock="Top" Margin="18,0,12,8" FontSize="11" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SquillFg3Brush}" />
+          <TextBox DockPanel.Dock="Top" Margin="12,0,12,8" Text="{Binding FilterText, Mode=TwoWay}" PlaceholderText="{loc:Text er.filter}"
+                   MinHeight="{DynamicResource SquillControlHeightStandard}" />
+          <ListBox Name="TableList" ItemsSource="{Binding Model.Entities}" Background="Transparent" SelectionChanged="OnTableSelected">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="d:ErEntity">
+                <StackPanel Orientation="Horizontal" Spacing="8" Height="24">
+                  <Path Classes="icon" Width="14" Height="14" VerticalAlignment="Center" Data="{StaticResource SquillIconTable}" />
+                  <TextBlock Classes="mono" VerticalAlignment="Center" Text="{Binding Name}" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </Border>
+      <c:ErDiagramCanvas Grid.Column="1" Name="Canvas" Diagram="{Binding}" />
+    </Grid>
+    <Border Grid.Row="2" Background="{DynamicResource SquillBgSurfaceBrush}" BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,1,0,0">
+      <Grid ColumnDefinitions="*,Auto" Margin="12,0">
+        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource SquillFg2Brush}" Text="{Binding StatusText}" />
+        <TextBlock Grid.Column="1" VerticalAlignment="Center" Foreground="{DynamicResource SquillFg3Brush}" Text="{loc:Text er.hint}" />
+      </Grid>
+    </Border>
   </Grid>
 </UserControl>

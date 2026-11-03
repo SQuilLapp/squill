@@ -31,6 +31,23 @@ public sealed class ConnectionProfileTests
     }
 
     [Fact]
+    public void Deserialize_OldFormatWithoutEnvironmentAndFolder_UsesDefaults()
+    {
+        var json = """{"id":"01234567-89ab-cdef-0123-456789abcdef","name":"old","dialect":"Sqlite","filePath":"a.db"}""";
+        var back = JsonSerializer.Deserialize(json, ProfileJsonContext.Default.ConnectionProfile);
+        Assert.Equal(ConnectionEnvironment.None, back!.Environment);
+        Assert.Null(back.Folder);
+    }
+
+    [Fact]
+    public void Serialize_EnvironmentAndFolder_RoundTrips()
+    {
+        var profile = Sample() with { Environment = ConnectionEnvironment.Production, Folder = "Team" };
+        var json = JsonSerializer.Serialize(profile, ProfileJsonContext.Default.ConnectionProfile);
+        Assert.Equal(profile, JsonSerializer.Deserialize(json, ProfileJsonContext.Default.ConnectionProfile));
+    }
+
+    [Fact]
     public void Serialize_Profile_ContainsNoPassword()
     {
         var json = JsonSerializer.Serialize(Sample(), ProfileJsonContext.Default.ConnectionProfile);

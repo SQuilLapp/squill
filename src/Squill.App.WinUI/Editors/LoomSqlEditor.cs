@@ -74,6 +74,12 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
     /// <summary>Gets the element to place in a view.</summary>
     public FrameworkElement Control => _editor;
 
+    /// <inheritdoc />
+    public bool IsReadOnly
+    {
+        set => _editor.IsReadOnly = value;
+    }
+
     /// <summary>Gets how long the last completion request took, from the call to the adapter to the mapped items, in milliseconds.</summary>
     public double LastCompletionMs => _providers.LastCompletionMs;
 

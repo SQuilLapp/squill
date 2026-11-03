@@ -2,33 +2,67 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ex="using:Squill.Presentation.Explorer"
              xmlns:v="using:Squill.App.Avalonia.Views"
+             xmlns:loc="using:Squill.App.Avalonia.Localization"
              x:Class="Squill.App.Avalonia.Views.ObjectExplorerView"
-             x:DataType="ex:ObjectExplorerViewModel">
+             x:DataType="ex:ExplorerTreeViewModel">
+  <UserControl.Styles>
+    <Style Selector="Border.engine.mini"><Setter Property="Margin" Value="0,0,8,0" /></Style>
+  </UserControl.Styles>
   <Grid RowDefinitions="Auto,*">
-    <TextBox Text="{Binding FilterText, Mode=TwoWay}" PlaceholderText="Filter" Margin="6,0,6,4"
-             MinHeight="{DynamicResource SquillControlHeightStandard}" />
-    <TreeView Grid.Row="1" Name="Tree" ItemsSource="{Binding Roots}" Background="Transparent"
-              DoubleTapped="OnTreeDoubleTapped">
+    <TextBox Name="FilterBox" Classes="search" Text="{Binding FilterText, Mode=TwoWay}" PlaceholderText="{loc:Text explorer.filter}"
+             Margin="10,0,10,6" MinHeight="27" Height="27" />
+    <TreeView Grid.Row="1" Name="Tree" ItemsSource="{Binding Roots}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="Transparent" Padding="4,0"
+              SelectedItem="{Binding SelectedNode, Mode=TwoWay}" DoubleTapped="OnTreeDoubleTapped" KeyDown="OnTreeKeyDown">
       <TreeView.Styles>
         <Style Selector="TreeViewItem" x:DataType="ex:ExplorerNode">
           <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
           <Setter Property="IsVisible" Value="{Binding IsVisible}" />
+          <Setter Property="MinHeight" Value="24" />
         </Style>
       </TreeView.Styles>
       <TreeView.ItemTemplate>
         <TreeDataTemplate x:DataType="ex:ExplorerNode" ItemsSource="{Binding Children}">
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <StackPanel.ContextMenu>
+          <Grid ColumnDefinitions="Auto,*,Auto,Auto" Height="24">
+            <Grid.ContextMenu>
               <ContextMenu Opening="OnNodeMenuOpening">
-                <MenuItem Header="Design table..." Click="OnDesignClicked" />
-                <MenuItem Header="Drop table..." Click="OnDropClicked" />
+                <MenuItem Name="NewItem" Header="New connection" Click="OnNewClicked" />
+                <MenuItem Name="EditItem" Header="Edit" Click="OnEditClicked" />
+                <MenuItem Name="DeleteItem" Header="Delete" Click="OnDeleteClicked" />
+                <MenuItem Name="ConnectItem" Header="Connect" Click="OnConnectClicked" />
+                <MenuItem Name="DisconnectItem" Header="Disconnect" Click="OnDisconnectClicked" />
+                <MenuItem Name="DesignItem" Header="Design table..." Click="OnDesignClicked" />
+                <MenuItem Name="DropItem" Header="Drop table..." Click="OnDropClicked" />
               </ContextMenu>
-            </StackPanel.ContextMenu>
-            <TextBlock Text="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.Glyph}}"
-                       Foreground="{DynamicResource SquillAccentTextBrush}" Width="16" />
-            <TextBlock Text="{Binding Title}" Foreground="{DynamicResource SquillFgBrush}" />
-            <TextBlock Text="{Binding Detail}" Foreground="{DynamicResource SquillFgDisabledBrush}" />
-          </StackPanel>
+            </Grid.ContextMenu>
+            <StackPanel Orientation="Horizontal">
+              <Border Classes="engine mini" Classes.postgres="{Binding IsPostgres}" Classes.mysql="{Binding IsMySql}"
+                      Classes.sqlserver="{Binding IsSqlServer}" Classes.sqlite="{Binding IsSqlite}"
+                      IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsConnection}}">
+                <TextBlock Text="{Binding EngineLetters}" />
+              </Border>
+              <Path Classes="icon" Width="14" Height="14" Margin="0,0,6,0" Data="{StaticResource SquillIconTable}"
+                    Stroke="{DynamicResource SquillAccentTextBrush}" IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsTable}}" />
+              <Path Classes="icon" Width="14" Height="14" Margin="0,0,6,0" Data="{StaticResource SquillIconView}"
+                    Stroke="{DynamicResource SquillInfoBrush}" IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsView}}" />
+              <Path Classes="icon" Width="14" Height="14" Margin="0,0,6,0" Data="{StaticResource SquillIconFolder}"
+                    Stroke="{DynamicResource SquillFg3Brush}" IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsFolderIcon}}" />
+              <Path Classes="icon" Width="14" Height="14" Margin="0,0,6,0" Data="{StaticResource SquillIconDatabase}"
+                    Stroke="{DynamicResource SquillFg3Brush}" IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsDatabase}}" />
+              <TextBlock Width="18" Text="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.Glyph}}" Foreground="{DynamicResource SquillFg3Brush}"
+                         FontSize="11" VerticalAlignment="Center" IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsPlain}}" />
+            </StackPanel>
+            <TextBlock Grid.Column="1" Text="{Binding Title}" Foreground="{DynamicResource SquillFgBrush}" VerticalAlignment="Center"
+                       FontWeight="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.TitleWeight}}" TextTrimming="CharacterEllipsis" />
+            <Border Grid.Column="2" Classes="badge" Margin="8,0,0,0" IsVisible="{Binding HasEnvironment}"
+                    Classes.env-prod="{Binding IsProd}" Classes.env-staging="{Binding IsStaging}"
+                    Classes.env-dev="{Binding IsDev}" Classes.env-local="{Binding IsLocal}">
+              <TextBlock Text="{Binding EnvironmentText}" />
+            </Border>
+            <TextBlock Grid.Column="3" Classes="mono" Text="{Binding Trailing}" Foreground="{DynamicResource SquillFg3Brush}"
+                       Margin="8,0,0,0" VerticalAlignment="Center" />
+            <Ellipse Grid.Column="3" Width="7" Height="7" Margin="8,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right"
+                     Fill="{DynamicResource SquillSuccessBrush}" IsVisible="{Binding IsConnected}" />
+          </Grid>
         </TreeDataTemplate>
       </TreeView.ItemTemplate>
     </TreeView>

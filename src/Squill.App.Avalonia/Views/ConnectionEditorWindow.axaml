@@ -2,72 +2,248 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:core="using:Squill.Core"
         xmlns:cn="using:Squill.Presentation.Connections"
+        xmlns:loc="using:Squill.App.Avalonia.Localization"
         x:Class="Squill.App.Avalonia.Views.ConnectionEditorWindow"
         x:DataType="cn:ConnectionEditorViewModel"
-        Title="Connection" Width="460" SizeToContent="Height" CanResize="False"
+        Title="{loc:Text connections.title}" Width="1200" Height="780" MinWidth="1000" MinHeight="640"
         WindowStartupLocation="CenterOwner"
-        Background="{DynamicResource SquillBgSurfaceBrush}">
-  <StackPanel Margin="16" Spacing="6">
-    <TextBlock Text="Name" Foreground="{DynamicResource SquillFg2Brush}" />
-    <TextBox Name="NameBox" Text="{Binding Name, Mode=TwoWay}" />
-    <TextBlock Text="Engine" Foreground="{DynamicResource SquillFg2Brush}" />
-    <ComboBox Name="DialectBox" HorizontalAlignment="Stretch" SelectedItem="{Binding Dialect, Mode=TwoWay}" />
+        Background="{DynamicResource SquillBgBaseBrush}">
+  <Window.Styles>
+    <Style Selector="TextBlock.lbl"><Setter Property="Foreground" Value="{DynamicResource SquillFg2Brush}" /></Style>
+    <Style Selector="TextBlock.group"><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" /></Style>
+    <Style Selector="Button.tile">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="Padding" Value="6" />
+    </Style>
+    <Style Selector="Button.tile /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SquillBgRaisedBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SquillBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Button.tile.selected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SquillAccentSoftBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SquillAccentBrush}" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="Button.tile.selected.env-prod /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SquillEnvProdSoftBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SquillEnvProdBrush}" />
+    </Style>
+    <Style Selector="Button.tile.selected.env-staging /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SquillEnvStagingSoftBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SquillEnvStagingBrush}" />
+    </Style>
+    <Style Selector="Button.tile.selected.env-dev /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SquillEnvDevSoftBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SquillEnvDevBrush}" />
+    </Style>
+    <Style Selector="Button.tile.selected.env-local /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SquillEnvLocalSoftBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SquillEnvLocalBrush}" />
+    </Style>
+    <Style Selector="Border.engine.big"><Setter Property="Width" Value="32" /><Setter Property="Height" Value="32" /></Style>
+    <Style Selector="Border.engine.big > TextBlock"><Setter Property="FontSize" Value="13" /></Style>
+    <Style Selector="Border.engine.tile"><Setter Property="Width" Value="20" /><Setter Property="Height" Value="20" /></Style>
+    <Style Selector="Border.square"><Setter Property="Width" Value="8" /><Setter Property="Height" Value="8" /><Setter Property="CornerRadius" Value="2" /></Style>
+    <Style Selector="Border.square.env-prod"><Setter Property="Background" Value="{DynamicResource SquillEnvProdBrush}" /></Style>
+    <Style Selector="Border.square.env-staging"><Setter Property="Background" Value="{DynamicResource SquillEnvStagingBrush}" /></Style>
+    <Style Selector="Border.square.env-dev"><Setter Property="Background" Value="{DynamicResource SquillEnvDevBrush}" /></Style>
+    <Style Selector="Border.square.env-local"><Setter Property="Background" Value="{DynamicResource SquillEnvLocalBrush}" /></Style>
+  </Window.Styles>
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+Enter" Command="{Binding TestCommand}" />
+  </Window.KeyBindings>
 
-    <StackPanel Name="SqliteFields" Spacing="6"
-                IsVisible="{Binding Dialect, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static core:DatabaseDialect.Sqlite}}">
-      <TextBlock Text="Database file" Foreground="{DynamicResource SquillFg2Brush}" />
-      <Grid ColumnDefinitions="*,Auto">
-        <TextBox Text="{Binding FilePath, Mode=TwoWay}" />
-        <Button Grid.Column="1" Content="Browse..." Margin="6,0,0,0" Click="OnBrowseDatabase" />
+  <Grid ColumnDefinitions="292,*">
+    <Border Background="{DynamicResource SquillBgSurfaceBrush}" BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,1,0">
+      <Grid RowDefinitions="Auto,*">
+        <Grid ColumnDefinitions="*,Auto" Margin="12,12,12,8">
+          <Button Name="NewButton" Grid.Column="1" Classes="icon" Click="OnNewConnection" ToolTip.Tip="{loc:Text connections.newConnection}">
+            <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconPlus}" />
+          </Button>
+        </Grid>
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Name="ListHost" Margin="12,0,12,12" Spacing="2" />
+        </ScrollViewer>
       </Grid>
-    </StackPanel>
+    </Border>
 
-    <StackPanel Name="ServerFields" Spacing="6"
-                IsVisible="{Binding Dialect, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static core:DatabaseDialect.Sqlite}}">
-      <TextBlock Text="Host" Foreground="{DynamicResource SquillFg2Brush}" />
-      <TextBox Text="{Binding Host, Mode=TwoWay}" />
-      <TextBlock Text="Port" Foreground="{DynamicResource SquillFg2Brush}" />
-      <TextBox Text="{Binding Port, Mode=TwoWay}" />
-      <TextBlock Text="Database" Foreground="{DynamicResource SquillFg2Brush}" />
-      <TextBox Text="{Binding Database, Mode=TwoWay}" />
-      <TextBlock Text="User name" Foreground="{DynamicResource SquillFg2Brush}" />
-      <TextBox Text="{Binding UserName, Mode=TwoWay}" />
-      <TextBlock Text="Password" Foreground="{DynamicResource SquillFg2Brush}" />
-      <TextBox PasswordChar="&#x25CF;" Text="{Binding Password, Mode=TwoWay}" />
-    </StackPanel>
-
-    <Expander Header="SSH tunnel" Margin="0,6,0,0" IsExpanded="{Binding UseSsh, Mode=TwoWay}">
-      <StackPanel Spacing="6" Margin="0,6,0,0">
-        <CheckBox Content="Connect through an SSH tunnel" IsChecked="{Binding UseSsh, Mode=TwoWay}" />
-        <StackPanel Name="SshFields" Spacing="6" IsVisible="{Binding UseSsh}">
-          <TextBlock Text="SSH host" Foreground="{DynamicResource SquillFg2Brush}" />
-          <TextBox Text="{Binding SshHost, Mode=TwoWay}" />
-          <TextBlock Text="SSH port" Foreground="{DynamicResource SquillFg2Brush}" />
-          <TextBox Text="{Binding SshPort, Mode=TwoWay}" />
-          <TextBlock Text="SSH user name" Foreground="{DynamicResource SquillFg2Brush}" />
-          <TextBox Text="{Binding SshUserName, Mode=TwoWay}" />
-          <TextBlock Text="Authentication" Foreground="{DynamicResource SquillFg2Brush}" />
-          <ComboBox Name="SshAuthBox" HorizontalAlignment="Stretch" SelectedItem="{Binding SshAuthMethod, Mode=TwoWay}" />
-          <StackPanel Spacing="6"
-                      IsVisible="{Binding SshAuthMethod, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static core:SshAuthMethod.PrivateKey}}">
-            <TextBlock Text="Private key file" Foreground="{DynamicResource SquillFg2Brush}" />
-            <Grid ColumnDefinitions="*,Auto">
-              <TextBox Text="{Binding SshPrivateKeyPath, Mode=TwoWay}" />
-              <Button Grid.Column="1" Content="Browse..." Margin="6,0,0,0" Click="OnBrowseKey" />
-            </Grid>
+    <Grid Grid.Column="1" RowDefinitions="*,Auto">
+      <ScrollViewer>
+        <Grid Margin="32" ColumnDefinitions="*,32,339" RowDefinitions="Auto,24,Auto,Auto,Auto">
+          <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="14">
+            <Border Name="HeaderEngine" Classes="engine big"><TextBlock Name="HeaderLetters" /></Border>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Name="HeaderName" FontSize="{DynamicResource SquillFontSizeTitle}" FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" />
+              <TextBlock Name="HeaderSubtitle" Foreground="{DynamicResource SquillFg3Brush}" />
+            </StackPanel>
+            <Border Name="HeaderEnv" Classes="badge" Margin="10,0,0,0"><TextBlock Name="HeaderEnvText" /></Border>
           </StackPanel>
-          <TextBlock Text="Password or key passphrase" Foreground="{DynamicResource SquillFg2Brush}" />
-          <TextBox PasswordChar="&#x25CF;" Text="{Binding SshSecret, Mode=TwoWay}" />
-        </StackPanel>
-      </StackPanel>
-    </Expander>
 
-    <TextBlock Name="ErrorsText" Foreground="{DynamicResource SquillDangerBrush}" TextWrapping="Wrap" />
-    <TextBlock Text="{Binding TestStatus}" Foreground="{DynamicResource SquillFg2Brush}" TextWrapping="Wrap" />
-    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,8,0,0">
-      <Button Name="TestButton" Content="Test" Command="{Binding TestCommand}" />
-      <Button Name="SaveButton" Content="Save" Command="{Binding SaveCommand}" />
-      <Button Content="Cancel" Click="OnCancel" />
-    </StackPanel>
-  </StackPanel>
+          <StackPanel Grid.Row="2" Spacing="8">
+            <TextBlock Text="{loc:Text connections.engine}" Classes="caps" />
+            <UniformGrid Columns="4">
+              <Button Name="TilePostgres" Classes="tile" Tag="{x:Static core:DatabaseDialect.PostgreSql}" Click="OnEngineTile" Margin="0,0,7,0">
+                <StackPanel Spacing="2"><Border Classes="engine postgres tile" HorizontalAlignment="Center"><TextBlock Text="PG" /></Border><TextBlock Text="PostgreSQL" HorizontalAlignment="Center" /></StackPanel>
+              </Button>
+              <Button Name="TileMySql" Classes="tile" Tag="{x:Static core:DatabaseDialect.MySql}" Click="OnEngineTile" Margin="0,0,7,0">
+                <StackPanel Spacing="2"><Border Classes="engine mysql tile" HorizontalAlignment="Center"><TextBlock Text="My" /></Border><TextBlock Text="MySQL" HorizontalAlignment="Center" /></StackPanel>
+              </Button>
+              <Button Name="TileSqlServer" Classes="tile" Tag="{x:Static core:DatabaseDialect.SqlServer}" Click="OnEngineTile" Margin="0,0,7,0">
+                <StackPanel Spacing="2"><Border Classes="engine sqlserver tile" HorizontalAlignment="Center"><TextBlock Text="MS" /></Border><TextBlock Text="SQL Server" HorizontalAlignment="Center" /></StackPanel>
+              </Button>
+              <Button Name="TileSqlite" Classes="tile" Tag="{x:Static core:DatabaseDialect.Sqlite}" Click="OnEngineTile">
+                <StackPanel Spacing="2"><Border Classes="engine sqlite tile" HorizontalAlignment="Center"><TextBlock Text="SL" /></Border><TextBlock Text="SQLite" HorizontalAlignment="Center" /></StackPanel>
+              </Button>
+            </UniformGrid>
+          </StackPanel>
+
+          <StackPanel Grid.Row="2" Grid.Column="2" Spacing="8">
+            <TextBlock Text="{loc:Text connections.environment}" Classes="caps" />
+            <UniformGrid Columns="2">
+              <Button Name="EnvProduction" Classes="tile env-prod" Tag="{x:Static core:ConnectionEnvironment.Production}" Click="OnEnvironmentTile" Margin="0,0,7,7" Height="34" MinHeight="34">
+                <StackPanel Orientation="Horizontal" Spacing="8"><Border Classes="square env-prod" /><TextBlock Text="{loc:Text connections.envProduction}" /></StackPanel>
+              </Button>
+              <Button Name="EnvStaging" Classes="tile env-staging" Tag="{x:Static core:ConnectionEnvironment.Staging}" Click="OnEnvironmentTile" Margin="0,0,0,7" Height="34" MinHeight="34">
+                <StackPanel Orientation="Horizontal" Spacing="8"><Border Classes="square env-staging" /><TextBlock Text="{loc:Text connections.envStaging}" /></StackPanel>
+              </Button>
+              <Button Name="EnvDevelopment" Classes="tile env-dev" Tag="{x:Static core:ConnectionEnvironment.Development}" Click="OnEnvironmentTile" Margin="0,0,7,0" Height="34" MinHeight="34">
+                <StackPanel Orientation="Horizontal" Spacing="8"><Border Classes="square env-dev" /><TextBlock Text="{loc:Text connections.envDevelopment}" /></StackPanel>
+              </Button>
+              <Button Name="EnvLocal" Classes="tile env-local" Tag="{x:Static core:ConnectionEnvironment.Local}" Click="OnEnvironmentTile" Height="34" MinHeight="34">
+                <StackPanel Orientation="Horizontal" Spacing="8"><Border Classes="square env-local" /><TextBlock Text="{loc:Text connections.envLocal}" /></StackPanel>
+              </Button>
+            </UniformGrid>
+            <TextBlock Name="ProductionHint" Text="{loc:Text connections.productionHint}" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SquillFg3Brush}" />
+          </StackPanel>
+
+          <TabControl Name="Tabs" Grid.Row="3" Margin="0,24,0,0" Padding="0">
+            <TabItem Header="{loc:Text connections.tabGeneral}">
+              <StackPanel Spacing="14" Margin="0,16,0,0">
+                <Grid ColumnDefinitions="*,16,220">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="{loc:Text connections.name}" Classes="lbl" />
+                    <TextBox Name="NameBox" Text="{Binding Name, Mode=TwoWay}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Spacing="6">
+                    <TextBlock Text="{loc:Text connections.folder}" Classes="lbl" />
+                    <ComboBox Name="FolderBox" IsEditable="True" HorizontalAlignment="Stretch" Text="{Binding Folder, Mode=TwoWay}" />
+                  </StackPanel>
+                </Grid>
+
+                <StackPanel Name="SqliteFields" Spacing="6"
+                            IsVisible="{Binding Dialect, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static core:DatabaseDialect.Sqlite}}">
+                  <TextBlock Text="{loc:Text connections.file}" Classes="lbl" />
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Text="{Binding FilePath, Mode=TwoWay}" />
+                    <Button Grid.Column="1" Content="{loc:Text connections.browse}" Margin="6,0,0,0" Click="OnBrowseDatabase" />
+                  </Grid>
+                </StackPanel>
+
+                <StackPanel Name="ServerFields" Spacing="14"
+                            IsVisible="{Binding Dialect, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static core:DatabaseDialect.Sqlite}}">
+                  <Grid ColumnDefinitions="*,16,220">
+                    <StackPanel Spacing="6">
+                      <TextBlock Text="{loc:Text connections.host}" Classes="lbl" />
+                      <TextBox Text="{Binding Host, Mode=TwoWay}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="6">
+                      <TextBlock Text="{loc:Text connections.port}" Classes="lbl" />
+                      <TextBox Text="{Binding Port, Mode=TwoWay}" />
+                    </StackPanel>
+                  </Grid>
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="{loc:Text connections.database}" Classes="lbl" />
+                    <TextBox Text="{Binding Database, Mode=TwoWay}" />
+                  </StackPanel>
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="{loc:Text connections.user}" Classes="lbl" />
+                    <TextBox Text="{Binding UserName, Mode=TwoWay}" />
+                  </StackPanel>
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="{loc:Text connections.password}" Classes="lbl" />
+                    <TextBox PasswordChar="&#x25CF;" Text="{Binding Password, Mode=TwoWay}" />
+                  </StackPanel>
+                </StackPanel>
+              </StackPanel>
+            </TabItem>
+            <TabItem Name="SshTab" Header="{loc:Text connections.tabSsh}">
+              <StackPanel Spacing="14" Margin="0,16,0,0">
+                <CheckBox Content="{loc:Text connections.useSsh}" IsChecked="{Binding UseSsh, Mode=TwoWay}" />
+                <StackPanel Name="SshFields" Spacing="14" IsVisible="{Binding UseSsh}">
+                  <Grid ColumnDefinitions="*,16,220">
+                    <StackPanel Spacing="6">
+                      <TextBlock Text="{loc:Text connections.sshHost}" Classes="lbl" />
+                      <TextBox Text="{Binding SshHost, Mode=TwoWay}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="6">
+                      <TextBlock Text="{loc:Text connections.sshPort}" Classes="lbl" />
+                      <TextBox Text="{Binding SshPort, Mode=TwoWay}" />
+                    </StackPanel>
+                  </Grid>
+                  <Grid ColumnDefinitions="*,16,220">
+                    <StackPanel Spacing="6">
+                      <TextBlock Text="{loc:Text connections.sshUser}" Classes="lbl" />
+                      <TextBox Text="{Binding SshUserName, Mode=TwoWay}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="6">
+                      <TextBlock Text="{loc:Text connections.authentication}" Classes="lbl" />
+                      <ComboBox Name="SshAuthBox" HorizontalAlignment="Stretch" SelectedItem="{Binding SshAuthMethod, Mode=TwoWay}" />
+                    </StackPanel>
+                  </Grid>
+                  <StackPanel Spacing="6"
+                              IsVisible="{Binding SshAuthMethod, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static core:SshAuthMethod.PrivateKey}}">
+                    <TextBlock Text="{loc:Text connections.sshKeyFile}" Classes="lbl" />
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBox Text="{Binding SshPrivateKeyPath, Mode=TwoWay}" />
+                      <Button Grid.Column="1" Content="{loc:Text connections.browse}" Margin="6,0,0,0" Click="OnBrowseKey" />
+                    </Grid>
+                  </StackPanel>
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="{loc:Text connections.sshSecret}" Classes="lbl" />
+                    <TextBox PasswordChar="&#x25CF;" Text="{Binding SshSecret, Mode=TwoWay}" />
+                  </StackPanel>
+                </StackPanel>
+              </StackPanel>
+            </TabItem>
+          </TabControl>
+
+          <Border Name="SshCard" Grid.Row="3" Grid.Column="2" Classes="card" Margin="0,64,0,0" VerticalAlignment="Top" IsVisible="{Binding UseSsh}">
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <TextBlock Text="{loc:Text connections.sshTunnel}" Classes="group" VerticalAlignment="Center" />
+                <Border Grid.Column="1" Classes="badge success" Margin="8,0,0,0"><TextBlock Text="{loc:Text connections.enabled}" /></Border>
+                <Button Grid.Column="3" Classes="ghost" Content="{loc:Text connections.edit}" Click="OnEditSsh" MinHeight="0" Padding="4,0" />
+              </Grid>
+              <TextBlock Name="SshSummary" Classes="mono" Foreground="{DynamicResource SquillFg2Brush}" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+          </Border>
+
+          <TextBlock Name="ErrorsText" Grid.Row="4" Grid.ColumnSpan="3" Margin="0,16,0,0" Foreground="{DynamicResource SquillDangerBrush}" TextWrapping="Wrap" />
+        </Grid>
+      </ScrollViewer>
+
+      <Border Grid.Row="1" Background="{DynamicResource SquillBgSurfaceBrush}" BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,1,0,0" Height="60">
+        <Grid ColumnDefinitions="*,Auto" Margin="32,0">
+          <Border Name="ResultBar" Classes="badge success" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="14,8" IsVisible="False">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Name="ResultText" FontSize="{DynamicResource SquillFontSizeBody}" FontWeight="SemiBold" />
+              <TextBlock Name="ResultDetail" Classes="mono" Foreground="{DynamicResource SquillFg2Brush}" />
+            </StackPanel>
+          </Border>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <Button Name="TestButton" Command="{Binding TestCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="{loc:Text connections.test}" />
+                <Border Classes="kbd"><TextBlock Text="Ctrl+Entrée" /></Border>
+              </StackPanel>
+            </Button>
+            <Button Content="{loc:Text connections.cancel}" Click="OnCancel" />
+            <Button Name="SaveButton" Classes="primary" Content="{loc:Text connections.save}" Command="{Binding SaveCommand}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+    </Grid>
+  </Grid>
 </Window>

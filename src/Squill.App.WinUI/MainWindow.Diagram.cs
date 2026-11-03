@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Squill.App.WinUI.Views;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
 using Squill.Presentation.Workspace;
@@ -16,12 +17,7 @@ public sealed partial class MainWindow
     {
         workspace.Diagrams.CollectionChanged += OnExtraTabsChanged;
         workspace.Designers.CollectionChanged += OnExtraTabsChanged;
-        workspace.OpenDiagramCommand.CanExecuteChanged += (_, _) => SyncDiagramButton();
-        SyncDiagramButton();
     }
-
-    private void SyncDiagramButton() =>
-        DiagramButton.Visibility = Workspace.OpenDiagramCommand.CanExecute(null) ? Visibility.Visible : Visibility.Collapsed;
 
     private void OnExtraTabsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
@@ -33,8 +29,7 @@ public sealed partial class MainWindow
 
         foreach (var added in e.NewItems ?? new List<object>())
         {
-            var title = added is DiagramTabViewModel diagram ? diagram.Title : ((TableDesignerViewModel)added).Title;
-            var item = new TabViewItem { Header = title, Tag = added };
+            var item = TabHeader.Create(added);
             _extraItems[added] = item;
             Tabs.TabItems.Add(item);
         }

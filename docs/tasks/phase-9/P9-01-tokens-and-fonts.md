@@ -1,6 +1,6 @@
 # P9-01 - Design system: font, type scale and missing tokens, bundled fonts
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -20,9 +20,9 @@ Make the design tokens and the font files complete enough for every later card: 
 - Bundling Segoe UI Variable (system font).
 
 ## Tasks
-- [ ] Add the font files and licenses, register them in both heads, verify rendering.
-- [ ] Extend the generator, regenerate both resource files, add the color tokens.
-- [ ] Tests in `tests/Squill.DesignSystem.Tests`.
+- [x] Add the font files and licenses, register them in both heads, verify rendering.
+- [x] Extend the generator, regenerate both resource files, add the color tokens.
+- [x] Tests in `tests/Squill.DesignSystem.Tests`.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.

@@ -1,6 +1,6 @@
 # P9-13 - Avalonia head: results panel chrome, pending-edit banner and export menu
 
-Status: todo
+Status: done
 Depends on: P9-11, P9-02
 
 ## Goal
@@ -16,8 +16,8 @@ Everything around the Avalonia grid matches M05: result tabs, read/write marker,
 - Grid canvas drawing (P9-14), filter bar, column menu, row panel, search box (no feature).
 
 ## Tasks
-- [ ] Rework `QueryTabView.axaml` and code-behind of the results panel.
-- [ ] Headless tests: banner visible only with pending changes and shows the counts, export menu items invoke the exporters (fake), marker text for editable and read-only results.
+- [x] Rework `QueryTabView.axaml` and code-behind of the results panel.
+- [x] Headless tests: banner visible only with pending changes and shows the counts, export menu items invoke the exporters (fake), marker text for editable and read-only results.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

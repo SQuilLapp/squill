@@ -6,7 +6,12 @@ namespace Squill.App.Avalonia.Tests;
 /// <summary>The single headless Avalonia session shared by every test class (only one can exist per process).</summary>
 internal static class Headless
 {
-    private sealed class TestApp : Application;
+    public static readonly HeadlessUnitTestSession Session = HeadlessUnitTestSession.StartNew(typeof(HeadlessApp));
+}
 
-    public static readonly HeadlessUnitTestSession Session = HeadlessUnitTestSession.StartNew(typeof(TestApp));
+/// <summary>Entry point of the headless session: real Skia rendering so tests can sample pixels.</summary>
+internal static class HeadlessApp
+{
+    public static AppBuilder BuildAvaloniaApp() =>
+        AppBuilder.Configure<App>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 }

@@ -2,49 +2,182 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:q="using:Squill.Presentation.Query"
              xmlns:c="using:Squill.App.Avalonia.Controls"
+             xmlns:v="using:Squill.App.Avalonia.Views"
+             xmlns:loc="using:Squill.App.Avalonia.Localization"
              x:Class="Squill.App.Avalonia.Views.QueryTabView"
              x:DataType="q:QueryTabViewModel">
-  <Grid RowDefinitions="*,Auto,*">
-    <Border Name="EditorHost" Background="{DynamicResource SquillBgBaseBrush}" />
-    <GridSplitter Grid.Row="1" Height="4" Background="{DynamicResource SquillBorderBrush}"
-                  ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" />
-    <Grid Name="ResultsPanel" Grid.Row="2" RowDefinitions="Auto,Auto,Auto,*" Background="{DynamicResource SquillBgBaseBrush}">
-      <Grid ColumnDefinitions="*,Auto" Background="{DynamicResource SquillBgRaisedBrush}">
-        <ListBox Name="ResultTabs" ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedResult}">
-          <ListBox.ItemsPanel>
-            <ItemsPanelTemplate>
-              <StackPanel Orientation="Horizontal" />
-            </ItemsPanelTemplate>
-          </ListBox.ItemsPanel>
-          <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="q:ResultViewModel">
-              <TextBlock Text="{Binding Header}" />
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
-        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" Margin="4">
-          <Button Name="ExportCsv" Content="Export CSV" Click="OnExportCsv" />
-          <Button Name="ExportJson" Content="Export JSON" Click="OnExportJson" />
+  <UserControl.Styles>
+    <Style Selector="RadioButton.underline">
+      <Setter Property="Height" Value="36" />
+      <Setter Property="Padding" Value="10,0" />
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="Foreground" Value="{DynamicResource SquillFg3Brush}" />
+    </Style>
+    <Style Selector="RadioButton.underline /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0,0,0,2" />
+      <Setter Property="CornerRadius" Value="0" />
+    </Style>
+    <Style Selector="RadioButton.underline:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+    </Style>
+    <Style Selector="RadioButton.underline:checked /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SquillAccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+    </Style>
+    <Style Selector="ListBox.pills">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="ListBox.pills > ListBoxItem">
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="Padding" Value="10,0" />
+      <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusMd}" />
+      <Setter Property="Foreground" Value="{DynamicResource SquillFg2Brush}" />
+    </Style>
+    <Style Selector="ListBox.pills > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SquillBgActiveBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource SquillFgBrush}" />
+    </Style>
+  </UserControl.Styles>
+  <Grid ColumnDefinitions="*,Auto">
+  <Grid RowDefinitions="Auto,*,Auto,*">
+    <Border Name="Toolbar" Height="38" Padding="8,0" Background="{DynamicResource SquillBgBaseBrush}"
+            BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Button Name="FormatButton" Classes="ghost" Width="28" Height="28" MinHeight="28" Padding="0"
+                  ToolTip.Tip="{loc:Text menu.format}" Command="{Binding FormatDocumentCommand}">
+            <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconFormat}" />
+          </Button>
+          <Button Name="HistoryButton" Classes="ghost" Width="28" Height="28" MinHeight="28" Padding="0"
+                  ToolTip.Tip="{loc:Text editor.history}" Click="OnHistoryClicked">
+            <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconHistory}" />
+          </Button>
         </StackPanel>
-      </Grid>
-      <StackPanel Name="EditBar" Grid.Row="1" Orientation="Horizontal" Spacing="4" Margin="4" IsVisible="False">
-        <Button Name="AddRow" Content="Add row" Click="OnAddRow" />
-        <Button Name="DeleteRows" Content="Delete rows" Click="OnDeleteRows" />
-        <Button Name="RevertRows" Content="Revert rows" Click="OnRevertRows" />
-        <Button Name="PreviewSql" Content="Preview SQL" />
-        <Button Name="Commit" Content="Commit" />
-        <Button Name="Discard" Content="Discard" />
-        <TextBlock Name="EditStatus" VerticalAlignment="Center" Foreground="{DynamicResource SquillFg2Brush}" />
-        <Button Name="IssuesButton" IsVisible="False" Foreground="{DynamicResource SquillDangerBrush}">
-          <Button.Flyout>
-            <Flyout>
-              <ListBox Name="IssueList" MaxHeight="240" SelectionChanged="OnIssueSelected" />
-            </Flyout>
-          </Button.Flyout>
-        </Button>
-      </StackPanel>
-      <TextBlock Name="ReadOnlyLabel" Grid.Row="1" Margin="8,4" IsVisible="False"
-                 Foreground="{DynamicResource SquillFg3Brush}" />
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Button Name="RunButton" Classes="primary" Height="28" MinHeight="28" Command="{Binding RunCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="{loc:Text editor.run}" />
+              <TextBlock Classes="mono" FontSize="11" Opacity="0.7" VerticalAlignment="Center" Text="Ctrl+Entrée" />
+            </StackPanel>
+          </Button>
+          <Button Name="ScriptButton" Height="28" MinHeight="28" Command="{Binding RunAllCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="{loc:Text editor.script}" />
+              <Border Classes="kbd"><TextBlock Text="Ctrl+Maj+Entrée" /></Border>
+            </StackPanel>
+          </Button>
+          <Button Name="StopButton" Height="28" MinHeight="28" Content="{loc:Text editor.stop}"
+                  IsEnabled="{Binding IsRunning}" Command="{Binding CancelCommand}" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+    <Grid Grid.Row="1" ColumnDefinitions="3,*">
+      <Border Name="EnvStripe" IsVisible="False" />
+      <Border Name="EditorHost" Grid.Column="1" Background="{DynamicResource SquillBgBaseBrush}" />
+    </Grid>
+    <GridSplitter Grid.Row="2" Height="4" Background="{DynamicResource SquillBorderBrush}"
+                  ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" />
+    <Grid Name="ResultsPanel" Grid.Row="3" RowDefinitions="Auto,Auto,Auto,*,Auto" Background="{DynamicResource SquillBgBaseBrush}">
+      <Border Height="32" Padding="8,0" Background="{DynamicResource SquillBgBaseBrush}"
+              BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+            <StackPanel Name="RowTools" Orientation="Horizontal" Spacing="2" IsVisible="False">
+              <Button Name="AddRow" Classes="icon" Width="26" Height="26" MinHeight="26" Padding="0"
+                      ToolTip.Tip="{loc:Text results.addRow}" Click="OnAddRow">
+                <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconPlus}" />
+              </Button>
+              <Button Name="DeleteRows" Classes="icon" Width="26" Height="26" MinHeight="26" Padding="0"
+                      ToolTip.Tip="{loc:Text results.deleteRows}" Click="OnDeleteRows">
+                <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconTrash}" />
+              </Button>
+              <Button Name="RevertRows" Classes="icon" Width="26" Height="26" MinHeight="26" Padding="0"
+                      ToolTip.Tip="{loc:Text results.revertRows}" Click="OnRevertRows">
+                <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconUndo}" />
+              </Button>
+            </StackPanel>
+            <Button Name="ExportButton" Height="26" MinHeight="26" Padding="10,0" VerticalAlignment="Center">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Text="{loc:Text results.export}" VerticalAlignment="Center" />
+                <Path Classes="icon" Width="10" Height="10" Data="{StaticResource SquillIconCollapse}" />
+              </StackPanel>
+              <Button.Flyout>
+                <Flyout Placement="BottomEdgeAlignedRight">
+                  <StackPanel Name="ExportMenu" Width="284" Spacing="2">
+                    <TextBlock Name="ExportTitle" Classes="caps" Margin="8,4,8,6" />
+                    <Button Name="ExportCsv" Classes="ghost" Height="28" MinHeight="28" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch" Click="OnExportCsv">
+                      <DockPanel>
+                        <TextBlock DockPanel.Dock="Right" Classes="mono" FontSize="12" Foreground="{DynamicResource SquillFg3Brush}"
+                                   Text="{loc:Text results.exportCsvDetail}" />
+                        <TextBlock Text="CSV" />
+                      </DockPanel>
+                    </Button>
+                    <Button Name="ExportJson" Classes="ghost" Height="28" MinHeight="28" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch" Click="OnExportJson">
+                      <DockPanel>
+                        <TextBlock DockPanel.Dock="Right" Classes="mono" FontSize="12" Foreground="{DynamicResource SquillFg3Brush}"
+                                   Text="{loc:Text results.exportJsonDetail}" />
+                        <TextBlock Text="JSON" />
+                      </DockPanel>
+                    </Button>
+                  </StackPanel>
+                </Flyout>
+              </Button.Flyout>
+            </Button>
+          </StackPanel>
+          <ListBox Name="ResultTabs" DockPanel.Dock="Left" Classes="pills" ItemsSource="{Binding Results}"
+                   SelectedItem="{Binding SelectedResult}" VerticalAlignment="Center">
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="2" />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="q:ResultViewModel">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                  <TextBlock Classes="mono" FontSize="12" Foreground="{DynamicResource SquillFg3Brush}"
+                             Text="{Binding CountText}" IsVisible="{Binding CountText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <StackPanel Name="Marker" Orientation="Horizontal" Spacing="6" Margin="10,0,0,0" VerticalAlignment="Center" IsVisible="False">
+            <Path Name="MarkerIcon" Classes="icon" Width="12" Height="12" />
+            <TextBlock Name="MarkerText" FontSize="12" VerticalAlignment="Center" />
+          </StackPanel>
+        </DockPanel>
+      </Border>
+      <Border Name="EditBar" Grid.Row="1" Height="36" Padding="12,0" IsVisible="False"
+              Background="{DynamicResource SquillInfoSoftBrush}" BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <Button Name="IssuesButton" Classes="ghost" Height="26" MinHeight="26" Padding="8,0" IsVisible="False"
+                    Foreground="{DynamicResource SquillDangerBrush}">
+              <Button.Flyout>
+                <Flyout>
+                  <ListBox Name="IssueList" MaxHeight="240" SelectionChanged="OnIssueSelected" />
+                </Flyout>
+              </Button.Flyout>
+            </Button>
+            <Button Name="PreviewSql" Height="26" MinHeight="26" Content="{loc:Text results.previewSql}" />
+            <Button Name="Discard" Height="26" MinHeight="26" Content="{loc:Text results.cancel}" />
+            <Button Name="Commit" Classes="primary" Height="26" MinHeight="26" Content="{loc:Text results.commit}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <Path Classes="icon" Width="14" Height="14" Stroke="{DynamicResource SquillInfoBrush}" Data="{StaticResource SquillIconPencil}" />
+            <TextBlock Name="EditStatus" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <TextBlock Name="EditDetail" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource SquillFg2Brush}" />
+          </StackPanel>
+        </DockPanel>
+      </Border>
       <ProgressBar Grid.Row="2" IsIndeterminate="True" Height="2" IsVisible="{Binding IsRunning}" />
       <Grid Grid.Row="3">
         <c:DataGridView Name="ResultGrid" />
@@ -53,6 +186,23 @@
         <TextBlock Name="Empty" Margin="12" Text="Run a query to see results here."
                    Foreground="{DynamicResource SquillFg3Brush}" />
       </Grid>
+      <Border Name="Footer" Grid.Row="4" Height="26" Padding="12,0" IsVisible="False" Background="{DynamicResource SquillBgSurfaceBrush}"
+              BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,1,0,0">
+        <TextBlock Name="FooterText" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource SquillFg2Brush}" />
+      </Border>
     </Grid>
+  </Grid>
+    <Border Name="SidePanel" Grid.Column="1" Width="264" IsVisible="False" Background="{DynamicResource SquillBgSurfaceBrush}"
+            BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="1,0,0,0">
+      <Grid RowDefinitions="Auto,*">
+        <StackPanel Orientation="Horizontal" Margin="8,0" Height="36">
+          <RadioButton Name="HistoryTab" Classes="underline" VerticalContentAlignment="Center" VerticalAlignment="Center" Theme="{StaticResource {x:Type ToggleButton}}" GroupName="QuerySidePanel" IsChecked="True"
+                       Content="{loc:Text editor.history}" />
+          <RadioButton Name="SnippetsTab" Classes="underline" VerticalContentAlignment="Center" VerticalAlignment="Center" Theme="{StaticResource {x:Type ToggleButton}}" GroupName="QuerySidePanel" Content="{loc:Text editor.snippets}" />
+        </StackPanel>
+        <v:HistoryView Name="HistoryPanel" Grid.Row="1" IsVisible="{Binding #HistoryTab.IsChecked}" />
+        <v:SnippetsView Name="SnippetsPanel" Grid.Row="1" IsVisible="{Binding #SnippetsTab.IsChecked}" />
+      </Grid>
+    </Border>
   </Grid>
 </UserControl>

@@ -1,6 +1,6 @@
 # P9-19 - Avalonia head: table designer view
 
-Status: todo
+Status: done
 Depends on: P9-08, P9-02
 
 ## Goal
@@ -15,8 +15,8 @@ The table designer matches M07.
 - Impact card, Contraintes/Déclencheurs/DDL tabs, rollback script option (no feature), new designer functionality.
 
 ## Tasks
-- [ ] Rework `TableDesignerView.axaml`.
-- [ ] Headless tests: row tag visible for modified/new rows, DDL panel shows the script, apply disabled when issues exist.
+- [x] Rework `TableDesignerView.axaml`.
+- [x] Headless tests: row tag visible for modified/new rows, DDL panel shows the script, apply disabled when issues exist.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
@@ -27,3 +27,7 @@ The table designer matches M07.
 
 ## Suggested commit message
 Avalonia: table designer view
+
+## Report
+- Visual check done on a headless Skia render of the real view (commandes of the sample `ventes.db`, light and dark, 1440 x 900) side by side with M07; the running app was not driven by hand. Not drawn (no data or feature): `Commentaire` column, row numbers, `Impact estimé`, Contraintes/Déclencheurs/DDL tabs, DDL footer checkboxes (the view-model has neither option), `propriétaire`/row count in the subtitle. Row tags sit at the right end of the name cell, not right after the name text. The owner should check the live window once.
+- `ColumnRowViewModel`/`TableDesignerViewModel` gained derived state (`IsNew`, `IsModified`, `ForeignKeyTarget`, `SelectedColumn`, `DraftText`, `Subtitle`, environment flags). The draft count and the tags compare against the original with primary key columns made non-nullable, because a row forces NULL off on its key.

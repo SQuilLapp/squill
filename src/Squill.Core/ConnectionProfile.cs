@@ -10,4 +10,6 @@ public sealed record ConnectionProfile(
     string? Database,
     string? UserName,
     string? FilePath,
-    SshTunnelSettings? Ssh);
+    SshTunnelSettings? Ssh,
+    ConnectionEnvironment Environment = ConnectionEnvironment.None,
+    string? Folder = null);

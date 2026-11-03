@@ -28,6 +28,8 @@
     <ProjectReference Include="..\Squill.Data.SqlServer\Squill.Data.SqlServer.csproj" />
     <ProjectReference Include="..\Squill.Data.Sqlite\Squill.Data.Sqlite.csproj" />
     <Content Include="..\..\assets\brand\app-icons\windows\squill.ico" Link="Assets\squill.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\assets\brand\app-icons\windows\squill-32.png" Link="Assets\squill-32.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\assets\fonts\*.ttf" Link="Assets\Fonts\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <!-- LoomEditor (ADR 0002) comes from NuGet; it targets the 26100 Windows SDK. -->
   <PropertyGroup>

@@ -175,7 +175,7 @@ public sealed class DataGridView : Grid
 
             var danger = c.Error is not null;
             _editor.Bind(TemplatedControl.BorderBrushProperty, _editor.GetResourceObservable(danger ? "SquillDangerBrush" : "SquillAccentBrush"));
-            _editor.BorderThickness = new Thickness(danger ? 2 : 1);
+            _editor.BorderThickness = new Thickness(2);
             ToolTip.SetTip(_editor, c.Error);
             if (rect is { } r)
             {

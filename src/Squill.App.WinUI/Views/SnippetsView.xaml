@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:st="using:Squill.Platform.Storage">
   <Grid RowDefinitions="Auto,*">
-    <Button Margin="6" Content="Save current" Click="OnSaveClicked" />
+    <Button x:Name="SaveButton" Margin="8" HorizontalAlignment="Stretch" Click="OnSaveClicked" />
     <ListView x:Name="List" Grid.Row="1" SelectionMode="Single" DoubleTapped="OnDoubleTapped">
       <ListView.ItemTemplate>
         <DataTemplate x:DataType="st:Snippet">
@@ -12,9 +12,9 @@
       </ListView.ItemTemplate>
       <ListView.ContextFlyout>
         <MenuFlyout>
-          <MenuFlyoutItem Text="Insert" Click="OnInsertClicked" />
-          <MenuFlyoutItem Text="Rename" Click="OnRenameClicked" />
-          <MenuFlyoutItem Text="Delete" Click="OnDeleteClicked" />
+          <MenuFlyoutItem x:Name="InsertItem" Click="OnInsertClicked" />
+          <MenuFlyoutItem x:Name="RenameItem" Click="OnRenameClicked" />
+          <MenuFlyoutItem x:Name="DeleteItem" Click="OnDeleteClicked" />
         </MenuFlyout>
       </ListView.ContextFlyout>
     </ListView>

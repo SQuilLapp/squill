@@ -1,0 +1,6 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Fallback lists mirror the font.* tokens of tokens/squill.tokens.json; bundled files live in assets/fonts. -->
+  <FontFamily x:Key="SquillFontUi">Segoe UI Variable, ms-appx:///Assets/Fonts/Inter-Regular.ttf#Inter, Segoe UI</FontFamily>
+  <FontFamily x:Key="SquillFontMono">ms-appx:///Assets/Fonts/JetBrainsMono-Regular.ttf#JetBrains Mono, Cascadia Code, Consolas</FontFamily>
+  <FontFamily x:Key="SquillFontBrand">ms-appx:///Assets/Fonts/InterTight-Bold.ttf#Inter Tight, ms-appx:///Assets/Fonts/Inter-SemiBold.ttf#Inter, Segoe UI</FontFamily>
+</ResourceDictionary>

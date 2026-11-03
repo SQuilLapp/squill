@@ -1,6 +1,6 @@
 # P9-05 - Avalonia head: shared control styles
 
-Status: todo
+Status: done
 Depends on: P9-01, P9-03, P9-02
 
 ## Goal
@@ -17,8 +17,8 @@ One set of styles for the controls every Avalonia view uses, matching the mockup
 - Applying the styles to existing views beyond what happens automatically through implicit styles; layout changes (later cards).
 
 ## Tasks
-- [ ] Write the styles and the gallery.
-- [ ] Headless tests in `tests/Squill.App.Avalonia.Tests`: gallery loads in both themes without binding errors; a primary button resolves `SquillAccentBrush` background; a disabled button resolves `SquillFgDisabledBrush`.
+- [x] Write the styles and the gallery.
+- [x] Headless tests in `tests/Squill.App.Avalonia.Tests`: gallery loads in both themes without binding errors; a primary button resolves `SquillAccentBrush` background; a disabled button resolves `SquillFgDisabledBrush`.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

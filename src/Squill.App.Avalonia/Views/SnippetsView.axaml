@@ -2,16 +2,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:pn="using:Squill.Presentation.Panels"
              xmlns:st="using:Squill.Platform.Storage"
+             xmlns:loc="using:Squill.App.Avalonia.Localization"
              x:Class="Squill.App.Avalonia.Views.SnippetsView"
              x:DataType="pn:SnippetsViewModel">
   <Grid RowDefinitions="Auto,*">
-    <Button Margin="6" Content="Save current" Command="{Binding SaveCurrentCommand}" />
+    <Button Margin="8" HorizontalAlignment="Stretch" Content="{loc:Text editor.snippetSave}" Command="{Binding SaveCurrentCommand}" />
     <ListBox Grid.Row="1" Name="List" ItemsSource="{Binding Snippets}" Background="Transparent" DoubleTapped="OnDoubleTapped">
       <ListBox.ContextMenu>
         <ContextMenu>
-          <MenuItem Header="Insert" Command="{Binding InsertCommand}" CommandParameter="{Binding #List.SelectedItem}" />
-          <MenuItem Header="Rename" Command="{Binding RenameCommand}" CommandParameter="{Binding #List.SelectedItem}" />
-          <MenuItem Header="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding #List.SelectedItem}" />
+          <MenuItem Header="{loc:Text editor.snippetInsert}" Command="{Binding InsertCommand}" CommandParameter="{Binding #List.SelectedItem}" />
+          <MenuItem Header="{loc:Text editor.snippetRename}" Command="{Binding RenameCommand}" CommandParameter="{Binding #List.SelectedItem}" />
+          <MenuItem Header="{loc:Text editor.snippetDelete}" Command="{Binding DeleteCommand}" CommandParameter="{Binding #List.SelectedItem}" />
         </ContextMenu>
       </ListBox.ContextMenu>
       <ListBox.ItemTemplate>

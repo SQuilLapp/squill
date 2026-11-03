@@ -35,10 +35,10 @@ public readonly record struct ErBox(double X, double Y, double Width, double Hei
 /// <param name="MaxRowWidth">Reserved row width limit; components are never wrapped.</param>
 public sealed record ErLayoutOptions(
     Func<string, double> MeasureText,
-    double HeaderHeight = 28,
-    double RowHeight = 20,
+    double HeaderHeight = 33,
+    double RowHeight = 24,
     double Padding = 12,
-    double MinWidth = 160,
+    double MinWidth = 210,
     double HorizontalGap = 96,
     double VerticalGap = 32,
     double MaxRowWidth = 2400);

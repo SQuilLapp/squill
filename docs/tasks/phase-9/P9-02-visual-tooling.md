@@ -1,6 +1,6 @@
 # P9-02 - Tools: sample data and window capture for visual comparison
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -20,7 +20,7 @@ Give every later card the same way to run the app on realistic French data, capt
 - UI automation (clicking); screens that need interaction are reached by hand or reported.
 
 ## Tasks
-- [ ] Write the four files and the README; run the whole chain once on the Avalonia head (start with seed data, capture, compare with `M03-Workspace-clair-Windows.png`) and attach the composite path in the card report.
+- [x] Write the four files and the README; run the whole chain once on the Avalonia head (start with seed data, capture, compare with `M03-Workspace-clair-Windows.png`) and attach the composite path in the card report.
 
 ## Acceptance criteria
 - The chain above ran on this machine and produced a composite image that was read; the report lists the exact commands that worked.

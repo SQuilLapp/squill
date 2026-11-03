@@ -1,6 +1,6 @@
 # P9-25 - Documentation: visual conformance ADR, README and architecture note
 
-Status: todo
+Status: done
 Depends on: P9-07 ... P9-24
 
 ## Goal
@@ -17,7 +17,7 @@ Record what phase 9 decided and what remains.
 - Code changes.
 
 ## Tasks
-- [ ] Write the ADR, the status section, README and architecture edits.
+- [x] Write the ADR, the status section, README and architecture edits.
 
 ## Acceptance criteria
 - Docs only: `rtk git diff --stat` touches only `docs/` and `README.md`.

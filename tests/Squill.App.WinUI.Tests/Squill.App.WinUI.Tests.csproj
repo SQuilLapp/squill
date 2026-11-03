@@ -11,7 +11,18 @@
     <ProjectReference Include="..\..\src\Squill.DesignSystem\Squill.DesignSystem.csproj" />
     <ProjectReference Include="..\..\src\Squill.Presentation\Squill.Presentation.csproj" />
     <Compile Include="..\..\src\Squill.App.WinUI\Controls\GridEditGeometry.cs" Link="GridEditGeometry.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Controls\ErDiagramGeometry.cs" Link="ErDiagramGeometry.cs" />
     <Compile Include="..\..\src\Squill.App.WinUI\Views\EditBarFormat.cs" Link="EditBarFormat.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Views\ChromeFormat.cs" Link="ChromeFormat.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Views\PropertiesModel.cs" Link="PropertiesModel.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Views\TabInfo.cs" Link="TabInfo.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Views\HistoryFormat.cs" Link="HistoryFormat.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Views\ConnectionEditorFormat.cs" Link="ConnectionEditorFormat.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Views\SettingsFormat.cs" Link="SettingsFormat.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Views\TableDesignerFormat.cs" Link="TableDesignerFormat.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Services\ParameterPromptRow.cs" Link="ParameterPromptRow.cs" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\PropertiesPanel.xaml" Link="Xaml\PropertiesPanel.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\PropertiesPanel.xaml.cs" Link="Xaml\PropertiesPanel.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\tokens\squill.tokens.json" Link="squill.tokens.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\MainWindow.xaml" Link="Xaml\MainWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\MainWindow.xaml.cs" Link="Xaml\MainWindow.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
@@ -25,6 +36,12 @@
     <Content Include="..\..\src\Squill.App.WinUI\Views\DiagramTabView.xaml.cs" Link="Xaml\DiagramTabView.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\TableDesignerView.xaml" Link="Xaml\TableDesignerView.xaml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\TableDesignerView.xaml.cs" Link="Xaml\TableDesignerView.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\ConnectionEditorWindow.xaml" Link="Xaml\ConnectionEditorWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\ConnectionEditorWindow.xaml.cs" Link="Xaml\ConnectionEditorWindow.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\SettingsWindow.xaml" Link="Xaml\SettingsWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\SettingsWindow.xaml.cs" Link="Xaml\SettingsWindow.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Styles\SquillTokens.xaml" Link="SquillTokens.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Styles\Controls.xaml" Link="Styles\Controls.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Styles\ControlResources.xaml" Link="Styles\ControlResources.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

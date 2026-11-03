@@ -1,0 +1,272 @@
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Globalization;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Squill.Core;
+using Squill.Presentation.Connections;
+using Squill.Presentation.Localization;
+using Squill.Presentation.Sessions;
+
+namespace Squill.Presentation.Explorer;
+
+/// <summary>A table or view picked in the explorer, with the session it belongs to.</summary>
+/// <param name="Session">The session of the node's connection.</param>
+/// <param name="Table">The table or view.</param>
+public sealed record TableRequest(ConnectionSession Session, TableInfo Table);
+
+/// <summary>
+/// The explorer as one filterable tree: saved connections (grouped by folder) at the top, and under each connected one
+/// its database, schemas, tables, views and columns.
+/// </summary>
+public sealed partial class ExplorerTreeViewModel : ViewModelBase
+{
+    private readonly ConnectionListViewModel _list;
+    private readonly ObservableCollection<ConnectionSession> _sessions;
+    private readonly HashSet<Guid> _expanded = [];
+
+    /// <summary>Creates the tree and keeps it in step with the saved connections and the open sessions.</summary>
+    /// <param name="list">The saved connections.</param>
+    /// <param name="sessions">The open sessions.</param>
+    public ExplorerTreeViewModel(ConnectionListViewModel list, ObservableCollection<ConnectionSession> sessions)
+    {
+        ArgumentNullException.ThrowIfNull(list);
+        ArgumentNullException.ThrowIfNull(sessions);
+        _list = list;
+        _sessions = sessions;
+        list.Profiles.CollectionChanged += (_, _) => Rebuild();
+        sessions.CollectionChanged += OnSessionsChanged;
+        Rebuild();
+    }
+
+    /// <summary>Raised when the user opens a table or view.</summary>
+    public event EventHandler<TableRequest>? OpenTableRequested;
+
+    /// <summary>Raised when the user asks to design a table.</summary>
+    public event EventHandler<TableRequest>? DesignTableRequested;
+
+    /// <summary>Raised when the user asks to drop a table.</summary>
+    public event EventHandler<TableRequest>? DropTableRequested;
+
+    /// <summary>Raised when the user activates a disconnected connection node.</summary>
+    public event EventHandler<ConnectionProfile>? ConnectRequested;
+
+    /// <summary>Gets the top-level nodes: connection folders and ungrouped connections.</summary>
+    public ObservableCollection<ExplorerNode> Roots { get; } = [];
+
+    /// <summary>Gets or sets the text that node titles must contain, ignoring case; empty shows everything.</summary>
+    [ObservableProperty]
+    public partial string FilterText { get; set; } = "";
+
+    /// <summary>Gets or sets the selected node; selecting a node of a connection also selects that connection in the list.</summary>
+    [ObservableProperty]
+    public partial ExplorerNode? SelectedNode { get; set; }
+
+    partial void OnFilterTextChanged(string value) => ApplyFilter();
+
+    partial void OnSelectedNodeChanged(ExplorerNode? value)
+    {
+        if (value?.Profile is { } profile)
+            _list.SelectedProfile = profile;
+    }
+
+    /// <summary>Rebuilds the objects of one session from its current schema, for example after a DDL statement.</summary>
+    /// <param name="session">The session whose schema changed.</param>
+    public void Reload(ConnectionSession session)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        if (FindConnection(session.Profile.Id) is { } node)
+        {
+            Populate(node);
+            ApplyFilter();
+        }
+    }
+
+    [RelayCommand]
+    private async Task RefreshAsync(CancellationToken ct)
+    {
+        ConnectionSession[] targets = SelectedNode?.Session is { } selected ? [selected] : [.. _sessions];
+        foreach (var session in targets)
+        {
+            await session.RefreshSchemaAsync(ct);
+            Reload(session);
+        }
+    }
+
+    [RelayCommand]
+    private void Activate(ExplorerNode? node)
+    {
+        if (node is { Kind: ExplorerNodeKind.Connection, Session: null, Profile: { } profile })
+            ConnectRequested?.Invoke(this, profile);
+        else if (node is { Kind: ExplorerNodeKind.Table or ExplorerNodeKind.View, Table: { } table, Session: { } session })
+            OpenTableRequested?.Invoke(this, new TableRequest(session, table));
+    }
+
+    [RelayCommand]
+    private void Design(ExplorerNode? node)
+    {
+        if (node is { Kind: ExplorerNodeKind.Table, Table: { } table, Session: { } session })
+            DesignTableRequested?.Invoke(this, new TableRequest(session, table));
+    }
+
+    [RelayCommand]
+    private void Drop(ExplorerNode? node)
+    {
+        if (node is { Kind: ExplorerNodeKind.Table, Table: { } table, Session: { } session })
+            DropTableRequested?.Invoke(this, new TableRequest(session, table));
+    }
+
+    private void OnSessionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action is not (NotifyCollectionChangedAction.Add or NotifyCollectionChangedAction.Remove))
+        {
+            Rebuild();
+            return;
+        }
+        foreach (var session in e.OldItems?.OfType<ConnectionSession>() ?? [])
+        {
+            if (FindConnection(session.Profile.Id) is not { } node)
+                continue;
+            node.Session = null;
+            node.Children.Clear();
+            node.IsExpanded = false;
+            _expanded.Remove(session.Profile.Id);
+        }
+        foreach (var session in e.NewItems?.OfType<ConnectionSession>() ?? [])
+        {
+            if (FindConnection(session.Profile.Id) is not { } node)
+                continue;
+            node.Session = session;
+            Populate(node);
+            node.IsExpanded = true;
+            _expanded.Add(session.Profile.Id);
+        }
+        ApplyFilter();
+    }
+
+    private void Rebuild()
+    {
+        foreach (var node in Connections())
+        {
+            if (node.IsExpanded)
+                _expanded.Add(node.Profile!.Id);
+            else
+                _expanded.Remove(node.Profile!.Id);
+        }
+        Roots.Clear();
+        foreach (var group in _list.Groups)
+        {
+            if (group.Folder is null)
+            {
+                foreach (var profile in group.Items)
+                    Roots.Add(ConnectionNode(profile));
+                continue;
+            }
+            var folder = new ExplorerNode(group.Folder, ExplorerNodeKind.ConnectionFolder, group.Items.Count.ToString(CultureInfo.CurrentCulture)) { IsExpanded = true };
+            foreach (var profile in group.Items)
+                folder.Children.Add(ConnectionNode(profile));
+            Roots.Add(folder);
+        }
+        ApplyFilter();
+    }
+
+    private ExplorerNode ConnectionNode(ConnectionProfile profile)
+    {
+        var node = new ExplorerNode(profile.Name, ExplorerNodeKind.Connection) { Profile = profile };
+        if (_sessions.FirstOrDefault(s => s.Profile.Id == profile.Id) is { } session)
+        {
+            node.Session = session;
+            Populate(node);
+            node.IsExpanded = _expanded.Contains(profile.Id);
+        }
+        return node;
+    }
+
+    private IEnumerable<ExplorerNode> Connections() =>
+        Roots.SelectMany(r => r.Kind == ExplorerNodeKind.Connection ? [r] : r.Children);
+
+    private ExplorerNode? FindConnection(Guid id) => Connections().FirstOrDefault(n => n.Profile!.Id == id);
+
+    private static void Populate(ExplorerNode connection)
+    {
+        connection.Children.Clear();
+        if (connection.Session is not { } session)
+            return;
+        var profile = session.Profile;
+        var database = new ExplorerNode(profile.Database is { Length: > 0 } name ? name : profile.Name, ExplorerNodeKind.Database)
+        {
+            Profile = profile,
+            Session = session,
+            IsExpanded = true,
+        };
+        var groups = session.Schema.Tables.GroupBy(t => t.Schema ?? "", StringComparer.Ordinal).ToList();
+        foreach (var group in groups)
+        {
+            // Engines without schemas (SQLite) put their tables straight under the database.
+            var parent = database;
+            if (group.Key.Length > 0)
+            {
+                parent = Node(group.Key, ExplorerNodeKind.Schema, session, count: group.Count());
+                parent.IsExpanded = groups.Count == 1;
+                database.Children.Add(parent);
+            }
+            AddGroup(parent, session, "explorer.tables", group.Where(t => t.Kind != TableKind.View), groups.Count == 1);
+            AddGroup(parent, session, "explorer.views", group.Where(t => t.Kind == TableKind.View), false);
+        }
+        connection.Children.Add(database);
+    }
+
+    private static void AddGroup(ExplorerNode parent, ConnectionSession session, string titleKey, IEnumerable<TableInfo> tables, bool expanded)
+    {
+        var list = tables.ToList();
+        var folder = Node(UiText.Get(titleKey), ExplorerNodeKind.Folder, session, count: list.Count);
+        foreach (var table in list)
+            folder.Children.Add(TableNode(session, table));
+        folder.IsExpanded = expanded;
+        if (folder.Children.Count > 0)
+            parent.Children.Add(folder);
+    }
+
+    private static ExplorerNode Node(string title, ExplorerNodeKind kind, ConnectionSession session, string? detail = null, TableInfo? table = null, int? count = null) =>
+        new(title, kind, detail, table, count) { Profile = session.Profile, Session = session };
+
+    private static ExplorerNode TableNode(ConnectionSession session, TableInfo table)
+    {
+        var node = Node(table.Name, table.Kind == TableKind.View ? ExplorerNodeKind.View : ExplorerNodeKind.Table, session, table: table);
+        var columns = Node("Columns", ExplorerNodeKind.Folder, session, count: table.Columns.Count);
+        foreach (var c in table.Columns)
+        {
+            var detail = c.DataType + (c.IsPrimaryKey ? " PK" : "") + (c.IsNullable ? " NULL" : "");
+            columns.Children.Add(Node(c.Name, ExplorerNodeKind.Column, session, detail));
+        }
+        var indexes = Node("Indexes", ExplorerNodeKind.Folder, session, count: table.Indexes.Count);
+        foreach (var i in table.Indexes)
+            indexes.Children.Add(Node(i.Name, ExplorerNodeKind.Index, session, (i.IsUnique ? "UNIQUE " : "") + string.Join(", ", i.Columns)));
+        var keys = Node("Foreign keys", ExplorerNodeKind.Folder, session, count: table.ForeignKeys.Count);
+        foreach (var k in table.ForeignKeys)
+        {
+            var target = k.ReferencedSchema is { Length: > 0 } s ? $"{s}.{k.ReferencedTable}" : k.ReferencedTable;
+            keys.Children.Add(Node(k.Name, ExplorerNodeKind.ForeignKey, session, $"{string.Join(", ", k.Columns)} -> {target}"));
+        }
+        node.Children.Add(columns);
+        node.Children.Add(indexes);
+        node.Children.Add(keys);
+        return node;
+    }
+
+    private void ApplyFilter()
+    {
+        var filter = FilterText.Trim();
+        foreach (var root in Roots)
+            Apply(root, filter);
+    }
+
+    private static bool Apply(ExplorerNode node, string filter)
+    {
+        var visible = filter.Length == 0 || node.Title.Contains(filter, StringComparison.OrdinalIgnoreCase);
+        foreach (var child in node.Children)
+            visible |= Apply(child, filter);
+        node.IsVisible = visible;
+        return visible;
+    }
+}

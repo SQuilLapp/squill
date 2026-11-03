@@ -1,6 +1,6 @@
 # P9-24 - WinUI head: settings window
 
-Status: todo
+Status: done
 Depends on: P9-06, P9-03, P9-02
 
 ## Goal
@@ -13,8 +13,8 @@ The WinUI settings window matches M14 for the settings that exist.
 - The unsupported settings listed in P9-23.
 
 ## Tasks
-- [ ] Rebuild the settings window as XAML.
-- [ ] Tests for the testable helpers; state what needs the screenshot.
+- [x] Rebuild the settings window as XAML.
+- [x] Tests for the testable helpers; state what needs the screenshot.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.

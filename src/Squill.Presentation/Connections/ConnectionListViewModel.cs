@@ -7,6 +7,11 @@ using Squill.Platform.Profiles;
 
 namespace Squill.Presentation.Connections;
 
+/// <summary>The connections of one folder.</summary>
+/// <param name="Folder">Folder name, or <see langword="null"/> for connections without a folder.</param>
+/// <param name="Items">The connections of the folder, ordered by name.</param>
+public sealed record ConnectionGroup(string? Folder, IReadOnlyList<ConnectionProfile> Items);
+
 /// <summary>Lists the saved connection profiles and starts creating, editing and deleting them.</summary>
 /// <param name="store">Where profiles are read and deleted.</param>
 /// <param name="providers">Handed to the editors for their connection test.</param>
@@ -18,6 +23,13 @@ public sealed partial class ConnectionListViewModel(IProfileStore store, Provide
 
     /// <summary>Gets the saved profiles.</summary>
     public ObservableCollection<ConnectionProfile> Profiles { get; } = [];
+
+    /// <summary>Gets <see cref="Profiles"/> grouped by folder: groups by folder name, the ungrouped one last, items by name.</summary>
+    public IReadOnlyList<ConnectionGroup> Groups => [.. Profiles
+        .GroupBy(p => p.Folder)
+        .OrderBy(g => g.Key is null)
+        .ThenBy(g => g.Key, StringComparer.CurrentCultureIgnoreCase)
+        .Select(g => new ConnectionGroup(g.Key, [.. g.OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase)]))];
 
     /// <summary>Gets or sets the profile the edit and delete commands act on.</summary>
     [ObservableProperty]
@@ -34,6 +46,7 @@ public sealed partial class ConnectionListViewModel(IProfileStore store, Provide
         Profiles.Clear();
         foreach (var profile in profiles)
             Profiles.Add(profile);
+        OnPropertyChanged(nameof(Groups));
     }
 
     [RelayCommand]
@@ -51,6 +64,7 @@ public sealed partial class ConnectionListViewModel(IProfileStore store, Provide
             return;
         await store.DeleteAsync(profile.Id, ct);
         Profiles.Remove(profile);
+        OnPropertyChanged(nameof(Groups));
         SelectedProfile = null;
     }
 

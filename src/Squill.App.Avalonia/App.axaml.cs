@@ -15,6 +15,7 @@ using Squill.Platform.Settings;
 using Squill.Presentation.Editor;
 using Squill.Platform.Storage;
 using Squill.App.Avalonia.Controls;
+using Squill.App.Avalonia.Views;
 
 namespace Squill.App.Avalonia;
 
@@ -44,7 +45,9 @@ public sealed partial class App : Application
             var dataDir = Environment.GetEnvironmentVariable("SQUILL_DATA_DIR");
             _paths = new AppPaths(string.IsNullOrEmpty(dataDir) ? null : dataDir);
             Services = AppComposition.Create(platform, _paths, new JsonDiagramLayoutStore(_paths), ErDiagramCanvas.MeasureText);
-            desktop.MainWindow = GridBench.IsRequested(desktop.Args) ? GridBench.Start(desktop) : CreateMainWindow(Services);
+            desktop.MainWindow = GridBench.IsRequested(desktop.Args) ? GridBench.Start(desktop)
+                : Environment.GetEnvironmentVariable("SQUILL_STYLE_GALLERY") == "1" ? new StyleGallery()
+                : CreateMainWindow(Services);
         }
 
         base.OnFrameworkInitializationCompleted();

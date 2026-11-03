@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Squill.App.WinUI.Views;
 using Squill.Core;
+using Squill.Presentation.Localization;
 #endif
 
 namespace Squill.App.WinUI;
@@ -23,13 +24,18 @@ public sealed partial class MainWindow
 
     partial void AttachTerminals(WorkspaceViewModel workspace)
     {
-        var menu = new MenuFlyout();
-        menu.Opening += (_, _) => FillTerminalMenu(menu, workspace);
-        Toolbar.Children.Add(new Button { Content = "New terminal", Flyout = menu });
+        var menu = new MenuFlyoutSubItem { Text = UiText.Get("menu.newTerminal") };
+        FillTerminalMenu(menu, workspace);
+        workspace.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(WorkspaceViewModel.ActiveSession))
+                FillTerminalMenu(menu, workspace);
+        };
+        ToolsMenu.Items.Add(menu);
         workspace.Terminals.CollectionChanged += OnTerminalsChanged;
     }
 
-    private static void FillTerminalMenu(MenuFlyout menu, WorkspaceViewModel workspace)
+    private static void FillTerminalMenu(MenuFlyoutSubItem menu, WorkspaceViewModel workspace)
     {
         menu.Items.Clear();
         AddTerminalEntry(menu, workspace, "Local shell", null);
@@ -37,7 +43,7 @@ public sealed partial class MainWindow
             AddTerminalEntry(menu, workspace, $"{session.Profile.Name} CLI", session.Profile);
     }
 
-    private static void AddTerminalEntry(MenuFlyout menu, WorkspaceViewModel workspace, string text, ConnectionProfile? profile)
+    private static void AddTerminalEntry(MenuFlyoutSubItem menu, WorkspaceViewModel workspace, string text, ConnectionProfile? profile)
     {
         var entry = new MenuFlyoutItem { Text = text };
         entry.Click += (_, _) => workspace.NewTerminalCommand.Execute(profile);
@@ -58,7 +64,7 @@ public sealed partial class MainWindow
         foreach (var added in e.NewItems?.OfType<TerminalTabViewModel>() ?? [])
         {
             var view = new TerminalTabView(added) { Visibility = Visibility.Collapsed };
-            var item = new TabViewItem { Header = added.Title, Tag = added };
+            var item = TabHeader.Create(added);
             _terminals[added] = (item, view);
             TerminalArea.Children.Add(view);
             Tabs.TabItems.Add(item);

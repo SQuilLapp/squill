@@ -1,0 +1,149 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Squill.App.Avalonia.Views.StyleGallery"
+        Title="Style gallery" Width="1100" Height="900"
+        Background="{DynamicResource SquillBgBaseBrush}" Foreground="{DynamicResource SquillFgBrush}">
+  <ScrollViewer>
+    <StackPanel Margin="24" Spacing="20">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <TextBlock Classes="caps" VerticalAlignment="Center" Text="THEME" />
+        <Button Name="LightButton" Content="Light" Click="OnLight" />
+        <Button Name="DarkButton" Content="Dark" Click="OnDark" />
+      </StackPanel>
+
+      <TextBlock Classes="caps" Text="BUTTONS (normal / disabled)" />
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Name="PrimaryButton" Classes="primary" Content="Exécuter" />
+        <Button Name="PrimaryDisabledButton" Classes="primary" IsEnabled="False" Content="Exécuter" />
+        <Button Name="PlainDisabledButton" Content="Arrêter" IsEnabled="False" />
+        <Button Content="Expliquer" />
+        <Button Classes="outline-success" Content="Valider" />
+        <Button Classes="outline-success" IsEnabled="False" Content="Valider" />
+        <Button Classes="outline-danger" Content="Annuler" />
+        <Button Classes="outline-danger" IsEnabled="False" Content="Annuler" />
+        <Button Classes="ghost" Content="Ignorer" />
+        <Button Classes="icon" Content="+" />
+        <Button Classes="icon" IsEnabled="False" Content="+" />
+        <Button Classes="primary">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="Exécuter" />
+            <TextBlock Classes="mono" Opacity="0.7" FontSize="11" VerticalAlignment="Center" Text="Ctrl+Entrée" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+
+      <TextBlock Classes="caps" Text="FIELDS" />
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <TextBox Width="220" PlaceholderText="Nom de la connexion" />
+        <TextBox Width="220" Text="localhost" />
+        <TextBox Width="220" IsEnabled="False" Text="Désactivé" />
+        <TextBox Classes="search" Width="260" PlaceholderText="Rechercher objets, fichiers, actions...">
+          <TextBox.InnerLeftContent>
+            <TextBlock Margin="8,0,4,0" VerticalAlignment="Center" Foreground="{DynamicResource SquillFg3Brush}" Text="⌕" />
+          </TextBox.InnerLeftContent>
+          <TextBox.InnerRightContent>
+            <Border Classes="kbd" Margin="0,0,6,0"><TextBlock Text="Ctrl+K" /></Border>
+          </TextBox.InnerRightContent>
+        </TextBox>
+        <TextBox Classes="mono" Width="160" Text="SELECT 1;" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <ComboBox Width="220" SelectedIndex="0">
+          <ComboBoxItem Content="PostgreSQL" />
+          <ComboBoxItem Content="MySQL" />
+        </ComboBox>
+        <ComboBox Width="220" IsEnabled="False" SelectedIndex="0">
+          <ComboBoxItem Content="Désactivé" />
+        </ComboBox>
+      </StackPanel>
+
+      <TextBlock Classes="caps" Text="CHECK, RADIO, SWITCH" />
+      <StackPanel Orientation="Horizontal" Spacing="16">
+        <CheckBox Content="Types" IsChecked="True" />
+        <CheckBox Content="Commentaires" />
+        <CheckBox Content="Désactivé" IsEnabled="False" />
+        <CheckBox Content="Désactivé" IsEnabled="False" IsChecked="True" />
+        <RadioButton GroupName="r1" Content="Clair" IsChecked="True" />
+        <RadioButton GroupName="r1" Content="Sombre" />
+        <RadioButton GroupName="r2" Content="Désactivé" IsEnabled="False" />
+        <ToggleSwitch IsChecked="True" OnContent="" OffContent="" />
+        <ToggleSwitch OnContent="" OffContent="" />
+        <ToggleSwitch IsEnabled="False" OnContent="" OffContent="" />
+      </StackPanel>
+
+      <TextBlock Classes="caps" Text="TABS, SEGMENTED CONTROL" />
+      <StackPanel Orientation="Horizontal" Spacing="32">
+        <TabControl Width="360" Height="90">
+          <TabItem Header="Général"><TextBlock Margin="0,8" Text="Contenu" /></TabItem>
+          <TabItem Header="SSH"><TextBlock Margin="0,8" Text="SSH" /></TabItem>
+          <TabItem Header="Désactivé" IsEnabled="False" />
+        </TabControl>
+        <StackPanel Classes="segmented" VerticalAlignment="Top">
+          <RadioButton Classes="segment" GroupName="seg" Content="En couches" IsChecked="True" />
+          <RadioButton Classes="segment" GroupName="seg" Content="Orthogonal" />
+          <RadioButton Classes="segment" GroupName="seg" Content="Libre" />
+        </StackPanel>
+      </StackPanel>
+
+      <TextBlock Classes="caps" Text="LIST, MENU, PROGRESS" />
+      <StackPanel Orientation="Horizontal" Spacing="32">
+        <ListBox Width="220" SelectedIndex="1">
+          <ListBoxItem Content="clients" />
+          <ListBoxItem Content="commandes" />
+          <ListBoxItem Content="factures" IsEnabled="False" />
+        </ListBox>
+        <Menu VerticalAlignment="Top">
+          <MenuItem Header="Fichier">
+            <MenuItem Header="Nouvelle requête" InputGesture="Ctrl+N" />
+            <MenuItem Header="Ouvrir" IsEnabled="False" />
+          </MenuItem>
+          <MenuItem Header="Édition" />
+        </Menu>
+        <Button Content="Exporter ⌄">
+          <Button.Flyout>
+            <MenuFlyout>
+              <MenuItem Header="CSV" />
+              <MenuItem Header="JSON" />
+            </MenuFlyout>
+          </Button.Flyout>
+        </Button>
+        <Button Content="Survoler" ToolTip.Tip="Info-bulle" />
+        <ProgressBar Width="200" Value="60" VerticalAlignment="Top" Margin="0,12,0,0" />
+      </StackPanel>
+
+      <TextBlock Classes="caps" Text="BADGES, ENGINE BADGES, KEYBOARD CHIP" />
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Border Classes="badge"><TextBlock Text="TAG" /></Border>
+        <Border Classes="badge info"><TextBlock Text="INFO" /></Border>
+        <Border Classes="badge success"><TextBlock Text="SUCCÈS" /></Border>
+        <Border Classes="badge warning"><TextBlock Text="ALERTE" /></Border>
+        <Border Classes="badge danger"><TextBlock Text="ERREUR" /></Border>
+        <Border Classes="badge env-prod"><TextBlock Text="PRODUCTION" /></Border>
+        <Border Classes="badge env-staging"><TextBlock Text="STAGING" /></Border>
+        <Border Classes="badge env-dev"><TextBlock Text="DEV" /></Border>
+        <Border Classes="badge env-local"><TextBlock Text="LOCAL" /></Border>
+        <Border Classes="engine postgres"><TextBlock Text="PG" /></Border>
+        <Border Classes="engine mysql"><TextBlock Text="My" /></Border>
+        <Border Classes="engine sqlserver"><TextBlock Text="MS" /></Border>
+        <Border Classes="engine sqlite"><TextBlock Text="SL" /></Border>
+        <Border Classes="kbd"><TextBlock Text="Ctrl+K" /></Border>
+      </StackPanel>
+
+      <TextBlock Classes="caps" Text="CARD, DIALOG FRAME" />
+      <StackPanel Orientation="Horizontal" Spacing="24">
+        <Border Classes="card" Width="300">
+          <TextBlock FontWeight="SemiBold" Text="Tunnel SSH" />
+        </Border>
+        <Border Classes="dialog" Width="300">
+          <StackPanel Spacing="12">
+            <TextBlock FontSize="{DynamicResource SquillFontSizeSubtitle}" FontWeight="SemiBold" Text="Enregistrer ?" />
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+              <Button Content="Annuler" />
+              <Button Classes="primary" Content="Enregistrer" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</Window>

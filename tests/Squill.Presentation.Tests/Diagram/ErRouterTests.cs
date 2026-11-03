@@ -6,7 +6,7 @@ namespace Squill.Presentation.Tests.Diagram;
 
 public sealed class ErRouterTests
 {
-    private static readonly ErLayoutOptions Opts = new(s => s.Length * 7);
+    private static readonly ErLayoutOptions Opts = new(s => s.Length * 7, HeaderHeight: 28, RowHeight: 20, MinWidth: 160);
 
     private static ErEntity E(string name) =>
         new(name, null, name, TableKind.Table, [.. Enumerable.Range(0, 3).Select(i => new ErColumn("c" + i, "int", i == 0, false, false))]);

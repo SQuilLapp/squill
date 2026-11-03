@@ -69,6 +69,13 @@ public sealed class QueryTabEditingTests : IAsyncLifetime
         Assert.NotSame(result.Grid, result.DisplayGrid);
     }
 
+    [Fact]
+    public async Task CountText_IsTheLoadedRowCount()
+    {
+        var result = await RunAsync("SELECT * FROM t");
+        Assert.Equal($"{result.Grid!.RowCount:N0}", result.CountText);
+    }
+
     [Theory]
     [InlineData("SELECT t.id FROM t JOIN nopk ON nopk.x = t.id")]
     [InlineData("SELECT * FROM nopk")]
