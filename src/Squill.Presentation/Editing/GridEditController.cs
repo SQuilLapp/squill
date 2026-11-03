@@ -201,6 +201,27 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
     /// <returns><see langword="true"/> when the column can be edited.</returns>
     public bool IsColumnEditable(int column) => column >= 0 && column < editor.Grid.Columns.Count && editor.Target.IsEditable(column);
 
+    /// <summary>Returns whether a result column is part of the target table's primary key.</summary>
+    /// <param name="column">Result column index.</param>
+    /// <returns><see langword="true"/> for a key column.</returns>
+    public bool IsKeyColumn(int column) =>
+        editor.Target.ByOrdinal(column)?.Definition.Name is { } name
+        && editor.Target.KeyColumns.Contains(name, StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Gets the placeholder drawn in a cell of a pending inserted row that the user has not set.</summary>
+    /// <param name="row">Grid row index.</param>
+    /// <param name="column">Result column index.</param>
+    /// <returns><c>(auto)</c> for a generated column, <c>DEFAULT</c> for a column with a default, otherwise <see langword="null"/>.</returns>
+    public string? GetPlaceholder(long row, int column)
+    {
+        if (GetRowState(row) != RowState.Inserted || IsCellModified(row, column) || editor.Target.ByOrdinal(column)?.Definition is not { } def)
+        {
+            return null;
+        }
+
+        return def.IsAutoIncrement ? "(auto)" : def.DefaultExpression is null ? null : "DEFAULT";
+    }
+
     private List<long> SelectedRows()
     {
         if (!selection.HasSelection)

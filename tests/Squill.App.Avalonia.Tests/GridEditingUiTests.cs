@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Squill.App.Avalonia.Controls;
 using Squill.Core;
@@ -213,5 +214,29 @@ public sealed class GridEditingUiTests
         Assert.Contains(RowState.Inserted, states);
         var bitmap = new RenderTargetBitmap(new PixelSize(600, 300));
         bitmap.Render(f.View);
+
+        var variant = f.Window.ActualThemeVariant;
+        Color Token(string key) => Application.Current!.TryFindResource(key, variant, out var v) && v is ISolidColorBrush b ? b.Color : default;
+        var rowHeight = f.View.Canvas.Layout.RowHeight;
+        var barY = (int)(f.View.Canvas.Layout.HeaderHeight + (rowHeight * 4) + (rowHeight / 2));
+        Assert.Equal(Token("SquillSuccessBrush"), Pixel(bitmap, 1, barY));
+        barY = (int)(f.View.Canvas.Layout.HeaderHeight + rowHeight + (rowHeight / 2));
+        Assert.Equal(Token("SquillDangerBrush"), Pixel(bitmap, 1, barY));
     });
+
+    private static Color Pixel(RenderTargetBitmap bitmap, int x, int y)
+    {
+        var buffer = new byte[4];
+        var handle = System.Runtime.InteropServices.GCHandle.Alloc(buffer, System.Runtime.InteropServices.GCHandleType.Pinned);
+        try
+        {
+            bitmap.CopyPixels(new PixelRect(x, y, 1, 1), handle.AddrOfPinnedObject(), 4, 4);
+        }
+        finally
+        {
+            handle.Free();
+        }
+
+        return Color.FromRgb(buffer[2], buffer[1], buffer[0]);
+    }
 }

@@ -1,6 +1,6 @@
 # P9-14 - Avalonia head: grid canvas drawing
 
-Status: todo
+Status: done
 Depends on: P9-13, P9-02
 
 ## Goal
@@ -17,7 +17,7 @@ The grid canvas draws like M05: fonts, header with types, row states, number col
 - Column resizing, column menu, filters, the value panel (no feature).
 
 ## Tasks
-- [ ] Update the drawing code and the existing grid tests (headless render test: a 3-row grid with each state renders without exception and pixel samples at the state-bar positions equal the expected token colors).
+- [x] Update the drawing code and the existing grid tests (headless render test: a 3-row grid with each state renders without exception and pixel samples at the state-bar positions equal the expected token colors).
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.

@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
+using Squill.Core;
 using Squill.Presentation;
 using Squill.Presentation.Editing;
 using Squill.Presentation.Results;
@@ -16,6 +17,11 @@ public sealed class DataGridCanvas : Control
     private const int SampleRows = 100;
     private const double CellPadding = 8;
     private const double ResizeTolerance = 4;
+    private const double StateBarWidth = 3;
+    private const double KeyGlyphWidth = 14;
+
+    /// <summary>Width of the row-number column drawn left of the data columns.</summary>
+    public const double GutterWidth = 36;
 
     /// <summary>Identifies the <see cref="DataSource"/> property.</summary>
     public static readonly StyledProperty<IGridDataSource?> DataSourceProperty =
@@ -29,10 +35,9 @@ public sealed class DataGridCanvas : Control
     public static readonly StyledProperty<GridSelection> SelectionProperty =
         AvaloniaProperty.Register<DataGridCanvas, GridSelection>(nameof(Selection), new GridSelection());
 
-    private readonly LruCache<(string Text, IBrush Brush, bool Struck), FormattedText> _text = new(4096);
+    private readonly LruCache<(string Text, IBrush Brush, Face Face, bool Struck), FormattedText> _text = new(4096);
     private readonly GridLayout _layout;
-    private readonly Typeface _typeface = new(FontFamily.Default);
-    private readonly double _fontSize = 13;
+    private Faces? _faces;
     private IGridDataSource? _source;
     private double _scrollX;
     private double _scrollY;
@@ -52,6 +57,7 @@ public sealed class DataGridCanvas : Control
         ActualThemeVariantChanged += (_, _) =>
         {
             _brushes = null;
+            _faces = null;
             _text.Clear();
             InvalidateVisual();
         };
@@ -97,11 +103,11 @@ public sealed class DataGridCanvas : Control
         }
 
         var rect = new Rect(
-            _layout.ColumnLeft(column) - _scrollX,
+            GutterWidth + _layout.ColumnLeft(column) - _scrollX,
             _layout.HeaderHeight + (row * _layout.RowHeight) - _scrollY,
             _layout.ColumnWidth(column),
             _layout.RowHeight);
-        var body = new Rect(0, _layout.HeaderHeight, Bounds.Width, BodyHeight);
+        var body = new Rect(GutterWidth, _layout.HeaderHeight, Math.Max(0, Bounds.Width - GutterWidth), BodyHeight);
         return body.Contains(rect.TopLeft) && body.Contains(new Point(rect.Left, rect.Bottom - 0.5)) ? rect : null;
     }
 
@@ -132,7 +138,7 @@ public sealed class DataGridCanvas : Control
     public double MaxScrollY => _layout.MaxScrollY(_source?.RowCount ?? 0, BodyHeight);
 
     /// <summary>Gets the highest valid horizontal scroll offset.</summary>
-    public double MaxScrollX => _layout.MaxScrollX(Bounds.Width);
+    public double MaxScrollX => _layout.MaxScrollX(Bounds.Width - GutterWidth);
 
     /// <inheritdoc />
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -179,70 +185,164 @@ public sealed class DataGridCanvas : Control
         var source = _source;
         if (source is not null && _layout.ColumnCount > 0)
         {
-            var (firstCol, endCol) = _layout.VisibleColumns(_scrollX, width);
+            var edit = EditController;
+            var dataWidth = Math.Max(0, width - GutterWidth);
+            var (firstCol, endCol) = _layout.VisibleColumns(_scrollX, dataWidth);
             var (firstRow, endRow) = _layout.VisibleRows(_scrollY, BodyHeight, source.RowCount);
             var rowHeight = _layout.RowHeight;
             var headerHeight = _layout.HeaderHeight;
-            for (var col = firstCol; col < endCol; col++)
+            using (context.PushClip(new Rect(GutterWidth, 0, dataWidth, Bounds.Height)))
             {
-                var left = _layout.ColumnLeft(col) - _scrollX;
-                var colWidth = _layout.ColumnWidth(col);
-                var info = source.Columns[col];
-                using (context.PushClip(new Rect(left, 0, colWidth, Bounds.Height)))
+                for (var col = firstCol; col < endCol; col++)
                 {
-                    for (var row = firstRow; row < endRow; row++)
+                    var left = GutterWidth + _layout.ColumnLeft(col) - _scrollX;
+                    var colWidth = _layout.ColumnWidth(col);
+                    var info = source.Columns[col];
+                    using (context.PushClip(new Rect(left, 0, colWidth, Bounds.Height)))
                     {
-                        var top = headerHeight + (row * rowHeight) - _scrollY;
-                        var edit = EditController;
-                        var state = edit?.GetRowState(row) ?? RowState.Unchanged;
-                        if (state != RowState.Unchanged)
+                        for (var row = firstRow; row < endRow; row++)
                         {
-                            context.FillRectangle(state == RowState.Inserted ? b.SuccessSoft : state == RowState.Deleted ? b.DangerSoft : b.AccentSoft, new Rect(left, top, colWidth, rowHeight));
+                            DrawCell(context, b, source, edit, row, col, info, left, headerHeight + (row * rowHeight) - _scrollY, colWidth, rowHeight);
                         }
 
-                        if (state != RowState.Inserted && edit?.IsCellModified(row, col) == true)
-                        {
-                            context.FillRectangle(b.AccentSoft, new Rect(left, top, colWidth, rowHeight));
-                        }
-
-                        if (Selection.Contains(row, col, source.RowCount))
-                        {
-                            context.FillRectangle(b.Selection, new Rect(left, top, colWidth, rowHeight));
-                        }
-
-                        var value = CellFormatter.Format(source.GetCell(row, col), info);
-                        var muted = value is null || (edit is not null && !edit.IsColumnEditable(col));
-                        var text = Text(value ?? "NULL", muted ? b.Muted : b.Text, state == RowState.Deleted);
-                        context.DrawText(text, new Point(left + CellPadding, top + ((rowHeight - text.Height) / 2)));
-                        if (edit?.IsCellInvalid(row, col) == true)
-                        {
-                            context.DrawRectangle(null, b.DangerPen, new Rect(left + 0.5, top + 0.5, colWidth - 1, rowHeight - 1));
-                        }
+                        DrawHeader(context, b, edit, col, info, left, colWidth, headerHeight);
                     }
 
-                    context.FillRectangle(b.Raised, new Rect(left, 0, colWidth, headerHeight));
-                    if (Selection.ContainsColumn(col))
-                    {
-                        context.FillRectangle(b.Selection, new Rect(left, 0, colWidth, headerHeight));
-                    }
-
-                    var header = Text(info.Name, b.HeaderText);
-                    context.DrawText(header, new Point(left + CellPadding, (headerHeight - header.Height) / 2));
+                    context.DrawLine(b.BorderSubtle, new Point(left + colWidth - 0.5, 0), new Point(left + colWidth - 0.5, Bounds.Height));
                 }
 
-                context.DrawLine(b.Border, new Point(left + colWidth - 0.5, 0), new Point(left + colWidth - 0.5, Bounds.Height));
+                for (var row = firstRow; row < endRow; row++)
+                {
+                    var y = headerHeight + ((row + 1) * rowHeight) - _scrollY - 0.5;
+                    context.DrawLine(b.BorderSubtle, new Point(GutterWidth, y), new Point(width, y));
+                }
             }
 
-            for (var row = firstRow; row < endRow; row++)
-            {
-                var y = headerHeight + ((row + 1) * rowHeight) - _scrollY - 0.5;
-                context.DrawLine(b.BorderSubtle, new Point(0, y), new Point(width, y));
-            }
+            DrawGutter(context, b, edit, firstRow, endRow);
+        }
+        else
+        {
+            context.FillRectangle(b.Raised, new Rect(0, 0, width, _layout.HeaderHeight));
         }
 
         context.DrawLine(b.Border, new Point(0, _layout.HeaderHeight - 0.5), new Point(width, _layout.HeaderHeight - 0.5));
         LastRenderMs = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
     }
+
+    private void DrawCell(DrawingContext context, GridBrushes b, IGridDataSource source, GridEditController? edit, long row, int col, ColumnInfo info, double left, double top, double colWidth, double rowHeight)
+    {
+        var state = edit?.GetRowState(row) ?? RowState.Unchanged;
+        var cell = new Rect(left, top, colWidth, rowHeight);
+        if (state == RowState.Inserted)
+        {
+            context.FillRectangle(b.CellAdded, cell);
+        }
+        else if (state == RowState.Deleted)
+        {
+            context.FillRectangle(b.CellDeleted, cell);
+        }
+        else if (edit?.IsCellModified(row, col) == true)
+        {
+            context.FillRectangle(b.CellModified, cell);
+        }
+
+        if (Selection.Contains(row, col, source.RowCount))
+        {
+            context.FillRectangle(b.Selection, cell);
+        }
+
+        var value = CellFormatter.Format(source.GetCell(row, col), info);
+        var placeholder = edit?.GetPlaceholder(row, col);
+        var face = Face.Mono;
+        var brush = b.Text;
+        if (placeholder is not null)
+        {
+            value = placeholder;
+            face = Face.MonoItalic;
+            brush = b.Muted;
+        }
+        else if (value is null)
+        {
+            value = "NULL";
+            face = Face.MonoItalic;
+            brush = b.CellNull;
+        }
+        else if (edit is not null && !edit.IsColumnEditable(col))
+        {
+            brush = b.Muted;
+        }
+
+        var text = Text(value, brush, face, state == RowState.Deleted);
+        var x = IsNumeric(info) && face == Face.Mono ? Math.Max(left + CellPadding, left + colWidth - CellPadding - text.Width) : left + CellPadding;
+        context.DrawText(text, new Point(x, top + ((rowHeight - text.Height) / 2)));
+        if (edit?.IsCellInvalid(row, col) == true)
+        {
+            context.DrawRectangle(null, b.DangerPen, new Rect(left + 0.5, top + 0.5, colWidth - 1, rowHeight - 1));
+        }
+    }
+
+    private void DrawHeader(DrawingContext context, GridBrushes b, GridEditController? edit, int col, ColumnInfo info, double left, double colWidth, double headerHeight)
+    {
+        context.FillRectangle(b.Raised, new Rect(left, 0, colWidth, headerHeight));
+        if (Selection.ContainsColumn(col))
+        {
+            context.FillRectangle(b.Selection, new Rect(left, 0, colWidth, headerHeight));
+        }
+
+        var x = left + CellPadding;
+        if (edit?.IsKeyColumn(col) == true)
+        {
+            var cy = headerHeight / 2;
+            var diamond = new StreamGeometry();
+            using (var c = diamond.Open())
+            {
+                c.BeginFigure(new Point(x + 4, cy - 4), true);
+                c.LineTo(new Point(x + 8, cy));
+                c.LineTo(new Point(x + 4, cy + 4));
+                c.LineTo(new Point(x, cy));
+                c.EndFigure(true);
+            }
+
+            context.DrawGeometry(b.Accent, null, diamond);
+            x += KeyGlyphWidth;
+        }
+
+        var name = Text(info.Name, b.HeaderText, Face.UiSemibold);
+        context.DrawText(name, new Point(x, (headerHeight - name.Height) / 2));
+        var type = Text(info.DataTypeName, b.Muted, Face.MonoSmall);
+        context.DrawText(type, new Point(x + name.Width + 6, (headerHeight - type.Height) / 2));
+    }
+
+    private void DrawGutter(DrawingContext context, GridBrushes b, GridEditController? edit, long firstRow, long endRow)
+    {
+        var rowHeight = _layout.RowHeight;
+        var headerHeight = _layout.HeaderHeight;
+        using (context.PushClip(new Rect(0, 0, GutterWidth, Bounds.Height)))
+        {
+            context.FillRectangle(b.Raised, new Rect(0, 0, GutterWidth, Bounds.Height));
+            for (var row = firstRow; row < endRow; row++)
+            {
+                var top = headerHeight + (row * rowHeight) - _scrollY;
+                var state = edit?.GetRowState(row) ?? RowState.Unchanged;
+                var label = state switch { RowState.Inserted => "+", RowState.Deleted => "-", _ => (row + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) };
+                var brush = state switch { RowState.Inserted => b.Success, RowState.Deleted => b.Danger, _ => b.Muted };
+                var text = Text(label, brush, Face.MonoSmall);
+                context.DrawText(text, new Point(GutterWidth - CellPadding - text.Width, top + ((rowHeight - text.Height) / 2)));
+                if (state is RowState.Inserted or RowState.Deleted)
+                {
+                    context.FillRectangle(state == RowState.Inserted ? b.Success : b.Danger, new Rect(0, top, StateBarWidth, rowHeight));
+                }
+
+                context.DrawLine(b.BorderSubtle, new Point(0, top + rowHeight - 0.5), new Point(GutterWidth, top + rowHeight - 0.5));
+            }
+
+            context.FillRectangle(b.Raised, new Rect(0, 0, GutterWidth, headerHeight));
+            context.DrawLine(b.BorderSubtle, new Point(GutterWidth - 0.5, 0), new Point(GutterWidth - 0.5, Bounds.Height));
+        }
+    }
+
+    private static bool IsNumeric(ColumnInfo info) =>
+        Type.GetTypeCode(Nullable.GetUnderlyingType(info.ClrType) ?? info.ClrType) is >= TypeCode.SByte and <= TypeCode.Decimal;
 
     /// <inheritdoc />
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
@@ -281,7 +381,7 @@ public sealed class DataGridCanvas : Control
             return;
         }
 
-        var column = _layout.ResizeHandleAt(point.X, _scrollX, ResizeTolerance);
+        var column = _layout.ResizeHandleAt(point.X - GutterWidth, _scrollX, ResizeTolerance);
         if (column >= 0)
         {
             _resizeColumn = column;
@@ -292,7 +392,7 @@ public sealed class DataGridCanvas : Control
             return;
         }
 
-        var clicked = _layout.ColumnAt(point.X + _scrollX);
+        var clicked = point.X < GutterWidth ? -1 : _layout.ColumnAt(point.X - GutterWidth + _scrollX);
         if (clicked >= 0)
         {
             Selection.SelectColumn(clicked, shift);
@@ -321,7 +421,7 @@ public sealed class DataGridCanvas : Control
             return;
         }
 
-        var onHandle = point.Y <= _layout.HeaderHeight && _layout.ResizeHandleAt(point.X, _scrollX, ResizeTolerance) >= 0;
+        var onHandle = point.Y <= _layout.HeaderHeight && _layout.ResizeHandleAt(point.X - GutterWidth, _scrollX, ResizeTolerance) >= 0;
         Cursor = onHandle ? new Cursor(StandardCursorType.SizeWestEast) : null;
     }
 
@@ -473,10 +573,10 @@ public sealed class DataGridCanvas : Control
             return;
         }
 
-        var column = _layout.ColumnAt(point.X + _scrollX);
+        var column = _layout.ColumnAt(point.X - GutterWidth + _scrollX);
         if (column < 0)
         {
-            column = point.X + _scrollX < 0 ? 0 : source.Columns.Count - 1;
+            column = point.X - GutterWidth + _scrollX < 0 ? 0 : source.Columns.Count - 1;
         }
 
         var row = Math.Clamp((long)((point.Y - _layout.HeaderHeight + _scrollY) / _layout.RowHeight), 0, source.RowCount - 1);
@@ -490,7 +590,8 @@ public sealed class DataGridCanvas : Control
         var y = top < _scrollY ? top : top + _layout.RowHeight > _scrollY + BodyHeight ? top + _layout.RowHeight - BodyHeight : _scrollY;
         var left = _layout.ColumnLeft(column);
         var right = left + _layout.ColumnWidth(column);
-        var x = left < _scrollX ? left : right > _scrollX + Bounds.Width ? right - Bounds.Width : _scrollX;
+        var visibleWidth = Bounds.Width - GutterWidth;
+        var x = left < _scrollX ? left : right > _scrollX + visibleWidth ? right - visibleWidth : _scrollX;
         SetScroll(x, y);
     }
 
@@ -520,11 +621,12 @@ public sealed class DataGridCanvas : Control
         var widths = new double[source.Columns.Count];
         for (var col = 0; col < widths.Length; col++)
         {
-            var max = new FormattedText(source.Columns[col].Name, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _typeface, _fontSize, brush).Width;
+            var info = source.Columns[col];
+            var max = Text(info.Name, brush, Face.UiSemibold).Width + 6 + Text(info.DataTypeName, brush, Face.MonoSmall).Width + KeyGlyphWidth;
             for (var row = 0; row < sample; row++)
             {
-                var value = CellFormatter.Format(source.GetCell(row, col), source.Columns[col]) ?? "NULL";
-                max = Math.Max(max, Text(value, brush).Width);
+                var value = CellFormatter.Format(source.GetCell(row, col), info) ?? "NULL";
+                max = Math.Max(max, Text(value, brush, Face.Mono).Width);
             }
 
             widths[col] = max + (2 * CellPadding);
@@ -534,17 +636,25 @@ public sealed class DataGridCanvas : Control
         _measuredRows = sample;
     }
 
-    private FormattedText Text(string text, IBrush brush, bool struck = false)
+    private FormattedText Text(string text, IBrush brush, Face face, bool struck = false)
     {
-        if (!_text.TryGet((text, brush, struck), out var formatted))
+        if (!_text.TryGet((text, brush, face, struck), out var formatted))
         {
-            formatted = new FormattedText(text, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _typeface, _fontSize, brush);
+            var faces = _faces ??= ResolveFaces();
+            var (typeface, size) = face switch
+            {
+                Face.UiSemibold => (faces.UiSemibold, 13d),
+                Face.MonoSmall => (faces.Mono, 11d),
+                Face.MonoItalic => (faces.MonoItalic, faces.MonoSize),
+                _ => (faces.Mono, faces.MonoSize),
+            };
+            formatted = new FormattedText(text, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, size, brush);
             if (struck)
             {
                 formatted.SetTextDecorations(TextDecorations.Strikethrough);
             }
 
-            _text.Add((text, brush, struck), formatted);
+            _text.Add((text, brush, face, struck), formatted);
         }
 
         return formatted;
@@ -573,10 +683,28 @@ public sealed class DataGridCanvas : Control
         new Pen(ResolveBrush("SquillBorderBrush")),
         new Pen(ResolveBrush("SquillBorderSubtleBrush")),
         ResolveBrush("SquillSelectionBrush"),
-        ResolveBrush("SquillAccentSoftBrush"),
-        ResolveBrush("SquillSuccessSoftBrush"),
-        ResolveBrush("SquillDangerSoftBrush"),
+        ResolveBrush("SquillAccentBrush"),
+        ResolveBrush("SquillSuccessBrush"),
+        ResolveBrush("SquillDangerBrush"),
+        ResolveBrush("SquillCellNullBrush"),
+        ResolveBrush("SquillCellModifiedBrush"),
+        ResolveBrush("SquillCellAddedBrush"),
+        ResolveBrush("SquillCellDeletedBrush"),
         new Pen(ResolveBrush("SquillDangerBrush"), 1.5));
+
+    private Faces ResolveFaces()
+    {
+        var ui = ResolveFont("SquillFontUi");
+        var mono = ResolveFont("SquillFontMono");
+        return new Faces(
+            new Typeface(ui, FontStyle.Normal, FontWeight.SemiBold),
+            new Typeface(mono),
+            new Typeface(mono, FontStyle.Italic),
+            ResolveDouble("SquillFontSizeMonoGrid", 12));
+    }
+
+    private FontFamily ResolveFont(string key) =>
+        this.TryFindResource(key, ActualThemeVariant, out var value) && value is FontFamily family ? family : FontFamily.Default;
 
     private IBrush ResolveBrush(string key) =>
         this.TryFindResource(key, ActualThemeVariant, out var value) && value is IBrush brush ? brush : FallbackBrush;
@@ -586,5 +714,15 @@ public sealed class DataGridCanvas : Control
 
     private static readonly IBrush FallbackBrush = Brushes.Gray;
 
-    private sealed record GridBrushes(IBrush Surface, IBrush Raised, IBrush Text, IBrush HeaderText, IBrush Muted, Pen Border, Pen BorderSubtle, IBrush Selection, IBrush AccentSoft, IBrush SuccessSoft, IBrush DangerSoft, Pen DangerPen);
+    private enum Face
+    {
+        Mono,
+        MonoItalic,
+        MonoSmall,
+        UiSemibold,
+    }
+
+    private sealed record Faces(Typeface UiSemibold, Typeface Mono, Typeface MonoItalic, double MonoSize);
+
+    private sealed record GridBrushes(IBrush Surface, IBrush Raised, IBrush Text, IBrush HeaderText, IBrush Muted, Pen Border, Pen BorderSubtle, IBrush Selection, IBrush Accent, IBrush Success, IBrush Danger, IBrush CellNull, IBrush CellModified, IBrush CellAdded, IBrush CellDeleted, Pen DangerPen);
 }
