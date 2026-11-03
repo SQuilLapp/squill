@@ -37,7 +37,7 @@ public sealed partial class QueryTabView : UserControl
     private readonly Border _snippetsTabBar = new() { BorderThickness = new Thickness(0, 0, 0, 2) };
     private readonly DataGridView _grid = new();
     private readonly TextBlock _message = new() { Margin = new Thickness(12), TextWrapping = TextWrapping.Wrap, Foreground = Brush("SquillFgBrush"), Visibility = Visibility.Collapsed };
-    private readonly TextBlock _empty = new() { Margin = new Thickness(12), Text = "Run a query to see results here.", Foreground = Brush("SquillFg3Brush") };
+    private readonly TextBlock _empty = new() { Margin = new Thickness(12), Text = UiText.Get("results.empty"), Foreground = Brush("SquillFg3Brush") };
     private readonly ProgressBar _progress = new() { IsIndeterminate = true, Height = 2, Visibility = Visibility.Collapsed };
     private readonly StackPanel _resultTabs = new() { Orientation = Orientation.Horizontal, Spacing = 2 };
     private readonly Button _exportButton = new() { Height = 26, MinHeight = 26, Padding = new Thickness(10, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center };
