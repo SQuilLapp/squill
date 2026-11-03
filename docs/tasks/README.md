@@ -230,6 +230,21 @@ Depends on: <card ids, ranges allowed>
 | [P11-38](phase-11/P11-38-verify-mysql.md) | End-to-end verification: MySQL | P11-37, P11-18, P11-24, P11-27 ... P11-32 | todo |
 | [P11-39](phase-11/P11-39-verify-sqlserver.md) | End-to-end verification: SQL Server | P11-37, P11-19, P11-24, P11-27 ... P11-32 | todo |
 | [P11-40](phase-11/P11-40-docs-and-adr.md) | Documentation: engine parity ADR 0008, README and architecture note | P11-36 ... P11-39 | todo |
+| [P12-01](phase-12/P12-01-core-variable-model-resolver.md) | Core: variable model and resolver | none | todo |
+| [P12-02](phase-12/P12-02-sql-variable-scanner.md) | Sql: variable scanner, masking and highlight kind | P12-01 | todo |
+| [P12-03](phase-12/P12-03-platform-variable-store.md) | Platform: variable store and secret keys | P12-01 | todo |
+| [P12-04](phase-12/P12-04-presentation-variable-service.md) | Presentation: variable service | P12-01, P12-03 | todo |
+| [P12-05](phase-12/P12-05-presentation-run-substitution.md) | Presentation: substitution at run time | P12-02, P12-04 | todo |
+| [P12-06](phase-12/P12-06-data-substitution-engines.md) | Data: variable substitution proven on the four engines | P12-05, P11-02 ... P11-04 | todo |
+| [P12-07](phase-12/P12-07-presentation-editor-variable-contract.md) | Presentation: editor variable contract, popup content and quick actions | P12-02, P12-04 | todo |
+| [P12-08](phase-12/P12-08-winui-editor-variable-colours-hover.md) | WinUI head: variables coloured in the editor and hover popup | P12-07 | todo |
+| [P12-09](phase-12/P12-09-winui-variable-actions-chips.md) | WinUI head: quick actions, chip row and the variable dialog | P12-08 | todo |
+| [P12-10](phase-12/P12-10-winui-variables-manager.md) | WinUI head: variables manager | P12-09 | todo |
+| [P12-11](phase-12/P12-11-avalonia-editor-variables.md) | Avalonia head: coloured variables, hover popup with actions, chip row | P12-09 | todo |
+| [P12-12](phase-12/P12-12-avalonia-variables-manager.md) | Avalonia head: variables manager | P12-10, P12-11 | todo |
+| [P12-13](phase-12/P12-13-guards-localization-secrets.md) | Tests: localization and secret-leak guards for variables | P12-10, P12-12 | todo |
+| [P12-14](phase-12/P12-14-verify-variables.md) | End-to-end verification of query variables | P12-06, P12-10, P12-12, P12-13 | todo |
+| [P12-15](phase-12/P12-15-docs-and-adr.md) | Documentation: query variables ADR 0009, README and architecture note | P12-14 | todo |
 
 ### Phase 9 - Visual conformance
 
