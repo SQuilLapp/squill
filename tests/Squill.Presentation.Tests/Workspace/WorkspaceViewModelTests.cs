@@ -1,3 +1,4 @@
+using Squill.Presentation.Localization;
 using Squill.Core;
 using Squill.Data;
 using Squill.Platform;
@@ -62,8 +63,19 @@ public sealed class WorkspaceViewModelTests
 
         Assert.NotNull(_workspace.ActiveSession);
         Assert.NotNull(_workspace.Explorer);
-        Assert.Equal("Query 1", Assert.Single(_workspace.Tabs).Title);
+        Assert.Equal("Requête 1", Assert.Single(_workspace.Tabs).Title);
         Assert.Same(_workspace.Tabs[0], _workspace.ActiveTab);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Requête 1")]
+    [InlineData(UiLanguage.English, "Query 1")]
+    public async Task Connect_FirstTabTitle_IsInTheChosenLanguage(UiLanguage language, string title)
+    {
+        using var _ = UiText.Override(language);
+        await ConnectAsync();
+
+        Assert.Equal(title, Assert.Single(_workspace.Tabs).Title);
     }
 
     [Fact]
@@ -84,7 +96,7 @@ public sealed class WorkspaceViewModelTests
 
         _workspace.NewTabCommand.Execute(null);
 
-        Assert.Equal(["Query 1", "Query 2"], _workspace.Tabs.Select(t => t.Title));
+        Assert.Equal(["Requête 1", "Requête 2"], _workspace.Tabs.Select(t => t.Title));
     }
 
     [Fact]

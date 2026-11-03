@@ -50,7 +50,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
     public TableDesign? Original { get; private set; }
 
     /// <summary>Gets the tab title.</summary>
-    public string Title => Original is null ? "New table" : $"Design {Original.Name}";
+    public string Title => Original is null ? UiText.Get("designer.title.new") : UiText.Format("designer.title.design", Original.Name);
 
     /// <summary>Gets the environment of the connection the table lives in.</summary>
     public ConnectionEnvironment Environment => _session.Profile.Environment;

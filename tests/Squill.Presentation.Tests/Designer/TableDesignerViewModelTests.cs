@@ -3,6 +3,7 @@ using Squill.Core.Design;
 using Squill.Data;
 using Squill.Data.Sqlite;
 using Squill.Presentation.Designer;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Sessions;
 using Xunit;
 
@@ -60,12 +61,23 @@ public sealed class TableDesignerViewModelTests
         public TableDesignerViewModel Vm { get; }
     }
 
+    [Theory]
+    [InlineData(UiLanguage.French, "Nouvelle table")]
+    [InlineData(UiLanguage.English, "New table")]
+    public void NewTable_Title_IsInTheChosenLanguage(UiLanguage language, string title)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture();
+
+        Assert.Equal(title, f.Vm.Title);
+    }
+
     [Fact]
     public void New_Table_StartsWithIdColumn()
     {
         var f = new Fixture();
 
-        Assert.Equal("New table", f.Vm.Title);
+        Assert.Equal("Nouvelle table", f.Vm.Title);
         Assert.Equal("new_table", f.Vm.Name);
         Assert.Equal("public", f.Vm.Schema);
         var id = Assert.Single(f.Vm.Columns);
@@ -252,7 +264,7 @@ public sealed class TableDesignerViewModelTests
 
         Assert.Equal("Applied 1 statement(s)", f.Vm.StatusText);
         Assert.NotNull(f.Vm.Original);
-        Assert.Equal("Design new_table", f.Vm.Title);
+        Assert.Equal("Concevoir new_table", f.Vm.Title);
         Assert.False(f.Vm.HasChanges);
         Assert.False(f.Vm.ApplyCommand.CanExecute(null));
         Assert.Same(f.Connection.Next, f.Session.Schema);
@@ -262,7 +274,7 @@ public sealed class TableDesignerViewModelTests
     public void Revert_RestoresOriginal()
     {
         var f = new Fixture(DatabaseDialect.PostgreSql, People);
-        Assert.Equal("Design people", f.Vm.Title);
+        Assert.Equal("Concevoir people", f.Vm.Title);
         Assert.False(f.Vm.HasChanges);
 
         f.Vm.Name = "humans";

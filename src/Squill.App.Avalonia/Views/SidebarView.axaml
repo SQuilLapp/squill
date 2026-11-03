@@ -29,8 +29,8 @@
       <v:ObjectExplorerView Grid.Row="1" Name="ObjectExplorer" DataContext="{Binding Explorer}" />
       <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8" Margin="0,12"
                   IsVisible="{Binding !ConnectionList.Profiles.Count}">
-        <TextBlock Text="No connections yet" Foreground="{DynamicResource SquillFg3Brush}" />
-        <Button Content="New connection" HorizontalAlignment="Center" Command="{Binding ConnectionList.NewCommand}" />
+        <TextBlock Text="{loc:Text explorer.empty}" Foreground="{DynamicResource SquillFg3Brush}" />
+        <Button Content="{loc:Text explorer.newConnection}" HorizontalAlignment="Center" Command="{Binding ConnectionList.NewCommand}" />
       </StackPanel>
     </Grid>
   </Grid>

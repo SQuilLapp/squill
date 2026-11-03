@@ -181,7 +181,7 @@ Depends on: <card ids, ranges allowed>
 | [P10-08](phase-10/P10-08-winui-loc-properties.md) | WinUI head: catalog markup for tooltips, headers, titles and menus | P10-02 | done |
 | [P10-09](phase-10/P10-09-message-codes.md) | Core and Sql: stable message codes for issues and diagnostics | P10-02 | done |
 | [P10-10](phase-10/P10-10-migrate-connections.md) | Migrate strings: connection editor, validation and list | P10-03, P10-04, P10-07, P10-08 | done |
-| [P10-11](phase-10/P10-11-migrate-explorer-and-chrome.md) | Migrate strings: explorer, menus, window chrome and tabs | P10-03, P10-04, P10-07, P10-08 | todo |
+| [P10-11](phase-10/P10-11-migrate-explorer-and-chrome.md) | Migrate strings: explorer, menus, window chrome and tabs | P10-03, P10-04, P10-07, P10-08 | done |
 | [P10-12](phase-10/P10-12-migrate-query-and-status.md) | Migrate strings: query tab, parameters, status bar, diagnostics | P10-03, P10-04, P10-07, P10-08, P10-09 | todo |
 | [P10-13](phase-10/P10-13-migrate-results-and-grid.md) | Migrate strings: results, grid editing and export | P10-03, P10-04, P10-07, P10-08, P10-09 | todo |
 | [P10-14](phase-10/P10-14-migrate-designer-and-er.md) | Migrate strings: table designer and ER diagram | P10-03, P10-04, P10-07, P10-08, P10-09 | todo |

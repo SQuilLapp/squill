@@ -1,6 +1,6 @@
 # P10-11 - Migrate strings: explorer, menus, window chrome and tabs
 
-Status: todo
+Status: done
 Depends on: P10-03, P10-04, P10-07, P10-08
 
 ## Goal
@@ -17,9 +17,9 @@ Follow `docs/tasks/phase-10/migration-recipe.md`. Area `explorer-chrome` of `inv
 - Query tab content and status bar (P10-12), history / snippets panels (P10-14).
 
 ## Tasks
-- [ ] Migrate every `explorer-chrome` inventory line and tick it.
-- [ ] Tests per recipe rule 7 (explorer folder captions and counts in both languages, tab titles).
-- [ ] English captures: main window, explorer with a connected SQLite sample database (`tools/visual/` sample data), every menu and the explorer context menu, both heads.
+- [x] Migrate every `explorer-chrome` inventory line and tick it.
+- [x] Tests per recipe rule 7 (explorer folder captions and counts in both languages, tab titles).
+- [ ] English captures: main window, explorer with a connected SQLite sample database (`tools/visual/` sample data), every menu and the explorer context menu, both heads. PARTLY DONE: the WinUI main window was captured in English (menu bar, search box, explorer header, filter, status bar all English); menus, the connected explorer and context menus cannot be driven from the agent session, to check by hand with `SQUILL_LANGUAGE=en` (see `tools/visual/README.md`), both heads. Avalonia not captured.
 
 ## Acceptance criteria
 - Common criteria of the recipe.

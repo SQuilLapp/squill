@@ -1,3 +1,4 @@
+using Squill.Presentation.Localization;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -409,7 +410,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         _tabCounters[session] = _tabCounters.GetValueOrDefault(session) + 1;
         var tab = new QueryTabViewModel(session, editor, _history, _settings, _dispatcher, _dialogs)
         {
-            Title = $"Query {_tabCounters[session]}",
+            Title = UiText.Format("tab.query", _tabCounters[session]),
         };
         tab.ScriptRequested += script => AddTab(session, script);
         Tabs.Add(tab);

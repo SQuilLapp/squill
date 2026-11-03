@@ -25,13 +25,13 @@
           <Grid ColumnDefinitions="Auto,*,Auto,Auto" Height="24">
             <Grid.ContextMenu>
               <ContextMenu Opening="OnNodeMenuOpening">
-                <MenuItem Name="NewItem" Header="New connection" Click="OnNewClicked" />
-                <MenuItem Name="EditItem" Header="Edit" Click="OnEditClicked" />
-                <MenuItem Name="DeleteItem" Header="Delete" Click="OnDeleteClicked" />
-                <MenuItem Name="ConnectItem" Header="Connect" Click="OnConnectClicked" />
-                <MenuItem Name="DisconnectItem" Header="Disconnect" Click="OnDisconnectClicked" />
-                <MenuItem Name="DesignItem" Header="Design table..." Click="OnDesignClicked" />
-                <MenuItem Name="DropItem" Header="Drop table..." Click="OnDropClicked" />
+                <MenuItem Name="NewItem" Header="{loc:Text explorer.newConnection}" Click="OnNewClicked" />
+                <MenuItem Name="EditItem" Header="{loc:Text explorer.edit}" Click="OnEditClicked" />
+                <MenuItem Name="DeleteItem" Header="{loc:Text explorer.delete}" Click="OnDeleteClicked" />
+                <MenuItem Name="ConnectItem" Header="{loc:Text explorer.connect}" Click="OnConnectClicked" />
+                <MenuItem Name="DisconnectItem" Header="{loc:Text explorer.disconnect}" Click="OnDisconnectClicked" />
+                <MenuItem Name="DesignItem" Header="{loc:Text explorer.designTable}" Click="OnDesignClicked" />
+                <MenuItem Name="DropItem" Header="{loc:Text explorer.dropTable}" Click="OnDropClicked" />
               </ContextMenu>
             </Grid.ContextMenu>
             <StackPanel Orientation="Horizontal">
