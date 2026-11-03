@@ -25,6 +25,7 @@ public sealed partial class MainWindow : Window
     private WorkspaceViewModel? _workspace;
     private SettingsViewModel? _settings;
     private ConnectionEditorWindow? _editorWindow;
+    private SettingsWindow? _settingsWindow;
     private bool _syncing;
 
     /// <summary>Initializes the window and sets its icon.</summary>
@@ -76,8 +77,19 @@ public sealed partial class MainWindow : Window
         return accelerator;
     }
 
-    private async void OnSettingsClicked(object sender, RoutedEventArgs e) =>
-        await new SettingsDialog(_settings!, Root.XamlRoot, Root.RequestedTheme).ShowAsync();
+    private void OnSettingsClicked(object sender, RoutedEventArgs e)
+    {
+        if (_settingsWindow is { } open)
+        {
+            open.Activate();
+            return;
+        }
+
+        var window = new SettingsWindow(this, Root.RequestedTheme, _settings!, _dataDirectory!);
+        _settingsWindow = window;
+        window.Closed += (_, _) => _settingsWindow = null;
+        window.Activate();
+    }
 
     private void ApplyTheme(ThemeMode mode) => Root.RequestedTheme = mode switch
     {

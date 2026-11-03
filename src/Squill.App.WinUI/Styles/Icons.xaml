@@ -15,4 +15,7 @@
   <x:String x:Key="SquillIconPlus">M12,5 V19 M5,12 H19</x:String>
   <x:String x:Key="SquillIconFolder">M3,6 H9 L11,8 H21 V19 H3 Z</x:String>
   <x:String x:Key="SquillIconCollapse">M6,9 L12,15 L18,9</x:String>
+  <x:String x:Key="SquillIconArrowLeft">M19,12 H5 M11,6 L5,12 L11,18</x:String>
+  <x:String x:Key="SquillIconTable">M4,5 H20 V19 H4 Z M4,10 H20 M4,15 H20 M10,5 V19</x:String>
+  <x:String x:Key="SquillIconView">M2,12 C5,6 19,6 22,12 C19,18 5,18 2,12 Z M12,9 A3,3 0 1 0 12,15 A3,3 0 1 0 12,9 Z</x:String>
 </ResourceDictionary>
