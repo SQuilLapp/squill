@@ -2,6 +2,7 @@ using Squill.Core;
 using Squill.Core.Editing;
 using Squill.Data;
 using Squill.Presentation.Editing;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 using Xunit;
@@ -308,6 +309,7 @@ public sealed class GridEditControllerTests
     [Fact]
     public void Paste_ReportsFirstErrorAndKeepsEarlierCells()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var f = new Fixture().At(0, 1);
 
         var error = f.Controller.Paste("ok\tn\tabc\nnext\tn\t1");
@@ -316,5 +318,16 @@ public sealed class GridEditControllerTests
         Assert.Equal("ok", f.Grid.GetCell(0, 1));
         Assert.Equal("n", f.Grid.GetCell(0, 2));
         Assert.Equal("n1", f.Grid.GetCell(1, 1));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Ligne 1, colonne Qty : ")]
+    [InlineData(UiLanguage.English, "Row 1, column Qty: ")]
+    public void Paste_ErrorPrefixIsLocalized(UiLanguage language, string prefix)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture().At(0, 1);
+
+        Assert.StartsWith(prefix, f.Controller.Paste("ok	n	abc"), StringComparison.Ordinal);
     }
 }

@@ -2,17 +2,17 @@
 src/Squill.App.Avalonia/Controls/ErDiagramCanvas.cs|avares://Squill.App.Avalonia/Assets/Fonts#JetBrains Mono, Cascadia Code, monospace|font family resource uri
 src/Squill.App.Avalonia/Editors/AvaloniaSqlEditor.cs|Cascadia Code, Consolas, Menlo, monospace|font family list
 src/Squill.App.Avalonia/MainWindow.axaml|Ctrl+K|keyboard accelerator text, not translated
-src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFg3Brush|resource key
-src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFgBrush|resource key
-src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|group|style class name
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|MS|engine badge abbreviation, not translated
-src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|MySQL|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|My|engine badge abbreviation, not translated
+src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|MySQL|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|PG|engine badge abbreviation, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|PostgreSQL|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SL|engine badge abbreviation, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SQL Server|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SQLite|product name, not translated
+src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFg3Brush|resource key
+src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFgBrush|resource key
+src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|group|style class name
 src/Squill.App.Avalonia/Views/QueryTabView.axaml|CSV|file format name
 src/Squill.App.Avalonia/Views/QueryTabView.axaml|JSON|file format name
 src/Squill.App.Avalonia/Views/StatusBar.axaml.cs|m\:ss\.fff|time format string
@@ -35,10 +35,14 @@ src/Squill.Presentation/Results/CellFormatter.cs|yyyy-MM-dd HH:mm:sszzz|invarian
 src/Squill.Presentation/Results/CellValueParser.cs|yyyy-MM-dd HH:mm:ss.FFFFFFF'Z'|invariant data format string
 src/Squill.Presentation/Results/CellValueParser.cs|yyyy-MM-dd HH:mm:ss.FFFFFFFK|invariant data format string
 src/Squill.Presentation/Results/CellValueParser.cs|yyyy-MM-dd HH:mm:ss.FFFFFFFzzz|invariant data format string
+src/Squill.Presentation/Results/CsvResultExporter.cs|The result is still loading and cannot be exported.|developer guard, the view-model checks first
+src/Squill.Presentation/Results/EditableGridDataSource.cs|Rows are still loading.|developer guard, the editor checks first
+src/Squill.Presentation/Results/EditableGridDataSource.cs|The row is marked for deletion.|developer guard, the editor checks first
 src/Squill.Presentation/Results/GridBenchReport.cs|avg frame ms {renderMs.Average():F3}|developer benchmark report
 src/Squill.Presentation/Results/GridBenchReport.cs|avg interval ms {frameMs.Average():F3}|developer benchmark report
 src/Squill.Presentation/Results/GridBenchReport.cs|p95 frame ms {Percentile(renderMs, 0.95):F3}|developer benchmark report
 src/Squill.Presentation/Results/GridBenchReport.cs|p95 interval ms {Percentile(frameMs, 0.95):F3}|developer benchmark report
+src/Squill.Presentation/Results/JsonResultExporter.cs|The result is still loading and cannot be exported.|developer guard, the view-model checks first
 src/Squill.Presentation/Results/SyntheticGridSource.cs|value {row}-{column}|synthetic benchmark data
 src/Squill.Presentation/Sessions/SqlRunner.cs|BEGIN TRANSACTION|SQL statement
 src/Squill.Presentation/Sessions/SqlRunner.cs|COMMIT TRANSACTION|SQL statement

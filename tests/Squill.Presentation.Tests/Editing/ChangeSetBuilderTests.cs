@@ -1,3 +1,4 @@
+using Squill.Presentation.Localization;
 using Squill.Core;
 using Squill.Core.Editing;
 using Squill.Presentation.Editing;
@@ -169,4 +170,26 @@ public sealed class ChangeSetBuilderTests
 
     private static (long Row, string? Column, string Message, string? Code, string Args)[] Describe(IEnumerable<EditIssue> issues) =>
         [.. issues.Select(i => (i.Row, i.Column, i.Message, i.Code, string.Join(",", i.Args ?? [])))];
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Ligne 2, Name : Name ne peut pas être NULL", "Ligne 7 : clé en double dans les lignes en attente")]
+    [InlineData(UiLanguage.English, "Row 2, Name: Name cannot be NULL", "Row 7: duplicate key in pending rows")]
+    public void IssuesAreRenderedInTheCurrentLanguage(UiLanguage language, string nullIssue, string duplicate)
+    {
+        using var _ = UiText.Override(language);
+        var g = Make();
+        g.SetCell(1, 1, null);
+        var a = g.AddRow();
+        var b = g.AddRow();
+        foreach (var r in new[] { a, b })
+        {
+            g.SetCell(r, 0, 7);
+            g.SetCell(r, 1, "n");
+        }
+
+        var issues = ChangeSetBuilder.Build(g, Target()).Issues;
+
+        Assert.Equal(nullIssue, IssueText.Describe(issues[0]));
+        Assert.Equal(duplicate, IssueText.Describe(issues[^1]));
+    }
 }

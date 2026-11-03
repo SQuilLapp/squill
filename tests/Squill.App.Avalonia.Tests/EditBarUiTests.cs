@@ -195,7 +195,7 @@ public sealed class EditBarUiTests
         f.Window.KeyPressQwerty(PhysicalKey.S, RawInputModifiers.Control);
         await ((IAsyncRelayCommand)result.Editor.CommitCommand).ExecutionTask!;
         Assert.False(result.Editor.HasPendingChanges);
-        Assert.Equal("Committed 1 change(s)", result.Editor.StatusText);
+        Assert.Equal("1 modification validée", result.Editor.StatusText);
         await f.RunAsync("SELECT count(*) FROM t");
         Assert.Equal(3L, f.Tab.SelectedResult!.Grid!.GetCell(0, 0));
     });

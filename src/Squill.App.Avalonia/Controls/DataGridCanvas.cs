@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Squill.Core;
 using Squill.Presentation;
 using Squill.Presentation.Editing;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 
 namespace Squill.App.Avalonia.Controls;
@@ -521,7 +522,7 @@ public sealed class DataGridCanvas : Control
         var error = edit.Paste(text);
         if (error is not null && Dialogs is { } dialogs)
         {
-            await dialogs.ShowErrorAsync("Paste", error);
+            await dialogs.ShowErrorAsync(UiText.Get("results.paste"), error);
         }
     }
 

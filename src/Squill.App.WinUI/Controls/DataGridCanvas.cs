@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Input;
 using Squill.Core;
 using Squill.Presentation;
 using Squill.Presentation.Editing;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -619,7 +620,7 @@ public sealed partial class DataGridCanvas : Grid
         var error = edit.Paste(await content.GetTextAsync());
         if (error is not null && Dialogs is { } dialogs)
         {
-            await dialogs.ShowErrorAsync("Paste", error);
+            await dialogs.ShowErrorAsync(UiText.Get("results.paste"), error);
         }
     }
 

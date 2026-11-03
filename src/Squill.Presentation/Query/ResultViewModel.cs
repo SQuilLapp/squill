@@ -104,6 +104,12 @@ public sealed partial class ResultViewModel : ViewModelBase
         ArgumentNullException.ThrowIfNull(exporter);
         if (Grid is null)
             return;
+        if (!Grid.IsComplete)
+        {
+            await _dialogs.ShowErrorAsync(UiText.Get("results.exportFailed"), UiText.Get("results.exportLoading"));
+            return;
+        }
+
         try
         {
             var path = await _dialogs.PickSaveFileAsync(Title, exporter.FileExtension);

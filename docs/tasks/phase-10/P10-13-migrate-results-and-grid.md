@@ -1,6 +1,6 @@
 # P10-13 - Migrate strings: results, grid, editing and export
 
-Status: todo
+Status: done
 Depends on: P10-03, P10-04, P10-07, P10-08, P10-09
 
 ## Goal
@@ -18,9 +18,9 @@ Follow `docs/tasks/phase-10/migration-recipe.md`. Area `results` of `inventory.m
 - Designer apply flow (P10-14), generic dialog button labels (P10-16).
 
 ## Tasks
-- [ ] Migrate every `results` inventory line and tick it.
-- [ ] Tests per recipe rule 7 (pending-change count plural both languages, delete confirmation, commit blocked, edit issues in both languages, exports identical under both languages).
-- [ ] English captures: results with rows, empty result, pending-edit banner, an issue, export menu, both heads.
+- [x] Migrate every `results` inventory line and tick it.
+- [x] Tests per recipe rule 7 (pending-change count plural both languages, delete confirmation, commit blocked, edit issues in both languages, exports identical under both languages).
+- [ ] English captures: results with rows, empty result, pending-edit banner, an issue, export menu, both heads. (not captured: the grid, edit banner and export menu cannot be driven without UI automation; to check by hand)
 
 ## Acceptance criteria
 - Common criteria of the recipe.

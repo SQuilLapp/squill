@@ -19,6 +19,7 @@ public sealed partial class CatalogTests
         "results.messages", // same word
         "results.plan", // same word
         "results.auto", // (auto) is the same in both
+        "results.type.date", // same word
         "results.default", // SQL keyword
         "results.exportJsonDetail", // file extension
         "status.production", // environment badge
