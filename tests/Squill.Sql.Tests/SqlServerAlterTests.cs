@@ -21,7 +21,7 @@ public sealed class SqlServerAlterTests
     private static string DropBatch(string column) =>
         "DECLARE @n sysname = (SELECT dc.name FROM sys.default_constraints dc JOIN sys.columns c ON c.object_id = dc.parent_object_id AND c.column_id = dc.parent_column_id "
         + $"WHERE dc.parent_object_id = OBJECT_ID(N'dbo.t') AND c.name = N'{column}'); "
-        + "IF @n IS NOT NULL EXEC(N'ALTER TABLE [dbo].[t] DROP CONSTRAINT ' + QUOTENAME(@n))";
+        + "DECLARE @s nvarchar(max) = N'ALTER TABLE [dbo].[t] DROP CONSTRAINT ' + QUOTENAME(@n); IF @n IS NOT NULL EXEC(@s)";
 
     [Fact]
     public void Alter_RenameTable_UsesSpRename() =>

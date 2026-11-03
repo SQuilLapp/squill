@@ -8,9 +8,9 @@ internal static class SqlServerSchemaReader
 {
     private const string TablesCte = """
         with objs as (
-            select object_id, schema_id, name, 'U' as kind from sys.tables
+            select object_id, schema_id, name, 'U' as kind from sys.tables where is_ms_shipped = 0
             union all
-            select object_id, schema_id, name, 'V' as kind from sys.views)
+            select object_id, schema_id, name, 'V' as kind from sys.views where is_ms_shipped = 0)
         """;
 
     private const string ColumnsSql = TablesCte + """

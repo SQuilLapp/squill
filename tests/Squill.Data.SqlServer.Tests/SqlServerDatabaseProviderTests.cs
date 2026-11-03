@@ -6,10 +6,10 @@ namespace Squill.Data.SqlServer.Tests;
 
 public sealed class SqlServerDatabaseProviderTests(SqlServerFixture server) : IClassFixture<SqlServerFixture>
 {
-    // The container presents a self-signed certificate; the provider trusts it only for "localhost".
+    // The container presents a self-signed certificate; the provider trusts it only for loopback hosts.
     private ValueTask<IDatabaseConnection> OpenAsync() =>
         new SqlServerDatabaseProvider().OpenAsync(
-            new ConnectionProfile(Guid.NewGuid(), "ms", DatabaseDialect.SqlServer, "localhost", server.Port, SqlServerFixture.Database, SqlServerFixture.UserName, null, null),
+            new ConnectionProfile(Guid.NewGuid(), "ms", DatabaseDialect.SqlServer, server.Host, server.Port, SqlServerFixture.Database, SqlServerFixture.UserName, null, null),
             SqlServerFixture.Password,
             CancellationToken.None);
 
@@ -65,12 +65,5 @@ public sealed class SqlServerDatabaseProviderTests(SqlServerFixture server) : IC
     {
         await using var connection = await OpenAsync();
         await Assert.ThrowsAsync<SqlException>(async () => await connection.ExecuteAsync("selec nope", [], CancellationToken.None));
-    }
-
-    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
-    public async Task ReadSchemaAsync_NotImplemented_ThrowsNotSupported()
-    {
-        await using var connection = await OpenAsync();
-        await Assert.ThrowsAsync<NotSupportedException>(async () => await connection.ReadSchemaAsync(CancellationToken.None));
     }
 }

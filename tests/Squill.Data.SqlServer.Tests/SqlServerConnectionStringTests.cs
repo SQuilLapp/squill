@@ -31,7 +31,10 @@ public sealed class SqlServerConnectionStringTests
     [Theory]
     [InlineData("localhost", true)]
     [InlineData("LOCALHOST", true)]
+    [InlineData("127.0.0.1", true)]
+    [InlineData("::1", true)]
     [InlineData("db.local", false)]
+    [InlineData("10.0.0.5", false)]
     public void BuildConnectionString_Host_DecidesTrustServerCertificate(string host, bool expected) =>
         Assert.Equal(expected, new SqlConnectionStringBuilder(SqlServerDatabaseProvider.BuildConnectionString(Profile with { Host = host }, null)).TrustServerCertificate);
 

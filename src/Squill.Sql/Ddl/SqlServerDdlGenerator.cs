@@ -78,11 +78,11 @@ internal sealed class SqlServerDdlGenerator : IDdlGenerator
 
     private static bool HasDefault(ColumnDesign c) => !string.IsNullOrWhiteSpace(c.DefaultExpression);
 
-    // Default constraints are auto-named, so the batch looks the name up before dropping it.
+    // Default constraints are auto-named, so the batch looks the name up before dropping it (EXEC takes no function call, hence @s).
     private static string DropDefault(string t, string plain, string column) =>
         "DECLARE @n sysname = (SELECT dc.name FROM sys.default_constraints dc JOIN sys.columns c ON c.object_id = dc.parent_object_id AND c.column_id = dc.parent_column_id "
         + $"WHERE dc.parent_object_id = OBJECT_ID({NLiteral(plain)}) AND c.name = {NLiteral(column)}); "
-        + $"IF @n IS NOT NULL EXEC({NLiteral($"ALTER TABLE {t} DROP CONSTRAINT ")} + QUOTENAME(@n))";
+        + $"DECLARE @s nvarchar(max) = {NLiteral($"ALTER TABLE {t} DROP CONSTRAINT ")} + QUOTENAME(@n); IF @n IS NOT NULL EXEC(@s)";
 
     private static void AlterColumn(List<string> statements, string t, string plain, AlterColumn a)
     {

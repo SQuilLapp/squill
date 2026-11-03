@@ -11,6 +11,7 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
         "drop table if exists dbo.actions",
         "drop table if exists dbo.ident",
         "drop table if exists dbo.named_pk",
+        "drop table if exists dbo.country3",
         "drop table if exists dbo.country2",
         "drop table if exists dbo.person",
         "drop table if exists dbo.country",
@@ -26,13 +27,14 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
             constraint fk_person_country foreign key (country) references dbo.country (code))
         """,
         "create table dbo.country2 (id int primary key)",
+        "create table dbo.country3 (id int primary key)",
         "create table dbo.ident (id int identity(1,1) primary key, plain int null)",
         "create table dbo.named_pk (id int not null, constraint pk_named primary key (id))",
         """
         create table dbo.actions (
             id int primary key,
             a int references dbo.country2 (id) on delete cascade on update set null,
-            b int default 1 references dbo.country2 (id) on delete set default on update cascade,
+            b int default 1 references dbo.country3 (id) on delete set default on update cascade,
             c int references dbo.country2 (id))
         """,
         "create unique index person_tenant_nick on dbo.person (tenant, nick)",
@@ -71,7 +73,7 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
     {
         var snapshot = await ReadAsync();
         Assert.Equal("dbo", snapshot.DefaultSchema);
-        Assert.Equal(["actions", "country", "country2", "ident", "named_pk", "person", "person_nick"], snapshot.Tables.Select(t => t.Name).Order());
+        Assert.Equal(["actions", "country", "country2", "country3", "ident", "named_pk", "person", "person_nick"], snapshot.Tables.Select(t => t.Name).Order());
         Assert.All(snapshot.Tables, t => Assert.Equal("dbo", t.Schema));
     }
 

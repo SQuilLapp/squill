@@ -1,6 +1,6 @@
 # P11-04 - SQL Server container tests run and pass
 
-Status: todo
+Status: done
 Depends on: P11-01
 
 ## Goal
@@ -16,7 +16,7 @@ Every Docker-gated test of `tests/Squill.Data.SqlServer.Tests` has actually run 
 - Display and edit behaviour of those types (P11-25, P11-26), Azure SQL, Windows authentication.
 
 ## Tasks
-- [ ] Run, fix, add sample schema and test, run twice green.
+- [x] Run, fix, add sample schema and test, run twice green.
 
 ## Acceptance criteria
 - `rtk pwsh eng/run-docker-tests.ps1 -Engine sqlserver` is green; the report gives tests run, failures fixed and the trigger/OUTPUT finding.
@@ -25,3 +25,11 @@ Every Docker-gated test of `tests/Squill.Data.SqlServer.Tests` has actually run 
 
 ## Suggested commit message
 Run and fix the SQL Server container tests, add the sample schema
+
+## Result
+- 37 SQL Server container tests run and pass twice (`eng/run-docker-tests.ps1 -Engine sqlserver`); the stale `ReadSchemaAsync_NotImplemented_ThrowsNotSupported` test was dropped.
+- **localhost does not work on Windows with Podman/WSL**: the published port is forwarded on IPv4 only and `Data Source=localhost,<port>` hangs in SqlClient (5.2.2 and 7.1.1), while `127.0.0.1` connects. `BuildConnectionString` now applies the existing "trust the certificate" rule to the loopback literals `127.0.0.1` and `::1` as well as `localhost` (nothing for other hosts; unit-tested). **P11-07 no longer needs to do this part.** The fixture stays on the container host `127.0.0.1`.
+- Fixed bugs: `SqlServerDdlGenerator.DropDefault` emitted `EXEC('...' + QUOTENAME(@n))` (EXEC accepts no function call: syntax error), now builds the statement in `@s`; `SqlServerSchemaReader` listed the `is_ms_shipped` tables of `master` (`MSreplication_options`, `spt_*`), now filtered.
+- Test fixes: the `actions` table of the schema-reader setup had two cascading foreign keys to one parent (refused by SQL Server); the sample schema uses one parent table per action (`fk_targets`, `_b`, `_c`, `_d`; no RESTRICT in SQL Server, NO ACTION instead).
+- **Finding for P11-33**: `INSERT ... OUTPUT INSERTED.id` (what `DmlGenerator` emits for the read-back) is refused by SQL Server with error 334 on a table that has a trigger (pinned by `OutputInserted_OnTableWithTrigger_IsRefusedByServer`). The fix is `OUTPUT INSERTED.id INTO @t` or `SCOPE_IDENTITY()`.
+- `eng/run-docker-tests.ps1` no longer checks the machine memory on a WSL machine (`podman machine set --memory` is refused there, the VM takes WSL's memory); `docs/testing.md` says so.

@@ -6,7 +6,7 @@ The tests of the PostgreSQL, MySQL and SQL Server drivers use Testcontainers and
 
 - PowerShell 7 and the .NET SDK from `global.json`.
 - Podman 5.x with a machine (`podman machine init` once). The script starts the machine when it is stopped.
-- Machine memory: 2048 MiB is enough for PostgreSQL and MySQL; SQL Server needs 4096 MiB. One-time command (the script never changes the machine itself):
+- Machine memory: 2048 MiB is enough for PostgreSQL and MySQL; SQL Server needs 4096 MiB. On a WSL machine (the Windows default) the script does not check it: the VM gets its memory from WSL (`.wslconfig`, half of the host RAM by default) and `podman machine set --memory` is refused. On a Hyper-V, QEMU or other machine the script checks it and stops below 4096; the one-time command (the script never changes the machine itself) is:
 
 ```bash
 podman machine stop; podman machine set --memory 4096; podman machine start

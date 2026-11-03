@@ -31,7 +31,9 @@ if ($machine.State -ne 'running') {
     $machine = Get-Machine
 }
 
-if ($engines -contains 'sqlserver' -and $machine.Resources.Memory -lt 4096) {
+# A WSL machine is not limited by podman's Memory value (the VM takes what WSL grants, see .wslconfig), and podman machine set --memory is refused for it.
+$isWsl = $machine.ConfigDir.Path -match '[\/]wsl$'
+if ($engines -contains 'sqlserver' -and -not $isWsl -and $machine.Resources.Memory -lt 4096) {
     [Console]::Error.WriteLine("The Podman machine has $($machine.Resources.Memory) MiB; SQL Server needs 4096. Run: podman machine stop; podman machine set --memory 4096; podman machine start")
     exit 1
 }
