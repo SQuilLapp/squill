@@ -171,6 +171,24 @@ Depends on: <card ids, ranges allowed>
 | [P9-25](phase-9/P9-25-docs-and-adr.md) | Documentation: visual conformance ADR, README and architecture note | P9-07 ... P9-24 | done |
 | [P9-26](phase-9/P9-26-unified-explorer-tree.md) | Explorer: one tree connection > database > schema > objects | P9-08, P9-10 | done |
 | [P9-27](phase-9/P9-27-explorer-folder-counts.md) | Explorer: object counts on schema and folder rows (both heads) | P9-26 | done |
+| [P10-01](phase-10/P10-01-platform-language-setting.md) | Platform: language setting | none | todo |
+| [P10-02](phase-10/P10-02-bilingual-catalog.md) | Presentation: bilingual string catalog (fr and en, plurals, parity tests) | P10-01 | todo |
+| [P10-03](phase-10/P10-03-string-inventory.md) | Tests: hard-coded string scanner and inventory | none | todo |
+| [P10-04](phase-10/P10-04-startup-language-and-settings-vm.md) | Presentation: language at startup and in the settings view-model | P10-01, P10-02 | todo |
+| [P10-05](phase-10/P10-05-avalonia-settings-language.md) | Avalonia head: language choice in the settings window | P10-04 | todo |
+| [P10-06](phase-10/P10-06-winui-settings-language.md) | WinUI head: language choice in the settings window | P10-04 | todo |
+| [P10-07](phase-10/P10-07-formatting-culture.md) | Heads and Presentation: number and date formatting follows the language | P10-02 | todo |
+| [P10-08](phase-10/P10-08-winui-loc-properties.md) | WinUI head: catalog markup for tooltips, headers, titles and menus | P10-02 | todo |
+| [P10-09](phase-10/P10-09-message-codes.md) | Core and Sql: stable message codes for issues and diagnostics | P10-02 | todo |
+| [P10-10](phase-10/P10-10-migrate-connections.md) | Migrate strings: connection editor, validation and list | P10-03, P10-04, P10-07, P10-08 | todo |
+| [P10-11](phase-10/P10-11-migrate-explorer-and-chrome.md) | Migrate strings: explorer, menus, window chrome and tabs | P10-03, P10-04, P10-07, P10-08 | todo |
+| [P10-12](phase-10/P10-12-migrate-query-and-status.md) | Migrate strings: query tab, parameters, status bar, diagnostics | P10-03, P10-04, P10-07, P10-08, P10-09 | todo |
+| [P10-13](phase-10/P10-13-migrate-results-and-grid.md) | Migrate strings: results, grid editing and export | P10-03, P10-04, P10-07, P10-08, P10-09 | todo |
+| [P10-14](phase-10/P10-14-migrate-designer-and-er.md) | Migrate strings: table designer and ER diagram | P10-03, P10-04, P10-07, P10-08, P10-09 | todo |
+| [P10-15](phase-10/P10-15-migrate-history-snippets-terminal.md) | Migrate strings: history, snippets and terminal | P10-03, P10-04, P10-07, P10-08 | todo |
+| [P10-16](phase-10/P10-16-migrate-settings-dialogs-errors.md) | Migrate strings: settings, dialogs, errors and leftovers | P10-10 ... P10-15, P10-05, P10-06 | todo |
+| [P10-17](phase-10/P10-17-enforcement-tests.md) | Tests: completeness guards for localization | P10-16 | todo |
+| [P10-18](phase-10/P10-18-docs-and-adr.md) | Documentation: localization ADR 0007, README and architecture note | P10-17 | todo |
 
 ### Phase 9 - Visual conformance
 
@@ -179,3 +197,11 @@ Goal: make both heads look like the owner's high-fidelity mockups (`docs/design/
 - Branch: implement phase 9 on a new branch `phase-9-visual-conformance`, cut from `main` **after phase 8 is merged** (P9-15 and P9-16 edit files of P8-16/P8-17). Do not start it from `phase-8-data-grid-editing`.
 - Order: P9-01 ... P9-04 are foundations and tools (any order, P9-01 and P9-02 first), then styles (P9-05/06), then each head screen by screen. Avalonia and WinUI cards of the same screen are independent of each other.
 - Cards that need a screenshot use the tools of P9-02 and the procedure of `visual-spec.md` section 11; a card whose screen cannot be driven must say what the owner has to check by hand.
+
+### Phase 10 - Localization fr/en
+
+Goal: the whole application is bilingual French / English in both heads. Decisions (final, details in the cards and in ADR 0007 written by P10-18): two catalogs with identical keys (`UiTextCatalogFr`, `UiTextCatalogEn`), plurals through `FormatPlural`, setting `System default / Francais / English` (System = French when the OS UI language is French, otherwise English), the language applies after a restart, numbers and dates follow the language, database / driver messages, SQL and user data are never translated, completeness is enforced by tests (catalog parity, used keys, scanner over code and XAML).
+
+- Branch: implement phase 10 on the existing branch `phase-10-localization` (cut from the unmerged `fix-winui-connection-file-picker`, commit `e85c84b`); do not create another branch.
+- Order: P10-01 ... P10-04 are the foundation (P10-03 is independent and can come second), then the head settings cards P10-05/06, the helper cards P10-07 ... P10-09, then the migration cards P10-10 ... P10-16 (each covers BOTH heads and the Presentation strings of one area; shared procedure in [migration-recipe.md](phase-10/migration-recipe.md); work list in `phase-10/inventory.md`, generated by P10-03), then P10-17 (guards) and P10-18 (docs).
+- Cards that change what is on screen are checked by capturing both heads with `SQUILL_LANGUAGE=en` and `fr` (tools of P9-02); a screen that cannot be driven is listed in the card's report as "to check by hand".
