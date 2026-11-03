@@ -1,6 +1,6 @@
 # P10-06 - WinUI head: language choice in the settings window
 
-Status: todo
+Status: done
 Depends on: P10-04
 
 ## Goal
@@ -17,7 +17,7 @@ Let the user pick System default / Français / English in the WinUI settings win
 - Live switching, other rows, Avalonia.
 
 ## Tasks
-- [ ] XAML row and note.
+- [x] XAML row and note.
 - [ ] Capture the settings window with `SQUILL_LANGUAGE=en` and `fr` (tools of P9-02).
 
 ## Acceptance criteria
