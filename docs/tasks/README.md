@@ -159,7 +159,7 @@ Depends on: <card ids, ranges allowed>
 | [P9-13](phase-9/P9-13-avalonia-results-panel.md) | Avalonia head: results panel chrome, pending-edit banner and export menu | P9-11, P9-02 | done |
 | [P9-14](phase-9/P9-14-avalonia-grid-visuals.md) | Avalonia head: grid canvas drawing | P9-13, P9-02 | done |
 | [P9-15](phase-9/P9-15-winui-results-panel.md) | WinUI head: results panel chrome, pending-edit banner and export menu | P9-12, P8-17, P9-02 | done |
-| [P9-16](phase-9/P9-16-winui-grid-visuals.md) | WinUI head: Win2D grid drawing | P9-15, P8-16, P9-02 | todo |
+| [P9-16](phase-9/P9-16-winui-grid-visuals.md) | WinUI head: Win2D grid drawing | P9-15, P8-16, P9-02 | done |
 | [P9-17](phase-9/P9-17-avalonia-connection-manager.md) | Avalonia head: connection manager window | P9-04, P9-05, P9-02 | todo |
 | [P9-18](phase-9/P9-18-winui-connection-manager.md) | WinUI head: connection manager dialog | P9-04, P9-06, P9-02 | todo |
 | [P9-19](phase-9/P9-19-avalonia-table-designer.md) | Avalonia head: table designer view | P9-08, P9-02 | todo |

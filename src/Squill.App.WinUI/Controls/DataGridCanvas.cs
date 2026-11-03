@@ -1,11 +1,14 @@
 using System.Diagnostics;
+using System.Numerics;
 using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Squill.Core;
 using Squill.Presentation;
 using Squill.Presentation.Editing;
 using Squill.Presentation.Results;
@@ -24,9 +27,14 @@ public sealed partial class DataGridCanvas : Grid
     private const double ResizeTolerance = 4;
     private const float Unbounded = 10_000;
     private const long DoubleClickMs = 500;
+    private const float StateBarWidth = 3;
+    private const float KeyGlyphWidth = 14;
+
+    /// <summary>Width of the row-number column drawn left of the data columns.</summary>
+    internal const double GutterWidth = 36;
 
     private readonly CanvasControl _canvas = new();
-    private readonly LruCache<(string Text, bool Struck), CanvasTextLayout> _text = new(4096, layout => layout.Dispose());
+    private readonly LruCache<(string Text, Face Face, bool Struck), CanvasTextLayout> _text = new(4096, layout => layout.Dispose());
     private readonly GridLayout _layout;
     private IGridDataSource? _source;
     private GridColors? _colors;
@@ -41,6 +49,7 @@ public sealed partial class DataGridCanvas : Grid
     private long _lastPressTick;
     private Point _lastPressPoint;
     private GridEditController? _edit;
+    private Faces? _faces;
 
     /// <summary>Creates the canvas, reading the row height from the token resources.</summary>
     public DataGridCanvas()
@@ -61,6 +70,9 @@ public sealed partial class DataGridCanvas : Grid
         _canvas.ActualThemeChanged += (_, _) =>
         {
             _colors = null;
+            _faces = null;
+            _text.Clear();
+            _needsMeasure = true;
             _canvas.Invalidate();
         };
         _canvas.Unloaded += (_, _) =>
@@ -121,7 +133,7 @@ public sealed partial class DataGridCanvas : Grid
     /// <param name="column">Column index.</param>
     /// <returns>The visible cell rectangle.</returns>
     internal CellBox? CellRect(long row, int column) =>
-        GridEditGeometry.EditorBox(_layout, row, column, _scrollX, _scrollY, _canvas.ActualWidth, BodyHeight);
+        GridEditGeometry.EditorBox(_layout, row, column, _scrollX, _scrollY, _canvas.ActualWidth, BodyHeight, GutterWidth);
 
     /// <summary>Gives keyboard focus back to the drawing surface.</summary>
     public void FocusSurface() => _canvas.Focus(FocusState.Programmatic);
@@ -156,10 +168,10 @@ public sealed partial class DataGridCanvas : Grid
     public double MaxScrollY => _layout.MaxScrollY(_source?.RowCount ?? 0, BodyHeight);
 
     /// <summary>Gets the highest valid horizontal scroll offset.</summary>
-    public double MaxScrollX => _layout.MaxScrollX(_canvas.ActualWidth);
+    public double MaxScrollX => _layout.MaxScrollX(ViewportWidth);
 
-    /// <summary>Gets the viewport width.</summary>
-    public double ViewportWidth => _canvas.ActualWidth;
+    /// <summary>Gets the viewport width of the data columns (the surface minus the row-number column).</summary>
+    public double ViewportWidth => Math.Max(0, _canvas.ActualWidth - GutterWidth);
 
     /// <summary>Raised after each draw callback finished.</summary>
     public event EventHandler? Drawn;
@@ -180,7 +192,7 @@ public sealed partial class DataGridCanvas : Grid
         var source = _source;
         if (source is not null && _layout.ColumnCount > 0)
         {
-            var (firstCol, endCol) = _layout.VisibleColumns(_scrollX, width);
+            var (firstCol, endCol) = _layout.VisibleColumns(_scrollX, ViewportWidth);
             var (firstRow, endRow) = _layout.VisibleRows(_scrollY, BodyHeight, source.RowCount);
             for (var col = firstCol; col < endCol; col++)
             {
@@ -190,8 +202,14 @@ public sealed partial class DataGridCanvas : Grid
             for (var row = firstRow; row < endRow; row++)
             {
                 var y = (float)(_layout.HeaderHeight + ((row + 1) * _layout.RowHeight) - _scrollY - 0.5);
-                ds.DrawLine(0, y, width, y, c.BorderSubtle);
+                ds.DrawLine((float)GutterWidth, y, width, y, c.BorderSubtle);
             }
+
+            DrawGutter(ds, c, firstRow, endRow, height);
+        }
+        else
+        {
+            ds.FillRectangle(0, 0, width, (float)_layout.HeaderHeight, c.Raised);
         }
 
         var headerLine = (float)(_layout.HeaderHeight - 0.5);
@@ -202,27 +220,29 @@ public sealed partial class DataGridCanvas : Grid
 
     private void DrawColumn(CanvasDrawingSession ds, IGridDataSource source, GridColors c, int col, (long First, long End) rows, float height)
     {
-        var left = (float)(_layout.ColumnLeft(col) - _scrollX);
+        var left = (float)(GutterWidth + _layout.ColumnLeft(col) - _scrollX);
         var colWidth = (float)_layout.ColumnWidth(col);
         var headerHeight = (float)_layout.HeaderHeight;
         var rowHeight = (float)_layout.RowHeight;
         var info = source.Columns[col];
+        var edit = _edit;
         using (ds.CreateLayer(1f, new Rect(left, 0, colWidth, height)))
         {
             for (var row = rows.First; row < rows.End; row++)
             {
                 var top = (float)(headerHeight + (row * rowHeight) - _scrollY);
-                var value = CellFormatter.Format(source.GetCell(row, col), info);
-                var edit = _edit;
                 var state = edit?.GetRowState(row) ?? RowState.Unchanged;
-                if (GridEditGeometry.RowTint(state) is var tint and not GridTint.None)
+                if (state == RowState.Inserted)
                 {
-                    ds.FillRectangle(left, top, colWidth, rowHeight, tint == GridTint.Inserted ? c.SuccessSoft : tint == GridTint.Deleted ? c.DangerSoft : c.AccentSoft);
+                    ds.FillRectangle(left, top, colWidth, rowHeight, c.CellAdded);
                 }
-
-                if (edit is not null && GridEditGeometry.ModifiedCellTint(state, edit.IsCellModified(row, col)))
+                else if (state == RowState.Deleted)
                 {
-                    ds.FillRectangle(left, top, colWidth, rowHeight, c.AccentSoft);
+                    ds.FillRectangle(left, top, colWidth, rowHeight, c.CellDeleted);
+                }
+                else if (edit is not null && GridEditGeometry.ModifiedCellTint(state, edit.IsCellModified(row, col)))
+                {
+                    ds.FillRectangle(left, top, colWidth, rowHeight, c.CellModified);
                 }
 
                 if (Selection.Contains(row, col, source.RowCount))
@@ -230,8 +250,31 @@ public sealed partial class DataGridCanvas : Grid
                     ds.FillRectangle(left, top, colWidth, rowHeight, c.Selection);
                 }
 
-                var muted = value is null || (edit is not null && !edit.IsColumnEditable(col));
-                DrawText(ds, value ?? "NULL", left, top, rowHeight, muted ? c.Muted : c.Text, state == RowState.Deleted);
+                var value = CellFormatter.Format(source.GetCell(row, col), info);
+                var placeholder = edit?.GetPlaceholder(row, col);
+                var face = Face.Mono;
+                var color = c.Text;
+                if (placeholder is not null)
+                {
+                    value = placeholder;
+                    face = Face.MonoItalic;
+                    color = c.Muted;
+                }
+                else if (value is null)
+                {
+                    value = "NULL";
+                    face = Face.MonoItalic;
+                    color = c.CellNull;
+                }
+                else if (edit is not null && !edit.IsColumnEditable(col))
+                {
+                    color = c.Muted;
+                }
+
+                var layout = TextLayout(ds, value, face, state == RowState.Deleted);
+                var textWidth = (float)layout.LayoutBounds.Width;
+                var x = IsNumeric(info) && face == Face.Mono ? Math.Max(left + CellPadding, left + colWidth - CellPadding - textWidth) : left + CellPadding;
+                ds.DrawTextLayout(layout, x, top + ((rowHeight - (float)layout.LayoutBounds.Height) / 2), color);
                 if (edit?.IsCellInvalid(row, col) == true)
                 {
                     ds.DrawRectangle(left + 0.5f, top + 0.5f, colWidth - 1, rowHeight - 1, c.Danger, 1.5f);
@@ -244,34 +287,113 @@ public sealed partial class DataGridCanvas : Grid
                 ds.FillRectangle(left, 0, colWidth, headerHeight, c.Selection);
             }
 
-            DrawText(ds, info.Name, left, 0, headerHeight, c.HeaderText);
+            var headerX = left + CellPadding;
+            if (edit?.IsKeyColumn(col) == true)
+            {
+                var cy = headerHeight / 2;
+                using var diamond = CanvasGeometry.CreatePolygon(ds, [new Vector2(headerX + 4, cy - 4), new Vector2(headerX + 8, cy), new Vector2(headerX + 4, cy + 4), new Vector2(headerX, cy)]);
+                ds.FillGeometry(diamond, c.Accent);
+                headerX += KeyGlyphWidth;
+            }
+
+            var name = TextLayout(ds, info.Name, Face.UiSemibold);
+            ds.DrawTextLayout(name, headerX, (headerHeight - (float)name.LayoutBounds.Height) / 2, c.HeaderText);
+            var type = TextLayout(ds, info.DataTypeName, Face.MonoSmall);
+            ds.DrawTextLayout(type, (float)GridEditGeometry.HeaderTypeX(headerX, name.LayoutBounds.Width), (headerHeight - (float)type.LayoutBounds.Height) / 2, c.Muted);
         }
 
-        ds.DrawLine(left + colWidth - 0.5f, 0, left + colWidth - 0.5f, height, c.Border);
+        ds.DrawLine(left + colWidth - 0.5f, 0, left + colWidth - 0.5f, height, c.BorderSubtle);
     }
 
-    private void DrawText(CanvasDrawingSession ds, string text, float left, float top, float rowHeight, Color color, bool struck = false)
+    private void DrawGutter(CanvasDrawingSession ds, GridColors c, long firstRow, long endRow, float height)
     {
-        var layout = TextLayout(ds, text, struck);
-        ds.DrawTextLayout(layout, left + CellPadding, top + ((rowHeight - (float)layout.LayoutBounds.Height) / 2), color);
-    }
-
-    private CanvasTextLayout TextLayout(ICanvasResourceCreator creator, string text, bool struck = false)
-    {
-        if (!_text.TryGet((text, struck), out var layout))
+        var gutter = (float)GutterWidth;
+        var rowHeight = (float)_layout.RowHeight;
+        var headerHeight = (float)_layout.HeaderHeight;
+        ds.FillRectangle(0, 0, gutter, height, c.Raised);
+        for (var row = firstRow; row < endRow; row++)
         {
+            var top = (float)(headerHeight + (row * rowHeight) - _scrollY);
+            var state = _edit?.GetRowState(row) ?? RowState.Unchanged;
+            var color = state switch { RowState.Inserted => c.Success, RowState.Deleted => c.Danger, _ => c.Muted };
+            var text = TextLayout(ds, GridEditGeometry.GutterLabel(state, row), Face.MonoSmall);
+            ds.DrawTextLayout(text, gutter - CellPadding - (float)text.LayoutBounds.Width, top + ((rowHeight - (float)text.LayoutBounds.Height) / 2), color);
+            if (GridEditGeometry.StateBar(state, top, rowHeight, StateBarWidth) is { } bar)
+            {
+                ds.FillRectangle((float)bar.X, (float)bar.Y, (float)bar.Width, (float)bar.Height, state == RowState.Inserted ? c.Success : c.Danger);
+            }
+
+            ds.DrawLine(0, top + rowHeight - 0.5f, gutter, top + rowHeight - 0.5f, c.BorderSubtle);
+        }
+
+        ds.FillRectangle(0, 0, gutter, headerHeight, c.Raised);
+        ds.DrawLine(gutter - 0.5f, 0, gutter - 0.5f, height, c.BorderSubtle);
+    }
+
+    private static bool IsNumeric(ColumnInfo info) =>
+        Type.GetTypeCode(Nullable.GetUnderlyingType(info.ClrType) ?? info.ClrType) is >= TypeCode.SByte and <= TypeCode.Decimal;
+
+    private CanvasTextLayout TextLayout(ICanvasResourceCreator creator, string text, Face face, bool struck = false)
+    {
+        if (!_text.TryGet((text, face, struck), out var layout))
+        {
+            var faces = _faces ??= ResolveFaces();
             // The layout copies the format, so a short-lived one is enough.
-            using var format = new CanvasTextFormat { FontSize = 13, WordWrapping = CanvasWordWrapping.NoWrap };
+            using var format = new CanvasTextFormat { WordWrapping = CanvasWordWrapping.NoWrap };
+            switch (face)
+            {
+                case Face.UiSemibold:
+                    format.FontFamily = faces.Ui;
+                    format.FontSize = 13;
+                    format.FontWeight = Microsoft.UI.Text.FontWeights.SemiBold;
+                    break;
+                case Face.MonoSmall:
+                    format.FontFamily = faces.Mono;
+                    format.FontSize = 11;
+                    break;
+                case Face.MonoItalic:
+                    format.FontFamily = faces.MonoItalic;
+                    format.FontSize = faces.MonoSize;
+                    format.FontStyle = Windows.UI.Text.FontStyle.Italic;
+                    break;
+                default:
+                    format.FontFamily = faces.Mono;
+                    format.FontSize = faces.MonoSize;
+                    break;
+            }
+
             layout = new CanvasTextLayout(creator, text, format, Unbounded, (float)_layout.RowHeight);
             if (struck)
             {
                 layout.SetStrikethrough(0, text.Length, true);
             }
 
-            _text.Add((text, struck), layout);
+            _text.Add((text, face, struck), layout);
         }
 
         return layout;
+    }
+
+    private static Faces ResolveFaces()
+    {
+        // Win2D takes one family, so keep the first entry of each token's fallback list (the bundled file for mono).
+        static string First(string key)
+        {
+            var family = ((Microsoft.UI.Xaml.Media.FontFamily)FindMerged(Application.Current.Resources, key)!).Source.Split(',')[0].Trim();
+            // Win2D resolves ms-appx URIs only for packaged apps; the files sit next to the executable.
+            const string AppX = "ms-appx:///";
+            if (!family.StartsWith(AppX, StringComparison.Ordinal))
+            {
+                return family;
+            }
+
+            var parts = family[AppX.Length..].Split('#');
+            return new Uri(Path.Combine(AppContext.BaseDirectory, parts[0])).AbsoluteUri + "#" + parts[1];
+        }
+
+        var mono = First("SquillFontMono");
+        var size = FindMerged(Application.Current.Resources, "SquillFontSizeMonoGrid") is double d ? (float)d : 12;
+        return new Faces(First("SquillFontUi"), mono, mono.Replace("-Regular.ttf", "-Italic.ttf", StringComparison.Ordinal), size);
     }
 
     private void MeasureColumns(ICanvasResourceCreator creator)
@@ -287,11 +409,12 @@ public sealed partial class DataGridCanvas : Grid
         var widths = new double[source.Columns.Count];
         for (var col = 0; col < widths.Length; col++)
         {
-            var max = TextLayout(creator, source.Columns[col].Name).LayoutBounds.Width;
+            var info = source.Columns[col];
+            var max = TextLayout(creator, info.Name, Face.UiSemibold).LayoutBounds.Width + 6 + TextLayout(creator, info.DataTypeName, Face.MonoSmall).LayoutBounds.Width + KeyGlyphWidth;
             for (var row = 0; row < sample; row++)
             {
-                var value = CellFormatter.Format(source.GetCell(row, col), source.Columns[col]) ?? "NULL";
-                max = Math.Max(max, TextLayout(creator, value).LayoutBounds.Width);
+                var value = CellFormatter.Format(source.GetCell(row, col), info) ?? "NULL";
+                max = Math.Max(max, TextLayout(creator, value, Face.Mono).LayoutBounds.Width);
             }
 
             widths[col] = max + (2 * CellPadding);
@@ -346,7 +469,7 @@ public sealed partial class DataGridCanvas : Grid
     private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
     {
         var point = e.GetCurrentPoint(_canvas).Position;
-        var column = point.Y <= _layout.HeaderHeight ? _layout.ResizeHandleAt(point.X, _scrollX, ResizeTolerance) : -1;
+        var column = point.Y <= _layout.HeaderHeight ? _layout.ResizeHandleAt(point.X - GutterWidth, _scrollX, ResizeTolerance) : -1;
         if (column >= 0)
         {
             _resizeColumn = column;
@@ -362,7 +485,7 @@ public sealed partial class DataGridCanvas : Grid
         var shift = e.KeyModifiers.HasFlag(VirtualKeyModifiers.Shift);
         if (point.Y <= _layout.HeaderHeight)
         {
-            var clicked = _layout.ColumnAt(point.X + _scrollX);
+            var clicked = point.X < GutterWidth ? -1 : _layout.ColumnAt(point.X - GutterWidth + _scrollX);
             if (clicked >= 0)
             {
                 Selection.SelectColumn(clicked, shift);
@@ -406,7 +529,7 @@ public sealed partial class DataGridCanvas : Grid
             return;
         }
 
-        var onHandle = point.Y <= _layout.HeaderHeight && _layout.ResizeHandleAt(point.X, _scrollX, ResizeTolerance) >= 0;
+        var onHandle = point.Y <= _layout.HeaderHeight && _layout.ResizeHandleAt(point.X - GutterWidth, _scrollX, ResizeTolerance) >= 0;
         ProtectedCursor = onHandle ? InputSystemCursor.Create(InputSystemCursorShape.SizeWestEast) : null;
     }
 
@@ -539,10 +662,10 @@ public sealed partial class DataGridCanvas : Grid
             return;
         }
 
-        var column = _layout.ColumnAt(point.X + _scrollX);
+        var column = _layout.ColumnAt(point.X - GutterWidth + _scrollX);
         if (column < 0)
         {
-            column = point.X + _scrollX < 0 ? 0 : source.Columns.Count - 1;
+            column = point.X - GutterWidth + _scrollX < 0 ? 0 : source.Columns.Count - 1;
         }
 
         var row = Math.Clamp((long)((point.Y - _layout.HeaderHeight + _scrollY) / _layout.RowHeight), 0, source.RowCount - 1);
@@ -556,7 +679,7 @@ public sealed partial class DataGridCanvas : Grid
         var y = top < _scrollY ? top : top + _layout.RowHeight > _scrollY + BodyHeight ? top + _layout.RowHeight - BodyHeight : _scrollY;
         var left = _layout.ColumnLeft(column);
         var right = left + _layout.ColumnWidth(column);
-        var width = _canvas.ActualWidth;
+        var width = ViewportWidth;
         var x = left < _scrollX ? left : right > _scrollX + width ? right - width : _scrollX;
         SetScroll(x, y);
     }
@@ -575,10 +698,13 @@ public sealed partial class DataGridCanvas : Grid
             Get("SquillBorderColor"),
             Get("SquillBorderSubtleColor"),
             Get("SquillSelectionColor"),
-            Get("SquillAccentSoftColor"),
-            Get("SquillSuccessSoftColor"),
-            Get("SquillDangerSoftColor"),
-            Get("SquillDangerColor"));
+            Get("SquillAccentColor"),
+            Get("SquillSuccessColor"),
+            Get("SquillDangerColor"),
+            Get("SquillCellNullColor"),
+            Get("SquillCellModifiedColor"),
+            Get("SquillCellAddedColor"),
+            Get("SquillCellDeletedColor"));
     }
 
     internal static object? FindMerged(ResourceDictionary dictionary, string key)
@@ -602,5 +728,15 @@ public sealed partial class DataGridCanvas : Grid
         return dictionary.MergedDictionaries.Select(merged => FindThemeDictionary(merged, key)).FirstOrDefault(found => found is not null);
     }
 
-    private sealed record GridColors(Color Surface, Color Raised, Color Text, Color HeaderText, Color Muted, Color Border, Color BorderSubtle, Color Selection, Color AccentSoft, Color SuccessSoft, Color DangerSoft, Color Danger);
+    private enum Face
+    {
+        Mono,
+        MonoItalic,
+        MonoSmall,
+        UiSemibold,
+    }
+
+    private sealed record Faces(string Ui, string Mono, string MonoItalic, float MonoSize);
+
+    private sealed record GridColors(Color Surface, Color Raised, Color Text, Color HeaderText, Color Muted, Color Border, Color BorderSubtle, Color Selection, Color Accent, Color Success, Color Danger, Color CellNull, Color CellModified, Color CellAdded, Color CellDeleted);
 }

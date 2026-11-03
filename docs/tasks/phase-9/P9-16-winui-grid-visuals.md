@@ -1,6 +1,6 @@
 # P9-16 - WinUI head: Win2D grid drawing
 
-Status: todo
+Status: done
 Depends on: P9-15, P8-16, P9-02
 
 ## Goal
@@ -14,7 +14,7 @@ The Win2D grid draws like M05: fonts, header with types, row states, number colu
 - Column resizing, column menu, filters, value panel (no feature).
 
 ## Tasks
-- [ ] Update the drawing; extend `GridEditGeometryTests`-style tests for the new geometry (number column width, state bar rectangles, header type text placement).
+- [x] Update the drawing; extend `GridEditGeometryTests`-style tests for the new geometry (number column width, state bar rectangles, header type text placement).
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.
