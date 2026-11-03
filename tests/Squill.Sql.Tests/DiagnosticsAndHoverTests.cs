@@ -43,12 +43,12 @@ public sealed class DiagnosticsAndHoverTests
     }
 
     [Fact]
-    public void GetDiagnostics_UnknownTable_IsWarning()
+    public void GetDiagnostics_UnknownTable_IsError()
     {
         const string text = "select * from nowhere";
         var d = Assert.Single(Diagnose(text, Schema));
         Assert.Equal("SQL1001", d.Code);
-        Assert.Equal(DiagnosticSeverity.Warning, d.Severity);
+        Assert.Equal(DiagnosticSeverity.Error, d.Severity);
         Assert.Equal("Unknown table 'nowhere'", d.Message);
         Assert.Equal("nowhere", text.Substring(d.Range.Start, d.Range.Length));
     }

@@ -34,12 +34,12 @@ public static class SqlDiagnosticsProvider
                 {
                     case TableRef t when IsUnknownTable(schema, t, r.Ctes):
                         result.Add(new SqlDiagnostic(
-                            NameRange(text, t, t.Name, t.Schema?.Length ?? 0, last: false), DiagnosticSeverity.Warning,
+                            NameRange(text, t, t.Name, t.Schema?.Length ?? 0, last: false), DiagnosticSeverity.Error,
                             $"Unknown table '{t.Name}'", "SQL1001"));
                         break;
                     case ColumnRef c when UnknownColumnOwner(script, schema, c, r.Aliases) is { } owner:
                         result.Add(new SqlDiagnostic(
-                            NameRange(text, c, c.Name, 0, last: true), DiagnosticSeverity.Warning,
+                            NameRange(text, c, c.Name, 0, last: true), DiagnosticSeverity.Error,
                             $"Unknown column '{c.Name}' in '{owner}'", "SQL1002"));
                         break;
                 }
