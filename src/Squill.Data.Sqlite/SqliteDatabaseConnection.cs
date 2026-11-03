@@ -19,8 +19,8 @@ internal sealed class SqliteDatabaseConnection(SqliteConnection connection, int 
             command.CommandTimeout = commandTimeoutSeconds;
             foreach (var parameter in parameters)
                 command.Parameters.AddWithValue("@" + parameter.Name, parameter.Value ?? DBNull.Value);
-            var reader = await command.ExecuteReaderAsync(cancellationToken);
-            return new SqliteResultReader(command, reader);
+            var reader = await SqliteInterrupt.RunAsync(connection, commandTimeoutSeconds, async () => await command.ExecuteReaderAsync(cancellationToken), cancellationToken);
+            return new SqliteResultReader(connection, commandTimeoutSeconds, command, reader);
         }
         catch
         {

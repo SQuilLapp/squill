@@ -20,6 +20,12 @@ internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int 
             var reader = await command.ExecuteReaderAsync(cancellationToken);
             return new SqlServerResultReader(command, reader);
         }
+        catch (SqlException ex) when (cancellationToken.IsCancellationRequested)
+        {
+            // SqlClient reports a cancelled command as a SqlException; callers expect the standard cancellation exception.
+            await command.DisposeAsync();
+            throw new OperationCanceledException(ex.Message, ex, cancellationToken);
+        }
         catch
         {
             await command.DisposeAsync();

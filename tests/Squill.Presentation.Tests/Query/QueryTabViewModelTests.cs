@@ -68,6 +68,8 @@ public sealed class QueryTabViewModelTests
             Bound.Add(parameters);
             if (Gate is not null)
                 await Gate(sql, cancellationToken);
+            if (sql.Contains("slowquery", StringComparison.Ordinal))
+                throw new TimeoutException("Command timeout expired");
             if (sql.Contains("boom", StringComparison.Ordinal))
                 throw new InvalidOperationException("boom failed");
             var reader = sql.StartsWith("SELECT", StringComparison.Ordinal)
@@ -157,6 +159,20 @@ public sealed class QueryTabViewModelTests
         Assert.Equal(["Résultat 1", "Résultat 2", "Résultat 3"], f.Vm.Results.Select(r => r.Title));
         Assert.Equal(3, f.History.Entries.Count);
         Assert.Equal(3, f.Connection.Executed.Count);
+    }
+
+    [Fact]
+    public async Task Run_CommandTimeout_ShowsDriverMessageAndReenablesRun()
+    {
+        var f = new Fixture("SELECT slowquery;");
+
+        await f.Vm.RunCommand.ExecuteAsync(null);
+
+        Assert.Equal("Command timeout expired", Assert.Single(f.Vm.Results).Text);
+        Assert.False(f.Vm.IsRunning);
+        Assert.NotEqual(UiText.Get("query.running"), f.Vm.StatusText);
+        Assert.True(f.Vm.RunCommand.CanExecute(null));
+        Assert.False(f.History.Entries.Single().Succeeded);
     }
 
     [Fact]

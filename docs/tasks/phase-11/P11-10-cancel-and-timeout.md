@@ -1,6 +1,6 @@
 # P11-10 - Cancel and timeout proven on every engine
 
-Status: todo
+Status: done
 Depends on: P11-07
 
 ## Goal
@@ -15,7 +15,7 @@ Cancelling a long statement really stops it on the server and leaves the connect
 - UI changes, a settings screen for the timeout (it is per profile, P11-08).
 
 ## Tasks
-- [ ] Tests above; fix what they find in the four connections/readers or `QueryTabViewModel`.
+- [x] Tests above; fix what they find in the four connections/readers or `QueryTabViewModel`.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; default test run green; `rtk pwsh eng/run-docker-tests.ps1 -Engine all` green; no container left.

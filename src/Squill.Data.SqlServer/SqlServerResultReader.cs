@@ -33,6 +33,18 @@ internal sealed class SqlServerResultReader : IResultReader
     public async ValueTask<object?[][]?> ReadBatchAsync(int maxRows, CancellationToken cancellationToken)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxRows);
+        try
+        {
+            return await ReadRowsAsync(maxRows, cancellationToken);
+        }
+        catch (SqlException ex) when (cancellationToken.IsCancellationRequested)
+        {
+            throw new OperationCanceledException(ex.Message, ex, cancellationToken);
+        }
+    }
+
+    private async ValueTask<object?[][]?> ReadRowsAsync(int maxRows, CancellationToken cancellationToken)
+    {
         var rows = new List<object?[]>();
         while (rows.Count < maxRows)
         {
@@ -53,6 +65,9 @@ internal sealed class SqlServerResultReader : IResultReader
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        // Disposing an unfinished reader makes the driver drain the rest of the result; stop the statement on the server first.
+        if (!_finished)
+            _command.Cancel();
         await _reader.DisposeAsync();
         await _command.DisposeAsync();
     }

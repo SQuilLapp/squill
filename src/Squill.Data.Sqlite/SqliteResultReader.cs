@@ -6,15 +6,21 @@ namespace Squill.Data.Sqlite;
 /// <summary>Streams the rows of one executed SQLite command in batches.</summary>
 internal sealed class SqliteResultReader : IResultReader
 {
+    private readonly SqliteConnection _connection;
+    private readonly int _commandTimeoutSeconds;
     private readonly SqliteCommand _command;
     private readonly SqliteDataReader _reader;
     private bool _finished;
 
     /// <summary>Takes ownership of an executed command and its open reader, and captures the column metadata.</summary>
+    /// <param name="connection">Connection that runs the command; interrupted on cancellation.</param>
+    /// <param name="commandTimeoutSeconds">Command timeout in seconds, 0 for none.</param>
     /// <param name="command">Command that produced <paramref name="reader"/>; disposed with this instance.</param>
     /// <param name="reader">Open reader positioned before the first row.</param>
-    public SqliteResultReader(SqliteCommand command, SqliteDataReader reader)
+    public SqliteResultReader(SqliteConnection connection, int commandTimeoutSeconds, SqliteCommand command, SqliteDataReader reader)
     {
+        _connection = connection;
+        _commandTimeoutSeconds = commandTimeoutSeconds;
         _command = command;
         _reader = reader;
         var columns = new ColumnInfo[reader.FieldCount];
@@ -30,9 +36,14 @@ internal sealed class SqliteResultReader : IResultReader
     public long RecordsAffected => _finished ? _reader.RecordsAffected : -1;
 
     /// <inheritdoc />
-    public async ValueTask<object?[][]?> ReadBatchAsync(int maxRows, CancellationToken cancellationToken)
+    public ValueTask<object?[][]?> ReadBatchAsync(int maxRows, CancellationToken cancellationToken)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxRows);
+        return SqliteInterrupt.RunAsync(_connection, _commandTimeoutSeconds, () => ReadRowsAsync(maxRows, cancellationToken), cancellationToken);
+    }
+
+    private async ValueTask<object?[][]?> ReadRowsAsync(int maxRows, CancellationToken cancellationToken)
+    {
         var rows = new List<object?[]>();
         while (rows.Count < maxRows)
         {

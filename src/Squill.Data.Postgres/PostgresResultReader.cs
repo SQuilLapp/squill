@@ -53,6 +53,9 @@ internal sealed class PostgresResultReader : IResultReader
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        // Disposing an unfinished reader makes the driver drain the rest of the result; stop the statement on the server first.
+        if (!_finished)
+            _command.Cancel();
         await _reader.DisposeAsync();
         await _command.DisposeAsync();
     }
