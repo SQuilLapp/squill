@@ -1,6 +1,6 @@
 # P9-15 - WinUI head: results panel chrome, pending-edit banner and export menu
 
-Status: todo
+Status: done
 Depends on: P9-12, P8-17, P9-02
 
 ## Goal
@@ -14,8 +14,8 @@ Everything around the WinUI grid matches M05: result tabs, read/write marker, pe
 - Grid canvas drawing (P9-16), filter bar, column menu, row panel (no feature).
 
 ## Tasks
-- [ ] Rework `Views/QueryTabView.cs` results part.
-- [ ] Tests for the testable helpers (banner text counts, marker text); state what needs the screenshot.
+- [x] Rework `Views/QueryTabView.cs` results part.
+- [x] Tests for the testable helpers (banner text counts, marker text); state what needs the screenshot.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.

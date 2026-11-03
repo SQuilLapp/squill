@@ -8,4 +8,10 @@
   <x:String x:Key="SquillIconSearch">M10.5,4 A6.5,6.5 0 1 0 10.5,17 A6.5,6.5 0 1 0 10.5,4 Z M15.5,15.5 L20,20</x:String>
   <x:String x:Key="SquillIconWarning">M12,3 L22,20 H2 Z M12,10 V14 M12,17 V17.5</x:String>
   <x:String x:Key="SquillIconFormat">M4,6 H20 M4,10 H14 M4,14 H20 M4,18 H14</x:String>
+  <x:String x:Key="SquillIconPencil">M4,20 L5,15 L16,4 L20,8 L9,19 Z M14,6 L18,10</x:String>
+  <x:String x:Key="SquillIconLock">M6,11 H18 V20 H6 Z M8,11 V8 C8,3.5 16,3.5 16,8 V11</x:String>
+  <x:String x:Key="SquillIconTrash">M4,7 H20 M9,7 V4 H15 V7 M6,7 L7,20 H17 L18,7</x:String>
+  <x:String x:Key="SquillIconUndo">M9,6 L4,11 L9,16 M4,11 H14 C18,11 20,13 20,17</x:String>
+  <x:String x:Key="SquillIconPlus">M12,5 V19 M5,12 H19</x:String>
+  <x:String x:Key="SquillIconCollapse">M6,9 L12,15 L18,9</x:String>
 </ResourceDictionary>
