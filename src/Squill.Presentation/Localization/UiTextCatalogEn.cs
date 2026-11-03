@@ -382,6 +382,8 @@ internal static class UiTextCatalogEn
         ("issue.edit.columnNull", "{0} cannot be NULL"),
         ("issue.edit.columnRequired", "{0} is required"),
         ("issue.edit.duplicateKey", "duplicate key in pending rows"),
+        ("issue.connection.connectTimeoutRange", "The connect timeout must be between 0 and {0} seconds."),
+        ("issue.connection.commandTimeoutRange", "The command timeout must be between 0 and {0} seconds."),
         ("issue.sql.unexpected", "Unexpected '{0}'"),
         ("issue.sql.unexpectedToken", "Unexpected token"),
         ("issue.sql.expectedIdentifierAfterDot", "Expected identifier after '.'"),

@@ -61,4 +61,44 @@ public sealed class ConnectionProfileTests
         Assert.Equal("profile:0123456789abcdef0123456789abcdef:password", SecretKeys.ProfilePassword(Id));
         Assert.Equal("profile:0123456789abcdef0123456789abcdef:ssh", SecretKeys.SshSecret(Id));
     }
+
+    [Fact]
+    public void Deserialize_FileWrittenBeforeConnectionOptions_UsesDefaults()
+    {
+        var json = """{"id":"01234567-89ab-cdef-0123-456789abcdef","name":"old","dialect":"PostgreSql","host":"h","port":5432,"environment":"Staging","folder":"Team"}""";
+        var back = JsonSerializer.Deserialize(json, ProfileJsonContext.Default.ConnectionProfile)!;
+        Assert.Equal(TlsMode.Default, back.Tls);
+        Assert.False(back.TrustServerCertificate);
+        Assert.Equal(15, back.ConnectTimeoutSeconds);
+        Assert.Equal(0, back.CommandTimeoutSeconds);
+        Assert.Empty(back.ValidateOptions());
+    }
+
+    [Fact]
+    public void Serialize_ConnectionOptions_RoundTrips()
+    {
+        var profile = Sample() with { Tls = TlsMode.VerifyFull, TrustServerCertificate = true, ConnectTimeoutSeconds = 30, CommandTimeoutSeconds = 600 };
+        var json = JsonSerializer.Serialize(profile, ProfileJsonContext.Default.ConnectionProfile);
+        Assert.Contains("\"tls\": \"VerifyFull\"", json);
+        Assert.Equal(profile, JsonSerializer.Deserialize(json, ProfileJsonContext.Default.ConnectionProfile));
+    }
+
+    [Theory]
+    [InlineData(-1, 0, CoreMessageCodes.ConnectionConnectTimeoutRange)]
+    [InlineData(86401, 0, CoreMessageCodes.ConnectionConnectTimeoutRange)]
+    [InlineData(15, -1, CoreMessageCodes.ConnectionCommandTimeoutRange)]
+    [InlineData(15, 86401, CoreMessageCodes.ConnectionCommandTimeoutRange)]
+    public void ValidateOptions_TimeoutOutOfRange_ReturnsTheCode(int connect, int command, string code)
+    {
+        var issues = (Sample() with { ConnectTimeoutSeconds = connect, CommandTimeoutSeconds = command }).ValidateOptions();
+        var issue = Assert.Single(issues);
+        Assert.Equal(code, issue.Code);
+        Assert.Equal(["86400"], issue.Args);
+    }
+
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(86400, 86400)]
+    public void ValidateOptions_Bounds_AreAccepted(int connect, int command) =>
+        Assert.Empty((Sample() with { ConnectTimeoutSeconds = connect, CommandTimeoutSeconds = command }).ValidateOptions());
 }
