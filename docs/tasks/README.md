@@ -168,7 +168,7 @@ Depends on: <card ids, ranges allowed>
 | [P9-22](phase-9/P9-22-winui-er-diagram.md) | WinUI head: ER diagram view | P9-10, P9-02 | done |
 | [P9-23](phase-9/P9-23-avalonia-settings.md) | Avalonia head: settings window | P9-05, P9-03, P9-02 | done |
 | [P9-24](phase-9/P9-24-winui-settings.md) | WinUI head: settings window | P9-06, P9-03, P9-02 | done |
-| [P9-25](phase-9/P9-25-docs-and-adr.md) | Documentation: visual conformance ADR, README and architecture note | P9-07 ... P9-24 | todo |
+| [P9-25](phase-9/P9-25-docs-and-adr.md) | Documentation: visual conformance ADR, README and architecture note | P9-07 ... P9-24 | done |
 | [P9-26](phase-9/P9-26-unified-explorer-tree.md) | Explorer: one tree connection > database > schema > objects | P9-08, P9-10 | done |
 | [P9-27](phase-9/P9-27-explorer-folder-counts.md) | Explorer: object counts on schema and folder rows (both heads) | P9-26 | done |
 

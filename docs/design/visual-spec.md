@@ -91,3 +91,19 @@ M01 start page, M06 plan, M09 schema compare, M10 transfer, M11 privileges, M12 
 2. Capture the window with `tools/visual/Capture-Window.ps1` (P9-01) in light and dark at a 1440 x 900 logical content size, then build the side-by-side with `tools/visual/Compare-Mockup.ps1 -Mockup <png> -Capture <png>`; read the composite with the Read tool and fix every visible difference listed in the card.
 3. If the screen cannot be reached or driven (no UI automation for a dialog, a feature without data), the card report states exactly what was not compared and what the owner must check by hand. Never claim a visual match that was not looked at.
 4. Close every process started.
+
+## 12. Status (end of phase 9)
+
+Collected from the card reports and commit messages. "Matched" means looked at against the mockup in at least one theme; see [ADR 0006](../adr/0006-visual-conformance.md) for what was never driven by hand (hover, pressed and focus states, most popups) and for the themes not captured.
+
+| Screen | Avalonia | WinUI |
+|---|---|---|
+| Window chrome, rail, status bar (M03) | Matched (P9-07) | Partly: unconnected state matched; connected state and menu popups not compared; menu items about 8 px tighter (P9-09) |
+| Explorer, tabs, properties (M03) | Matched, single tree with counts (P9-08, P9-26, P9-27) | Partly: rows 28 high instead of 24, `PRODUCTION`/`STAGING` pills instead of `PROD`/`DEV`, unsaved dot and hover close not looked at (P9-10, P9-26, P9-27) |
+| Editor, toolbar, history (M04) | Partly: no wavy underline, inline pill, margin triangle, statement background, popup styling; no `Expliquer`, auto-commit; parameters prompt stays modal; light read on the capture alone (P9-11) | Partly: same gaps; dark only, light and diff not read in detail; parameters dialog and environment stripe not seen (P9-12) |
+| Results panel and grid (M05) | Matched; filter bar, column menu, row panel not drawn (P9-13, P9-14) | Matched on the captures taken; same omissions (P9-15, P9-16) |
+| Connections (M02) | Matched; tags, SSL, proxy, driver tabs not drawn (P9-17) | Matched; same omissions (P9-18) |
+| Table designer (M07) | Partly: headless render only, live window not driven; `Commentaire`, impact, Contraintes/Déclencheurs/DDL tabs not drawn (P9-19) | Partly: dark only; row tags, draft state, issue badges not exercised (P9-20) |
+| ER diagram (M08) | Partly: row counts, comment and layout options, PNG/PDF/Mermaid export not drawn; relation tooltip and hover not driven (P9-21) | Partly: same; capture narrower than 1440 px, `Exporter` item and hops tooltip not checked (P9-22) |
+| Settings (M14) | Four pages in scope done after the mockup (no capture comparison recorded); shortcuts, drivers, accent, material, density not drawn (P9-23) | Same (P9-24) |
+| Shared control styles | Gallery captured (P9-05) | Gallery in static states only; popup shadow is the WinUI default; popups and pointer-over/pressed not driven (P9-06) |
