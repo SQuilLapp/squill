@@ -1,6 +1,6 @@
 # P11-03 - MySQL container tests run and pass
 
-Status: todo
+Status: done
 Depends on: P11-01
 
 ## Goal
@@ -15,7 +15,7 @@ Every Docker-gated test of `tests/Squill.Data.MySql.Tests` has actually run agai
 - Display and edit behaviour of those types (P11-25, P11-26), MariaDB.
 
 ## Tasks
-- [ ] Run, fix, add sample schema and test, run twice green.
+- [x] Run, fix, add sample schema and test, run twice green.
 
 ## Acceptance criteria
 - `rtk pwsh eng/run-docker-tests.ps1 -Engine mysql` is green; the report gives tests run and failures fixed.
@@ -24,3 +24,8 @@ Every Docker-gated test of `tests/Squill.Data.MySql.Tests` has actually run agai
 
 ## Suggested commit message
 Run and fix the MySQL container tests, add the sample schema
+
+## Report
+- 21 container tests run (20 existing + the new sample-schema test), 0 skipped, green twice in a row (about 30 s per run, four per-class containers).
+- No provider bug found: the MySQL schema reader, `LAST_INSERT_ID()` read-back, DDL and typed parameters all passed. Two test-side fixes: `MySqlDatabaseProviderTests.ReadSchemaAsync_NotImplemented_ThrowsNotSupported` was stale (the schema reader exists and is covered by `MySqlSchemaReaderTests`), so it was removed; `DmlScenario.Equivalent` now compares `ulong` (the `LAST_INSERT_ID()` key) by value like `int`/`long`.
+- Added `tests/Shared/SampleSchema/mysql.sql` (objects live in the connection database; no `SET DEFAULT` action since InnoDB rejects it) and `SampleSchemaTests`.

@@ -14,5 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../Shared/DmlScenario.cs" Link="DmlScenario.cs" />
+    <Content Include="../Shared/SampleSchema/mysql.sql" Link="SampleSchema/mysql.sql" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

@@ -72,11 +72,4 @@ public sealed class MySqlDatabaseProviderTests(MySqlFixture server) : IClassFixt
         await using var connection = await OpenAsync();
         await Assert.ThrowsAsync<MySqlException>(async () => await connection.ExecuteAsync("selec nope", [], CancellationToken.None));
     }
-
-    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
-    public async Task ReadSchemaAsync_NotImplemented_ThrowsNotSupported()
-    {
-        await using var connection = await OpenAsync();
-        await Assert.ThrowsAsync<NotSupportedException>(async () => await connection.ReadSchemaAsync(CancellationToken.None));
-    }
 }
