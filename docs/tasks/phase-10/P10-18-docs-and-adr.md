@@ -1,6 +1,6 @@
 # P10-18 - Documentation: localization ADR 0007, README and architecture note
 
-Status: todo
+Status: done
 Depends on: P10-17
 
 ## Goal
@@ -23,8 +23,8 @@ Record the localization decisions and update the documents that still say "Frenc
 - Code changes.
 
 ## Tasks
-- [ ] ADR 0007, edits of ADR 0006, README, architecture, visual-spec.
-- [ ] Set every phase 10 card and index line to `done`.
+- [x] ADR 0007, edits of ADR 0006, README, architecture, visual-spec.
+- [x] Set every phase 10 card and index line to `done`.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` still exits 0 (docs only; run once).

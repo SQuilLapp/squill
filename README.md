@@ -6,6 +6,8 @@ SQuilL is a SQL client built on .NET 11 (RC3) and Native AOT. The Windows head u
 
 The interface is French or English (Settings, applied after a restart; `SQUILL_LANGUAGE=fr|en|system` overrides it for one run). Phase 9 restyled both heads after the owner's mockups; per-screen status and known gaps are in [ADR 0006](docs/adr/0006-visual-conformance.md) and [docs/design/visual-spec.md](docs/design/visual-spec.md). No screenshots are included yet; capture them with the tools in [tools/visual](tools/visual/README.md).
 
+To add a UI string, add the same key to `UiTextCatalogFr` and `UiTextCatalogEn` (`src/Squill.Presentation/Localization`) and reference it with `{loc:Text}` / `Loc` or `UiText`; the Presentation tests fail on a missing key, an unused key or a hard-coded literal. Decisions: [ADR 0007](docs/adr/0007-localization.md).
+
 ## Supported databases
 
 | Database | Driver | Native AOT verdict (see [docs/poc/aot-drivers.md](docs/poc/aot-drivers.md)) |
