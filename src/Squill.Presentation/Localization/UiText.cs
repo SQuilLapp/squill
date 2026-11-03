@@ -33,6 +33,11 @@ public static class UiText
         return new Restore(previous);
     }
 
+    /// <summary>Tells whether a key is in the catalog.</summary>
+    /// <param name="key">Catalog key.</param>
+    /// <returns><see langword="true"/> when the current language has a text for <paramref name="key"/>.</returns>
+    public static bool Has(string key) => Table().ContainsKey(key);
+
     /// <summary>Gets the string of a catalog key.</summary>
     /// <param name="key">English dotted identifier such as <c>explorer.title</c>.</param>
     /// <returns>The text in the current language, or <c>!key!</c> when the key is not in the catalog.</returns>

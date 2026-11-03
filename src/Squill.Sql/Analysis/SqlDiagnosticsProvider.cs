@@ -22,7 +22,7 @@ public static class SqlDiagnosticsProvider
         var result = new List<SqlDiagnostic>();
         foreach (var d in script.Diagnostics)
         {
-            result.Add(new SqlDiagnostic(Clamp(d.Start, d.Length, text), DiagnosticSeverity.Error, d.Message, "SQL0001"));
+            result.Add(new SqlDiagnostic(Clamp(d.Start, d.Length, text), DiagnosticSeverity.Error, d.Message, "SQL0001", d.Code, d.Args));
         }
 
         if (request.Schema is { } schema)
@@ -35,12 +35,12 @@ public static class SqlDiagnosticsProvider
                     case TableRef t when IsUnknownTable(schema, t, r.Ctes):
                         result.Add(new SqlDiagnostic(
                             NameRange(text, t, t.Name, t.Schema?.Length ?? 0, last: false), DiagnosticSeverity.Error,
-                            $"Unknown table '{t.Name}'", "SQL1001"));
+                            $"Unknown table '{t.Name}'", "SQL1001", SqlMessageCodes.UnknownTable, [t.Name]));
                         break;
                     case ColumnRef c when UnknownColumnOwner(script, schema, c, r.Aliases) is { } owner:
                         result.Add(new SqlDiagnostic(
                             NameRange(text, c, c.Name, 0, last: true), DiagnosticSeverity.Error,
-                            $"Unknown column '{c.Name}' in '{owner}'", "SQL1002"));
+                            $"Unknown column '{c.Name}' in '{owner}'", "SQL1002", SqlMessageCodes.UnknownColumn, [c.Name, owner]));
                         break;
                 }
             }

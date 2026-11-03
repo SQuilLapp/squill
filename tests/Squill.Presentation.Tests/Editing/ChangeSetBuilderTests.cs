@@ -96,7 +96,7 @@ public sealed class ChangeSetBuilderTests
         var r = g.AddRow();
         g.SetCell(r, 1, null);
         var issues = ChangeSetBuilder.Build(g, Target()).Issues;
-        Assert.Equal([new EditIssue(1, "Name", "Name cannot be NULL"), new EditIssue(r, "Name", "Name cannot be NULL")], issues);
+        Assert.Equal([(1, "Name", "Name cannot be NULL", "edit.columnNull", "Name"), (r, "Name", "Name cannot be NULL", "edit.columnNull", "Name")], Describe(issues));
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public sealed class ChangeSetBuilderTests
         var g = Make();
         var r = g.AddRow();
         var issues = ChangeSetBuilder.Build(g, Target()).Issues;
-        Assert.Equal([new EditIssue(r, "Name", "Name is required")], issues);
+        Assert.Equal([(r, "Name", "Name is required", "edit.columnRequired", "Name")], Describe(issues));
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public sealed class ChangeSetBuilderTests
         }
 
         var issues = ChangeSetBuilder.Build(g, Target()).Issues;
-        Assert.Equal([new EditIssue(b, null, "duplicate key in pending rows")], issues);
+        Assert.Equal([(b, null, "duplicate key in pending rows", "edit.duplicateKey", "")], Describe(issues));
     }
 
     [Fact]
@@ -166,4 +166,7 @@ public sealed class ChangeSetBuilderTests
             _ => 1,
         };
     }
+
+    private static (long Row, string? Column, string Message, string? Code, string Args)[] Describe(IEnumerable<EditIssue> issues) =>
+        [.. issues.Select(i => (i.Row, i.Column, i.Message, i.Code, string.Join(",", i.Args ?? [])))];
 }

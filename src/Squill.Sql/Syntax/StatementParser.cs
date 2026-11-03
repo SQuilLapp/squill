@@ -118,7 +118,7 @@ internal sealed class StatementParser(SqlParserCore core)
             if (!core.IsPunct(core.Peek(), ')') && !core.AtEnd)
             {
                 var extra = core.Peek();
-                core.Report(extra.Start, extra.Length, $"Unexpected '{core.TextOf(extra)}'");
+                core.Report(extra.Start, extra.Length, $"Unexpected '{core.TextOf(extra)}'", SqlMessageCodes.Unexpected, core.TextOf(extra));
                 core.SkipToCloseParen();
             }
 
@@ -139,7 +139,7 @@ internal sealed class StatementParser(SqlParserCore core)
         }
         else if (!core.IsWord(next, "DEFAULT"))
         {
-            core.ReportMissing("Expected VALUES or a query");
+            core.ReportMissing("Expected VALUES or a query", SqlMessageCodes.ExpectedValuesOrQuery);
         }
 
         return new InsertStatement(target, columns, source, start, core.LastEnd - start);
@@ -169,7 +169,7 @@ internal sealed class StatementParser(SqlParserCore core)
             if (!core.IsPunct(core.Peek(), ')') && !core.AtEnd)
             {
                 var extra = core.Peek();
-                core.Report(extra.Start, extra.Length, $"Unexpected '{core.TextOf(extra)}'");
+                core.Report(extra.Start, extra.Length, $"Unexpected '{core.TextOf(extra)}'", SqlMessageCodes.Unexpected, core.TextOf(extra));
                 core.SkipToCloseParen();
             }
 
@@ -192,7 +192,7 @@ internal sealed class StatementParser(SqlParserCore core)
         }
         else
         {
-            core.ReportMissing("Expected SET");
+            core.ReportMissing("Expected SET", SqlMessageCodes.ExpectedKeyword, "SET");
         }
 
         SkipUntil("FROM", "WHERE");
@@ -208,7 +208,7 @@ internal sealed class StatementParser(SqlParserCore core)
             var token = core.Peek();
             if (!IsName(token) || IsClauseWord(token))
             {
-                core.ReportMissing("Expected column name");
+                core.ReportMissing("Expected column name", SqlMessageCodes.ExpectedColumnName);
                 return;
             }
 
@@ -221,14 +221,14 @@ internal sealed class StatementParser(SqlParserCore core)
                 }
                 else
                 {
-                    core.ReportMissing("Expected name after '.'");
+                    core.ReportMissing("Expected name after '.'", SqlMessageCodes.ExpectedNameAfterDot);
                     column = string.Empty;
                 }
             }
 
             if (!core.IsOperator(core.Peek(), "="))
             {
-                core.ReportMissing("Expected '='");
+                core.ReportMissing("Expected '='", SqlMessageCodes.ExpectedChar, "=");
             }
             else
             {

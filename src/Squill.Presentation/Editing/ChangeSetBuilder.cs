@@ -1,3 +1,4 @@
+using Squill.Core;
 using Squill.Core.Editing;
 using Squill.Presentation.Results;
 
@@ -53,7 +54,7 @@ public static class ChangeSetBuilder
     {
         if (value is null && !c.Definition.IsNullable)
         {
-            issues.Add(new(row, c.Definition.Name, $"{c.Definition.Name} cannot be NULL"));
+            issues.Add(new(row, c.Definition.Name, $"{c.Definition.Name} cannot be NULL", CoreMessageCodes.EditColumnNull, [c.Definition.Name]));
         }
     }
 
@@ -72,7 +73,7 @@ public static class ChangeSetBuilder
             }
             else if (!d.IsNullable && d.DefaultExpression is null && !d.IsAutoIncrement)
             {
-                issues.Add(new(row, d.Name, $"{d.Name} is required"));
+                issues.Add(new(row, d.Name, $"{d.Name} is required", CoreMessageCodes.EditColumnRequired, [d.Name]));
             }
         }
 
@@ -81,7 +82,7 @@ public static class ChangeSetBuilder
             var key = target.KeyColumns.Select(k => grid.GetCell(row, KeyColumn(target, k).ResultOrdinal)).ToArray();
             if (insertedKeys.Any(p => p.Zip(key).All(t => ValueEquals(t.First, t.Second))))
             {
-                issues.Add(new(row, null, "duplicate key in pending rows"));
+                issues.Add(new(row, null, "duplicate key in pending rows", CoreMessageCodes.EditDuplicateKey));
             }
 
             insertedKeys.Add(key);

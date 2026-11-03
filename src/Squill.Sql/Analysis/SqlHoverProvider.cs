@@ -1,3 +1,4 @@
+using System.Globalization;
 using Squill.Core;
 using Squill.Sql.Completion;
 using Squill.Sql.Lexing;
@@ -43,7 +44,7 @@ public static class SqlHoverProvider
         switch (node)
         {
             case TableRef t when Same(t.Name, word) && schema.FindTable(t.Schema, t.Name) is { } table:
-                return new HoverInfo(range, Describe(table));
+                return Describe(range, table);
             case ColumnRef c when Same(c.Name, word) && token.End == c.End:
                 List<string> qualifiers = c.Qualifier is null ? [] : [.. c.Qualifier.Split('.')];
                 var hits = SqlScopeResolver.Resolve(script, token.Start).Sources
@@ -52,7 +53,7 @@ public static class SqlHoverProvider
                     .OfType<ColumnDefinition>()
                     .Distinct()
                     .ToList();
-                return hits.Count == 1 ? new HoverInfo(range, Describe(hits[0])) : null;
+                return hits.Count == 1 ? Describe(range, hits[0]) : null;
             default:
                 return null;
         }
@@ -60,10 +61,24 @@ public static class SqlHoverProvider
 
     private static bool Same(string a, string b) => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
 
-    private static string Describe(TableInfo t) =>
-        $"**{(t.Kind == TableKind.View ? "view" : "table")}** {(t.Schema is null ? t.Name : t.Schema + "." + t.Name)} " +
-        $"({t.Columns.Count} {(t.Columns.Count == 1 ? "column" : "columns")})";
+    private static HoverInfo Describe(TextRange range, TableInfo t)
+    {
+        var name = t.Schema is null ? t.Name : t.Schema + "." + t.Name;
+        var view = t.Kind == TableKind.View;
+        var markdown = $"**{(view ? "view" : "table")}** {name} ({t.Columns.Count} {(t.Columns.Count == 1 ? "column" : "columns")})";
+        return new HoverInfo(range, markdown, view ? SqlMessageCodes.HoverView : SqlMessageCodes.HoverTable, [t.Columns.Count.ToString(CultureInfo.InvariantCulture), name]);
+    }
 
-    private static string Describe(ColumnDefinition c) =>
-        $"`{c.Name}`: {c.DataType}, {(c.IsNullable ? "nullable" : "not null")}{(c.IsPrimaryKey ? ", PK" : string.Empty)}";
+    private static HoverInfo Describe(TextRange range, ColumnDefinition c)
+    {
+        var markdown = $"`{c.Name}`: {c.DataType}, {(c.IsNullable ? "nullable" : "not null")}{(c.IsPrimaryKey ? ", PK" : string.Empty)}";
+        var code = (c.IsNullable, c.IsPrimaryKey) switch
+        {
+            (true, false) => SqlMessageCodes.HoverColumnNullable,
+            (false, false) => SqlMessageCodes.HoverColumnNotNull,
+            (true, true) => SqlMessageCodes.HoverColumnNullablePk,
+            (false, true) => SqlMessageCodes.HoverColumnNotNullPk,
+        };
+        return new HoverInfo(range, markdown, code, [c.Name, c.DataType]);
+    }
 }

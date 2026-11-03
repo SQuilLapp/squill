@@ -445,11 +445,11 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
             var self = string.Equals(fk.ReferencedTable, design.Name, StringComparison.OrdinalIgnoreCase)
                 && (fk.ReferencedSchema is null || string.Equals(fk.ReferencedSchema, design.Schema, StringComparison.OrdinalIgnoreCase));
             if (!string.IsNullOrWhiteSpace(fk.ReferencedTable) && !self && _session.Schema.FindTable(fk.ReferencedSchema, fk.ReferencedTable) is null)
-                issues.Add(new DesignIssue(DesignIssueSeverity.Error, $"The foreign key '{fk.Name}' references the missing table '{fk.ReferencedTable}'.", fk.Name));
+                issues.Add(new DesignIssue(DesignIssueSeverity.Error, $"The foreign key '{fk.Name}' references the missing table '{fk.ReferencedTable}'.", fk.Name, CoreMessageCodes.DesignForeignKeyTableMissing, [fk.Name, fk.ReferencedTable]));
         }
 
         if (_dialect == DatabaseDialect.Sqlite && Original is not null && _session.Schema.Tables.Any(t => t.Kind == TableKind.View))
-            issues.Add(new DesignIssue(DesignIssueSeverity.Warning, "Views depending on this table are not recreated.", null));
+            issues.Add(new DesignIssue(DesignIssueSeverity.Warning, "Views depending on this table are not recreated.", null, CoreMessageCodes.DesignViewsNotRecreated));
 
         Issues = [.. issues.Where(i => i.Severity == DesignIssueSeverity.Error), .. issues.Where(i => i.Severity != DesignIssueSeverity.Error)];
         HasErrors = issues.Any(i => i.Severity == DesignIssueSeverity.Error);

@@ -1,6 +1,6 @@
 # P10-09 - Core and Sql: stable message codes for issues and diagnostics
 
-Status: todo
+Status: done
 Depends on: P10-02
 
 ## Goal
@@ -18,9 +18,9 @@ Messages produced below Presentation (`DesignValidator`, edit issues, SQL diagno
 - Messages of database engines and drivers (never translated), `ArgumentException`-style guards, Platform exceptions (not shown raw to the user: `SshNetTunnelFactory` and secret-store errors reach the user only through the connection and connection-failed dialogs of P10-10 and P10-15, as raw detail after a translated heading).
 
 ## Tasks
-- [ ] Add the members and codes, set them at every creation site (grep `new DesignIssue(`, `Error(`, `new EditIssue(`, `new SqlDiagnostic(`, `new ParseDiagnostic(`, `new(row`).
-- [ ] Add the `issue.*` catalog entries in French and English and `IssueText`.
-- [ ] Tests: each producer returns the expected code and args for one input per code (`Squill.Core.Tests`, `Squill.Sql.Tests`); the code-to-catalog test in `Squill.Presentation.Tests`; `Message` unchanged (existing tests untouched and green).
+- [x] Add the members and codes, set them at every creation site (grep `new DesignIssue(`, `Error(`, `new EditIssue(`, `new SqlDiagnostic(`, `new ParseDiagnostic(`, `new(row`).
+- [x] Add the `issue.*` catalog entries in French and English and `IssueText`.
+- [x] Tests: each producer returns the expected code and args for one input per code (`Squill.Core.Tests`, `Squill.Sql.Tests`); the code-to-catalog test in `Squill.Presentation.Tests`; `Message` unchanged (existing tests untouched and green).
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` is green.
@@ -28,3 +28,9 @@ Messages produced below Presentation (`DesignValidator`, edit issues, SQL diagno
 
 ## Suggested commit message
 Add stable message codes to design issues, edit issues and SQL diagnostics
+
+## Implementation notes
+- `SqlDiagnostic` already had a `Code` (`SQL0001`/`SQL1001`/`SQL1002`, the stable diagnostic id); the message code is the new trailing member `MessageCode` (with `Args`) so that existing consumers keep working. `ParseDiagnostic`, `HoverInfo`, `DesignIssue` and `EditIssue` use `Code` as the card says.
+- Core codes (design and edit) live in `CoreMessageCodes` (`Squill.Core`), Sql codes (parser, diagnostics, hover) in `SqlMessageCodes` (`Squill.Sql`). Hover texts have codes too (`sql.hover.*`); `sql.hover.table` / `sql.hover.view` use `.one`/`.other` with the column count as `Args[0]`.
+- `IssueText.Format` falls back to `.other`/`.one` plural keys when `issue.<code>` does not exist; `UiText.Has` was added for that.
+- `ChangeSetBuilderTests` now compare `Row`, `Column`, `Message`, `Code` and `Args` explicitly (records holding a list no longer compare equal by value).

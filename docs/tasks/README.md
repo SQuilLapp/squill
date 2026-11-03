@@ -179,7 +179,7 @@ Depends on: <card ids, ranges allowed>
 | [P10-06](phase-10/P10-06-winui-settings-language.md) | WinUI head: language choice in the settings window | P10-04 | done |
 | [P10-07](phase-10/P10-07-formatting-culture.md) | Heads and Presentation: number and date formatting follows the language | P10-02 | done |
 | [P10-08](phase-10/P10-08-winui-loc-properties.md) | WinUI head: catalog markup for tooltips, headers, titles and menus | P10-02 | done |
-| [P10-09](phase-10/P10-09-message-codes.md) | Core and Sql: stable message codes for issues and diagnostics | P10-02 | todo |
+| [P10-09](phase-10/P10-09-message-codes.md) | Core and Sql: stable message codes for issues and diagnostics | P10-02 | done |
 | [P10-10](phase-10/P10-10-migrate-connections.md) | Migrate strings: connection editor, validation and list | P10-03, P10-04, P10-07, P10-08 | todo |
 | [P10-11](phase-10/P10-11-migrate-explorer-and-chrome.md) | Migrate strings: explorer, menus, window chrome and tabs | P10-03, P10-04, P10-07, P10-08 | todo |
 | [P10-12](phase-10/P10-12-migrate-query-and-status.md) | Migrate strings: query tab, parameters, status bar, diagnostics | P10-03, P10-04, P10-07, P10-08, P10-09 | todo |

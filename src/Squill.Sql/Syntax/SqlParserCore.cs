@@ -134,19 +134,24 @@ internal sealed class SqlParserCore
             return true;
         }
 
-        ReportMissing($"Expected '{c}'");
+        ReportMissing($"Expected '{c}'", SqlMessageCodes.ExpectedChar, c.ToString());
         return false;
     }
 
     /// <summary>Records a diagnostic.</summary>
     /// <param name="start">Offset of the first character concerned.</param>
     /// <param name="length">Number of characters concerned.</param>
-    /// <param name="message">The description.</param>
-    public void Report(int start, int length, string message) => Diagnostics.Add(new ParseDiagnostic(start, length, message));
+    /// <param name="message">The description in English.</param>
+    /// <param name="code">The <see cref="SqlMessageCodes"/> identifier of the message.</param>
+    /// <param name="args">Values for the placeholders of the translated message.</param>
+    public void Report(int start, int length, string message, string code, params string[] args) =>
+        Diagnostics.Add(new ParseDiagnostic(start, length, message, code, args));
 
     /// <summary>Records a zero-length diagnostic where the last consumed token ends.</summary>
-    /// <param name="message">The description.</param>
-    public void ReportMissing(string message) => Report(LastEnd, 0, message);
+    /// <param name="message">The description in English.</param>
+    /// <param name="code">The <see cref="SqlMessageCodes"/> identifier of the message.</param>
+    /// <param name="args">Values for the placeholders of the translated message.</param>
+    public void ReportMissing(string message, string code, params string[] args) => Report(LastEnd, 0, message, code, args);
 
     /// <summary>Consumes tokens up to, not including, the <c>)</c> that closes the current level.</summary>
     public void SkipToCloseParen()
