@@ -131,6 +131,8 @@ public sealed partial class EnforcementTests(ITestOutputHelper output)
             foreach (Match m in KeyLikeLiteral().Matches(File.ReadAllText(file)))
                 referenced.Add(m.Groups.Cast<Group>().Skip(1).First(g => g.Success).Value);
 
+        Assert.NotEmpty(referenced);
+
         // Warning level: dead keys are printed, never failing.
         var unused = UiTextCatalogEn.Entries.Select(e => e.Key)
             .Where(k => !referenced.Contains(k) && !referenced.Contains(k.EndsWith(".one", StringComparison.Ordinal) || k.EndsWith(".other", StringComparison.Ordinal) ? k[..k.LastIndexOf('.')] : k))
