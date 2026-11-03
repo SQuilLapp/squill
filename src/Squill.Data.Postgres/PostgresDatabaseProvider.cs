@@ -27,10 +27,14 @@ public sealed class PostgresDatabaseProvider : IDatabaseProvider
         return builder.ConnectionString;
     }
 
+    // The slim builder keeps the AOT footprint small; arrays are needed by the schema queries and array columns.
+    private static NpgsqlDataSource BuildDataSource(string connectionString) =>
+        new NpgsqlSlimDataSourceBuilder(connectionString).EnableArrays().Build();
+
     /// <inheritdoc />
     public async ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken)
     {
-        var dataSource = new NpgsqlSlimDataSourceBuilder(BuildConnectionString(profile, password)).Build();
+        var dataSource = BuildDataSource(BuildConnectionString(profile, password));
         try
         {
             var connection = await dataSource.OpenConnectionAsync(cancellationToken);

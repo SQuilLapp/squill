@@ -14,5 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../Shared/DmlScenario.cs" Link="DmlScenario.cs" />
+    <Content Include="../Shared/SampleSchema/postgres.sql" Link="SampleSchema/postgres.sql" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

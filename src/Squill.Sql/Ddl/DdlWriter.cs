@@ -59,7 +59,7 @@ internal static class DdlWriter
         string.Join(", ", names.Select(n => SqlQuoting.Quote(n, d)));
 
     private static string IndexName(string? schema, string name, DatabaseDialect d) =>
-        d is DatabaseDialect.PostgreSql or DatabaseDialect.Sqlite && !(d == DatabaseDialect.Sqlite && schema == "main")
+        d == DatabaseDialect.Sqlite && schema != "main"
             ? SqlQuoting.QualifiedName(schema, name, d)
             : SqlQuoting.Quote(name, d);
 

@@ -82,7 +82,7 @@ public sealed class DdlCreateDropTests
     }
 
     [Theory]
-    [InlineData(DatabaseDialect.PostgreSql, "CREATE INDEX \"s\".\"ix\" ON \"s\".\"t\" (\"a\")")]
+    [InlineData(DatabaseDialect.PostgreSql, "CREATE INDEX \"ix\" ON \"s\".\"t\" (\"a\")")]
     [InlineData(DatabaseDialect.SqlServer, "CREATE INDEX [ix] ON [s].[t] ([a])")]
     [InlineData(DatabaseDialect.MySql, "CREATE INDEX `ix` ON `s`.`t` (`a`)")]
     [InlineData(DatabaseDialect.Sqlite, "CREATE INDEX \"s\".\"ix\" ON \"s\".\"t\" (\"a\")")]

@@ -77,7 +77,7 @@ public sealed class PostgresAlterTests
         var o = With(Base(), indexes: [new IndexDesign("ix_a", "ix_a", false, ["a"])]);
         var e = With(o, indexes: [new IndexDesign(null, "ix_b", true, ["b"])]);
         Assert.Equal(
-            ["DROP INDEX \"public\".\"ix_a\"", "CREATE UNIQUE INDEX \"public\".\"ix_b\" ON \"public\".\"t\" (\"b\")"],
+            ["DROP INDEX \"public\".\"ix_a\"", "CREATE UNIQUE INDEX \"ix_b\" ON \"public\".\"t\" (\"b\")"],
             Alter(o, e));
         Assert.Equal(["DROP INDEX \"ix_a\""], Alter(o with { Schema = null }, e with { Schema = null, Indexes = [] }));
     }

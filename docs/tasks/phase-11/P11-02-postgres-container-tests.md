@@ -1,6 +1,6 @@
 # P11-02 - PostgreSQL container tests run and pass
 
-Status: todo
+Status: done
 Depends on: P11-01
 
 ## Goal
@@ -16,9 +16,9 @@ Every Docker-gated test of `tests/Squill.Data.Postgres.Tests` (provider, schema 
 - Display and edit behaviour of those types (P11-25, P11-26), new features.
 
 ## Tasks
-- [ ] Run, list failures, fix them one by one.
-- [ ] Add the sample schema and its test.
-- [ ] Re-run until green twice in a row (a flaky test gets its cause fixed).
+- [x] Run, list failures, fix them one by one.
+- [x] Add the sample schema and its test.
+- [x] Re-run until green twice in a row (a flaky test gets its cause fixed).
 
 ## Acceptance criteria
 - `rtk pwsh eng/run-docker-tests.ps1 -Engine postgres` is green; the report gives the number of tests run (not skipped) and the failures fixed.
@@ -27,3 +27,9 @@ Every Docker-gated test of `tests/Squill.Data.Postgres.Tests` (provider, schema 
 
 ## Suggested commit message
 Run and fix the PostgreSQL container tests, add the sample schema
+
+## Report
+- 22 container tests run, 0 skipped, green twice in a row (about 7 s per run, so the per-class fixture stays).
+- Provider bug: `PostgresDatabaseProvider` built the data source with `NpgsqlSlimDataSourceBuilder` without `EnableArrays()`, so the schema reader failed on `text[]` (9 failures). Fixed.
+- Generator bug: `CREATE INDEX "schema"."name"` is a syntax error on PostgreSQL (the index lives in the table's schema); the name is now unqualified (SQLite keeps the qualified form). Two unit-test expectations (`DdlCreateDropTests`, `PostgresAlterTests`) encoded the wrong SQL and were corrected.
+- Added `tests/Shared/SampleSchema/postgres.sql` (schema `sample`) and `SampleSchemaTests`.
