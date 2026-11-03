@@ -106,7 +106,7 @@
                       <Canvas Width="24" Height="24"><Path Data="M12,5 V19 M5,12 H19" Stroke="{ThemeResource SquillFg2Brush}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" /></Canvas>
                     </Viewbox>
                     <TextBlock loc:Loc.Key="designer.addColumn" />
-                    <ContentControl Style="{StaticResource KeyboardChipStyle}" Content="Ctrl+Inser" />
+                    <ContentControl Style="{StaticResource KeyboardChipStyle}" loc:Loc.Key="designer.addColumnShortcut" />
                   </StackPanel>
                 </Button>
                 <Button Grid.Column="1" Margin="6,0,0,0" Height="28" MinHeight="28" loc:Loc.Key="designer.delete"

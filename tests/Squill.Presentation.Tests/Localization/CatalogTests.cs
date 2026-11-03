@@ -46,6 +46,7 @@ public sealed partial class CatalogTests
         "er.orthogonal", // same word
         "er.types", // same word
         "er.tables", // TABLES · {0} / {1}, same word
+        "er.title", // ER - {0}, same text
         "er.relationFrom", // only symbols and placeholders
     ];
 

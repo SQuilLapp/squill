@@ -13,8 +13,6 @@ namespace Squill.Presentation.Designer;
 /// <summary>Edits the draft of a new or existing table, validates it, generates the script and applies it to the database.</summary>
 public sealed partial class TableDesignerViewModel : ViewModelBase
 {
-    private const string MySqlWarning = "MySQL does not roll back DDL: statements before the failing one were applied";
-
     private readonly ConnectionSession _session;
     private readonly IDialogService _dialogs;
     private readonly DatabaseDialect _dialect;
@@ -226,11 +224,11 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
     private async Task ApplyAsync()
     {
         var warnings = Issues.Where(i => i.Severity != DesignIssueSeverity.Error).Select(i => i.Message).ToList();
-        if (warnings.Count > 0 && !await _dialogs.ConfirmAsync("Apply changes", string.Join("\n", warnings)))
+        if (warnings.Count > 0 && !await _dialogs.ConfirmAsync(UiText.Get("designer.applyChanges"), string.Join("\n", warnings)))
             return;
 
         IsApplying = true;
-        StatusText = "Applying...";
+        StatusText = UiText.Get("designer.applying");
         using var cts = new CancellationTokenSource();
         _cts = cts;
         var statements = _statements;
@@ -273,7 +271,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
 
             await _session.RefreshSchemaAsync(cts.Token);
             Reload();
-            StatusText = $"Applied {statements.Count} statement(s)";
+            StatusText = UiText.FormatPlural("designer.applied", statements.Count);
         }
         catch (Exception ex)
         {
@@ -286,10 +284,10 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
                     await TryRunAsync(pragma);
             }
 
-            var message = ex is OperationCanceledException ? "Cancelled" : ex.Message;
+            var message = ex is OperationCanceledException ? UiText.Get("query.cancelled") : ex.Message;
             if (!transactional)
             {
-                message += $"{System.Environment.NewLine}{MySqlWarning}";
+                message += System.Environment.NewLine + UiText.Get("designer.mySqlNoRollback");
                 try
                 {
                     await _session.RefreshSchemaAsync(CancellationToken.None);
@@ -300,8 +298,8 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
                 }
             }
 
-            StatusText = "Apply failed";
-            await _dialogs.ShowErrorAsync("Apply failed", message);
+            StatusText = UiText.Get("designer.applyFailed");
+            await _dialogs.ShowErrorAsync(UiText.Get("designer.applyFailed"), message);
         }
         finally
         {
@@ -451,6 +449,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         if (_dialect == DatabaseDialect.Sqlite && Original is not null && _session.Schema.Tables.Any(t => t.Kind == TableKind.View))
             issues.Add(new DesignIssue(DesignIssueSeverity.Warning, "Views depending on this table are not recreated.", null, CoreMessageCodes.DesignViewsNotRecreated));
 
+        issues = [.. issues.Select(i => i with { Message = IssueText.Format(i.Code, i.Args, i.Message) })];
         Issues = [.. issues.Where(i => i.Severity == DesignIssueSeverity.Error), .. issues.Where(i => i.Severity != DesignIssueSeverity.Error)];
         HasErrors = issues.Any(i => i.Severity == DesignIssueSeverity.Error);
         HasChanges = Original is null || TableDiff.Compute(Original, design).Count > 0;

@@ -1,6 +1,6 @@
 # P10-14 - Migrate strings: table designer and ER diagram
 
-Status: todo
+Status: done
 Depends on: P10-03, P10-04, P10-07, P10-08, P10-09
 
 ## Goal
@@ -17,9 +17,9 @@ Follow `docs/tasks/phase-10/migration-recipe.md`. Area `designer-er` of `invento
 - Workspace-level dialogs (P10-16).
 
 ## Tasks
-- [ ] Migrate every `designer-er` inventory line and tick it.
-- [ ] Tests per recipe rule 7 (title new/existing, each warning and error issue in both languages, apply failure heading with raw engine message).
-- [ ] English captures: designer on a new and an existing table with issues, ER diagram with tooltip, both heads.
+- [x] Migrate every `designer-er` inventory line and tick it.
+- [x] Tests per recipe rule 7 (title new/existing, each warning and error issue in both languages, apply failure heading with raw engine message).
+- [ ] English captures: designer on a new and an existing table with issues, ER diagram with tooltip, both heads. (not done: designer and ER screens could not be driven headless; to check by hand)
 
 ## Acceptance criteria
 - Common criteria of the recipe.

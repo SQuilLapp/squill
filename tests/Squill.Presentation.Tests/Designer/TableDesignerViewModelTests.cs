@@ -155,10 +155,10 @@ public sealed class TableDesignerViewModelTests
         Assert.True(f.Vm.HasErrors);
 
         fk.ReferencedTable = "people";
-        Assert.DoesNotContain(f.Vm.Issues, i => i.Message.Contains("missing table", StringComparison.Ordinal));
+        Assert.DoesNotContain(f.Vm.Issues, i => i.Message.Contains("ghosts", StringComparison.Ordinal));
 
         fk.ReferencedTable = f.Vm.Name;
-        Assert.DoesNotContain(f.Vm.Issues, i => i.Message.Contains("missing table", StringComparison.Ordinal));
+        Assert.DoesNotContain(f.Vm.Issues, i => i.Message.Contains("ghosts", StringComparison.Ordinal));
     }
 
     [Theory]
@@ -217,7 +217,7 @@ public sealed class TableDesignerViewModelTests
 
         Assert.Equal(["BEGIN", f.Connection.Executed[1], "ROLLBACK"], f.Connection.Executed);
         var error = Assert.Single(f.Dialogs.Errors);
-        Assert.Equal("Apply failed", error.Title);
+        Assert.Equal("Échec de l'application", error.Title);
         Assert.Contains("boom failed", error.Message, StringComparison.Ordinal);
         Assert.Equal("orders", f.Vm.Name);
         Assert.True(f.Vm.HasChanges);
@@ -233,7 +233,73 @@ public sealed class TableDesignerViewModelTests
         await f.Vm.ApplyCommand.ExecuteAsync(null);
 
         Assert.DoesNotContain("ROLLBACK", f.Connection.Executed);
-        Assert.Contains("MySQL does not roll back DDL: statements before the failing one were applied", Assert.Single(f.Dialogs.Errors).Message, StringComparison.Ordinal);
+        Assert.Contains("MySQL n'annule pas le DDL", Assert.Single(f.Dialogs.Errors).Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Échec de l'application", "MySQL n'annule pas le DDL", "boom failed")]
+    [InlineData(UiLanguage.English, "Apply failed", "MySQL does not roll back DDL", "boom failed")]
+    public async Task Apply_Failure_HasTranslatedHeadingAndRawEngineMessage(UiLanguage language, string heading, string note, string raw)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture(DatabaseDialect.MySql);
+        f.Connection.FailOn = "CREATE TABLE";
+
+        await f.Vm.ApplyCommand.ExecuteAsync(null);
+
+        var (title, message) = Assert.Single(f.Dialogs.Errors);
+        Assert.Equal(heading, title);
+        Assert.Equal(heading, f.Vm.StatusText);
+        Assert.Contains(raw, message, StringComparison.Ordinal);
+        Assert.Contains(note, message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Appliquer les modifications", "Les vues qui dépendent de cette table ne sont pas recréées.", "instruction")]
+    [InlineData(UiLanguage.English, "Apply changes", "Views depending on this table are not recreated.", "statement")]
+    public async Task Apply_Warning_Confirmation_IsInTheChosenLanguage(UiLanguage language, string heading, string warning, string unit)
+    {
+        using var _ = UiText.Override(language);
+        var view = new TableInfo("main", "v", TableKind.View, [], [], [], null);
+        var f = new Fixture(DatabaseDialect.Sqlite, SqliteTable(), view);
+        f.Vm.Columns[1].Name = "title";
+
+        await f.Vm.ApplyCommand.ExecuteAsync(null);
+
+        var (title, message) = Assert.Single(f.Dialogs.Confirms);
+        Assert.Equal(heading, title);
+        Assert.Equal(warning, message);
+        Assert.Contains(unit, f.Vm.StatusText, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "La table n'a aucune colonne.")]
+    [InlineData(UiLanguage.English, "The table has no column.")]
+    public void ErrorIssue_IsInTheChosenLanguage(UiLanguage language, string text)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture();
+
+        f.Vm.Columns.Clear();
+
+        Assert.Contains(f.Vm.Issues, i => i.Message == text);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "La clé étrangère 'fk' référence la table manquante 'ghosts'.")]
+    [InlineData(UiLanguage.English, "The foreign key 'fk' references the missing table 'ghosts'.")]
+    public void MissingTargetIssue_IsInTheChosenLanguage(UiLanguage language, string text)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture();
+        f.Vm.AddForeignKeyCommand.Execute(null);
+        var fk = f.Vm.ForeignKeys[0];
+        fk.Name = "fk";
+        fk.ColumnsText = "id";
+        fk.ReferencedColumnsText = "id";
+        fk.ReferencedTable = "ghosts";
+
+        Assert.Contains(f.Vm.Issues, i => i.Message == text);
     }
 
     [Fact]
@@ -242,7 +308,7 @@ public sealed class TableDesignerViewModelTests
         var view = new TableInfo("main", "v", TableKind.View, [], [], [], null);
         var f = new Fixture(DatabaseDialect.Sqlite, SqliteTable(), view);
         f.Vm.Columns[1].Name = "title";
-        Assert.Contains(f.Vm.Issues, i => i.Severity == DesignIssueSeverity.Warning && i.Message.Contains("Views", StringComparison.Ordinal));
+        Assert.Contains(f.Vm.Issues, i => i.Severity == DesignIssueSeverity.Warning && i.Code == CoreMessageCodes.DesignViewsNotRecreated);
 
         f.Dialogs.ConfirmResult = false;
         await f.Vm.ApplyCommand.ExecuteAsync(null);
@@ -262,7 +328,7 @@ public sealed class TableDesignerViewModelTests
 
         await f.Vm.ApplyCommand.ExecuteAsync(null);
 
-        Assert.Equal("Applied 1 statement(s)", f.Vm.StatusText);
+        Assert.Equal("1 instruction appliquée", f.Vm.StatusText);
         Assert.NotNull(f.Vm.Original);
         Assert.Equal("Concevoir new_table", f.Vm.Title);
         Assert.False(f.Vm.HasChanges);
