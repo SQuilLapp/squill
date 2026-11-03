@@ -1,6 +1,6 @@
 # P10-04 - Presentation: language at startup and in the settings view-model
 
-Status: todo
+Status: done
 Depends on: P10-01, P10-02
 
 ## Goal
@@ -18,9 +18,9 @@ Resolve the language once at startup (before any view-model or window exists), a
 - The language row in the settings windows (P10-05, P10-06), formatting of numbers and dates (P10-07), migrating any string.
 
 ## Tasks
-- [ ] `LanguageResolver`, `LanguageSetup`, `AppComposition` call, view-model members, catalog keys.
-- [ ] Tests in `tests/Squill.Presentation.Tests`: resolver table, `Apply` with a fake `ISettingsStore` (each `AppLanguage`, env override valid and invalid), cultures set, `RestartRequired` true/false/after load, language saved and reloaded through the view-model.
-- [ ] Document `SQUILL_LANGUAGE` in `tools/visual/README.md` and the project README (one line each).
+- [x] `LanguageResolver`, `LanguageSetup`, `AppComposition` call, view-model members, catalog keys.
+- [x] Tests in `tests/Squill.Presentation.Tests`: resolver table, `Apply` with a fake `ISettingsStore` (each `AppLanguage`, env override valid and invalid), cultures set, `RestartRequired` true/false/after load, language saved and reloaded through the view-model.
+- [x] Document `SQUILL_LANGUAGE` in `tools/visual/README.md` and the project README (one line each).
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings.

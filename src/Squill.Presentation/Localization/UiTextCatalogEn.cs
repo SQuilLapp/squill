@@ -54,6 +54,7 @@ internal static class UiTextCatalogEn
         ("results.search", "Search"),
         ("results.export", "Export"),
         ("results.exportRows", "EXPORT {0} ROWS"),
+        ("results.empty", "Run a query to see the results here."),
         ("results.readOnly", "Read-only · {0}"),
         ("results.editable", "Editable · primary key {0}"),
         ("results.footer", "Rows 1–{0} of {1} loaded"),
@@ -255,5 +256,10 @@ internal static class UiTextCatalogEn
         ("settings.dataFolderTitle", "Data folder"),
         ("settings.dataFolderDesc", "Contains the profiles, the settings and the history."),
         ("settings.back", "Back"),
+        ("settings.language.system", "System default"),
+        ("settings.language.french", "Français"),
+        ("settings.language.english", "English"),
+        ("settings.language", "Language"),
+        ("settings.restartNeeded", "Restart SQuilL to apply the language."),
     ];
 }

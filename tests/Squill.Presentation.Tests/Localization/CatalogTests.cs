@@ -12,6 +12,8 @@ public sealed partial class CatalogTests
     // Keys whose English text is legitimately identical to the French one.
     private static readonly HashSet<string> SameInBothLanguages =
     [
+        "settings.language.french", // language names are shown in their own language
+        "settings.language.english", // language names are shown in their own language
         "explorer.tables", // same word
         "properties.kindTable", // same word
         "results.messages", // same word

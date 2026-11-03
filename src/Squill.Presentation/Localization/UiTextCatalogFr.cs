@@ -256,5 +256,10 @@ internal static class UiTextCatalogFr
         ("settings.dataFolderTitle", "Dossier de données"),
         ("settings.dataFolderDesc", "Contient les profils, les paramètres et l'historique."),
         ("settings.back", "Retour"),
+        ("settings.language.system", "Par défaut du système"),
+        ("settings.language.french", "Français"),
+        ("settings.language.english", "English"),
+        ("settings.language", "Langue"),
+        ("settings.restartNeeded", "Redémarrez SQuilL pour appliquer la langue."),
     ];
 }
