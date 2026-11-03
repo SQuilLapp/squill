@@ -1,6 +1,8 @@
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Squill.App.WinUI.Views;
 
@@ -28,6 +30,49 @@ internal static class CaptionBar
         titleBar.ButtonPressedForegroundColor = Tokens.Color(root, "SquillFgBrush");
     }
 
+    /// <summary>
+    /// Replaces the native caption bar of a secondary window by a drawn one like the main window's: the system bar leaves a
+    /// light 1 px line between itself and the content in the dark theme.
+    /// </summary>
+    /// <param name="window">The secondary window; its <see cref="Window.Title"/> is shown on the bar.</param>
+    /// <param name="root">The root element of its content, whose actual theme decides the colors.</param>
+    public static void Extend(Window window, FrameworkElement root)
+    {
+        var icon = new Image
+        {
+            Width = 16,
+            Height = 16,
+            Margin = new Thickness(12, 0, 8, 0),
+            Source = new BitmapImage(new Uri(Path.Combine(AppContext.BaseDirectory, "Assets", "squill-32.png"))),
+        };
+        var title = new TextBlock { FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
+        var bar = new Border
+        {
+            Height = 32,
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Child = new StackPanel { Orientation = Orientation.Horizontal, Children = { icon, title } },
+        };
+        var content = (UIElement)window.Content;
+        var frame = new Grid { RowDefinitions = { new RowDefinition { Height = GridLength.Auto }, new RowDefinition() } };
+        window.Content = frame;
+        frame.Children.Add(bar);
+        Grid.SetRow((FrameworkElement)content, 1);
+        frame.Children.Add(content);
+        window.ExtendsContentIntoTitleBar = true;
+        window.SetTitleBar(bar);
+        void Repaint()
+        {
+            title.Text = window.Title;
+            title.Foreground = Tokens.Brush(root, "SquillFg2Brush");
+            bar.Background = Tokens.Brush(root, "SquillBgBaseBrush");
+            bar.BorderBrush = Tokens.Brush(root, "SquillBorderSubtleBrush");
+            Paint(window.AppWindow.TitleBar, root, true);
+        }
+
+        root.Loaded += (_, _) => Repaint();
+        root.ActualThemeChanged += (_, _) => Repaint();
+    }
+
     /// <summary>Makes a secondary window follow the theme of the main window, caption bar included, for as long as it is open.</summary>
     /// <param name="window">The secondary window.</param>
     /// <param name="root">The root element of its content.</param>
@@ -35,13 +80,10 @@ internal static class CaptionBar
     public static void Follow(Window window, FrameworkElement root, FrameworkElement ownerRoot)
     {
         void Sync() => root.RequestedTheme = ownerRoot.RequestedTheme;
-        void Repaint(FrameworkElement sender, object args) => Paint(window.AppWindow.TitleBar, root, false);
-        Sync();
-        ownerRoot.ActualThemeChanged += Resync;
-        root.ActualThemeChanged += Repaint;
-        root.Loaded += (_, _) => Repaint(root, null!);
-        window.Closed += (_, _) => ownerRoot.ActualThemeChanged -= Resync;
-
         void Resync(FrameworkElement sender, object args) => Sync();
+        Sync();
+        Extend(window, root);
+        ownerRoot.ActualThemeChanged += Resync;
+        window.Closed += (_, _) => ownerRoot.ActualThemeChanged -= Resync;
     }
 }
