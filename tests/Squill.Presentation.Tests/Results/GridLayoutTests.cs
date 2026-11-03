@@ -114,4 +114,21 @@ public sealed class GridLayoutTests
         Assert.Equal(0, layout.MaxScrollY(3, 500));
         Assert.Equal(40, layout.MaxScrollY(10, 160));
     }
+
+    [Fact]
+    public void MeasureStaysPendingForALargeSourceWithoutWidths()
+    {
+        var layout = new GridLayout(20, 30);
+        Assert.True(layout.NeedsMeasure(true, 200_000, 100, false));
+        Assert.True(layout.NeedsMeasure(false, 200_000, 100, false));
+    }
+
+    [Fact]
+    public void MeasureStopsOnceTheSampleIsFullOrTheUserResized()
+    {
+        var layout = Make(80, 80);
+        Assert.False(layout.NeedsMeasure(false, 200_000, 100, false));
+        Assert.True(layout.NeedsMeasure(false, 50, 100, false));
+        Assert.False(layout.NeedsMeasure(false, 50, 100, true));
+    }
 }

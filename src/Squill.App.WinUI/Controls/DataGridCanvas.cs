@@ -427,7 +427,8 @@ public sealed partial class DataGridCanvas : Grid
     private void OnSourceChanged(object? sender, EventArgs e)
     {
         // Rows still streaming in: re-measure on the next draw until the sample is full, unless the user chose the widths.
-        _needsMeasure = !_userResized && (_source?.RowCount ?? 0) <= SampleRows;
+        // A pending measure must survive, or a source swapped in with more than SampleRows rows keeps zero columns.
+        _needsMeasure = _layout.NeedsMeasure(_needsMeasure, _source?.RowCount ?? 0, SampleRows, _userResized);
         SetScroll(_scrollX, _scrollY);
         _canvas.Invalidate();
     }
