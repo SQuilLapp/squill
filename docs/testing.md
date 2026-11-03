@@ -34,4 +34,4 @@ pwsh eng/run-docker-tests.ps1 -Engine postgres -Filter '--filter-class *Postgres
 
 ## CI
 
-CI runs on Linux with real Docker and keeps Ryuk enabled (P11-05); this script is only for Podman workstations.
+CI runs on Linux with real Docker and keeps Ryuk enabled. In the `linux` job of `.github/workflows/ci.yml`, the full-solution test step runs with the gate off; a later step pulls the three images, then runs the PostgreSQL, MySQL and SQL Server test projects with `SQUILL_DOCKER_TESTS=1`. This script is only for Podman workstations.

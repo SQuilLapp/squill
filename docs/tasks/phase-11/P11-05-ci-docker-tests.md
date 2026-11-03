@@ -1,6 +1,6 @@
 # P11-05 - CI runs the Docker-gated tests on Linux
 
-Status: todo
+Status: done
 Depends on: P11-02, P11-03, P11-04
 
 ## Goal
@@ -16,7 +16,7 @@ Once green locally, the container tests also run on every push so that an engine
 - Windows CI containers, nightly schedules.
 
 ## Tasks
-- [ ] Edit the workflow, push, then check `rtk gh run list --branch phase-11-engine-parity --limit 1` once; if the run has not finished, report "not verified" with the run URL instead of waiting.
+- [x] Edit the workflow, push, then check `rtk gh run list --branch phase-11-engine-parity --limit 1` once; if the run has not finished, report "not verified" with the run URL instead of waiting.
 
 ## Acceptance criteria
 - The workflow YAML is valid (the run starts).
