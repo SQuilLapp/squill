@@ -173,7 +173,7 @@ Depends on: <card ids, ranges allowed>
 | [P9-27](phase-9/P9-27-explorer-folder-counts.md) | Explorer: object counts on schema and folder rows (both heads) | P9-26 | done |
 | [P10-01](phase-10/P10-01-platform-language-setting.md) | Platform: language setting | none | done |
 | [P10-02](phase-10/P10-02-bilingual-catalog.md) | Presentation: bilingual string catalog (fr and en, plurals, parity tests) | P10-01 | done |
-| [P10-03](phase-10/P10-03-string-inventory.md) | Tests: hard-coded string scanner and inventory | none | todo |
+| [P10-03](phase-10/P10-03-string-inventory.md) | Tests: hard-coded string scanner and inventory | none | done |
 | [P10-04](phase-10/P10-04-startup-language-and-settings-vm.md) | Presentation: language at startup and in the settings view-model | P10-01, P10-02 | todo |
 | [P10-05](phase-10/P10-05-avalonia-settings-language.md) | Avalonia head: language choice in the settings window | P10-04 | todo |
 | [P10-06](phase-10/P10-06-winui-settings-language.md) | WinUI head: language choice in the settings window | P10-04 | todo |

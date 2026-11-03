@@ -1,6 +1,6 @@
 # P10-03 - Inventory of hard-coded user-visible strings
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -23,9 +23,9 @@ A scanner and a committed, checkable list of every user-visible string that is s
 - Migrating any string, any assertion that the inventory is empty (P10-17).
 
 ## Tasks
-- [ ] Scanner, area table, ignore file, generator test.
-- [ ] Unit tests of the scanner on small inline samples (one per kind and one per skip rule).
-- [ ] Generate and commit `docs/tasks/phase-10/inventory.md`; the report gives the count per area.
+- [x] Scanner, area table, ignore file, generator test.
+- [x] Unit tests of the scanner on small inline samples (one per kind and one per skip rule).
+- [x] Generate and commit `docs/tasks/phase-10/inventory.md`; the report gives the count per area.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` exits 0 with 0 warnings.
