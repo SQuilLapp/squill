@@ -25,24 +25,20 @@ public sealed partial class SettingsWindow : Window
 
     /// <summary>Creates the window bound to the settings.</summary>
     /// <param name="owner">The main window; it stays disabled while this window is open.</param>
-    /// <param name="theme">The theme of the main window.</param>
     /// <param name="settings">The settings to show and edit.</param>
     /// <param name="dataDirectory">The directory holding profiles, settings and history, shown on the Advanced page.</param>
-    public SettingsWindow(Window owner, ElementTheme theme, SettingsViewModel settings, string dataDirectory)
+    public SettingsWindow(Window owner, SettingsViewModel settings, string dataDirectory)
     {
         InitializeComponent();
         _owner = owner;
         _settings = settings;
         _dataDirectory = dataDirectory;
-        Root.RequestedTheme = theme;
+        CaptionBar.Follow(this, Root, ((FrameworkElement)owner.Content));
         Title = UiText.Get("settings.title");
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "squill.ico"));
-        BackButton.Content = Icons.Create("SquillIconArrowLeft", 16, Tokens.Brush(Root, "SquillFg2Brush"));
         ToolTipService.SetToolTip(BackButton, UiText.Get("settings.back"));
-        Nav(NavAppearance, "SquillIconView", "settings.appearance");
-        Nav(NavEditor, "SquillIconSnippets", "settings.editor");
-        Nav(NavGrid, "SquillIconTable", "settings.grid");
-        Nav(NavAdvanced, "SquillIconSettings", "settings.advanced");
+        BuildNav();
+        Root.ActualThemeChanged += (_, _) => BuildNav();
         foreach (var value in Enum.GetValues<KeywordCase>())
             KeywordCaseBox.Items.Add(value);
 
@@ -65,6 +61,16 @@ public sealed partial class SettingsWindow : Window
         2 => ThemeDark,
         _ => ThemeSystem,
     };
+
+    // The icons and labels hold brushes of the theme they were built in, so they are built again when it changes.
+    private void BuildNav()
+    {
+        BackButton.Content = Icons.Create("SquillIconArrowLeft", 16, Tokens.Brush(Root, "SquillFg2Brush"));
+        Nav(NavAppearance, "SquillIconView", "settings.appearance");
+        Nav(NavEditor, "SquillIconSnippets", "settings.editor");
+        Nav(NavGrid, "SquillIconTable", "settings.grid");
+        Nav(NavAdvanced, "SquillIconSettings", "settings.advanced");
+    }
 
     private void Nav(RadioButton item, string icon, string key) =>
         item.Content = new StackPanel

@@ -21,6 +21,8 @@ public sealed partial class StyleGalleryWindow : Window
             "Dark" => ElementTheme.Dark,
             _ => ElementTheme.Default,
         };
+        Root.ActualThemeChanged += (_, _) => CaptionBar.Paint(AppWindow.TitleBar, Root, false);
+        Root.Loaded += (_, _) => CaptionBar.Paint(AppWindow.TitleBar, Root, false);
     }
 
     /// <summary>Gets whether the environment asks for the gallery instead of the app.</summary>
