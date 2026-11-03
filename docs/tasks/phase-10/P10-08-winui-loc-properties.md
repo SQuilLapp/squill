@@ -1,6 +1,6 @@
 # P10-08 - WinUI head: catalog markup for tooltips, headers, titles and menus
 
-Status: todo
+Status: done
 Depends on: P10-02
 
 ## Goal
@@ -21,8 +21,8 @@ Depends on: P10-02
 - Migrating strings in bulk, Avalonia.
 
 ## Tasks
-- [ ] Add the five properties with XML doc.
-- [ ] Smoke use in two places; verify by launching the exe with `SQUILL_LANGUAGE=en` and hovering / opening the menu (capture or "to check by hand" in the report).
+- [x] Add the five properties with XML doc.
+- [x] Smoke use in two places; verify by launching the exe with `SQUILL_LANGUAGE=en` and hovering / opening the menu (capture or "to check by hand" in the report).
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` is green.

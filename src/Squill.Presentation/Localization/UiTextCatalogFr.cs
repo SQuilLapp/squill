@@ -220,6 +220,7 @@ internal static class UiTextCatalogFr
         ("er.keysOnlyCollapsed", "Clés seulement si replié"),
         ("er.export", "Exporter"),
         ("er.exportSvg", "SVG vectoriel"),
+        ("er.depthTooltip", "Sauts de relation"),
         ("er.tables", "TABLES · {0} / {1}"),
         ("er.hint", "Molette : zoom · Espace + glisser : déplacer"),
         ("er.filter", "Filtrer les tables"),

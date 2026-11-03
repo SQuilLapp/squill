@@ -220,6 +220,7 @@ internal static class UiTextCatalogEn
         ("er.keysOnlyCollapsed", "Keys only when collapsed"),
         ("er.export", "Export"),
         ("er.exportSvg", "Vector SVG"),
+        ("er.depthTooltip", "Relation hops"),
         ("er.tables", "TABLES · {0} / {1}"),
         ("er.hint", "Wheel: zoom · Space + drag: pan"),
         ("er.filter", "Filter tables"),
