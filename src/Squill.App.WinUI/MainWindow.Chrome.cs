@@ -74,16 +74,7 @@ public sealed partial class MainWindow
         PaintRail();
         TabStripBar.Background = Tokens.Brush(Root, "SquillBgSurfaceBrush");
         TabStripBar.BorderBrush = Tokens.Brush(Root, "SquillBorderSubtleBrush");
-        var titleBar = AppWindow.TitleBar;
-        titleBar.BackgroundColor = Colors.Transparent;
-        titleBar.ButtonBackgroundColor = Colors.Transparent;
-        titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-        titleBar.ButtonForegroundColor = Tokens.Color(Root, "SquillFgBrush");
-        titleBar.ButtonInactiveForegroundColor = Tokens.Color(Root, "SquillFgDisabledBrush");
-        titleBar.ButtonHoverBackgroundColor = Tokens.Color(Root, "SquillBgHoverBrush");
-        titleBar.ButtonHoverForegroundColor = Tokens.Color(Root, "SquillFgBrush");
-        titleBar.ButtonPressedBackgroundColor = Tokens.Color(Root, "SquillBgActiveBrush");
-        titleBar.ButtonPressedForegroundColor = Tokens.Color(Root, "SquillFgBrush");
+        CaptionBar.Paint(AppWindow.TitleBar, Root, true);
     }
 
     private void BuildCommandSearch()

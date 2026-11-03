@@ -183,7 +183,7 @@
         <c:DataGridView Name="ResultGrid" />
         <TextBlock Name="Message" Margin="12" TextWrapping="Wrap" IsVisible="False"
                    Foreground="{DynamicResource SquillFgBrush}" />
-        <TextBlock Name="Empty" Margin="12" Text="Run a query to see results here."
+        <TextBlock Name="Empty" Margin="12" Text=""
                    Foreground="{DynamicResource SquillFg3Brush}" />
       </Grid>
       <Border Name="Footer" Grid.Row="4" Height="26" Padding="12,0" IsVisible="False" Background="{DynamicResource SquillBgSurfaceBrush}"

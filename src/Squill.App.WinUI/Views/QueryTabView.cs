@@ -37,7 +37,7 @@ public sealed partial class QueryTabView : UserControl
     private readonly Border _snippetsTabBar = new() { BorderThickness = new Thickness(0, 0, 0, 2) };
     private readonly DataGridView _grid = new();
     private readonly TextBlock _message = new() { Margin = new Thickness(12), TextWrapping = TextWrapping.Wrap, Foreground = Brush("SquillFgBrush"), Visibility = Visibility.Collapsed };
-    private readonly TextBlock _empty = new() { Margin = new Thickness(12), Text = "Run a query to see results here.", Foreground = Brush("SquillFg3Brush") };
+    private readonly TextBlock _empty = new() { Margin = new Thickness(12), Text = UiText.Get("results.empty"), Foreground = Brush("SquillFg3Brush") };
     private readonly ProgressBar _progress = new() { IsIndeterminate = true, Height = 2, Visibility = Visibility.Collapsed };
     private readonly StackPanel _resultTabs = new() { Orientation = Orientation.Horizontal, Spacing = 2 };
     private readonly Button _exportButton = new() { Height = 26, MinHeight = 26, Padding = new Thickness(10, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center };
@@ -76,6 +76,7 @@ public sealed partial class QueryTabView : UserControl
         var toolbar = BuildToolbar();
         var editor = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(3) }, new ColumnDefinition() } };
         Grid.SetColumn(_editorHost, 1);
+        _editorHost.PreviewKeyDown += OnEditorPreviewKeyDown;
         editor.Children.Add(_envStripe);
         editor.Children.Add(_editorHost);
         Grid.SetRow(editor, 1);
@@ -423,6 +424,23 @@ public sealed partial class QueryTabView : UserControl
             ShowGrid();
         else if (e.PropertyName is nameof(ResultViewModel.Editor) or nameof(ResultViewModel.ReadOnlyReason) && sender == _result)
             ShowEditBar();
+    }
+
+    // The editor consumes Ctrl+Enter as a new line before the window accelerators run, so the run keys are taken on the way down.
+    private void OnEditorPreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (_tab is null || e.Key is not (VirtualKey.Enter or VirtualKey.F5))
+            return;
+        var down = Windows.UI.Core.CoreVirtualKeyStates.Down;
+        var ctrl = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(down);
+        var shift = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(down);
+        if (e.Key == VirtualKey.F5 || ctrl && !shift)
+            _tab.RunCommand.Execute(null);
+        else if (ctrl)
+            _tab.RunAllCommand.Execute(null);
+        else
+            return;
+        e.Handled = true;
     }
 
     private void OnTabPropertyChanged(object? sender, PropertyChangedEventArgs e)

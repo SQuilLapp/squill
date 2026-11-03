@@ -31,6 +31,7 @@ public sealed partial class QueryTabView : UserControl
     public QueryTabView()
     {
         InitializeComponent();
+        Empty.Text = UiText.Get("results.empty");
         IsVisible = false;
         ResultGrid.Dialogs = new AvaloniaDialogService();
         ResultsPanel.KeyBindings.Add(new KeyBinding

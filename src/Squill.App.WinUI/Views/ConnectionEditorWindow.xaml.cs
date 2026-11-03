@@ -33,15 +33,14 @@ public sealed partial class ConnectionEditorWindow : Window
 
     /// <summary>Creates the window and shows the first editor.</summary>
     /// <param name="owner">The main window; it stays disabled while this window is open.</param>
-    /// <param name="theme">The theme of the main window.</param>
     /// <param name="list">The connection list shown on the left.</param>
     /// <param name="editor">The profile to edit first.</param>
-    public ConnectionEditorWindow(Window owner, ElementTheme theme, ConnectionListViewModel list, ConnectionEditorViewModel editor)
+    public ConnectionEditorWindow(Window owner, ConnectionListViewModel list, ConnectionEditorViewModel editor)
     {
         InitializeComponent();
         _owner = owner;
         _list = list;
-        Root.RequestedTheme = theme;
+        CaptionBar.Follow(this, Root, ((FrameworkElement)owner.Content));
         Title = UiText.Get("connections.title");
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "squill.ico"));
         SshAuthBox.ItemsSource = new[] { SshAuthMethod.Password.ToString(), SshAuthMethod.PrivateKey.ToString() };

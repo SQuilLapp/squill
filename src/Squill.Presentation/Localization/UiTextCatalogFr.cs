@@ -54,6 +54,7 @@ internal static class UiTextCatalogFr
         ("results.search", "Rechercher"),
         ("results.export", "Exporter"),
         ("results.exportRows", "EXPORTER {0} LIGNES"),
+        ("results.empty", "Exécutez une requête pour voir les résultats ici."),
         ("results.readOnly", "Lecture seule · {0}"),
         ("results.editable", "Modifiable · clé primaire {0}"),
         ("results.footer", "Lignes 1–{0} sur {1} chargées"),

@@ -86,6 +86,15 @@ public sealed class GridLayout
     /// <returns>The maximum offset, never negative.</returns>
     public double MaxScrollY(long rowCount, double bodyHeight) => Math.Max(0, TotalHeight(rowCount) - bodyHeight);
 
+    /// <summary>Decides whether the column widths must be measured again after the data changed.</summary>
+    /// <param name="pending">Whether a measure was already requested and not yet done.</param>
+    /// <param name="rowCount">The number of rows loaded so far.</param>
+    /// <param name="sampleRows">The number of rows the widths are sampled from.</param>
+    /// <param name="userResized">Whether the user chose the widths.</param>
+    /// <returns><see langword="true"/> while no widths exist, or while the sample is still filling and the user has not resized.</returns>
+    public bool NeedsMeasure(bool pending, long rowCount, int sampleRows, bool userResized) =>
+        pending || ColumnCount == 0 || (!userResized && rowCount <= sampleRows);
+
     /// <summary>Gets the largest useful horizontal scroll offset.</summary>
     /// <param name="viewportWidth">The visible width.</param>
     /// <returns>The maximum offset, never negative.</returns>
