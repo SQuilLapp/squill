@@ -262,6 +262,7 @@ public sealed class WorkspaceViewModelTests
     [InlineData(true)]
     public async Task CloseTab_WithPendingGridChanges_AsksFirst(bool accept)
     {
+        using var lang = UiText.Override(UiLanguage.English);
         _provider.ReturnGrid = true;
         await ConnectAsync();
         var tab = _workspace.Tabs[0];
@@ -274,5 +275,49 @@ public sealed class WorkspaceViewModelTests
 
         Assert.Contains(("Close tab", "Discard pending grid changes?"), _dialogs.Confirms);
         Assert.Equal(accept, !_workspace.Tabs.Contains(tab));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Connexion impossible")]
+    [InlineData(UiLanguage.English, "Connection failed")]
+    public async Task Connect_Fails_HeadingIsLocalizedAndDetailVerbatim(UiLanguage language, string heading)
+    {
+        using var _ = UiText.Override(language);
+        _provider.Failure = new InvalidOperationException("driver says no");
+
+        await ConnectAsync();
+
+        Assert.Equal((heading, "driver says no"), Assert.Single(_dialogs.Errors));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Fermer l'onglet", "Abandonner les modifications de la grille en attente ?")]
+    [InlineData(UiLanguage.English, "Close tab", "Discard pending grid changes?")]
+    public async Task CloseTab_PendingGridChanges_DialogIsLocalized(UiLanguage language, string title, string message)
+    {
+        using var _ = UiText.Override(language);
+        _provider.ReturnGrid = true;
+        await ConnectAsync();
+        var tab = _workspace.Tabs[0];
+        _editors[0].Text = "SELECT * FROM g";
+        await tab.RunCommand.ExecuteAsync(null);
+        tab.Results[0].Editor!.TrySetCell(0, 0, "5");
+        _dialogs.ConfirmResult = false;
+
+        await _workspace.CloseTabCommand.ExecuteAsync(tab);
+
+        Assert.Equal((title, message), Assert.Single(_dialogs.Confirms));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Terminal", "Cette version ne prend pas en charge le terminal.")]
+    [InlineData(UiLanguage.English, "Terminal", "This build has no terminal support.")]
+    public async Task NewTerminal_WithoutHost_ShowsLocalizedUnavailableError(UiLanguage language, string title, string message)
+    {
+        using var _ = UiText.Override(language);
+
+        await _workspace.NewTerminalCommand.ExecuteAsync(null);
+
+        Assert.Equal((title, message), Assert.Single(_dialogs.Errors));
     }
 }

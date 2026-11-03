@@ -14,6 +14,8 @@ public sealed partial class CatalogTests
     [
         "settings.language.french", // language names are shown in their own language
         "settings.language.english", // language names are shown in their own language
+        "dialog.ok", // same word
+        "workspace.terminal", // same word
         "explorer.tables", // same word
         "properties.kindTable", // same word
         "results.messages", // same word

@@ -13,7 +13,7 @@ Source of truth: the PNGs in `docs/design/mockups/` (see its README). This file 
 
 | Topic | Decision |
 |---|---|
-| UI language | **French**, as drawn. Phase 9 introduces a string catalog (P9-02); all user-visible text of the screens in scope comes from it. Keys are English identifiers, values are the French strings drawn in the mockup. No language switch and no English catalog in phase 9. Strings of the mockup that belong to a feature the app does not have are not added. |
+| UI language | **French and English**, French being the language drawn in the mockups (see ADR 0007). All user-visible text of the screens in scope comes from the string catalogs; keys are English identifiers, French values are the strings drawn in the mockup. Strings of the mockup that belong to a feature the app does not have are not added. |
 | Fonts | UI: token `font.ui` (Segoe UI Variable first, as the Settings mockup M14 shows: "Segoe UI Variable (système)"). The mockups were rendered with Inter as a stand-in, so Inter is bundled only as the fallback. Code, grid, identifiers, keyboard hints: **JetBrains Mono**, bundled. Wordmark: **Inter Tight**, bundled. |
 | Features missing from the app | Phase 9 changes appearance and layout, not features. A mockup element whose feature or data does not exist is **not drawn** (list in section 10). The only data additions are the ones of P9-03. |
 | Unavailable data inside a drawn element | Omit the element, never print a placeholder or invented value. |

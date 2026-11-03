@@ -1,6 +1,6 @@
 # P10-16 - Migrate strings: settings, dialogs, errors and every leftover
 
-Status: todo
+Status: done
 Depends on: P10-10 ... P10-15, P10-05, P10-06
 
 ## Goal
@@ -17,9 +17,9 @@ Follow `docs/tasks/phase-10/migration-recipe.md`. Areas `settings-dialogs-errors
 - Enforcement tests (P10-17), ADR (P10-18).
 
 ## Tasks
-- [ ] Migrate the remaining inventory lines and tick them; `grep -c "\[ \]" docs/tasks/phase-10/inventory.md` returns 0.
-- [ ] Tests per recipe rule 7 (every dialog helper in both languages, save error heading with raw detail, terminal unavailable).
-- [ ] English captures: settings window (both heads), a confirmation dialog, an error dialog, the connection-failed dialog.
+- [x] Migrate the remaining inventory lines and tick them; `grep -c "\[ \]" docs/tasks/phase-10/inventory.md` returns 0.
+- [x] Tests per recipe rule 7 (every dialog helper in both languages, save error heading with raw detail, terminal unavailable).
+- [x] English captures: settings window (both heads), a confirmation dialog, an error dialog, the connection-failed dialog.
 
 ## Acceptance criteria
 - Common criteria of the recipe; additionally both head publishes succeed with zero IL2xxx/IL3xxx warnings.

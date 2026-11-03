@@ -8,6 +8,7 @@ using Squill.Platform.Storage;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Explorer;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Workspace;
 using Xunit;
@@ -174,6 +175,7 @@ public sealed class WorkspaceDesignerTests
     [Fact]
     public async Task CloseDesigner_WithChanges_AsksConfirmation()
     {
+        using var lang = UiText.Override(UiLanguage.English);
         await ConnectAsync();
         _workspace.NewTableCommand.Execute(null);
         _dialogs.ConfirmResult = false;
@@ -215,6 +217,7 @@ public sealed class WorkspaceDesignerTests
     [Fact]
     public async Task DropTable_Confirmed_DropsRefreshesAndClosesDesigner()
     {
+        using var lang = UiText.Override(UiLanguage.English);
         _provider.Schema = new SchemaSnapshot(null, [Users]);
         await ConnectAsync();
         _workspace.DesignTableCommand.Execute(Users);
@@ -242,6 +245,7 @@ public sealed class WorkspaceDesignerTests
     [Fact]
     public async Task DropTable_Failing_ShowsErrorAndKeepsDesigner()
     {
+        using var lang = UiText.Override(UiLanguage.English);
         _provider.Schema = new SchemaSnapshot(null, [Users]);
         await ConnectAsync();
         _workspace.DesignTableCommand.Execute(Users);

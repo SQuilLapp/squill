@@ -128,7 +128,7 @@ public sealed partial class SettingsViewModel(ISettingsStore store) : ViewModelB
         }
         catch (Exception ex)
         {
-            SaveError = ex.Message;
+            SaveError = UiText.Format("settings.saveError", ex.Message);
         }
     }
 }

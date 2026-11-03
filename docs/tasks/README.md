@@ -186,7 +186,7 @@ Depends on: <card ids, ranges allowed>
 | [P10-13](phase-10/P10-13-migrate-results-and-grid.md) | Migrate strings: results, grid editing and export | P10-03, P10-04, P10-07, P10-08, P10-09 | done |
 | [P10-14](phase-10/P10-14-migrate-designer-and-er.md) | Migrate strings: table designer and ER diagram | P10-03, P10-04, P10-07, P10-08, P10-09 | done |
 | [P10-15](phase-10/P10-15-migrate-history-snippets-terminal.md) | Migrate strings: history, snippets and terminal | P10-03, P10-04, P10-07, P10-08 | done |
-| [P10-16](phase-10/P10-16-migrate-settings-dialogs-errors.md) | Migrate strings: settings, dialogs, errors and leftovers | P10-10 ... P10-15, P10-05, P10-06 | todo |
+| [P10-16](phase-10/P10-16-migrate-settings-dialogs-errors.md) | Migrate strings: settings, dialogs, errors and leftovers | P10-10 ... P10-15, P10-05, P10-06 | done |
 | [P10-17](phase-10/P10-17-enforcement-tests.md) | Tests: completeness guards for localization | P10-16 | todo |
 | [P10-18](phase-10/P10-18-docs-and-adr.md) | Documentation: localization ADR 0007, README and architecture note | P10-17 | todo |
 

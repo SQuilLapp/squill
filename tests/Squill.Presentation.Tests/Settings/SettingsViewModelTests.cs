@@ -1,5 +1,6 @@
 using Squill.Core;
 using Squill.Platform.Settings;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Settings;
 using Xunit;
 
@@ -80,5 +81,27 @@ public sealed class SettingsViewModelTests
         var vm = new SettingsViewModel(store) { Theme = ThemeMode.Dark };
 
         Assert.Equal(0, store.Saves);
+    }
+
+    private sealed class FailingStore : ISettingsStore
+    {
+        public ValueTask<AppSettings> LoadAsync(CancellationToken ct) => ValueTask.FromResult(AppSettings.Default);
+
+        public ValueTask SaveAsync(AppSettings settings, CancellationToken ct) => throw new IOException("disk full");
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Les paramètres n'ont pas pu être enregistrés : disk full")]
+    [InlineData(UiLanguage.English, "Settings could not be saved: disk full")]
+    public async Task Save_Fails_SaveErrorHasLocalizedHeadingAndRawDetail(UiLanguage language, string expected)
+    {
+        using var _ = UiText.Override(language);
+        var vm = new SettingsViewModel(new FailingStore());
+        await vm.LoadCommand.ExecuteAsync(null);
+
+        vm.EditorFontSize = 18;
+        await vm.PendingSave;
+
+        Assert.Equal(expected, vm.SaveError);
     }
 }
