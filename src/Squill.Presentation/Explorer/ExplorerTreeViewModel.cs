@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 
 namespace Squill.Presentation.Explorer;
@@ -162,7 +163,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
                     Roots.Add(ConnectionNode(profile));
                 continue;
             }
-            var folder = new ExplorerNode(group.Folder, ExplorerNodeKind.ConnectionFolder, group.Items.Count.ToString(CultureInfo.CurrentCulture)) { IsExpanded = true };
+            var folder = new ExplorerNode(group.Folder, ExplorerNodeKind.ConnectionFolder, DisplayFormat.Count(group.Items.Count)) { IsExpanded = true };
             foreach (var profile in group.Items)
                 folder.Children.Add(ConnectionNode(profile));
             Roots.Add(folder);
@@ -233,16 +234,16 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     private static ExplorerNode TableNode(ConnectionSession session, TableInfo table)
     {
         var node = Node(table.Name, table.Kind == TableKind.View ? ExplorerNodeKind.View : ExplorerNodeKind.Table, session, table: table);
-        var columns = Node("Columns", ExplorerNodeKind.Folder, session, count: table.Columns.Count);
+        var columns = Node(UiText.Get("explorer.columns"), ExplorerNodeKind.Folder, session, count: table.Columns.Count);
         foreach (var c in table.Columns)
         {
             var detail = c.DataType + (c.IsPrimaryKey ? " PK" : "") + (c.IsNullable ? " NULL" : "");
             columns.Children.Add(Node(c.Name, ExplorerNodeKind.Column, session, detail));
         }
-        var indexes = Node("Indexes", ExplorerNodeKind.Folder, session, count: table.Indexes.Count);
+        var indexes = Node(UiText.Get("explorer.indexes"), ExplorerNodeKind.Folder, session, count: table.Indexes.Count);
         foreach (var i in table.Indexes)
             indexes.Children.Add(Node(i.Name, ExplorerNodeKind.Index, session, (i.IsUnique ? "UNIQUE " : "") + string.Join(", ", i.Columns)));
-        var keys = Node("Foreign keys", ExplorerNodeKind.Folder, session, count: table.ForeignKeys.Count);
+        var keys = Node(UiText.Get("explorer.foreignKeys"), ExplorerNodeKind.Folder, session, count: table.ForeignKeys.Count);
         foreach (var k in table.ForeignKeys)
         {
             var target = k.ReferencedSchema is { Length: > 0 } s ? $"{s}.{k.ReferencedTable}" : k.ReferencedTable;

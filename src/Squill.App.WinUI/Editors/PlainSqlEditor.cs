@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Squill.Core;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Editor;
 using Squill.Sql.Analysis;
 using Squill.Sql.Completion;
@@ -110,7 +111,7 @@ public sealed class PlainSqlEditor : ISqlEditor, IEditorControl
     {
         var errors = diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error);
         var warnings = diagnostics.Count(d => d.Severity == DiagnosticSeverity.Warning);
-        _diagnosticsLabel.Text = errors + warnings == 0 ? "" : $"{errors} error(s), {warnings} warning(s)";
+        _diagnosticsLabel.Text = errors + warnings == 0 ? "" : string.Join(", ", new[] { errors > 0 ? UiText.FormatPlural("status.errors", errors) : null, warnings > 0 ? UiText.FormatPlural("status.warnings", warnings) : null }.OfType<string>());
     }
 
     /// <inheritdoc />

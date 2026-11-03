@@ -23,7 +23,8 @@ public sealed class JsonSettingsStoreTests : IDisposable
     public async Task LoadAsync_MissingFile_ReturnsDefaults()
     {
         Assert.Equal(AppSettings.Default, await NewStore().LoadAsync(_ct));
-        Assert.Equal(new AppSettings(ThemeMode.System, 13, 1_000_000, KeywordCase.Upper), AppSettings.Default);
+        Assert.Equal(new AppSettings(ThemeMode.System, 13, 1_000_000, KeywordCase.Upper, AppLanguage.System), AppSettings.Default);
+        Assert.Equal(AppLanguage.System, AppSettings.Default.Language);
     }
 
     [Fact]
@@ -57,6 +58,46 @@ public sealed class JsonSettingsStoreTests : IDisposable
     {
         Directory.CreateDirectory(_dir);
         await File.WriteAllTextAsync(Path.Combine(_dir, "settings.json"), "{ nope", _ct);
+
+        Assert.Equal(AppSettings.Default, await NewStore().LoadAsync(_ct));
+        Assert.True(File.Exists(Path.Combine(_dir, "settings.json.bad")));
+    }
+
+    [Theory]
+    [InlineData(AppLanguage.System)]
+    [InlineData(AppLanguage.French)]
+    [InlineData(AppLanguage.English)]
+    public async Task SaveAsync_Language_RoundTrips(AppLanguage language)
+    {
+        var settings = AppSettings.Default with { Language = language };
+        await NewStore().SaveAsync(settings, _ct);
+
+        Assert.Equal(settings, await NewStore().LoadAsync(_ct));
+    }
+
+    [Fact]
+    public async Task LoadAsync_LegacyFileWithoutLanguage_LoadsAsSystem()
+    {
+        Directory.CreateDirectory(_dir);
+        await File.WriteAllTextAsync(
+            Path.Combine(_dir, "settings.json"),
+            """[{"theme":"Dark","editorFontSize":14,"maxGridRows":2000,"formatterKeywordCase":"Lower"}]""",
+            _ct);
+
+        var loaded = await NewStore().LoadAsync(_ct);
+
+        Assert.Equal(AppLanguage.System, loaded.Language);
+        Assert.Equal(ThemeMode.Dark, loaded.Theme);
+    }
+
+    [Fact]
+    public async Task LoadAsync_UnknownLanguage_ReturnsDefaultsAndRenamesFile()
+    {
+        Directory.CreateDirectory(_dir);
+        await File.WriteAllTextAsync(
+            Path.Combine(_dir, "settings.json"),
+            """[{"theme":"Dark","editorFontSize":14,"maxGridRows":2000,"formatterKeywordCase":"Lower","language":"Klingon"}]""",
+            _ct);
 
         Assert.Equal(AppSettings.Default, await NewStore().LoadAsync(_ct));
         Assert.True(File.Exists(Path.Combine(_dir, "settings.json.bad")));

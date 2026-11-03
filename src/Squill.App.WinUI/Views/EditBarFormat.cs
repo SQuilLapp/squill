@@ -1,6 +1,7 @@
 using System.Globalization;
 using Squill.Core.Editing;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Results;
 
 namespace Squill.App.WinUI.Views;
 
@@ -11,7 +12,7 @@ internal static class EditBarFormat
     /// <param name="issue">The issue.</param>
     /// <returns><c>Row n, column: message</c>, without the column part for a row-level issue.</returns>
     public static string Describe(EditIssue issue) =>
-        $"Row {issue.Row + 1}{(issue.Column is null ? "" : ", " + issue.Column)}: {issue.Message}";
+        IssueText.Describe(issue);
 
     /// <summary>Finds the grid column an issue points at.</summary>
     /// <param name="issue">The issue.</param>
@@ -24,7 +25,7 @@ internal static class EditBarFormat
     /// <param name="count">The number of pending row changes.</param>
     /// <returns>The localized <c>n modification(s) en attente</c> text.</returns>
     public static string Pending(int count) =>
-        UiText.Format(count == 1 ? "results.pendingChanges.one" : "results.pendingChanges.other", count);
+        UiText.FormatPlural("results.pendingChanges", count);
 
     /// <summary>Builds the muted detail of the pending-edits banner.</summary>
     /// <param name="updates">The number of updated rows.</param>
@@ -42,7 +43,7 @@ internal static class EditBarFormat
         static void Add(List<string> parts, int n, string key)
         {
             if (n > 0)
-                parts.Add(UiText.Format(n == 1 ? key + ".one" : key + ".other", n));
+                parts.Add(UiText.FormatPlural(key, n));
         }
     }
 
@@ -59,8 +60,8 @@ internal static class EditBarFormat
 
     /// <summary>Formats a loaded row count with grouped digits, as in the mockups.</summary>
     /// <param name="rows">The row count.</param>
-    /// <returns>The count in the French culture.</returns>
-    public static string Rows(long rows) => rows.ToString("N0", CultureInfo.GetCultureInfo("fr-FR"));
+    /// <returns>The count in the culture of the current language.</returns>
+    public static string Rows(long rows) => DisplayFormat.Count(rows);
 
     /// <summary>Builds the footer of the results panel.</summary>
     /// <param name="rows">The loaded row count.</param>

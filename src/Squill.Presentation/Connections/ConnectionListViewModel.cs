@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
+using Squill.Presentation.Localization;
 
 namespace Squill.Presentation.Connections;
 
@@ -60,7 +61,7 @@ public sealed partial class ConnectionListViewModel(IProfileStore store, Provide
     {
         if (SelectedProfile is not { } profile)
             return;
-        if (!await dialogs.ConfirmAsync("Delete connection", $"Delete the connection '{profile.Name}'?"))
+        if (!await dialogs.ConfirmAsync(UiText.Get("connections.deleteTitle"), UiText.Format("connections.deleteConfirm", profile.Name)))
             return;
         await store.DeleteAsync(profile.Id, ct);
         Profiles.Remove(profile);

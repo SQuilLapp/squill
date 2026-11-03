@@ -2,6 +2,7 @@ using Squill.Core;
 using Squill.Core.Editing;
 using Squill.Data;
 using Squill.Presentation.Editing;
+using Squill.Presentation.Localization;
 using Xunit;
 
 namespace Squill.Presentation.Tests.Editing;
@@ -101,6 +102,7 @@ public sealed class EditCommitterTests
     [InlineData(2L, "matched more than one row")]
     public async Task WrongAffectedCountRollsBackAndCarriesRow(long affected, string text)
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var c = new Conn();
         c.Affected.Enqueue(affected);
         var ex = await Assert.ThrowsAsync<EditCommitException>(() => new EditCommitter(c, DatabaseDialect.Sqlite).CommitAsync(Target, Cols, [Upd(4, 1)], CancellationToken.None));
@@ -214,5 +216,21 @@ public sealed class EditCommitterTests
     {
         Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
         File.Delete(path);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, 0L, "La ligne 4 est introuvable : elle a été modifiée ou supprimée depuis son chargement")]
+    [InlineData(UiLanguage.French, 2L, "La ligne 4 correspond à plusieurs lignes")]
+    [InlineData(UiLanguage.English, 0L, "Row 4 was not found: it was changed or deleted since it was loaded")]
+    [InlineData(UiLanguage.English, 2L, "Row 4 matched more than one row")]
+    public async Task WrongAffectedCountMessageIsLocalized(UiLanguage language, long affected, string expected)
+    {
+        using var _ = UiText.Override(language);
+        var c = new Conn();
+        c.Affected.Enqueue(affected);
+
+        var ex = await Assert.ThrowsAsync<EditCommitException>(() => new EditCommitter(c, DatabaseDialect.Sqlite).CommitAsync(Target, Cols, [Upd(4, 1)], CancellationToken.None));
+
+        Assert.Equal(expected, ex.Message);
     }
 }

@@ -1,3 +1,5 @@
+using System.Globalization;
+using Squill.Presentation.Localization;
 using Squill.Core;
 using Squill.Data;
 using Squill.Platform;
@@ -62,8 +64,19 @@ public sealed class WorkspaceViewModelTests
 
         Assert.NotNull(_workspace.ActiveSession);
         Assert.NotNull(_workspace.Explorer);
-        Assert.Equal("Query 1", Assert.Single(_workspace.Tabs).Title);
+        Assert.Equal("Requête 1", Assert.Single(_workspace.Tabs).Title);
         Assert.Same(_workspace.Tabs[0], _workspace.ActiveTab);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Requête 1")]
+    [InlineData(UiLanguage.English, "Query 1")]
+    public async Task Connect_FirstTabTitle_IsInTheChosenLanguage(UiLanguage language, string title)
+    {
+        using var _ = UiText.Override(language);
+        await ConnectAsync();
+
+        Assert.Equal(title, Assert.Single(_workspace.Tabs).Title);
     }
 
     [Fact]
@@ -84,7 +97,7 @@ public sealed class WorkspaceViewModelTests
 
         _workspace.NewTabCommand.Execute(null);
 
-        Assert.Equal(["Query 1", "Query 2"], _workspace.Tabs.Select(t => t.Title));
+        Assert.Equal(["Requête 1", "Requête 2"], _workspace.Tabs.Select(t => t.Title));
     }
 
     [Fact]
@@ -145,6 +158,10 @@ public sealed class WorkspaceViewModelTests
     public void AppCompositionCreate_TempDirectory_BuildsWorkspace()
     {
         var dir = Path.Combine(Path.GetTempPath(), "squill-" + Guid.NewGuid().ToString("N"));
+        // Create applies the language of the OS, which must not leak into the other tests.
+        var language = UiText.Language;
+        var culture = CultureInfo.CurrentCulture;
+        var uiCulture = CultureInfo.CurrentUICulture;
         try
         {
             var services = AppComposition.Create(new Platform(new ProviderRegistry(), _dialogs), new AppPaths(dir));
@@ -156,6 +173,11 @@ public sealed class WorkspaceViewModelTests
         }
         finally
         {
+            UiText.Initialize(language);
+            CultureInfo.DefaultThreadCurrentCulture = null;
+            CultureInfo.DefaultThreadCurrentUICulture = null;
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = uiCulture;
             try
             {
                 Directory.Delete(dir, true);
@@ -250,6 +272,7 @@ public sealed class WorkspaceViewModelTests
     [InlineData(true)]
     public async Task CloseTab_WithPendingGridChanges_AsksFirst(bool accept)
     {
+        using var lang = UiText.Override(UiLanguage.English);
         _provider.ReturnGrid = true;
         await ConnectAsync();
         var tab = _workspace.Tabs[0];
@@ -262,5 +285,49 @@ public sealed class WorkspaceViewModelTests
 
         Assert.Contains(("Close tab", "Discard pending grid changes?"), _dialogs.Confirms);
         Assert.Equal(accept, !_workspace.Tabs.Contains(tab));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Connexion impossible")]
+    [InlineData(UiLanguage.English, "Connection failed")]
+    public async Task Connect_Fails_HeadingIsLocalizedAndDetailVerbatim(UiLanguage language, string heading)
+    {
+        using var _ = UiText.Override(language);
+        _provider.Failure = new InvalidOperationException("driver says no");
+
+        await ConnectAsync();
+
+        Assert.Equal((heading, "driver says no"), Assert.Single(_dialogs.Errors));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Fermer l'onglet", "Abandonner les modifications de la grille en attente ?")]
+    [InlineData(UiLanguage.English, "Close tab", "Discard pending grid changes?")]
+    public async Task CloseTab_PendingGridChanges_DialogIsLocalized(UiLanguage language, string title, string message)
+    {
+        using var _ = UiText.Override(language);
+        _provider.ReturnGrid = true;
+        await ConnectAsync();
+        var tab = _workspace.Tabs[0];
+        _editors[0].Text = "SELECT * FROM g";
+        await tab.RunCommand.ExecuteAsync(null);
+        tab.Results[0].Editor!.TrySetCell(0, 0, "5");
+        _dialogs.ConfirmResult = false;
+
+        await _workspace.CloseTabCommand.ExecuteAsync(tab);
+
+        Assert.Equal((title, message), Assert.Single(_dialogs.Confirms));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Terminal", "Cette version ne prend pas en charge le terminal.")]
+    [InlineData(UiLanguage.English, "Terminal", "This build has no terminal support.")]
+    public async Task NewTerminal_WithoutHost_ShowsLocalizedUnavailableError(UiLanguage language, string title, string message)
+    {
+        using var _ = UiText.Override(language);
+
+        await _workspace.NewTerminalCommand.ExecuteAsync(null);
+
+        Assert.Equal((title, message), Assert.Single(_dialogs.Errors));
     }
 }

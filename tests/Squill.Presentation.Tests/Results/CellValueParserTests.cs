@@ -1,6 +1,7 @@
 using Xunit;
 using Squill.Core;
 using Squill.Presentation.Results;
+using Squill.Presentation.Localization;
 
 namespace Squill.Presentation.Tests.Results;
 
@@ -41,6 +42,7 @@ public sealed class CellValueParserTests
     [Fact]
     public void BoolAcceptsWords()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         Assert.Equal(true, Parse("YES", typeof(bool)));
         Assert.Equal(true, Parse("1", typeof(bool)));
         Assert.Equal(false, Parse("No", typeof(bool)));
@@ -51,6 +53,7 @@ public sealed class CellValueParserTests
     [Fact]
     public void IntegersParseAndCheckRange()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         Assert.Equal((byte)255, Parse("255", typeof(byte)));
         Assert.Equal((short)-32768, Parse("-32768", typeof(short)));
         Assert.Equal(int.MaxValue, Parse(" 2147483647 ", typeof(int)));
@@ -64,6 +67,7 @@ public sealed class CellValueParserTests
     [Fact]
     public void FloatingPointUsesDotSeparator()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         Assert.Equal(1.5, Parse("1.5", typeof(double)));
         Assert.Equal(1.5f, Parse("1.5", typeof(float)));
         Assert.Equal(1.25m, Parse("1.25e0", typeof(decimal)));
@@ -73,6 +77,7 @@ public sealed class CellValueParserTests
     [Fact]
     public void DatesRequireIso()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         Assert.Equal(new DateTime(2024, 1, 31), Parse("2024-01-31", typeof(DateTime)));
         Assert.Equal(new DateTime(2024, 1, 31, 10, 20, 30, 123), Parse("2024-01-31 10:20:30.123", typeof(DateTime)));
         Assert.Equal(new DateTime(2024, 1, 31, 10, 20, 30), Parse("2024-01-31T10:20:30", typeof(DateTime)));
@@ -88,6 +93,7 @@ public sealed class CellValueParserTests
     [Fact]
     public void GuidAndBinary()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var g = Guid.NewGuid();
         Assert.Equal(g, Parse(g.ToString(), typeof(Guid)));
         Assert.Equal("\"zz\" is not a valid GUID value", Fail("zz", typeof(Guid)));
@@ -137,5 +143,17 @@ public sealed class CellValueParserTests
         {
             Assert.Equal(original, v);
         }
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "\"x\" n'est pas une valeur valide pour le type date et heure", "\"x\" n'est pas un entier valide", "\"300\" est hors limites pour byte")]
+    [InlineData(UiLanguage.English, "\"x\" is not a valid date and time value", "\"x\" is not a valid integer value", "\"300\" is out of range for byte")]
+    public void ErrorsAreLocalized(UiLanguage language, string dateTime, string notInteger, string range)
+    {
+        using var _ = UiText.Override(language);
+
+        Assert.Equal(dateTime, Fail("x", typeof(DateTime)));
+        Assert.Equal(notInteger, Fail("x", typeof(int)));
+        Assert.Equal(range, Fail("300", typeof(byte)));
     }
 }

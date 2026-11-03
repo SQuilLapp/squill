@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
 using Squill.Platform.Storage;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Sessions;
 
 namespace Squill.Presentation.Diagram;
@@ -57,7 +58,7 @@ public sealed partial class DiagramTabViewModel : ViewModelBase, IDisposable
         _dialogs = dialogs;
         _dispatcher = dispatcher;
         _options = new ErLayoutOptions(measureText);
-        Title = "ER - " + session.Profile.Name;
+        Title = UiText.Format("er.title", session.Profile.Name);
         Model = new ErModel([], [], 0);
         Boxes = new Dictionary<string, ErBox>();
         Edges = [];
@@ -259,7 +260,7 @@ public sealed partial class DiagramTabViewModel : ViewModelBase, IDisposable
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            await _dialogs.ShowErrorAsync("Refresh failed", ex.Message);
+            await _dialogs.ShowErrorAsync(UiText.Get("er.refreshFailed"), ex.Message);
         }
     }
 
@@ -272,11 +273,11 @@ public sealed partial class DiagramTabViewModel : ViewModelBase, IDisposable
         try
         {
             await File.WriteAllTextAsync(path, ErSvgExporter.Render(Model, Boxes, Edges, _options, IsDarkTheme), _cts.Token);
-            StatusText = "Saved " + path;
+            StatusText = UiText.Format("er.saved", path);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            await _dialogs.ShowErrorAsync("Export failed", ex.Message);
+            await _dialogs.ShowErrorAsync(UiText.Get("er.exportFailed"), ex.Message);
         }
     }
 
@@ -313,7 +314,7 @@ public sealed partial class DiagramTabViewModel : ViewModelBase, IDisposable
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            await _dialogs.ShowErrorAsync("Reset failed", ex.Message);
+            await _dialogs.ShowErrorAsync(UiText.Get("er.resetFailed"), ex.Message);
         }
     }
 
@@ -387,7 +388,7 @@ public sealed partial class DiagramTabViewModel : ViewModelBase, IDisposable
                 .SelectMany(r => new[] { r.FromKey, r.ToKey })
                 .GroupBy(k => k, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
-            status = $"Showing {CappedCount} of {keys.Count} tables, use the filter or Focus";
+            status = UiText.Format("er.capped", CappedCount, keys.Count);
             keys = [.. keys.OrderByDescending(k => weight.GetValueOrDefault(k)).ThenBy(k => k, StringComparer.OrdinalIgnoreCase).Take(CappedCount)];
         }
 
@@ -425,7 +426,7 @@ public sealed partial class DiagramTabViewModel : ViewModelBase, IDisposable
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _dispatcher.Post(() => _ = _dialogs.ShowErrorAsync("Saving the diagram layout failed", ex.Message).AsTask());
+            _dispatcher.Post(() => _ = _dialogs.ShowErrorAsync(UiText.Get("er.saveLayoutFailed"), ex.Message).AsTask());
         }
     }
 }

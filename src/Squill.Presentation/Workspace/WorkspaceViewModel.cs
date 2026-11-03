@@ -1,3 +1,4 @@
+using Squill.Presentation.Localization;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -163,7 +164,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            await _dialogs.ShowErrorAsync("Connection failed", ex.Message);
+            await _dialogs.ShowErrorAsync(UiText.Get("workspace.connectionFailed"), ex.Message);
         }
     }
 
@@ -196,9 +197,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     {
         if (tab is null || !Tabs.Contains(tab))
             return;
-        if (tab.IsModified && !await _dialogs.ConfirmAsync("Close tab", $"Close '{tab.Title}' and discard its changes?"))
+        if (tab.IsModified && !await _dialogs.ConfirmAsync(UiText.Get("workspace.closeTab"), UiText.Format("workspace.closeTabConfirm", tab.Title)))
             return;
-        if (tab.HasPendingChanges && !await _dialogs.ConfirmAsync("Close tab", "Discard pending grid changes?"))
+        if (tab.HasPendingChanges && !await _dialogs.ConfirmAsync(UiText.Get("workspace.closeTab"), UiText.Get("workspace.discardGridChanges")))
             return;
         var index = Tabs.IndexOf(tab);
         Tabs.RemoveAt(index);
@@ -261,7 +262,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     {
         if (designer is null || !Designers.Contains(designer))
             return;
-        if (designer.HasChanges && !await _dialogs.ConfirmAsync("Close designer", "Discard unsaved changes?"))
+        if (designer.HasChanges && !await _dialogs.ConfirmAsync(UiText.Get("workspace.closeDesigner"), UiText.Get("workspace.discardUnsaved")))
             return;
         RemoveDesigner(designer);
     }
@@ -299,7 +300,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            await _dialogs.ShowErrorAsync("Loading the diagram layout failed", ex.Message);
+            await _dialogs.ShowErrorAsync(UiText.Get("workspace.layoutLoadFailed"), ex.Message);
         }
     }
 
@@ -327,7 +328,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         if (table is null || ActiveSession is not { } session)
             return;
         var name = table.Schema is { Length: > 0 } s ? $"{s}.{table.Name}" : table.Name;
-        if (!await _dialogs.ConfirmAsync("Drop table", $"Drop {name}? This cannot be undone."))
+        if (!await _dialogs.ConfirmAsync(UiText.Get("workspace.dropTable"), UiText.Format("workspace.dropTableConfirm", name)))
             return;
         try
         {
@@ -350,7 +351,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            await _dialogs.ShowErrorAsync("Drop failed", ex.Message);
+            await _dialogs.ShowErrorAsync(UiText.Get("workspace.dropFailed"), ex.Message);
             return;
         }
         foreach (var designer in Designers.Where(d => d.Session == session && d.Original is { } o && Matches(o, table)).ToList())
@@ -362,7 +363,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     {
         if (_terminalHostFactory is null)
         {
-            await _dialogs.ShowErrorAsync("Terminal", "This build has no terminal support.");
+            await _dialogs.ShowErrorAsync(UiText.Get("workspace.terminal"), UiText.Get("workspace.terminalUnsupported"));
             return;
         }
         var launch = TerminalLauncher.LocalShell();
@@ -373,7 +374,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
             var cli = TerminalLauncher.ForProfile(profile, password, _findOnPath, out reason);
             if (cli is null)
             {
-                await _dialogs.ShowErrorAsync("Terminal", reason ?? "The terminal could not be started.");
+                await _dialogs.ShowErrorAsync(UiText.Get("workspace.terminal"), reason ?? UiText.Get("workspace.terminalNotStarted"));
                 return;
             }
             launch = cli;
@@ -409,7 +410,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         _tabCounters[session] = _tabCounters.GetValueOrDefault(session) + 1;
         var tab = new QueryTabViewModel(session, editor, _history, _settings, _dispatcher, _dialogs)
         {
-            Title = $"Query {_tabCounters[session]}",
+            Title = UiText.Format("tab.query", _tabCounters[session]),
         };
         tab.ScriptRequested += script => AddTab(session, script);
         Tabs.Add(tab);

@@ -135,7 +135,7 @@ public sealed class QueryTabEditingTests : IAsyncLifetime
 
         await _tab.RunCommand.ExecuteAsync(null);
 
-        Assert.Equal(("Run query", "Discard pending grid changes?"), Assert.Single(_dialogs.Confirms));
+        Assert.Equal(("Exécuter la requête", "Abandonner les modifications en attente de la grille ?"), Assert.Single(_dialogs.Confirms));
         Assert.Equal(accept, !ReferenceEquals(result, _tab.Results[0]));
     }
 

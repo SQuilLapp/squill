@@ -1,5 +1,6 @@
 using Squill.App.WinUI.Views;
 using Squill.Core.Editing;
+using Squill.Presentation.Localization;
 using Xunit;
 
 namespace Squill.App.WinUI.Tests;
@@ -8,11 +9,19 @@ public class EditBarFormatTests
 {
     [Fact]
     public void Describe_numbers_rows_from_one_and_names_the_column() =>
-        Assert.Equal("Row 3, name: Required", EditBarFormat.Describe(new EditIssue(2, "name", "Required")));
+        Assert.Equal("Ligne 3, name : Required", EditBarFormat.Describe(new EditIssue(2, "name", "Required")));
 
     [Fact]
     public void Describe_omits_the_column_of_a_row_level_issue() =>
-        Assert.Equal("Row 1: Failed", EditBarFormat.Describe(new EditIssue(0, null, "Failed")));
+        Assert.Equal("Ligne 1 : Failed", EditBarFormat.Describe(new EditIssue(0, null, "Failed")));
+
+    [Fact]
+    public void Describe_in_english_uses_the_english_template()
+    {
+        using var _ = UiText.Override(UiLanguage.English);
+
+        Assert.Equal("Row 3, name: Required", EditBarFormat.Describe(new EditIssue(2, "name", "Required")));
+    }
 
     [Theory]
     [InlineData("b", 1)]

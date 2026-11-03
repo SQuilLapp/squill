@@ -81,4 +81,25 @@ public sealed class PanelsUiTests
             return Task.CompletedTask;
         });
     }
+
+    [Fact]
+    public async Task SettingsWindow_LanguageBoxListsThreeOptionsAndBindsLanguage()
+    {
+        await WithServicesAsync(services =>
+        {
+            var settings = services.Settings;
+            var window = new SettingsWindow { DataContext = settings };
+            var box = window.FindControl<ComboBox>("LanguageBox")!;
+
+            Assert.Equal(
+                [AppLanguage.System, AppLanguage.French, AppLanguage.English],
+                box.Items.Cast<Squill.Presentation.Settings.LanguageOption>().Select(o => o.Value));
+
+            var other = settings.ActiveLanguage == Squill.Presentation.Localization.UiLanguage.English ? AppLanguage.French : AppLanguage.English;
+            box.SelectedValue = other;
+            Assert.Equal(other, settings.Language);
+            Assert.True(settings.RestartRequired);
+            return Task.CompletedTask;
+        });
+    }
 }

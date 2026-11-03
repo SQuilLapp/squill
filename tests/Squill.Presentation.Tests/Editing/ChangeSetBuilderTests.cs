@@ -1,3 +1,4 @@
+using Squill.Presentation.Localization;
 using Squill.Core;
 using Squill.Core.Editing;
 using Squill.Presentation.Editing;
@@ -96,7 +97,7 @@ public sealed class ChangeSetBuilderTests
         var r = g.AddRow();
         g.SetCell(r, 1, null);
         var issues = ChangeSetBuilder.Build(g, Target()).Issues;
-        Assert.Equal([new EditIssue(1, "Name", "Name cannot be NULL"), new EditIssue(r, "Name", "Name cannot be NULL")], issues);
+        Assert.Equal([(1, "Name", "Name cannot be NULL", "edit.columnNull", "Name"), (r, "Name", "Name cannot be NULL", "edit.columnNull", "Name")], Describe(issues));
     }
 
     [Fact]
@@ -105,7 +106,7 @@ public sealed class ChangeSetBuilderTests
         var g = Make();
         var r = g.AddRow();
         var issues = ChangeSetBuilder.Build(g, Target()).Issues;
-        Assert.Equal([new EditIssue(r, "Name", "Name is required")], issues);
+        Assert.Equal([(r, "Name", "Name is required", "edit.columnRequired", "Name")], Describe(issues));
     }
 
     [Fact]
@@ -121,7 +122,7 @@ public sealed class ChangeSetBuilderTests
         }
 
         var issues = ChangeSetBuilder.Build(g, Target()).Issues;
-        Assert.Equal([new EditIssue(b, null, "duplicate key in pending rows")], issues);
+        Assert.Equal([(b, null, "duplicate key in pending rows", "edit.duplicateKey", "")], Describe(issues));
     }
 
     [Fact]
@@ -165,5 +166,30 @@ public sealed class ChangeSetBuilderTests
             2 => "t" + row,
             _ => 1,
         };
+    }
+
+    private static (long Row, string? Column, string Message, string? Code, string Args)[] Describe(IEnumerable<EditIssue> issues) =>
+        [.. issues.Select(i => (i.Row, i.Column, i.Message, i.Code, string.Join(",", i.Args ?? [])))];
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Ligne 2, Name : Name ne peut pas être NULL", "Ligne 7 : clé en double dans les lignes en attente")]
+    [InlineData(UiLanguage.English, "Row 2, Name: Name cannot be NULL", "Row 7: duplicate key in pending rows")]
+    public void IssuesAreRenderedInTheCurrentLanguage(UiLanguage language, string nullIssue, string duplicate)
+    {
+        using var _ = UiText.Override(language);
+        var g = Make();
+        g.SetCell(1, 1, null);
+        var a = g.AddRow();
+        var b = g.AddRow();
+        foreach (var r in new[] { a, b })
+        {
+            g.SetCell(r, 0, 7);
+            g.SetCell(r, 1, "n");
+        }
+
+        var issues = ChangeSetBuilder.Build(g, Target()).Issues;
+
+        Assert.Equal(nullIssue, IssueText.Describe(issues[0]));
+        Assert.Equal(duplicate, IssueText.Describe(issues[^1]));
     }
 }

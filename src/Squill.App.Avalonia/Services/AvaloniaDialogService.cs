@@ -17,13 +17,13 @@ internal sealed class AvaloniaDialogService : IDialogService
 
     /// <inheritdoc />
     public async ValueTask<bool> ConfirmAsync(string title, string message) =>
-        await ShowAsync(title, message, null, ("OK", true), ("Cancel", false)) is true;
+        await ShowAsync(title, message, null, (UiText.Get("dialog.ok"), true), (UiText.Get("dialog.cancel"), false)) is true;
 
     /// <inheritdoc />
     public async ValueTask<string?> PromptAsync(string title, string message, string? initial)
     {
         var box = new TextBox { Text = initial };
-        return await ShowAsync(title, message, box, ("OK", true), ("Cancel", false)) is true ? box.Text ?? "" : null;
+        return await ShowAsync(title, message, box, (UiText.Get("dialog.ok"), true), (UiText.Get("dialog.cancel"), false)) is true ? box.Text ?? "" : null;
     }
 
     /// <inheritdoc />
@@ -43,7 +43,7 @@ internal sealed class AvaloniaDialogService : IDialogService
 
     /// <inheritdoc />
     public async ValueTask ShowErrorAsync(string title, string message) =>
-        await ShowAsync(title, message, null, ("OK", true));
+        await ShowAsync(title, message, null, (UiText.Get("dialog.ok"), true));
 
     /// <inheritdoc />
     public async ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(

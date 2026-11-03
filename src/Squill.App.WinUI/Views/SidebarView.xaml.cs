@@ -127,18 +127,18 @@ public sealed partial class SidebarView : UserControl
             Tree.SelectedItem = node;
         if (node.Kind == ExplorerNodeKind.Connection)
         {
-            Add("New connection", () => List.NewCommand.Execute(null));
-            Add("Edit", () => List.EditCommand.Execute(null));
-            Add("Delete", () => List.DeleteCommand.Execute(null));
+            Add(UiText.Get("explorer.newConnection"), () => List.NewCommand.Execute(null));
+            Add(UiText.Get("explorer.edit"), () => List.EditCommand.Execute(null));
+            Add(UiText.Get("explorer.delete"), () => List.DeleteCommand.Execute(null));
             if (node.IsConnected)
-                Add("Disconnect", () => _workspace.DisconnectCommand.Execute(null));
+                Add(UiText.Get("explorer.disconnect"), () => _workspace.DisconnectCommand.Execute(null));
             else
-                Add("Connect", () => _workspace.ConnectCommand.Execute(node.Profile));
+                Add(UiText.Get("explorer.connect"), () => _workspace.ConnectCommand.Execute(node.Profile));
         }
         else if (node.Kind == ExplorerNodeKind.Table)
         {
-            Add("Design table...", () => explorer.DesignCommand.Execute(node));
-            Add("Drop table...", () => explorer.DropCommand.Execute(node));
+            Add(UiText.Get("explorer.designTable"), () => explorer.DesignCommand.Execute(node));
+            Add(UiText.Get("explorer.dropTable"), () => explorer.DropCommand.Execute(node));
         }
         else
         {

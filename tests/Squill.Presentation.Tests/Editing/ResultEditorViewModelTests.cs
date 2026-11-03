@@ -2,6 +2,7 @@ using Squill.Core;
 using Squill.Core.Editing;
 using Squill.Data;
 using Squill.Presentation.Editing;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 using Xunit;
@@ -122,18 +123,20 @@ public sealed class ResultEditorViewModelTests
     [Fact]
     public void TrySetCell_ParsesAndRecords()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var f = new Fixture();
 
         Assert.Null(f.Vm.TrySetCell(1, 3, " 42 "));
         Assert.Equal(42, f.Grid.GetCell(1, 3));
         Assert.True(f.Vm.HasPendingChanges);
         Assert.Equal(1, f.Vm.PendingCount);
-        Assert.Equal("1 pending change(s)", f.Vm.StatusText);
+        Assert.Equal("1 pending change", f.Vm.StatusText);
     }
 
     [Fact]
     public void TrySetCell_ParseErrorLeavesGridUnchanged()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var f = new Fixture();
 
         var error = f.Vm.TrySetCell(1, 3, "abc");
@@ -148,6 +151,7 @@ public sealed class ResultEditorViewModelTests
     [InlineData(99)]
     public void TrySetCell_ColumnOutsideTargetIsReadOnly(int column)
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var f = new Fixture();
 
         Assert.Equal("This column is read-only", f.Vm.TrySetCell(0, column, "1"));
@@ -156,6 +160,7 @@ public sealed class ResultEditorViewModelTests
     [Fact]
     public void TrySetCell_RefusesDeletedRowAndLoadingRows()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var f = new Fixture();
         f.Vm.DeleteRows([2]);
         Assert.Equal("Row is marked for deletion", f.Vm.TrySetCell(2, 1, "x"));
@@ -213,6 +218,7 @@ public sealed class ResultEditorViewModelTests
     [Fact]
     public async Task Commit_SuccessClearsPendingAndShowsGeneratedKey()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var f = new Fixture();
         var row = f.Vm.AddRow();
         f.Vm.TrySetCell(row, 1, "x");
@@ -221,7 +227,7 @@ public sealed class ResultEditorViewModelTests
 
         await f.Vm.CommitCommand.ExecuteAsync(null);
 
-        Assert.Equal("Committed 2 change(s)", f.Vm.StatusText);
+        Assert.Equal("Committed 2 changes", f.Vm.StatusText);
         Assert.False(f.Vm.HasPendingChanges);
         Assert.Empty(f.Vm.Issues);
         Assert.Equal(77, f.Grid.GetCell(row, 0));
@@ -232,6 +238,7 @@ public sealed class ResultEditorViewModelTests
     [Fact]
     public async Task Commit_BlockedWhileConnectionBusy()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var f = new Fixture();
         f.Vm.TrySetCell(0, 1, "x");
         f.Busy = true;
@@ -246,6 +253,7 @@ public sealed class ResultEditorViewModelTests
     [Fact]
     public async Task Commit_DeleteConfirmationDeclinedDoesNothing()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var f = new Fixture();
         f.Vm.DeleteRows([0, 1]);
         f.Dialogs.ConfirmResult = false;
@@ -254,7 +262,7 @@ public sealed class ResultEditorViewModelTests
 
         var (title, message) = Assert.Single(f.Dialogs.Confirms);
         Assert.Equal("Delete rows", title);
-        Assert.StartsWith("Delete 2 row(s) from ", message, StringComparison.Ordinal);
+        Assert.StartsWith("Delete 2 rows from ", message, StringComparison.Ordinal);
         Assert.EndsWith("? This cannot be undone.", message, StringComparison.Ordinal);
         Assert.Empty(f.Connection.Sql);
         Assert.True(f.Vm.HasPendingChanges);
@@ -263,13 +271,14 @@ public sealed class ResultEditorViewModelTests
     [Fact]
     public async Task Commit_DeleteConfirmationAcceptedCommits()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var f = new Fixture();
         f.Vm.DeleteRows([0]);
 
         await f.Vm.CommitCommand.ExecuteAsync(null);
 
         Assert.Contains(f.Connection.Sql, s => s.StartsWith("DELETE", StringComparison.Ordinal));
-        Assert.Equal("Committed 1 change(s)", f.Vm.StatusText);
+        Assert.Equal("Committed 1 change", f.Vm.StatusText);
         Assert.False(f.Vm.HasPendingChanges);
         Assert.Equal(4, f.Grid.RowCount);
     }
@@ -277,6 +286,7 @@ public sealed class ResultEditorViewModelTests
     [Fact]
     public async Task Commit_ProviderFailureKeepsChangesAndReportsRow()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var f = new Fixture();
         f.Vm.TrySetCell(3, 1, "x");
         f.Connection.FailOn = "UPDATE";
@@ -297,6 +307,7 @@ public sealed class ResultEditorViewModelTests
     [Fact]
     public async Task Cancel_AbortsRunningCommitAndKeepsChanges()
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var f = new Fixture();
         f.Vm.TrySetCell(0, 1, "x");
         f.Connection.Gate = new TaskCompletionSource();
@@ -328,6 +339,7 @@ public sealed class ResultEditorViewModelTests
     [InlineData(false, true)]
     public async Task Discard_AsksThenDrops(bool confirm, bool stillPending)
     {
+        using var _ = UiText.Override(UiLanguage.English);
         var f = new Fixture();
         f.Vm.TrySetCell(0, 1, "x");
         f.Vm.AddRow();
@@ -335,7 +347,7 @@ public sealed class ResultEditorViewModelTests
 
         await f.Vm.DiscardCommand.ExecuteAsync(null);
 
-        Assert.Equal(("Discard changes", "Discard 2 pending change(s)?"), Assert.Single(f.Dialogs.Confirms));
+        Assert.Equal(("Discard changes", "Discard 2 pending changes?"), Assert.Single(f.Dialogs.Confirms));
         Assert.Equal(stillPending, f.Vm.HasPendingChanges);
     }
 
@@ -377,5 +389,90 @@ public sealed class ResultEditorViewModelTests
         f.Vm.PreviewScriptCommand.Execute(null);
 
         Assert.Equal(0, raised);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Les lignes sont encore en cours de chargement", "Cette colonne est en lecture seule", "La ligne est marquée pour suppression")]
+    [InlineData(UiLanguage.English, "Rows are still loading", "This column is read-only", "Row is marked for deletion")]
+    public void TrySetCell_RefusalsAreLocalized(UiLanguage language, string loading, string readOnly, string deleted)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture();
+        f.Vm.DeleteRows([2]);
+
+        Assert.Equal(loading, new Fixture(complete: false).Vm.TrySetCell(0, 1, "x"));
+        Assert.Equal(readOnly, f.Vm.TrySetCell(0, 4, "1"));
+        Assert.Equal(deleted, f.Vm.TrySetCell(2, 1, "x"));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "2 modifications en attente", "Validation bloquée", "Une requête est encore en cours sur cette connexion.")]
+    [InlineData(UiLanguage.English, "2 pending changes", "Commit blocked", "A query is still running on this connection.")]
+    public async Task Commit_BlockedAndPendingTextAreLocalized(UiLanguage language, string pending, string title, string message)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture();
+        f.Vm.TrySetCell(0, 1, "x");
+        f.Vm.TrySetCell(1, 1, "y");
+        f.Busy = true;
+
+        await f.Vm.CommitCommand.ExecuteAsync(null);
+
+        Assert.Equal(pending, f.Vm.StatusText);
+        Assert.Equal((title, message), Assert.Single(f.Dialogs.Errors));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Supprimer les lignes", "Supprimer 2 lignes de ", " ? Cette action est irréversible.", "2 modifications validées")]
+    [InlineData(UiLanguage.English, "Delete rows", "Delete 2 rows from ", "? This cannot be undone.", "Committed 2 changes")]
+    public async Task Commit_DeleteConfirmationAndResultAreLocalized(UiLanguage language, string title, string start, string end, string status)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture();
+        f.Vm.DeleteRows([0, 1]);
+
+        await f.Vm.CommitCommand.ExecuteAsync(null);
+
+        var (shownTitle, message) = Assert.Single(f.Dialogs.Confirms);
+        Assert.Equal(title, shownTitle);
+        Assert.StartsWith(start, message, StringComparison.Ordinal);
+        Assert.EndsWith(end, message, StringComparison.Ordinal);
+        Assert.Equal(status, f.Vm.StatusText);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Abandonner les modifications", "Abandonner 1 modification en attente ?")]
+    [InlineData(UiLanguage.English, "Discard changes", "Discard 1 pending change?")]
+    public async Task Discard_ConfirmationIsLocalized(UiLanguage language, string title, string message)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture();
+        f.Vm.TrySetCell(0, 1, "x");
+
+        await f.Vm.DiscardCommand.ExecuteAsync(null);
+
+        Assert.Equal((title, message), Assert.Single(f.Dialogs.Confirms));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Annulé", "Échec de la validation")]
+    [InlineData(UiLanguage.English, "Cancelled", "Commit failed")]
+    public async Task Commit_CancelAndFailureAreLocalized(UiLanguage language, string cancelled, string failed)
+    {
+        using var _ = UiText.Override(language);
+        var f = new Fixture();
+        f.Vm.TrySetCell(0, 1, "x");
+        f.Connection.Gate = new TaskCompletionSource();
+        var commit = f.Vm.CommitCommand.ExecuteAsync(null);
+        await f.Connection.Started.Task;
+        f.Vm.CancelCommand.Execute(null);
+        await commit;
+        Assert.Equal(cancelled, f.Vm.StatusText);
+
+        var g = new Fixture();
+        g.Vm.TrySetCell(0, 1, "x");
+        g.Connection.FailOn = "UPDATE";
+        await g.Vm.CommitCommand.ExecuteAsync(null);
+        Assert.Equal((failed, "boom"), Assert.Single(g.Dialogs.Errors));
     }
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Squill.Data;
 using Squill.Platform;
 using Squill.Platform.Profiles;
@@ -7,6 +8,7 @@ using Squill.Platform.Ssh;
 using Squill.Platform.Storage;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Editor;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Panels;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Settings;
@@ -61,6 +63,7 @@ public static class AppComposition
         var profiles = new JsonProfileStore(paths, SecretStoreFactory.Create(paths.DataDirectory));
         var history = new JsonQueryHistoryStore(paths);
         var settings = new JsonSettingsStore(paths);
+        LanguageSetup.Apply(settings, Environment.GetEnvironmentVariable("SQUILL_LANGUAGE"), CultureInfo.CurrentUICulture);
         var sessions = new SessionManager(platform.Providers, profiles, new SshNetTunnelFactory());
         var list = new ConnectionListViewModel(profiles, platform.Providers, platform.Dialogs);
         var workspace = new WorkspaceViewModel(

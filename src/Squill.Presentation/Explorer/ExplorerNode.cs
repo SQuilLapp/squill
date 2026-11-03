@@ -3,6 +3,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Squill.Core;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 
 namespace Squill.Presentation.Explorer;
@@ -59,7 +60,7 @@ public sealed partial class ExplorerNode(string title, ExplorerNodeKind kind, st
     public int? Count { get; } = count;
 
     /// <summary>Gets the one text the heads draw right-aligned: <see cref="Detail"/>, else the formatted <see cref="Count"/>, else <see langword="null"/>.</summary>
-    public string? Trailing => Detail ?? Count?.ToString("N0", CultureInfo.CurrentCulture);
+    public string? Trailing => Detail ?? (Count is { } n ? DisplayFormat.Count(n) : null);
 
     /// <summary>Gets what the node represents.</summary>
     public ExplorerNodeKind Kind { get; } = kind;

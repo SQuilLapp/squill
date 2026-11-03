@@ -37,7 +37,7 @@ internal sealed class ExpressionParser(SqlParserCore core)
         while (!core.AtEnd)
         {
             var token = core.Next();
-            core.Report(token.Start, token.Length, "Unexpected token");
+            core.Report(token.Start, token.Length, "Unexpected token", SqlMessageCodes.UnexpectedToken);
         }
 
         diagnostics = core.Diagnostics;
@@ -84,7 +84,7 @@ internal sealed class ExpressionParser(SqlParserCore core)
         var low = ParseExpression(Concat);
         if (!core.Match("AND"))
         {
-            core.ReportMissing("Expected AND");
+            core.ReportMissing("Expected AND", SqlMessageCodes.ExpectedKeyword, "AND");
         }
 
         var high = ParseExpression(Concat);
@@ -245,7 +245,7 @@ internal sealed class ExpressionParser(SqlParserCore core)
     /// <summary>Reports missing input and returns an empty node without consuming a token.</summary>
     private ErrorNode Missing()
     {
-        core.ReportMissing("Expected expression");
+        core.ReportMissing("Expected expression", SqlMessageCodes.ExpectedExpression);
         return new ErrorNode(core.LastEnd, 0);
     }
 
@@ -253,7 +253,7 @@ internal sealed class ExpressionParser(SqlParserCore core)
     private ErrorNode Unexpected(Token token)
     {
         core.Next();
-        core.Report(token.Start, token.Length, $"Unexpected '{core.TextOf(token)}'");
+        core.Report(token.Start, token.Length, $"Unexpected '{core.TextOf(token)}'", SqlMessageCodes.Unexpected, core.TextOf(token));
         return new ErrorNode(token.Start, token.Length);
     }
 
@@ -286,7 +286,7 @@ internal sealed class ExpressionParser(SqlParserCore core)
             }
             else
             {
-                core.Report(dot.Start, dot.Length, "Expected identifier after '.'");
+                core.Report(dot.Start, dot.Length, "Expected identifier after '.'", SqlMessageCodes.ExpectedIdentifierAfterDot);
                 parts.Add(string.Empty);
                 break;
             }
@@ -329,7 +329,7 @@ internal sealed class ExpressionParser(SqlParserCore core)
         var open = core.Peek();
         if (!core.MatchPunct('('))
         {
-            core.ReportMissing("Expected '('");
+            core.ReportMissing("Expected '('", SqlMessageCodes.ExpectedChar, "(");
             return new ErrorNode(core.LastEnd, 0);
         }
 
@@ -366,7 +366,7 @@ internal sealed class ExpressionParser(SqlParserCore core)
             var condition = ParseExpression();
             if (!core.Match("THEN"))
             {
-                core.ReportMissing("Expected THEN");
+                core.ReportMissing("Expected THEN", SqlMessageCodes.ExpectedKeyword, "THEN");
             }
 
             var result = ParseExpression();
@@ -375,13 +375,13 @@ internal sealed class ExpressionParser(SqlParserCore core)
 
         if (whens.Count == 0)
         {
-            core.ReportMissing("Expected WHEN");
+            core.ReportMissing("Expected WHEN", SqlMessageCodes.ExpectedKeyword, "WHEN");
         }
 
         var otherwise = core.Match("ELSE") ? ParseExpression() : null;
         if (!core.Match("END"))
         {
-            core.ReportMissing("Expected END");
+            core.ReportMissing("Expected END", SqlMessageCodes.ExpectedKeyword, "END");
         }
 
         return new CaseExpr(operand, whens, otherwise, start, Math.Max(core.LastEnd, otherwise?.End ?? 0) - start);
@@ -394,7 +394,7 @@ internal sealed class ExpressionParser(SqlParserCore core)
         var operand = ParseExpression();
         if (!core.Match("AS"))
         {
-            core.ReportMissing("Expected AS");
+            core.ReportMissing("Expected AS", SqlMessageCodes.ExpectedKeyword, "AS");
         }
 
         var type = ParseTypeName(multiWord: true);
@@ -408,7 +408,7 @@ internal sealed class ExpressionParser(SqlParserCore core)
         var first = core.Peek();
         if (first.Kind is not (TokenKind.Identifier or TokenKind.QuotedIdentifier or TokenKind.Keyword) || IsBoundary())
         {
-            core.ReportMissing("Expected type name");
+            core.ReportMissing("Expected type name", SqlMessageCodes.ExpectedTypeName);
             return string.Empty;
         }
 

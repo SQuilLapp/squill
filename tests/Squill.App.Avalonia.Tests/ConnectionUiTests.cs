@@ -144,7 +144,7 @@ public sealed class ConnectionUiTests
         }, TestContext.Current.CancellationToken);
     }
 
-    private sealed class NullStore : IProfileStore
+    internal sealed class NullStore : IProfileStore
     {
         public ValueTask<IReadOnlyList<ConnectionProfile>> ListAsync(CancellationToken ct) => ValueTask.FromResult<IReadOnlyList<ConnectionProfile>>([]);
         public ValueTask SaveAsync(ConnectionProfile profile, string? password, string? sshSecret, CancellationToken ct) => ValueTask.CompletedTask;

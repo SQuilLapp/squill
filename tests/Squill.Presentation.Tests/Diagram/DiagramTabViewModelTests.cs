@@ -3,6 +3,7 @@ using Squill.Data;
 using Squill.Platform.Storage;
 using Squill.Presentation.Diagram;
 using Squill.Presentation.Sessions;
+using Squill.Presentation.Localization;
 using Xunit;
 
 namespace Squill.Presentation.Tests.Diagram;
@@ -187,7 +188,7 @@ public sealed class DiagramTabViewModelTests
 
         Assert.Equal(50, vm.Model.Entities.Count);
         Assert.Contains(vm.Model.Entities, e => e.Key == "hub");
-        Assert.Equal("Showing 50 of 252 tables, use the filter or Focus", vm.StatusText);
+        Assert.Equal("50 tables affichées sur 252, utilisez le filtre ou Focus", vm.StatusText);
 
         vm.ShowAllCommand.Execute(null);
 
@@ -267,7 +268,7 @@ public sealed class DiagramTabViewModelTests
             var svg = await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
             Assert.Contains("<svg", svg);
             Assert.Contains("#1A1B20", svg);
-            Assert.Equal("Saved " + path, vm.StatusText);
+            Assert.Equal("Enregistré : " + path, vm.StatusText);
         }
         finally
         {
@@ -285,6 +286,27 @@ public sealed class DiagramTabViewModelTests
 
         Assert.Empty(dialogs.Errors);
         Assert.Equal("", vm.StatusText);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "ER - prod", "Export impossible", "50 tables affichées sur 252, utilisez le filtre ou Focus")]
+    [InlineData(UiLanguage.English, "ER - prod", "Export failed", "Showing 50 of 252 tables, use the filter or Focus")]
+    public async Task Texts_AreInTheChosenLanguage(UiLanguage language, string title, string exportFailed, string capped)
+    {
+        using var _ = UiText.Override(language);
+        var tables = new List<TableInfo> { Plain("hub") };
+        tables.AddRange(Enumerable.Range(0, 250).Select(i => Plain($"t{i:000}")));
+        tables.Add(Child("zz_child", "hub"));
+        var dialogs = new FakeDialogService { SavePathResult = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "x.svg") };
+        var (vm, _) = Create(Schema([.. tables]), dialogs: dialogs);
+
+        await vm.ExportSvgCommand.ExecuteAsync(null);
+
+        Assert.Equal(title, vm.Title);
+        Assert.Equal(capped, vm.StatusText);
+        var (heading, message) = Assert.Single(dialogs.Errors);
+        Assert.Equal(exportFailed, heading);
+        Assert.False(string.IsNullOrEmpty(message));
     }
 
     [Fact]

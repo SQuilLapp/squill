@@ -1,5 +1,6 @@
 using System.Globalization;
 using Squill.Core;
+using Squill.Presentation.Localization;
 
 namespace Squill.Presentation.Terminal;
 
@@ -28,12 +29,12 @@ public static class TerminalLauncher
         };
         if (profile.Dialect == DatabaseDialect.Sqlite && args.Count == 0)
         {
-            reason = $"Connection '{profile.Name}' has no database file.";
+            reason = UiText.Format("terminal.noDatabaseFile", profile.Name);
             return null;
         }
         if (findOnPath(exe) is not { } path)
         {
-            reason = $"'{exe}' was not found on PATH; install it to open a {profile.Dialect} terminal.";
+            reason = UiText.Format("terminal.cliNotFound", exe, profile.Dialect);
             return null;
         }
         reason = null;

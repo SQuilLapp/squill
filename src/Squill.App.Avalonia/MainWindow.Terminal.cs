@@ -33,7 +33,7 @@ public sealed partial class MainWindow
     private static void FillTerminalMenu(MenuItem menu, WorkspaceViewModel workspace)
     {
         menu.Items.Clear();
-        AddTerminalEntry(menu, workspace, "Local shell", null);
+        AddTerminalEntry(menu, workspace, UiText.Get("terminal.localShell"), null);
         if (workspace.ActiveSession is { } session)
             AddTerminalEntry(menu, workspace, $"{session.Profile.Name} CLI", session.Profile);
     }

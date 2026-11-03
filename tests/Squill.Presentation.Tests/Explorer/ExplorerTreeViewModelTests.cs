@@ -6,6 +6,7 @@ using Squill.Platform.Profiles;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Explorer;
 using Squill.Presentation.Sessions;
+using Squill.Presentation.Localization;
 using Xunit;
 
 namespace Squill.Presentation.Tests.Explorer;
@@ -82,7 +83,7 @@ public sealed class ExplorerTreeViewModelTests
         Assert.Equal(["Tables", "Vues"], schema.Children.Select(c => c.Title));
         Assert.Equal(["users"], schema.Children[0].Children.Select(c => c.Title));
         Assert.Equal([ExplorerNodeKind.View], schema.Children[1].Children.Select(c => c.Kind));
-        Assert.Equal(["Columns", "Indexes", "Foreign keys"], schema.Children[0].Children[0].Children.Select(c => c.Title));
+        Assert.Equal(["Colonnes", "Index", "Clés étrangères"], schema.Children[0].Children[0].Children.Select(c => c.Title));
         Assert.All(Descendants(node), d => Assert.Same(node.Session, d.Session));
     }
 
@@ -147,7 +148,7 @@ public sealed class ExplorerTreeViewModelTests
         _list.Profiles.Add(profile);
         var node = Connect(profile, Table("public", "users"));
 
-        var columns = Descendants(node).Single(n => n.Title == "Columns").Children;
+        var columns = Descendants(node).Single(n => n.Title == "Colonnes").Children;
 
         Assert.Equal("int PK", columns[0].Detail);
         Assert.Equal("text NULL", columns[1].Detail);
@@ -179,7 +180,7 @@ public sealed class ExplorerTreeViewModelTests
 
         Assert.True(nodeA.IsVisible);
         var users = Descendants(nodeA).Single(n => n.Kind == ExplorerNodeKind.Table);
-        Assert.Equal([false, true], Descendants(users).Single(n => n.Title == "Columns").Children.Select(c => c.IsVisible));
+        Assert.Equal([false, true], Descendants(users).Single(n => n.Title == "Colonnes").Children.Select(c => c.IsVisible));
         Assert.True(Descendants(nodeA).Single(n => n.Kind == ExplorerNodeKind.Database).IsVisible);
 
         _tree.FilterText = "zzz";
@@ -255,6 +256,20 @@ public sealed class ExplorerTreeViewModelTests
         Assert.Equal(["users"], drop);
     }
 
+    [Theory]
+    [InlineData(UiLanguage.French, "Colonnes", "Index", "Clés étrangères")]
+    [InlineData(UiLanguage.English, "Columns", "Indexes", "Foreign keys")]
+    public void TableFolders_AreInTheChosenLanguage(UiLanguage language, string columns, string indexes, string foreignKeys)
+    {
+        using var _ = UiText.Override(language);
+        var profile = Profile("p");
+        _list.Profiles.Add(profile);
+        var node = Connect(profile, Table("public", "users"));
+
+        var users = Descendants(node).Single(d => d.Title == "users");
+        Assert.Equal([columns, indexes, foreignKeys], users.Children.Select(c => c.Title));
+    }
+
     private static ExplorerNode Folder(ExplorerNode table, string title) => table.Children.Single(c => c.Title == title);
 
     [Fact]
@@ -269,28 +284,20 @@ public sealed class ExplorerTreeViewModelTests
         Assert.Equal(2, schemas["public"].Count);
         Assert.Equal(2, schemas["sales"].Count);
         var users = Descendants(node).Single(d => d.Title == "users");
-        Assert.Equal(2, Folder(users, "Columns").Count);
-        Assert.Equal(1, Folder(users, "Indexes").Count);
-        Assert.Equal(1, Folder(users, "Foreign keys").Count);
-        Assert.Equal(0, Folder(Descendants(node).Single(d => d.Title == "bare"), "Indexes").Count);
+        Assert.Equal(2, Folder(users, "Colonnes").Count);
+        Assert.Equal(1, Folder(users, "Index").Count);
+        Assert.Equal(1, Folder(users, "Clés étrangères").Count);
+        Assert.Equal(0, Folder(Descendants(node).Single(d => d.Title == "bare"), "Index").Count);
         Assert.All(Descendants(node).Where(d => d.Kind is ExplorerNodeKind.Table or ExplorerNodeKind.View or ExplorerNodeKind.Column), d => Assert.Null(d.Count));
     }
 
     [Fact]
     public void Trailing_PrefersDetail_ThenFormattedCount_ThenNull()
     {
-        var previous = CultureInfo.CurrentCulture;
-        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-        try
-        {
-            Assert.Equal("d", new ExplorerNode("t", ExplorerNodeKind.Column, "d", count: 3).Trailing);
-            Assert.Equal("1,208", new ExplorerNode("t", ExplorerNodeKind.Folder, count: 1208).Trailing);
-            Assert.Null(new ExplorerNode("t", ExplorerNodeKind.Table).Trailing);
-        }
-        finally
-        {
-            CultureInfo.CurrentCulture = previous;
-        }
+        using var _ = UiText.Override(UiLanguage.English);
+        Assert.Equal("d", new ExplorerNode("t", ExplorerNodeKind.Column, "d", count: 3).Trailing);
+        Assert.Equal("1,208", new ExplorerNode("t", ExplorerNodeKind.Folder, count: 1208).Trailing);
+        Assert.Null(new ExplorerNode("t", ExplorerNodeKind.Table).Trailing);
     }
 
     [Fact]

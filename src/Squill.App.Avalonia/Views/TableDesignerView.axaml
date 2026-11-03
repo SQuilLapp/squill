@@ -109,7 +109,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="8">
                   <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconPlus}" />
                   <TextBlock Text="{loc:Text designer.addColumn}" />
-                  <Border Classes="kbd"><TextBlock Text="Ctrl+Inser" /></Border>
+                  <Border Classes="kbd"><TextBlock Text="{loc:Text designer.addColumnShortcut}" /></Border>
                 </StackPanel>
               </Button>
               <Button Grid.Column="1" Margin="6,0,0,0" Height="28" MinHeight="28" Content="{loc:Text designer.delete}"

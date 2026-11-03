@@ -19,13 +19,13 @@ internal sealed class WinUiDialogService : IDialogService
 
     /// <inheritdoc />
     public async ValueTask<bool> ConfirmAsync(string title, string message) =>
-        await ShowAsync(title, message, null, "OK", "Cancel") == ContentDialogResult.Primary;
+        await ShowAsync(title, message, null, UiText.Get("dialog.ok"), UiText.Get("dialog.cancel")) == ContentDialogResult.Primary;
 
     /// <inheritdoc />
     public async ValueTask<string?> PromptAsync(string title, string message, string? initial)
     {
         var box = new TextBox { Text = initial ?? "" };
-        return await ShowAsync(title, message, box, "OK", "Cancel") == ContentDialogResult.Primary ? box.Text : null;
+        return await ShowAsync(title, message, box, UiText.Get("dialog.ok"), UiText.Get("dialog.cancel")) == ContentDialogResult.Primary ? box.Text : null;
     }
 
     /// <inheritdoc />
@@ -43,7 +43,7 @@ internal sealed class WinUiDialogService : IDialogService
 
     /// <inheritdoc />
     public async ValueTask ShowErrorAsync(string title, string message) =>
-        await ShowAsync(title, message, null, "OK", null);
+        await ShowAsync(title, message, null, UiText.Get("dialog.ok"), null);
 
     /// <inheritdoc />
     public async ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(

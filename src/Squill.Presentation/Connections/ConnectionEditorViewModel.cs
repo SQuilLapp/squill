@@ -258,7 +258,7 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         {
             var profile = BuildProfile(withSsh: false);
             await using var connection = await _providers.Get(Dialect).OpenAsync(profile, NullIfBlank(Password), ct);
-            TestStatus = $"Connected. Server version: {connection.ServerVersion}";
+            TestStatus = UiText.Format("connections.testStatusOk", connection.ServerVersion);
             TestServerVersion = connection.ServerVersion;
             TestSucceeded = true;
         }
@@ -268,10 +268,10 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            TestStatus = $"Connection failed: {ex.Message}";
+            TestStatus = UiText.Format("connections.testStatusFailed", ex.Message);
             TestServerVersion = null;
             TestSucceeded = false;
-            await _dialogs.ShowErrorAsync("Connection test failed", ex.Message);
+            await _dialogs.ShowErrorAsync(UiText.Get("connections.testFailedTitle"), ex.Message);
         }
     }
 }

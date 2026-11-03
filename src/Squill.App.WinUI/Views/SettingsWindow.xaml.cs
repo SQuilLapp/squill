@@ -3,6 +3,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Squill.Core;
+using Squill.Platform.Settings;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Settings;
 using Windows.Graphics;
@@ -41,11 +42,15 @@ public sealed partial class SettingsWindow : Window
         Root.ActualThemeChanged += (_, _) => BuildNav();
         foreach (var value in Enum.GetValues<KeywordCase>())
             KeywordCaseBox.Items.Add(value);
+        foreach (var option in settings.LanguageOptions)
+            LanguageBox.Items.Add(option.Label);
 
         _loading = true;
         FontSizeBox.Value = settings.EditorFontSize;
         MaxRowsBox.Value = settings.MaxGridRows;
         KeywordCaseBox.SelectedItem = settings.FormatterKeywordCase;
+        LanguageBox.SelectedIndex = IndexOf(settings.Language);
+        RestartNote.Visibility = Show(settings.RestartRequired);
         Card(SettingsFormat.ThemeIndex(settings.Theme)).IsChecked = true;
         _loading = false;
         DataFolderPath.Text = dataDirectory;
@@ -117,6 +122,22 @@ public sealed partial class SettingsWindow : Window
     {
         if (!_loading && KeywordCaseBox.SelectedItem is KeywordCase chosen)
             _settings.FormatterKeywordCase = chosen;
+    }
+
+    private void OnLanguageChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loading || LanguageBox.SelectedIndex < 0)
+            return;
+        _settings.Language = _settings.LanguageOptions[LanguageBox.SelectedIndex].Value;
+        RestartNote.Visibility = Show(_settings.RestartRequired);
+    }
+
+    private int IndexOf(AppLanguage language)
+    {
+        for (var i = 0; i < _settings.LanguageOptions.Count; i++)
+            if (_settings.LanguageOptions[i].Value == language)
+                return i;
+        return 0;
     }
 
     private async void OnOpenDataFolder(object sender, RoutedEventArgs e)

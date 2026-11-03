@@ -122,6 +122,15 @@
       <Grid Margin="0,0,40,32" MaxWidth="860" HorizontalAlignment="Left">
         <StackPanel x:Name="PageAppearance" Spacing="12">
           <TextBlock Style="{StaticResource PageTitleStyle}" loc:Loc.Key="settings.appearance" />
+          <Border Style="{StaticResource CardStyle}">
+            <StackPanel Margin="20,10">
+              <Grid MinHeight="56" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                <TextBlock Style="{StaticResource RowTitleStyle}" VerticalAlignment="Center" loc:Loc.Key="settings.language" />
+                <ComboBox x:Name="LanguageBox" Grid.Column="1" Width="180" VerticalAlignment="Center" SelectionChanged="OnLanguageChanged" />
+              </Grid>
+              <TextBlock x:Name="RestartNote" Style="{StaticResource RowDescStyle}" Margin="0,0,0,6" Visibility="Collapsed" loc:Loc.Key="settings.restartNeeded" />
+            </StackPanel>
+          </Border>
           <Border Style="{StaticResource CardStyle}" Padding="20">
             <StackPanel Spacing="14">
               <StackPanel>

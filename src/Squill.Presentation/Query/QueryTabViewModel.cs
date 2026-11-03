@@ -6,6 +6,7 @@ using Squill.Data;
 using Squill.Platform.Settings;
 using Squill.Platform.Storage;
 using Squill.Presentation.Editing;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
@@ -65,7 +66,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
 
         editor.SetDialect(session.Profile.Dialect);
         editor.SetCompletionProvider(new SessionCompletionProvider(session));
-        editor.SetHoverProvider(r => SqlHoverProvider.GetHover(r with { Schema = session.Schema }));
+        editor.SetHoverProvider(r => SqlHoverProvider.GetHover(r with { Schema = session.Schema }) is { } h ? h with { Markdown = IssueText.Format(h.Code, h.Args, h.Markdown) } : null);
         editor.TextChanged += (_, _) => UpdateDiagnostics();
         UpdateDiagnostics();
     }
@@ -81,7 +82,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
 
     /// <summary>Gets or sets the tab title.</summary>
     [ObservableProperty]
-    public partial string Title { get; set; } = "Query";
+    public partial string Title { get; set; } = UiText.Get("tab.untitled");
 
     /// <summary>Gets whether a run is in progress.</summary>
     [ObservableProperty]
@@ -93,7 +94,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
 
     /// <summary>Gets a one-line summary of the last run.</summary>
     [ObservableProperty]
-    public partial string StatusText { get; private set; } = "Ready";
+    public partial string StatusText { get; private set; } = UiText.Get("query.ready");
 
     /// <summary>Gets the results of the last run, in statement order.</summary>
     public ObservableCollection<ResultViewModel> Results { get; } = [];
@@ -140,13 +141,13 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     {
         if (IsRunning || statements.Count == 0)
             return;
-        if (HasPendingChanges && !await _dialogs.ConfirmAsync("Run query", "Discard pending grid changes?"))
+        if (HasPendingChanges && !await _dialogs.ConfirmAsync(UiText.Get("query.run.title"), UiText.Get("query.run.discardChanges")))
             return;
         _baselineText = _editor.Text;
         IsRunning = true;
         Results.Clear();
         SelectedResult = null;
-        StatusText = "Running...";
+        StatusText = UiText.Get("query.running");
         var clock = Stopwatch.StartNew();
         using var cts = new CancellationTokenSource();
         _cancel = cts.Cancel;
@@ -165,12 +166,12 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             }
 
             StatusText = completed == statements.Count
-                ? $"Completed {completed} statement(s) in {clock.Elapsed.TotalSeconds:0.###} s"
-                : $"Failed after {completed} statement(s)";
+                ? UiText.FormatPlural("query.completed", completed, clock.Elapsed.TotalSeconds.ToString("0.###", UiText.Culture))
+                : UiText.FormatPlural("query.failedAfter", completed);
         }
         catch (OperationCanceledException)
         {
-            StatusText = "Cancelled";
+            StatusText = UiText.Get("query.cancelled");
         }
         finally
         {
@@ -205,7 +206,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         var dialect = _session.Profile.Dialect;
         if (ParameterScanner.HasPositional(original, dialect))
         {
-            AddResult(ResultViewModel.ForMessage(NextTitle(), "Positional parameters are not supported, use :name", _dialogs));
+            AddResult(ResultViewModel.ForMessage(NextTitle(), UiText.Get("query.positionalUnsupported"), _dialogs));
             return false;
         }
 
@@ -224,7 +225,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
                 var affected = reader.RecordsAffected;
                 await reader.DisposeAsync();
                 rows = affected >= 0 ? affected : null;
-                AddResult(ResultViewModel.ForMessage(NextTitle(), affected >= 0 ? $"{affected} row(s) affected" : "Command completed", _dialogs));
+                AddResult(ResultViewModel.ForMessage(NextTitle(), affected >= 0 ? UiText.FormatPlural("query.rowsAffected", (int)Math.Min(affected, int.MaxValue)) : UiText.Get("query.commandCompleted"), _dialogs));
             }
             else
             {
@@ -263,7 +264,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             var verdict = EditableSourceAnalyzer.Analyze(original, _session.Profile.Dialect, _session.Schema, grid.Columns);
             if (verdict.Target is null)
             {
-                result.SetReadOnly(verdict.Reason ?? "not editable");
+                result.SetReadOnly(verdict.Reason ?? UiText.Get("query.notEditable"));
                 return;
             }
 
@@ -274,7 +275,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         }
         catch (Exception)
         {
-            result.SetReadOnly("analysis failed");
+            result.SetReadOnly(UiText.Get("query.analysisFailed"));
         }
     }
 
@@ -286,7 +287,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            await _dialogs.ShowErrorAsync("Schema refresh failed", ex.Message);
+            await _dialogs.ShowErrorAsync(UiText.Get("query.schemaRefreshFailed"), ex.Message);
         }
     }
 
@@ -296,7 +297,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         SelectedResult = result;
     }
 
-    private string NextTitle() => $"Result {Results.Count + 1}";
+    private string NextTitle() => UiText.Format("results.result", Results.Count + 1);
 
     private static bool IsSchemaChange(string sql)
     {
@@ -311,8 +312,9 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     }
 
     private void UpdateDiagnostics() =>
-        _editor.SetDiagnostics(SqlDiagnosticsProvider.GetDiagnostics(
-            new SqlRequest(_editor.Text, _editor.CaretOffset, _session.Profile.Dialect, _session.Schema)));
+        _editor.SetDiagnostics([.. SqlDiagnosticsProvider.GetDiagnostics(
+            new SqlRequest(_editor.Text, _editor.CaretOffset, _session.Profile.Dialect, _session.Schema))
+            .Select(d => d with { Message = IssueText.Format(d.MessageCode, d.Args, d.Message) })]);
 
     /// <summary>Completes keywords and schema objects against the schema of the tab's current session.</summary>
     private sealed class SessionCompletionProvider(ConnectionSession session) : ISqlCompletionProvider

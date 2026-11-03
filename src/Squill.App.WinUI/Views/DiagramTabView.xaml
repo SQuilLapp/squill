@@ -16,7 +16,7 @@
               <TextBlock loc:Loc.Key="er.autoLayout" />
             </StackPanel>
           </Button>
-          <StackPanel Orientation="Horizontal" Spacing="4" ToolTipService.ToolTip="Sauts de relation">
+          <StackPanel Orientation="Horizontal" Spacing="4" loc:Loc.ToolTipKey="er.depthTooltip">
             <RadioButton x:Name="Depth1" Style="{StaticResource SegmentedRadioButtonStyle}" MinWidth="0" Padding="14,0" GroupName="ErDepth" Content="1" IsChecked="True" Click="OnDepthClicked" />
             <RadioButton x:Name="Depth2" Style="{StaticResource SegmentedRadioButtonStyle}" MinWidth="0" Padding="14,0" GroupName="ErDepth" Content="2" Click="OnDepthClicked" />
             <RadioButton x:Name="Depth3" Style="{StaticResource SegmentedRadioButtonStyle}" MinWidth="0" Padding="14,0" GroupName="ErDepth" Content="3" Click="OnDepthClicked" />
@@ -42,7 +42,7 @@
         <Button Grid.Column="1" VerticalAlignment="Center" loc:Loc.Key="er.export">
           <Button.Flyout>
             <MenuFlyout Placement="BottomEdgeAlignedRight">
-              <MenuFlyoutItem loc:Loc.Key="er.exportSvg" Command="{x:Bind ViewModel.ExportSvgCommand}" />
+              <MenuFlyoutItem loc:Loc.MenuTextKey="er.exportSvg" Command="{x:Bind ViewModel.ExportSvgCommand}" />
             </MenuFlyout>
           </Button.Flyout>
         </Button>

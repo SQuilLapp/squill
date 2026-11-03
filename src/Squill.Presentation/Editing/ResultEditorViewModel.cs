@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
 using Squill.Core.Editing;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Ddl;
@@ -82,11 +83,11 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
     public string? TrySetCell(long row, int column, string? text)
     {
         if (!Grid.CanEdit)
-            return "Rows are still loading";
+            return UiText.Get("results.rowsLoading");
         if (column < 0 || column >= Grid.Columns.Count || !Target.IsEditable(column))
-            return "This column is read-only";
+            return UiText.Get("results.columnReadOnly");
         if (Grid.GetRowState(row) == RowState.Deleted)
-            return "Row is marked for deletion";
+            return UiText.Get("results.rowDeleted");
         if (!CellValueParser.TryParse(text, Grid.Columns[column], out var value, out var error))
             return error;
         Grid.SetCell(row, column, value);
@@ -131,7 +132,7 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
 
         if (_isConnectionBusy())
         {
-            await _dialogs.ShowErrorAsync("Commit blocked", "A query is still running on this connection.");
+            await _dialogs.ShowErrorAsync(UiText.Get("results.commitBlocked.title"), UiText.Get("results.commitBlocked.message"));
             return;
         }
 
@@ -140,7 +141,7 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
         if (deletes > 0)
         {
             var table = SqlQuoting.QualifiedName(Target.Schema, Target.Table, _dialect);
-            if (!await _dialogs.ConfirmAsync("Delete rows", $"Delete {deletes} row(s) from {table}? This cannot be undone."))
+            if (!await _dialogs.ConfirmAsync(UiText.Get("results.deleteRows.title"), UiText.FormatPlural("results.deleteRows.confirm", deletes, table)))
                 return;
         }
 
@@ -151,11 +152,11 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
         {
             var result = await new EditCommitter(_session.Connection, _dialect).CommitAsync(Target, Grid.Columns, set.Edits, cts.Token);
             Grid.AcceptChanges(result.GeneratedKeys);
-            StatusText = $"Committed {result.StatementCount} change(s)";
+            StatusText = UiText.FormatPlural("results.committed", result.StatementCount);
         }
         catch (OperationCanceledException)
         {
-            StatusText = "Cancelled";
+            StatusText = UiText.Get("query.cancelled");
         }
         catch (Exception ex)
         {
@@ -166,7 +167,7 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
                 NotifyCommands();
             }
 
-            await _dialogs.ShowErrorAsync("Commit failed", ex.Message);
+            await _dialogs.ShowErrorAsync(UiText.Get("results.commitFailed"), ex.Message);
         }
         finally
         {
@@ -178,7 +179,7 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
     [RelayCommand]
     private async Task DiscardAsync()
     {
-        if (HasPendingChanges && !await _dialogs.ConfirmAsync("Discard changes", $"Discard {PendingCount} pending change(s)?"))
+        if (HasPendingChanges && !await _dialogs.ConfirmAsync(UiText.Get("results.discard.title"), UiText.FormatPlural("results.discard.confirm", PendingCount)))
             return;
         Grid.DiscardAll();
     }
@@ -219,7 +220,7 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
             Issues.Add(issue);
         PendingCount = Grid.PendingCount;
         HasPendingChanges = Grid.HasPendingChanges;
-        StatusText = PendingCount > 0 ? $"{PendingCount} pending change(s)" : "";
+        StatusText = PendingCount > 0 ? UiText.FormatPlural("results.pendingChanges", PendingCount) : "";
         NotifyCommands();
     }
 

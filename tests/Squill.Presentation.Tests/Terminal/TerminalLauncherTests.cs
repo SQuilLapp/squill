@@ -1,4 +1,5 @@
 using Squill.Core;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Terminal;
 using Xunit;
 
@@ -54,10 +55,22 @@ public sealed class TerminalLauncherTests
     [Fact]
     public void ForProfile_SqliteWithoutFile_ReturnsNullAndReason()
     {
+        using var language = UiText.Override(UiLanguage.English);
+
         var launch = TerminalLauncher.ForProfile(Profile(DatabaseDialect.Sqlite), null, Everywhere, out var reason);
 
         Assert.Null(launch);
-        Assert.Contains("no database file", reason, StringComparison.Ordinal);
+        Assert.Equal("Connection 'p' has no database file.", reason);
+    }
+
+    [Fact]
+    public void ForProfile_SqliteWithoutFile_ReasonIsFrench()
+    {
+        using var language = UiText.Override(UiLanguage.French);
+
+        TerminalLauncher.ForProfile(Profile(DatabaseDialect.Sqlite), null, Everywhere, out var reason);
+
+        Assert.Equal("La connexion 'p' n'a pas de fichier de base de données.", reason);
     }
 
     [Fact]
@@ -67,6 +80,7 @@ public sealed class TerminalLauncherTests
 
         Assert.Null(launch);
         Assert.Contains("mysql", reason, StringComparison.Ordinal);
+        Assert.Contains("PATH", reason, StringComparison.Ordinal);
     }
 
     [Fact]

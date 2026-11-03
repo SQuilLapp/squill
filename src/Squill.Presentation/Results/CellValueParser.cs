@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Numerics;
 using Squill.Core;
+using Squill.Presentation.Localization;
 
 namespace Squill.Presentation.Results;
 
@@ -61,24 +62,24 @@ public static class CellValueParser
         if (type == typeof(ushort)) { return Integer<ushort>(s, text, "ushort", out value, out error); }
         if (type == typeof(uint)) { return Integer<uint>(s, text, "uint", out value, out error); }
         if (type == typeof(ulong)) { return Integer<ulong>(s, text, "ulong", out value, out error); }
-        if (type == typeof(float)) { return Set(float.TryParse(s, NumberStyles.Float, Invariant, out var f) ? f : null, out value, out error, text, "number"); }
-        if (type == typeof(double)) { return Set(double.TryParse(s, NumberStyles.Float, Invariant, out var d) ? d : null, out value, out error, text, "number"); }
-        if (type == typeof(decimal)) { return Set(decimal.TryParse(s, NumberStyles.Float, Invariant, out var m) ? m : null, out value, out error, text, "number"); }
+        if (type == typeof(float)) { return Set(float.TryParse(s, NumberStyles.Float, Invariant, out var f) ? f : null, out value, out error, text, UiText.Get("results.type.number")); }
+        if (type == typeof(double)) { return Set(double.TryParse(s, NumberStyles.Float, Invariant, out var d) ? d : null, out value, out error, text, UiText.Get("results.type.number")); }
+        if (type == typeof(decimal)) { return Set(decimal.TryParse(s, NumberStyles.Float, Invariant, out var m) ? m : null, out value, out error, text, UiText.Get("results.type.number")); }
         if (type == typeof(DateTime))
         {
-            return Set(DateTime.TryParseExact(s, DateTimeFormats, Invariant, DateTimeStyles.RoundtripKind, out var dt) ? dt : null, out value, out error, text, "date and time");
+            return Set(DateTime.TryParseExact(s, DateTimeFormats, Invariant, DateTimeStyles.RoundtripKind, out var dt) ? dt : null, out value, out error, text, UiText.Get("results.type.dateTime"));
         }
 
         if (type == typeof(DateTimeOffset))
         {
-            return Set(DateTimeOffset.TryParseExact(s, DateTimeOffsetFormats, Invariant, DateTimeStyles.AssumeUniversal, out var dto) ? dto : null, out value, out error, text, "date and time");
+            return Set(DateTimeOffset.TryParseExact(s, DateTimeOffsetFormats, Invariant, DateTimeStyles.AssumeUniversal, out var dto) ? dto : null, out value, out error, text, UiText.Get("results.type.dateTime"));
         }
 
-        if (type == typeof(DateOnly)) { return Set(DateOnly.TryParseExact(s, DateFormats, Invariant, DateTimeStyles.None, out var da) ? da : null, out value, out error, text, "date"); }
-        if (type == typeof(TimeOnly)) { return Set(TimeOnly.TryParse(s, Invariant, DateTimeStyles.None, out var to) ? to : null, out value, out error, text, "time"); }
-        if (type == typeof(TimeSpan)) { return Set(TimeSpan.TryParse(s, Invariant, out var ts) ? ts : null, out value, out error, text, "time"); }
+        if (type == typeof(DateOnly)) { return Set(DateOnly.TryParseExact(s, DateFormats, Invariant, DateTimeStyles.None, out var da) ? da : null, out value, out error, text, UiText.Get("results.type.date")); }
+        if (type == typeof(TimeOnly)) { return Set(TimeOnly.TryParse(s, Invariant, DateTimeStyles.None, out var to) ? to : null, out value, out error, text, UiText.Get("results.type.time")); }
+        if (type == typeof(TimeSpan)) { return Set(TimeSpan.TryParse(s, Invariant, out var ts) ? ts : null, out value, out error, text, UiText.Get("results.type.time")); }
         if (type == typeof(Guid)) { return Set(Guid.TryParse(s, out var g) ? g : null, out value, out error, text, "GUID"); }
-        if (type == typeof(byte[])) { return Set(ParseHex(s), out value, out error, text, "binary (0x...)"); }
+        if (type == typeof(byte[])) { return Set(ParseHex(s), out value, out error, text, UiText.Get("results.type.binary")); }
 
         value = text;
         return true;
@@ -94,7 +95,7 @@ public static class CellValueParser
     private static bool Set(object? parsed, out object? value, out string? error, string text, string friendly)
     {
         value = parsed;
-        error = parsed is null ? $"\"{text}\" is not a valid {friendly} value" : null;
+        error = parsed is null ? UiText.Format("results.invalidValue", text, friendly) : null;
         return parsed is not null;
     }
 
@@ -110,8 +111,8 @@ public static class CellValueParser
 
         value = null;
         error = BigInteger.TryParse(s, NumberStyles.Integer, Invariant, out _)
-            ? $"\"{text}\" is out of range for {typeName}"
-            : $"\"{text}\" is not a valid integer value";
+            ? UiText.Format("results.outOfRange", text, typeName)
+            : UiText.Format("results.invalidInteger", text);
         return false;
     }
 

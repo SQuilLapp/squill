@@ -1,5 +1,6 @@
 using Squill.Core;
 using Squill.Platform.Storage;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Panels;
 using Xunit;
 
@@ -105,6 +106,44 @@ public sealed class SnippetsViewModelTests
 
         Assert.Equal("new", Assert.Single(_snippets.Snippets).Name);
         Assert.Equal("SELECT 1", _snippets.Snippets[0].Sql);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Enregistrer le script", "Nom du script")]
+    [InlineData(UiLanguage.English, "Save snippet", "Snippet name")]
+    public async Task SaveCurrent_PromptsInTheCurrentLanguage(UiLanguage language, string title, string message)
+    {
+        using var scope = UiText.Override(language);
+        await _host.ConnectAsync();
+        _host.Editors[0].Text = "SELECT 1";
+
+        await _snippets.SaveCurrentCommand.ExecuteAsync(null);
+
+        Assert.Equal((title, message), Assert.Single(_host.Dialogs.Prompts));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Renommer le script", "Nom du script")]
+    [InlineData(UiLanguage.English, "Rename snippet", "Snippet name")]
+    public async Task Rename_PromptsInTheCurrentLanguage(UiLanguage language, string title, string message)
+    {
+        using var scope = UiText.Override(language);
+
+        await _snippets.RenameCommand.ExecuteAsync(new Snippet(Guid.NewGuid(), "old", "SELECT 1"));
+
+        Assert.Equal((title, message), Assert.Single(_host.Dialogs.Prompts));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Supprimer le script", "Supprimer le script 'old' ?")]
+    [InlineData(UiLanguage.English, "Delete snippet", "Delete the snippet 'old'?")]
+    public async Task Delete_AsksConfirmationInTheCurrentLanguage(UiLanguage language, string title, string message)
+    {
+        using var scope = UiText.Override(language);
+
+        await _snippets.DeleteCommand.ExecuteAsync(new Snippet(Guid.NewGuid(), "old", "SELECT 1"));
+
+        Assert.Equal((title, message), Assert.Single(_host.Dialogs.Confirms));
     }
 
     private sealed class FakeStore : ISnippetStore

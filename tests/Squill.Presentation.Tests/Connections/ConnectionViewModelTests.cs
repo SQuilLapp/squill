@@ -277,6 +277,61 @@ public sealed class ConnectionViewModelTests
         Assert.Equal(["Prod", ""], editors.Select(e => e.Name));
     }
 
+    [Theory]
+    [InlineData(UiLanguage.French, "Le nom est obligatoire.", "Fichier", "Le dossier ne doit pas dépasser 64 caractères.")]
+    [InlineData(UiLanguage.English, "The name is required.", "file", "The folder must not exceed 64 characters.")]
+    public void Validate_InvalidProfile_IsInTheChosenLanguage(UiLanguage language, string nameError, string fileWord, string folderError)
+    {
+        using var _ = UiText.Override(language);
+        var editor = NewEditor();
+        editor.Dialect = DatabaseDialect.Sqlite;
+        editor.Folder = new string('f', 65);
+
+        var errors = editor.Validate();
+
+        Assert.Equal(3, errors.Count);
+        Assert.Equal(nameError, errors[0]);
+        Assert.Contains(fileWord, errors[1], StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(folderError, errors[2]);
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Connecté. Version du serveur : 16.1", "Connexion impossible : boom", "Échec du test de connexion")]
+    [InlineData(UiLanguage.English, "Connected. Server version: 16.1", "Connection failed: boom", "Connection test failed")]
+    public async Task Test_Outcome_IsTranslatedAndDriverMessageIsVerbatim(UiLanguage language, string ok, string failed, string title)
+    {
+        using var _ = UiText.Override(language);
+        var editor = NewEditor();
+        editor.Name = "x";
+        editor.Host = "h";
+
+        await editor.TestCommand.ExecuteAsync(null);
+        Assert.Equal(ok, editor.TestStatus);
+
+        _provider.Failure = new InvalidOperationException("boom");
+        await editor.TestCommand.ExecuteAsync(null);
+
+        Assert.Equal(failed, editor.TestStatus);
+        Assert.Equal((title, "boom"), Assert.Single(_dialogs.Errors));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.French, "Supprimer la connexion", "Supprimer la connexion 'Prod' ?")]
+    [InlineData(UiLanguage.English, "Delete connection", "Delete the connection 'Prod'?")]
+    public async Task Delete_Confirmation_IsInTheChosenLanguage(UiLanguage language, string title, string message)
+    {
+        using var _ = UiText.Override(language);
+        var profile = Existing();
+        _store.Profiles.Add(profile);
+        var list = new ConnectionListViewModel(_store, _registry, _dialogs);
+        await list.LoadCommand.ExecuteAsync(null);
+        list.SelectedProfile = profile;
+
+        await list.DeleteCommand.ExecuteAsync(null);
+
+        Assert.Equal((title, message), Assert.Single(_dialogs.Confirms));
+    }
+
     private sealed class FakeStore : IProfileStore
     {
         public List<ConnectionProfile> Profiles { get; } = [];

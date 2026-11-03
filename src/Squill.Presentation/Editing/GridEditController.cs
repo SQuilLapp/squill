@@ -1,3 +1,4 @@
+using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 
 namespace Squill.Presentation.Editing;
@@ -168,7 +169,7 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
                     continue;
                 var error = editor.TrySetCell(row, column, cells[j] == "\\N" ? null : cells[j]);
                 if (error is not null)
-                    return $"Row {row + 1}, column {grid.Columns[column].Name}: {error}";
+                    return UiText.Format("results.pasteIssue", row + 1, grid.Columns[column].Name, error);
             }
         }
 

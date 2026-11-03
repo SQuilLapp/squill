@@ -122,6 +122,7 @@ public sealed class EditorToolbarTests
     [Fact]
     public void HistoryDetail_ShowsTimeDurationAndKnownRowCount()
     {
+        using var language = UiText.Override(UiLanguage.French);
         var now = new DateTimeOffset(2026, 11, 2, 12, 0, 0, TimeSpan.Zero);
         var today = new HistoryEntry(now, Guid.Empty, "select 1", true, 1208, TimeSpan.FromMilliseconds(42));
         var older = new HistoryEntry(now.AddDays(-3), Guid.Empty, "select 1", false, null, TimeSpan.FromSeconds(2.5));
@@ -129,11 +130,11 @@ public sealed class EditorToolbarTests
         var first = HistoryFormat.Detail(today, now);
         var second = HistoryFormat.Detail(older, now);
 
-        Assert.StartsWith(now.ToLocalTime().ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture), first);
+        Assert.StartsWith(now.ToLocalTime().ToString("t", UiText.Culture), first);
         Assert.Contains("42 ms", first);
         Assert.EndsWith("lignes", first);
         Assert.Contains("1", first);
-        Assert.StartsWith(now.AddDays(-3).ToLocalTime().ToString("dd/MM HH:mm", System.Globalization.CultureInfo.InvariantCulture), second);
-        Assert.EndsWith("2.5 s", second);
+        Assert.StartsWith(now.AddDays(-3).ToLocalTime().ToString("g", UiText.Culture), second);
+        Assert.EndsWith("2,5 s", second);
     }
 }

@@ -1,6 +1,7 @@
 using Squill.Core;
 using Squill.Core.Editing;
 using Squill.Data;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Editing;
 
@@ -119,9 +120,9 @@ public sealed class EditCommitter(IDatabaseConnection connection, DatabaseDialec
         var statement = DmlGenerator.Generate(pending.Edit, target, dialect);
         var affected = await SqlRunner.ExecuteAsync(connection, statement.Sql, Map(statement), ct);
         if (affected == 0)
-            throw new EditCommitException($"Row {pending.Row} was not found: it was changed or deleted since it was loaded", pending.Row);
+            throw new EditCommitException(UiText.Format("results.rowNotFound", pending.Row), pending.Row);
         if (affected > 1)
-            throw new EditCommitException($"Row {pending.Row} matched more than one row", pending.Row);
+            throw new EditCommitException(UiText.Format("results.rowMatchedMany", pending.Row), pending.Row);
     }
 
     private static List<QueryParameter> Map(DmlStatement statement) => [.. statement.Parameters.Select(p => new QueryParameter(p.Name, p.Value))];

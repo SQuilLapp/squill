@@ -19,6 +19,8 @@ rtk bypass dotnet run --project src/Squill.App.Avalonia -c Release   # Avalonia 
 rtk bypass dotnet run --project src/Squill.App.WinUI -c Release      # WinUI head, or the published exe (process name: Squill.App.WinUI)
 ```
 
+`SQUILL_LANGUAGE` (`fr`, `en` or `system`) overrides the saved language for a run, without saving it; set it before launching to capture the English or French screens.
+
 Open the screen by hand (double-click `pg-prod-eu`, open a table or a query), then in another shell:
 
 ```powershell

@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Squill.Core;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Results;
 using Squill.Presentation.Query;
 using Squill.Presentation.Workspace;
 
@@ -120,7 +121,7 @@ public sealed partial class StatusBar : UserControl
 
         StatusSegment.Text = tab.StatusText;
         StatusSegment.Foreground = Brush("SquillFgBrush");
-        ElapsedSegment.Text = tab.Elapsed > TimeSpan.Zero ? tab.Elapsed.ToString(@"m\:ss\.fff", CultureInfo.InvariantCulture) : null;
+        ElapsedSegment.Text = tab.Elapsed > TimeSpan.Zero ? DisplayFormat.Clock(tab.Elapsed) : null;
     }
 
     private void RefreshPosition()

@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Presentation.Editing;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 
 namespace Squill.Presentation.Query;
@@ -87,7 +88,7 @@ public sealed partial class ResultViewModel : ViewModelBase
 
     private void UpdateHeader()
     {
-        CountText = Grid is null ? "" : $"{Grid.RowCount:N0}{(Grid.IsTruncated ? "+" : "")}";
+        CountText = Grid is null ? "" : DisplayFormat.Count(Grid.RowCount) + (Grid.IsTruncated ? "+" : "");
         Header = Grid is null
             ? Title
             : $"{Title} ({CountText} rows){(HasPendingChanges ? " *" : "")}";
@@ -103,6 +104,12 @@ public sealed partial class ResultViewModel : ViewModelBase
         ArgumentNullException.ThrowIfNull(exporter);
         if (Grid is null)
             return;
+        if (!Grid.IsComplete)
+        {
+            await _dialogs.ShowErrorAsync(UiText.Get("results.exportFailed"), UiText.Get("results.exportLoading"));
+            return;
+        }
+
         try
         {
             var path = await _dialogs.PickSaveFileAsync(Title, exporter.FileExtension);
@@ -113,7 +120,7 @@ public sealed partial class ResultViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
-            await _dialogs.ShowErrorAsync("Export failed", ex.Message);
+            await _dialogs.ShowErrorAsync(UiText.Get("results.exportFailed"), ex.Message);
         }
     }
 }
