@@ -1,6 +1,6 @@
 # P10-17 - Completeness tests: no hard-coded user-visible string can come back
 
-Status: todo
+Status: done
 Depends on: P10-16
 
 ## Goal
@@ -21,9 +21,9 @@ Turn the inventory into a permanent guard: tests that fail when a user-visible l
 - Translating anything new, a third language.
 
 ## Tasks
-- [ ] Write the tests above; make them pass without weakening them (no wildcard ignore entries).
-- [ ] Prove each guard works: temporarily add a literal `Text="Hello"` to a view and a `"Name is required."` literal to a view-model, confirm the tests fail with a useful message, remove them (the report says so).
-- [ ] Run both head exes with `SQUILL_LANGUAGE=en` and `fr` and look for `!key!` markers on every main screen.
+- [x] Write the tests above; make them pass without weakening them (no wildcard ignore entries).
+- [x] Prove each guard works: temporarily add a literal `Text="Hello"` to a view and a `"Name is required."` literal to a view-model, confirm the tests fail with a useful message, remove them (the report says so).
+- [x] Run both head exes with `SQUILL_LANGUAGE=en` and `fr` and look for `!key!` markers on every main screen.
 
 ## Acceptance criteria
 - `rtk bypass dotnet build Squill.Windows.slnx -c Release -warnaserror` exits 0 with 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` is green.

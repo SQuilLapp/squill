@@ -82,7 +82,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
 
     /// <summary>Gets or sets the tab title.</summary>
     [ObservableProperty]
-    public partial string Title { get; set; } = "Query";
+    public partial string Title { get; set; } = UiText.Get("tab.untitled");
 
     /// <summary>Gets whether a run is in progress.</summary>
     [ObservableProperty]

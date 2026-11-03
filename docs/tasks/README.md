@@ -28,6 +28,7 @@ Depends on: <card ids, ranges allowed>
 - Tests: one project per source project, `tests/<Project>.Tests`, copied from `tests/Squill.DesignSystem.Tests/Squill.DesignSystem.Tests.csproj` (xunit.v3, Microsoft.Testing.Platform). Test names `Method_Scenario_Expected`. Tests needing Docker run only when `SQUILL_DOCKER_TESTS=1` (xunit.v3 `[Fact(SkipUnless = ..., SkipType = ...)]`); others must run anywhere.
 - Code: file-scoped namespaces, `sealed` by default, XML doc (`<summary>`, plus `<param>`/`<returns>` where they add information) on every public and protected type and member (CS1591 is an error), also on every member declared `public` inside an `internal` type, plus a one-line `<summary>` on every `internal` type (the compiler does not enforce this; check with a grep before each commit), C# 15 idioms, records for data, no reflection (`Activator`, `Type.GetType`, `dynamic`), JSON only through source-generated `JsonSerializerContext`s, SQL NULL is CLR `null`, async methods take a `CancellationToken`.
 - NuGet versions come from `docs/architecture.md`; if one does not restore, use the closest version and record it there. Never add a package a card does not name.
+- User-visible text goes through `UiText`; see phase 10.
 - A card that cannot be done as written (API missing, AOT blocker, absent external checkout) stops with a report and a proposed card fix instead of improvising.
 
 ## Index
@@ -187,7 +188,7 @@ Depends on: <card ids, ranges allowed>
 | [P10-14](phase-10/P10-14-migrate-designer-and-er.md) | Migrate strings: table designer and ER diagram | P10-03, P10-04, P10-07, P10-08, P10-09 | done |
 | [P10-15](phase-10/P10-15-migrate-history-snippets-terminal.md) | Migrate strings: history, snippets and terminal | P10-03, P10-04, P10-07, P10-08 | done |
 | [P10-16](phase-10/P10-16-migrate-settings-dialogs-errors.md) | Migrate strings: settings, dialogs, errors and leftovers | P10-10 ... P10-15, P10-05, P10-06 | done |
-| [P10-17](phase-10/P10-17-enforcement-tests.md) | Tests: completeness guards for localization | P10-16 | todo |
+| [P10-17](phase-10/P10-17-enforcement-tests.md) | Tests: completeness guards for localization | P10-16 | done |
 | [P10-18](phase-10/P10-18-docs-and-adr.md) | Documentation: localization ADR 0007, README and architecture note | P10-17 | todo |
 
 ### Phase 9 - Visual conformance

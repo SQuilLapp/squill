@@ -17,7 +17,6 @@ src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SQLite|product name, 
 src/Squill.App.Avalonia/Views/DiagramTabView.axaml|Ctrl+0|keyboard accelerator text, not translated
 src/Squill.App.Avalonia/Views/QueryTabView.axaml|CSV|file format name
 src/Squill.App.Avalonia/Views/QueryTabView.axaml|JSON|file format name
-src/Squill.App.Avalonia/Views/StatusBar.axaml.cs|m\:ss\.fff|time format string
 src/Squill.App.Avalonia/Views/TableDesignerView.axaml|Ctrl+S|keyboard accelerator text, not translated
 src/Squill.App.WinUI/Editors/PlainSqlEditor.cs|Cascadia Code, Consolas|font family list
 src/Squill.App.WinUI/MainWindow.xaml|Ctrl+K|keyboard accelerator text, not translated
@@ -32,15 +31,20 @@ src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFg2Brush|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFg3Brush|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFontMono|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillIconCollapse|resource key
-src/Squill.App.WinUI/Views/StatusBar.cs|m\:ss\.fff|time format string
 src/Squill.App.WinUI/Views/TableDesignerView.xaml|Ctrl+S|keyboard accelerator text, not translated
 src/Squill.App.WinUI/Views/TableDesignerView.xaml|ON DELETE|SQL keyword, not translated
 src/Squill.App.WinUI/Views/TableDesignerView.xaml|ON UPDATE|SQL keyword, not translated
 src/Squill.Core/Design/DesignValidator.cs|Changing the type of '{a.After.Name}' may fail or lose data.|English fallback of a coded issue, rendered through issue.design.typeChangeRisk
 src/Squill.Core/Design/DesignValidator.cs|Data in column '{d.Name}' is lost.|English fallback of a coded issue, rendered through issue.design.dropColumnDataLoss
 src/Squill.Core/Design/DesignValidator.cs|Existing NULLs make '{a.After.Name}' fail to become non-nullable.|English fallback of a coded issue, rendered through issue.design.nullsBlockNotNull
-src/Squill.Presentation/Designer/TableDesignerViewModel.cs|
+src/Squill.Presentation/Designer/TableDesignerViewModel.cs|The foreign key '{fk.Name}' references the missing table '{fk.ReferencedTable}'.|English fallback of a coded issue, rendered through issue.design.foreignKeyTableMissing
+src/Squill.Presentation/Designer/TableDesignerViewModel.cs|Views depending on this table are not recreated.|English fallback of a coded issue, rendered through issue.design.viewsNotRecreated
+src/Squill.Presentation/Designer/TableDesignerViewModel.cs|\n|line separator between warnings
 src/Squill.Presentation/Diagram/ErSvgExporter.cs| stroke-dasharray=\"6 4\"|SVG markup
+src/Squill.Presentation/Editing/ChangeSetBuilder.cs|duplicate key in pending rows|English fallback of a coded issue, rendered through issue.edit.duplicateKey
+src/Squill.Presentation/Editing/ChangeSetBuilder.cs|{c.Definition.Name} cannot be NULL|English fallback of a coded issue, rendered through issue.edit.columnNull
+src/Squill.Presentation/Editing/ChangeSetBuilder.cs|{d.Name} is required|English fallback of a coded issue, rendered through issue.edit.columnRequired
+src/Squill.Presentation/Localization/IssueText.cs|issue.|catalog key prefix, not text
 src/Squill.Presentation/Results/CellFormatter.cs|yyyy-MM-dd HH:mm:ss.fffzzz|invariant data format string
 src/Squill.Presentation/Results/CellFormatter.cs|yyyy-MM-dd HH:mm:ss.fff|invariant data format string
 src/Squill.Presentation/Results/CellFormatter.cs|yyyy-MM-dd HH:mm:sszzz|invariant data format string
@@ -61,4 +65,3 @@ src/Squill.Presentation/Sessions/SqlRunner.cs|BEGIN TRANSACTION|SQL statement
 src/Squill.Presentation/Sessions/SqlRunner.cs|COMMIT TRANSACTION|SQL statement
 src/Squill.Presentation/Sessions/SqlRunner.cs|ROLLBACK TRANSACTION|SQL statement
 src/Squill.Sql/Analysis/SqlDiagnosticsProvider.cs|SQL0001|diagnostic code, not display text
-|line separator between warnings

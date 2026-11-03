@@ -18,11 +18,7 @@ public sealed partial class CatalogTests
         "workspace.terminal", // same word
         "explorer.tables", // same word
         "properties.kindTable", // same word
-        "results.messages", // same word
-        "results.plan", // same word
-        "results.auto", // (auto) is the same in both
         "results.type.date", // same word
-        "results.default", // SQL keyword
         "results.exportJsonDetail", // file extension
         "status.production", // environment badge
         "status.staging", // environment badge
@@ -37,7 +33,6 @@ public sealed partial class CatalogTests
         "connections.envLocal", // same word
         "connections.tabSsh", // acronym
         "connections.port", // same word
-        "designer.structure", // same word
         "designer.colPk", // acronym
         "designer.colType", // same word
         "designer.colNull", // SQL keyword
@@ -45,7 +40,6 @@ public sealed partial class CatalogTests
         "designer.unique", // same word
         "designer.onDelete", // SQL clause
         "designer.onUpdate", // SQL clause
-        "er.orthogonal", // same word
         "er.types", // same word
         "er.tables", // TABLES · {0} / {1}, same word
         "er.title", // ER - {0}, same text

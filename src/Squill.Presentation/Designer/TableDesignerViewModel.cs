@@ -144,7 +144,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
 
     /// <summary>Gets a one-line summary of the last apply.</summary>
     [ObservableProperty]
-    public partial string StatusText { get; private set; } = "Ready";
+    public partial string StatusText { get; private set; } = UiText.Get("query.ready");
 
     /// <summary>Raised with the generated script when the user asks to open it in a query tab.</summary>
     public event Action<string>? ScriptRequested;
