@@ -1,23 +1,79 @@
 <UserControl x:Class="Squill.App.WinUI.Views.DiagramTabView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:c="using:Squill.App.WinUI.Controls">
-  <Grid RowDefinitions="Auto,*,Auto">
-    <StackPanel Orientation="Horizontal" Spacing="4" Margin="6,4">
-      <TextBox Width="180" PlaceholderText="Filter tables" Text="{x:Bind ViewModel.FilterText, Mode=TwoWay}" />
-      <ToggleButton Content="Include views" IsChecked="{x:Bind ViewModel.IncludeViews, Mode=TwoWay}" />
-      <Button Content="Fit" ToolTipService.ToolTip="Ctrl+0" Click="OnFitClicked" />
-      <Button Content="Reset layout" Command="{x:Bind ViewModel.ResetLayoutCommand}" />
-      <Button Content="Focus" Command="{x:Bind ViewModel.FocusSelectedCommand}" />
-      <ComboBox x:Name="DepthBox" SelectedIndex="0" SelectionChanged="OnDepthChanged" ToolTipService.ToolTip="Relation hops">
-        <ComboBoxItem Content="1 hop" />
-        <ComboBoxItem Content="2 hops" />
-        <ComboBoxItem Content="3 hops" />
-      </ComboBox>
-      <Button Content="Show all" Command="{x:Bind ViewModel.ShowAllCommand}" />
-      <Button Content="Export SVG" Command="{x:Bind ViewModel.ExportSvgCommand}" />
-    </StackPanel>
-    <c:ErDiagramCanvas x:Name="Canvas" Grid.Row="1" />
-    <TextBlock Grid.Row="2" Margin="8,2" Foreground="{ThemeResource SquillFg2Brush}" Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
+             xmlns:c="using:Squill.App.WinUI.Controls"
+             xmlns:d="using:Squill.Presentation.Diagram"
+             xmlns:loc="using:Squill.App.WinUI.Localization">
+  <Grid RowDefinitions="44,*,26" Background="{ThemeResource SquillBgBaseBrush}">
+    <Border Background="{ThemeResource SquillBgSurfaceBrush}" BorderBrush="{ThemeResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="*,Auto" Margin="12,0">
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Command="{x:Bind ViewModel.ResetLayoutCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Viewbox Width="14" Height="14">
+                <Canvas Width="24" Height="24"><Path Data="M4,4 H10 V10 H4 Z M14,14 H20 V20 H14 Z M10,7 H17 V14" Stroke="{ThemeResource SquillFg2Brush}" StrokeThickness="1.5" StrokeLineJoin="Round" /></Canvas>
+              </Viewbox>
+              <TextBlock loc:Loc.Key="er.autoLayout" />
+            </StackPanel>
+          </Button>
+          <StackPanel Orientation="Horizontal" Spacing="4" ToolTipService.ToolTip="Sauts de relation">
+            <RadioButton x:Name="Depth1" Style="{StaticResource SegmentedRadioButtonStyle}" MinWidth="0" Padding="14,0" GroupName="ErDepth" Content="1" IsChecked="True" Click="OnDepthClicked" />
+            <RadioButton x:Name="Depth2" Style="{StaticResource SegmentedRadioButtonStyle}" MinWidth="0" Padding="14,0" GroupName="ErDepth" Content="2" Click="OnDepthClicked" />
+            <RadioButton x:Name="Depth3" Style="{StaticResource SegmentedRadioButtonStyle}" MinWidth="0" Padding="14,0" GroupName="ErDepth" Content="3" Click="OnDepthClicked" />
+          </StackPanel>
+          <Button Style="{StaticResource IconButtonStyle}" Content="–" Click="OnZoomOutClicked" />
+          <TextBlock x:Name="ZoomText" Style="{StaticResource MonoTextBlockStyle}" MinWidth="40" TextAlignment="Center" VerticalAlignment="Center" Text="100 %" />
+          <Button Style="{StaticResource IconButtonStyle}" Click="OnZoomInClicked">
+            <Viewbox Width="14" Height="14">
+              <Canvas Width="24" Height="24"><Path Data="M12,5 V19 M5,12 H19" Stroke="{ThemeResource SquillFg2Brush}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" /></Canvas>
+            </Viewbox>
+          </Button>
+          <Button Click="OnFitClicked">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock loc:Loc.Key="er.fit" />
+              <ContentControl Style="{StaticResource KeyboardChipStyle}" Content="Ctrl+0" />
+            </StackPanel>
+          </Button>
+          <CheckBox x:Name="TypesBox" IsChecked="True" MinWidth="0" loc:Loc.Key="er.types" />
+          <CheckBox MinWidth="0" loc:Loc.Key="er.views" IsChecked="{x:Bind ViewModel.IncludeViews, Mode=TwoWay}" />
+          <Button loc:Loc.Key="er.focus" Command="{x:Bind ViewModel.FocusSelectedCommand}" />
+          <Button loc:Loc.Key="er.showAll" Command="{x:Bind ViewModel.ShowAllCommand}" />
+        </StackPanel>
+        <Button Grid.Column="1" VerticalAlignment="Center" loc:Loc.Key="er.export">
+          <Button.Flyout>
+            <MenuFlyout Placement="BottomEdgeAlignedRight">
+              <MenuFlyoutItem loc:Loc.Key="er.exportSvg" Command="{x:Bind ViewModel.ExportSvgCommand}" />
+            </MenuFlyout>
+          </Button.Flyout>
+        </Button>
+      </Grid>
+    </Border>
+    <Grid Grid.Row="1" ColumnDefinitions="220,*">
+      <Border BorderBrush="{ThemeResource SquillBorderSubtleBrush}" BorderThickness="0,0,1,0" Background="{ThemeResource SquillBgSurfaceBrush}">
+        <Grid RowDefinitions="Auto,Auto,*" Margin="0,12,0,0">
+          <TextBlock x:Name="TablesHeader" Margin="18,0,12,8" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource SquillFg3Brush}" />
+          <TextBox Grid.Row="1" Margin="12,0,12,8" loc:Loc.Key="er.filter" Text="{x:Bind ViewModel.FilterText, Mode=TwoWay}" />
+          <ListView x:Name="TableList" Grid.Row="2" SelectionMode="Single" SelectionChanged="OnTableSelected">
+            <ListView.ItemTemplate>
+              <DataTemplate x:DataType="d:ErEntity">
+                <StackPanel Orientation="Horizontal" Spacing="8" Height="24">
+                  <Viewbox Width="14" Height="14" VerticalAlignment="Center">
+                    <Canvas Width="24" Height="24"><Path Data="M4,5 H20 V19 H4 Z M4,10 H20 M4,15 H20 M10,5 V19" Stroke="{ThemeResource SquillFg3Brush}" StrokeThickness="1.5" StrokeLineJoin="Round" /></Canvas>
+                  </Viewbox>
+                  <TextBlock Style="{StaticResource MonoTextBlockStyle}" VerticalAlignment="Center" Text="{x:Bind Name}" />
+                </StackPanel>
+              </DataTemplate>
+            </ListView.ItemTemplate>
+          </ListView>
+        </Grid>
+      </Border>
+      <c:ErDiagramCanvas x:Name="Canvas" Grid.Column="1" />
+    </Grid>
+    <Border Grid.Row="2" Background="{ThemeResource SquillBgSurfaceBrush}" BorderBrush="{ThemeResource SquillBorderSubtleBrush}" BorderThickness="0,1,0,0">
+      <Grid ColumnDefinitions="*,Auto" Margin="12,0">
+        <TextBlock VerticalAlignment="Center" Foreground="{ThemeResource SquillFg2Brush}" Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
+        <TextBlock Grid.Column="1" VerticalAlignment="Center" Foreground="{ThemeResource SquillFg3Brush}" loc:Loc.Key="er.hint" />
+      </Grid>
+    </Border>
   </Grid>
 </UserControl>

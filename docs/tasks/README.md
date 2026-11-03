@@ -165,7 +165,7 @@ Depends on: <card ids, ranges allowed>
 | [P9-19](phase-9/P9-19-avalonia-table-designer.md) | Avalonia head: table designer view | P9-08, P9-02 | done |
 | [P9-20](phase-9/P9-20-winui-table-designer.md) | WinUI head: table designer view | P9-10, P9-02 | done |
 | [P9-21](phase-9/P9-21-avalonia-er-diagram.md) | Avalonia head: ER diagram view | P9-08, P9-02 | done |
-| [P9-22](phase-9/P9-22-winui-er-diagram.md) | WinUI head: ER diagram view | P9-10, P9-02 | todo |
+| [P9-22](phase-9/P9-22-winui-er-diagram.md) | WinUI head: ER diagram view | P9-10, P9-02 | done |
 | [P9-23](phase-9/P9-23-avalonia-settings.md) | Avalonia head: settings window | P9-05, P9-03, P9-02 | todo |
 | [P9-24](phase-9/P9-24-winui-settings.md) | WinUI head: settings window | P9-06, P9-03, P9-02 | todo |
 | [P9-25](phase-9/P9-25-docs-and-adr.md) | Documentation: visual conformance ADR, README and architecture note | P9-07 ... P9-24 | todo |

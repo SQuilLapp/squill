@@ -11,6 +11,7 @@
     <ProjectReference Include="..\..\src\Squill.DesignSystem\Squill.DesignSystem.csproj" />
     <ProjectReference Include="..\..\src\Squill.Presentation\Squill.Presentation.csproj" />
     <Compile Include="..\..\src\Squill.App.WinUI\Controls\GridEditGeometry.cs" Link="GridEditGeometry.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Controls\ErDiagramGeometry.cs" Link="ErDiagramGeometry.cs" />
     <Compile Include="..\..\src\Squill.App.WinUI\Views\EditBarFormat.cs" Link="EditBarFormat.cs" />
     <Compile Include="..\..\src\Squill.App.WinUI\Views\ChromeFormat.cs" Link="ChromeFormat.cs" />
     <Compile Include="..\..\src\Squill.App.WinUI\Views\PropertiesModel.cs" Link="PropertiesModel.cs" />
