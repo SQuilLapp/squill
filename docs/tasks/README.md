@@ -202,7 +202,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-10](phase-11/P11-10-cancel-and-timeout.md) | Cancel and timeout proven on every engine | P11-07 | done |
 | [P11-11](phase-11/P11-11-data-multiple-result-sets.md) | Data: multiple result sets and server messages | P11-04 | done |
 | [P11-12](phase-11/P11-12-presentation-multiple-results.md) | Presentation: several results and messages per statement | P11-11 | done |
-| [P11-13](phase-11/P11-13-winui-multiple-results.md) | WinUI head: result tabs for several sets and a Messages tab | P11-12 | todo |
+| [P11-13](phase-11/P11-13-winui-multiple-results.md) | WinUI head: result tabs for several sets and a Messages tab | P11-12 | done |
 | [P11-14](phase-11/P11-14-avalonia-multiple-results.md) | Avalonia head: result tabs for several sets and a Messages tab | P11-12 | todo |
 | [P11-15](phase-11/P11-15-core-schema-objects-model.md) | Core: routines, triggers, view definitions and materialized views | none | todo |
 | [P11-16](phase-11/P11-16-sqlite-schema-objects.md) | Data.Sqlite: triggers and view definitions, SQLite sample schema | P11-15 | todo |
@@ -225,7 +225,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-33](phase-11/P11-33-grid-edit-commit-engines.md) | Grid edit and commit through the Presentation layer on every engine | P11-02 ... P11-04, P11-16, P11-26 | todo |
 | [P11-34](phase-11/P11-34-terminal-engine-clients.md) | Terminal: native client launch per engine | P11-06 | todo |
 | [P11-35](phase-11/P11-35-ssh-tunnel-containers.md) | SSH tunnel proven against real servers | P11-02 ... P11-04 | todo |
-| [P11-36](phase-11/P11-36-verify-sqlite.md) | End-to-end verification: SQLite (WinUI first, Avalonia smoke) | P11-10, P11-13, P11-21, P11-25, P11-29, P11-33 | todo |
+| [P11-36](phase-11/P11-36-verify-sqlite.md) | End-to-end verification: SQLite (WinUI first, Avalonia smoke) | P11-10, P11-13, P11-21, P11-25, P11-29, P11-33 | done |
 | [P11-37](phase-11/P11-37-verify-postgres.md) | End-to-end verification: PostgreSQL | P11-36, P11-17, P11-24, P11-27 ... P11-32, P11-35 | todo |
 | [P11-38](phase-11/P11-38-verify-mysql.md) | End-to-end verification: MySQL | P11-37, P11-18, P11-24, P11-27 ... P11-32 | todo |
 | [P11-39](phase-11/P11-39-verify-sqlserver.md) | End-to-end verification: SQL Server | P11-37, P11-19, P11-24, P11-27 ... P11-32 | todo |

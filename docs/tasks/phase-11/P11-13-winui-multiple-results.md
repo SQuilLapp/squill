@@ -1,6 +1,6 @@
 # P11-13 - WinUI head: result tabs for several sets and a Messages tab
 
-Status: todo
+Status: done
 Depends on: P11-12
 
 ## Goal
@@ -14,7 +14,7 @@ The WinUI results panel switches between the result sets of a run and shows the 
 - Avalonia (P11-14).
 
 ## Tasks
-- [ ] XAML and code-behind, captures `en`.
+- [x] XAML and code-behind (captures `en` not taken, see report).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green; WinUI AOT publish with zero IL2xxx/IL3xxx warnings.
