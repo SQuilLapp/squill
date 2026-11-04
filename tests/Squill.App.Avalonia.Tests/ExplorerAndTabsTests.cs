@@ -159,4 +159,42 @@ public sealed class ExplorerAndTabsTests
             Assert.False(panel.IsVisible);
             return Task.CompletedTask;
         });
+
+    [Fact]
+    public void ExplorerGlyphs_CoverEveryObjectKind() =>
+        Assert.All(
+            new[]
+            {
+                (ExplorerNodeKind.MaterializedView, "mv"),
+                (ExplorerNodeKind.Function, "fn"),
+                (ExplorerNodeKind.Procedure, "pr"),
+                (ExplorerNodeKind.Trigger, "tr"),
+            },
+            x =>
+            {
+                Assert.Equal(x.Item2, ExplorerGlyphs.Glyph.Convert(x.Item1, typeof(string), null, System.Globalization.CultureInfo.InvariantCulture));
+                Assert.True(ExplorerGlyphs.IsPlain.Convert(x.Item1, typeof(bool), null, System.Globalization.CultureInfo.InvariantCulture) as bool?);
+            });
+
+    [Fact]
+    public async Task ContextMenu_OffersDefinitionAndScriptCommands_ForTheRightNodes() =>
+        await WithApp((window, _, _) =>
+        {
+            var view = window.FindControl<SidebarView>("Sidebar")!.FindControl<ObjectExplorerView>("ObjectExplorer")!;
+            var menu = new ContextMenu
+            {
+                Items = { new MenuItem { Name = "ScriptItem" }, new MenuItem { Name = "DefinitionItem" } },
+            };
+            bool[] Visible(ExplorerNodeKind kind)
+            {
+                menu.DataContext = new ExplorerNode("x", kind);
+                view.OpenMenu(menu);
+                return [.. menu.Items.OfType<MenuItem>().Select(i => i.IsVisible)];
+            }
+
+            Assert.Equal([true, false], Visible(ExplorerNodeKind.Table));
+            Assert.Equal([false, true], Visible(ExplorerNodeKind.Function));
+            Assert.Equal([false, true], Visible(ExplorerNodeKind.Trigger));
+            return Task.CompletedTask;
+        });
 }

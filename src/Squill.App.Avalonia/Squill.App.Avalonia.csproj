@@ -10,6 +10,7 @@
     <ApplicationIcon>..\..\assets\brand\app-icons\windows\squill.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Squill.App.Avalonia.Tests" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />

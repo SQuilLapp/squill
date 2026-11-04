@@ -31,6 +31,8 @@
                 <MenuItem Name="ConnectItem" Header="{loc:Text explorer.connect}" Click="OnConnectClicked" />
                 <MenuItem Name="DisconnectItem" Header="{loc:Text explorer.disconnect}" Click="OnDisconnectClicked" />
                 <MenuItem Name="DesignItem" Header="{loc:Text explorer.designTable}" Click="OnDesignClicked" />
+                <MenuItem Name="ScriptItem" Header="{loc:Text explorer.scriptCreateTable}" Click="OnScriptCreateClicked" />
+                <MenuItem Name="DefinitionItem" Header="{loc:Text explorer.openDefinition}" Click="OnDefinitionClicked" />
                 <MenuItem Name="DropItem" Header="{loc:Text explorer.dropTable}" Click="OnDropClicked" />
               </ContextMenu>
             </Grid.ContextMenu>
