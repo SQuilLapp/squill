@@ -1,6 +1,6 @@
 # P11-20 - Presentation: routines, triggers and "open definition" in the explorer
 
-Status: todo
+Status: done
 Depends on: P11-15
 
 ## Goal
@@ -17,7 +17,7 @@ The explorer tree shows Routines (functions and procedures) and Triggers folders
 - Editing or running the definition automatically (the tab only opens; the user presses Run).
 
 ## Tasks
-- [ ] Node kinds, tree building from the snapshot, `DefinitionScript`, command, tests incl. ordering and counts; localization guards green.
+- [x] Node kinds, tree building from the snapshot, `DefinitionScript`, command, tests incl. ordering and counts; localization guards green.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green.

@@ -33,7 +33,7 @@ public sealed partial class PropertiesPanel : UserControl
     public void Show(ExplorerNode? node, WorkspaceViewModel workspace)
     {
         _workspace = workspace;
-        _table = node is { Kind: ExplorerNodeKind.Table or ExplorerNodeKind.View, Table: { } table } ? table : null;
+        _table = node is { Kind: ExplorerNodeKind.Table or ExplorerNodeKind.View or ExplorerNodeKind.MaterializedView, Table: { } table } ? table : null;
         IsVisible = _table is not null;
         if (_table is not { } t)
             return;

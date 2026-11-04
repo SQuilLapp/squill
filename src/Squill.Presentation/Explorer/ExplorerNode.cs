@@ -26,6 +26,18 @@ public enum ExplorerNodeKind
     /// <summary>A view.</summary>
     View,
 
+    /// <summary>A materialized view.</summary>
+    MaterializedView,
+
+    /// <summary>A stored function.</summary>
+    Function,
+
+    /// <summary>A stored procedure.</summary>
+    Procedure,
+
+    /// <summary>A trigger.</summary>
+    Trigger,
+
     /// <summary>A column.</summary>
     Column,
 
@@ -67,6 +79,15 @@ public sealed partial class ExplorerNode(string title, ExplorerNodeKind kind, st
 
     /// <summary>Gets the table or view behind a table or view node; <see langword="null"/> otherwise.</summary>
     public TableInfo? Table { get; } = table;
+
+    /// <summary>Gets the function or procedure behind a routine node; <see langword="null"/> otherwise.</summary>
+    public RoutineInfo? Routine { get; init; }
+
+    /// <summary>Gets the trigger behind a trigger node; <see langword="null"/> otherwise.</summary>
+    public TriggerInfo? Trigger { get; init; }
+
+    /// <summary>Gets the stored definition text of a view, routine or trigger node, or <see langword="null"/>; read-only text for a properties panel.</summary>
+    public string? DefinitionText => Table?.Definition ?? Routine?.Definition ?? Trigger?.Definition;
 
     /// <summary>Gets the saved connection the node belongs to; <see langword="null"/> for connection folders.</summary>
     public ConnectionProfile? Profile { get; init; }

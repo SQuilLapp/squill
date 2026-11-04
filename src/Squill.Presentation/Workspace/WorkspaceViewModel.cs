@@ -90,6 +90,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
             ActiveSession = r.Session;
             _ = DropTableCommand.ExecuteAsync(r.Table);
         };
+        Explorer.ScriptRequested += (_, r) => AddTab(r.Session, r.Text);
         Explorer.ConnectRequested += (_, profile) => _ = ConnectCommand.ExecuteAsync(profile);
         Explorer.PropertyChanged += (_, e) =>
         {

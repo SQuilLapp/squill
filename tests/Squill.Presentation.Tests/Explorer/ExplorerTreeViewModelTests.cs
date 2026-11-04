@@ -347,4 +347,58 @@ public sealed class ExplorerTreeViewModelTests
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
+
+    private ExplorerNode ConnectWithObjects(ConnectionProfile profile)
+    {
+        var table = new TableInfo("public", "person", TableKind.Table, [Id], [], []);
+        var view = new TableInfo("public", "v", TableKind.View, [Id], [], [], null, "SELECT 1");
+        var snapshot = new SchemaSnapshot("public", [table, view])
+        {
+            Routines = [new RoutineInfo("public", "f", RoutineKind.Function, "f(a int)", "int", "CREATE FUNCTION f ..."), new RoutineInfo("public", "p", RoutineKind.Procedure, "p()", null, "CREATE PROCEDURE p ...")],
+            Triggers = [new TriggerInfo("public", "person", "tr", "BEFORE", "INSERT", "CREATE TRIGGER tr ...")],
+        };
+        _list.Profiles.Add(profile);
+        _sessions.Add(Session(profile, snapshot));
+        return _tree.Roots.Single(n => n.Profile == profile);
+    }
+
+    [Fact]
+    public void Populate_RoutinesAndTriggers_AppearInFoldersWithCounts()
+    {
+        var schema = ConnectWithObjects(Profile("c")).Children.Single().Children.Single();
+        Assert.Equal([UiText.Get("explorer.tables"), UiText.Get("explorer.views"), UiText.Get("explorer.routines"), UiText.Get("explorer.triggers")], schema.Children.Select(c => c.Title));
+        Assert.Equal([1, 1, 2, 1], schema.Children.Select(c => c.Count));
+        Assert.Equal([ExplorerNodeKind.Function, ExplorerNodeKind.Procedure], schema.Children[2].Children.Select(c => c.Kind));
+        Assert.Equal(ExplorerNodeKind.Trigger, schema.Children[3].Children.Single().Kind);
+    }
+
+    [Fact]
+    public void Populate_NoRoutinesOrTriggers_ShowsNoEmptyFolder()
+    {
+        var profile = Profile("c");
+        _list.Profiles.Add(profile);
+        var node = Connect(profile, Table("public", "t"));
+        Assert.DoesNotContain(Descendants(node), n => n.Title == UiText.Get("explorer.routines") || n.Title == UiText.Get("explorer.triggers"));
+    }
+
+    [Fact]
+    public void OpenDefinition_ObjectNodes_RaiseScriptWithDefinition()
+    {
+        var connection = ConnectWithObjects(Profile("c"));
+        var scripts = new List<string>();
+        _tree.ScriptRequested += (_, r) => scripts.Add(r.Text);
+        foreach (var kind in new[] { ExplorerNodeKind.View, ExplorerNodeKind.Function, ExplorerNodeKind.Trigger, ExplorerNodeKind.Table })
+            _tree.OpenDefinitionCommand.Execute(Descendants(connection).First(n => n.Kind == kind));
+        Assert.Equal(["CREATE VIEW \"public\".\"v\" AS\nSELECT 1", "CREATE FUNCTION f ...", "CREATE TRIGGER tr ..."], scripts);
+    }
+
+    [Fact]
+    public void ScriptCreateTable_Table_RaisesCreateTableScript()
+    {
+        var connection = ConnectWithObjects(Profile("c"));
+        string? text = null;
+        _tree.ScriptRequested += (_, r) => text = r.Text;
+        _tree.ScriptCreateTableCommand.Execute(Descendants(connection).First(n => n.Kind == ExplorerNodeKind.Table));
+        Assert.Contains("CREATE TABLE", text);
+    }
 }

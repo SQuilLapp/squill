@@ -16,6 +16,11 @@ namespace Squill.Presentation.Explorer;
 /// <param name="Table">The table or view.</param>
 public sealed record TableRequest(ConnectionSession Session, TableInfo Table);
 
+/// <summary>A script the explorer asks to open in a new query tab, with the session it belongs to.</summary>
+/// <param name="Session">The session of the node's connection.</param>
+/// <param name="Text">The SQL text; it is only opened, never run.</param>
+public sealed record ScriptRequest(ConnectionSession Session, string Text);
+
 /// <summary>
 /// The explorer as one filterable tree: saved connections (grouped by folder) at the top, and under each connected one
 /// its database, schemas, tables, views and columns.
@@ -48,6 +53,9 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
 
     /// <summary>Raised when the user asks to drop a table.</summary>
     public event EventHandler<TableRequest>? DropTableRequested;
+
+    /// <summary>Raised when the user opens the definition of an object or scripts a table as <c>CREATE TABLE</c>.</summary>
+    public event EventHandler<ScriptRequest>? ScriptRequested;
 
     /// <summary>Raised when the user activates a disconnected connection node.</summary>
     public event EventHandler<ConnectionProfile>? ConnectRequested;
@@ -99,8 +107,32 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     {
         if (node is { Kind: ExplorerNodeKind.Connection, Session: null, Profile: { } profile })
             ConnectRequested?.Invoke(this, profile);
-        else if (node is { Kind: ExplorerNodeKind.Table or ExplorerNodeKind.View, Table: { } table, Session: { } session })
+        else if (node is { Kind: ExplorerNodeKind.Table or ExplorerNodeKind.View or ExplorerNodeKind.MaterializedView, Table: { } table, Session: { } session })
             OpenTableRequested?.Invoke(this, new TableRequest(session, table));
+    }
+
+    [RelayCommand]
+    private void OpenDefinition(ExplorerNode? node)
+    {
+        if (node?.Session is not { } session)
+            return;
+        var dialect = session.Profile.Dialect;
+        var text = node switch
+        {
+            { Kind: ExplorerNodeKind.View or ExplorerNodeKind.MaterializedView, Table: { } view } => DefinitionScript.View(dialect, view),
+            { Kind: ExplorerNodeKind.Function or ExplorerNodeKind.Procedure, Routine: { } routine } => DefinitionScript.Routine(dialect, routine),
+            { Kind: ExplorerNodeKind.Trigger, Trigger: { } trigger } => DefinitionScript.Trigger(dialect, trigger),
+            _ => null,
+        };
+        if (text is not null)
+            ScriptRequested?.Invoke(this, new ScriptRequest(session, text));
+    }
+
+    [RelayCommand]
+    private void ScriptCreateTable(ExplorerNode? node)
+    {
+        if (node is { Kind: ExplorerNodeKind.Table, Table: { } table, Session: { } session })
+            ScriptRequested?.Invoke(this, new ScriptRequest(session, DefinitionScript.CreateTable(session.Profile.Dialect, table)));
     }
 
     [RelayCommand]
@@ -200,19 +232,28 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
             Session = session,
             IsExpanded = true,
         };
-        var groups = session.Schema.Tables.GroupBy(t => t.Schema ?? "", StringComparer.Ordinal).ToList();
-        foreach (var group in groups)
+        var snapshot = session.Schema;
+        var schemas = snapshot.Tables.Select(t => t.Schema ?? "").Concat(snapshot.Routines.Select(r => r.Schema)).Distinct(StringComparer.Ordinal).ToList();
+        foreach (var key in schemas)
         {
             // Engines without schemas (SQLite) put their tables straight under the database.
             var parent = database;
-            if (group.Key.Length > 0)
+            var tables = snapshot.Tables.Where(t => (t.Schema ?? "") == key).ToList();
+            var routines = snapshot.Routines.Where(r => r.Schema == key).ToList();
+            var triggers = snapshot.Triggers.Where(t => t.Schema == key).ToList();
+            if (key.Length > 0)
             {
-                parent = Node(group.Key, ExplorerNodeKind.Schema, session, count: group.Count());
-                parent.IsExpanded = groups.Count == 1;
+                parent = Node(key, ExplorerNodeKind.Schema, session, count: tables.Count + routines.Count + triggers.Count);
+                parent.IsExpanded = schemas.Count == 1;
                 database.Children.Add(parent);
             }
-            AddGroup(parent, session, "explorer.tables", group.Where(t => !t.Kind.IsViewLike()), groups.Count == 1);
-            AddGroup(parent, session, "explorer.views", group.Where(t => t.Kind.IsViewLike()), false);
+            AddGroup(parent, session, "explorer.tables", tables.Where(t => !t.Kind.IsViewLike()), schemas.Count == 1);
+            AddGroup(parent, session, "explorer.views", tables.Where(t => t.Kind.IsViewLike()), false);
+            AddFolder(parent, session, "explorer.routines", routines.Select(r => new ExplorerNode(r.Signature,
+                r.Kind == RoutineKind.Procedure ? ExplorerNodeKind.Procedure : ExplorerNodeKind.Function, r.ReturnType)
+                { Profile = session.Profile, Session = session, Routine = r }));
+            AddFolder(parent, session, "explorer.triggers", triggers.Select(t => new ExplorerNode(t.Name, ExplorerNodeKind.Trigger, t.Table)
+                { Profile = session.Profile, Session = session, Trigger = t }));
         }
         connection.Children.Add(database);
     }
@@ -228,12 +269,23 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
             parent.Children.Add(folder);
     }
 
+    private static void AddFolder(ExplorerNode parent, ConnectionSession session, string titleKey, IEnumerable<ExplorerNode> items)
+    {
+        var list = items.ToList();
+        if (list.Count == 0)
+            return;
+        var folder = Node(UiText.Get(titleKey), ExplorerNodeKind.Folder, session, count: list.Count);
+        foreach (var item in list)
+            folder.Children.Add(item);
+        parent.Children.Add(folder);
+    }
+
     private static ExplorerNode Node(string title, ExplorerNodeKind kind, ConnectionSession session, string? detail = null, TableInfo? table = null, int? count = null) =>
         new(title, kind, detail, table, count) { Profile = session.Profile, Session = session };
 
     private static ExplorerNode TableNode(ConnectionSession session, TableInfo table)
     {
-        var node = Node(table.Name, table.Kind.IsViewLike() ? ExplorerNodeKind.View : ExplorerNodeKind.Table, session, table: table);
+        var node = Node(table.Name, table.Kind switch { TableKind.View => ExplorerNodeKind.View, TableKind.MaterializedView => ExplorerNodeKind.MaterializedView, _ => ExplorerNodeKind.Table }, session, table: table);
         var columns = Node(UiText.Get("explorer.columns"), ExplorerNodeKind.Folder, session, count: table.Columns.Count);
         foreach (var c in table.Columns)
         {
