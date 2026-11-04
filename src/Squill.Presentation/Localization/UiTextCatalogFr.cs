@@ -388,6 +388,7 @@ internal static class UiTextCatalogFr
         ("issue.design.indexNameDuplicate", "Le nom d'index '{0}' est utilisé deux fois."),
         ("issue.design.indexNoColumn", "L'index '{0}' n'a aucune colonne."),
         ("issue.design.indexColumnMissing", "L'index '{0}' utilise la colonne manquante '{1}'."),
+        ("issue.design.indexNeedsLength", "L'index '{0}' ne peut pas utiliser la colonne text ou blob '{1}' : MySQL exige une longueur de clé, que le concepteur ne peut pas définir."),
         ("issue.design.foreignKeyNameEmpty", "Le nom d'une clé étrangère est vide."),
         ("issue.design.foreignKeyNameDuplicate", "Le nom de clé étrangère '{0}' est utilisé deux fois."),
         ("issue.design.foreignKeyNoColumn", "La clé étrangère '{0}' n'a aucune colonne."),

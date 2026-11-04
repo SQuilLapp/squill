@@ -19,6 +19,14 @@ public sealed class PostgresAlterTests
         t with { Columns = columns ?? t.Columns, Indexes = indexes ?? t.Indexes, ForeignKeys = fks ?? t.ForeignKeys, Name = name ?? t.Name };
 
     [Fact]
+    public void Alter_RenameIndex_DropsAndRecreatesIt()
+    {
+        var o = Base() with { Indexes = [new IndexDesign("ix_a", "ix_a", false, ["a"])] };
+        var e = o with { Indexes = [o.Indexes[0] with { Name = "ix_z" }] };
+        Assert.Equal(["DROP INDEX \"public\".\"ix_a\"", "CREATE INDEX \"ix_z\" ON \"public\".\"t\" (\"a\")"], Alter(o, e));
+    }
+
+    [Fact]
     public void Alter_RenameTable_Statement() =>
         Assert.Equal(["ALTER TABLE \"public\".\"t\" RENAME TO \"u\""], Alter(Base(), With(Base(), name: "u")));
 

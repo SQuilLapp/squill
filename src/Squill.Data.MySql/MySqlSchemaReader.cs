@@ -71,7 +71,7 @@ internal static class MySqlSchemaReader
         var columns = (await ReadAsync(connection, ColumnsSql, r => (
             Table: r.GetString(0), Kind: r.GetString(1) == "VIEW" ? TableKind.View : TableKind.Table,
             Definition: r.IsDBNull(8) ? null : r.GetString(8),
-            Column: new ColumnDefinition(r.GetString(2), r.GetString(3), r.GetString(4) == "YES", r.GetString(6) == "PRI", r.IsDBNull(5) ? null : r.GetString(5),
+            Column: new ColumnDefinition(r.GetString(2), r.GetString(3), r.GetString(4) == "YES", r.GetString(6) == "PRI", r.IsDBNull(5) ? null : DefaultLiteral(r.GetString(5), r.GetString(3), r.GetString(7)),
                 r.GetString(7).Contains("auto_increment", StringComparison.OrdinalIgnoreCase),
                 r.GetString(7).Contains(" GENERATED", StringComparison.OrdinalIgnoreCase))), cancellationToken))
             .GroupBy(c => (c.Table, c.Kind, c.Definition))
@@ -102,6 +102,15 @@ internal static class MySqlSchemaReader
         var triggers = await ReadAsync(connection, TriggersSql, r => new TriggerInfo(
             database!, r.GetString(1), r.GetString(0), r.GetString(2), r.GetString(3), r.GetString(4)), cancellationToken);
         return new SchemaSnapshot(database, tables) { Routines = routines, Triggers = triggers };
+    }
+
+    private static readonly string[] NumericTypes = ["tinyint", "smallint", "mediumint", "int", "bigint", "decimal", "numeric", "float", "double", "bit"];
+
+    // information_schema shows a literal default without its quotes (an expression default is flagged DEFAULT_GENERATED); the designer re-emits it into DDL, so quote it.
+    private static string DefaultLiteral(string value, string columnType, string extra)
+    {
+        var numeric = NumericTypes.Any(t => columnType.StartsWith(t, StringComparison.OrdinalIgnoreCase));
+        return numeric || extra.Contains("DEFAULT_GENERATED", StringComparison.OrdinalIgnoreCase) ? value : "'" + value.Replace("'", "''", StringComparison.Ordinal) + "'";
     }
 
     private static async Task<List<T>> ReadAsync<T>(MySqlConnection connection, string sql, Func<MySqlDataReader, T> map, CancellationToken cancellationToken)

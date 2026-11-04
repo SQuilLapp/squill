@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../Shared/DmlScenario.cs" Link="DmlScenario.cs" />
+    <Compile Include="../Shared/DesignerScenarios.cs" Link="DesignerScenarios.cs" />
     <Compile Include="../Shared/ColumnTypeScenario.cs" Link="ColumnTypeScenario.cs" />
     <Compile Include="../Shared/ColumnTypeEditScenario.cs" Link="ColumnTypeEditScenario.cs" />
     <Compile Include="../Shared/CancelScenario.cs" Link="CancelScenario.cs" />

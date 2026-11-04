@@ -69,6 +69,9 @@ public static class CoreMessageCodes
     /// <summary>The <c>design.foreignKeyNoTable</c> message.</summary>
     public const string DesignForeignKeyNoTable = "design.foreignKeyNoTable";
 
+    /// <summary>The <c>design.indexNeedsLength</c> message.</summary>
+    public const string DesignIndexNeedsLength = "design.indexNeedsLength";
+
     /// <summary>The <c>design.schemaMove</c> message.</summary>
     public const string DesignSchemaMove = "design.schemaMove";
 
@@ -130,6 +133,7 @@ public static class CoreMessageCodes
         DesignForeignKeyColumnMissing,
         DesignForeignKeyColumnCount,
         DesignForeignKeyNoTable,
+        DesignIndexNeedsLength,
         DesignSchemaMove,
         DesignSqliteSchema,
         DesignDropColumnDataLoss,

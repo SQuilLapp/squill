@@ -1,6 +1,6 @@
 # P11-30 - Table designer DDL on PostgreSQL, MySQL and SQL Server
 
-Status: todo
+Status: done
 Depends on: P11-02, P11-03, P11-04
 
 ## Goal
@@ -15,7 +15,7 @@ The same operation matrix as P11-29 runs against the three servers; the existing
 - UI.
 
 ## Tasks
-- [ ] Shared scenarios, three test classes, fixes.
+- [x] Shared scenarios, three test classes, fixes.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; default test run green; `rtk pwsh eng/run-docker-tests.ps1 -Engine all` green; no container left.

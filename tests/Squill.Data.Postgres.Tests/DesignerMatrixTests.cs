@@ -1,0 +1,35 @@
+using Squill.Core;
+using Squill.Data.RoundTrip;
+using Xunit;
+
+namespace Squill.Data.Postgres.Tests;
+
+/// <summary>Applies every table designer operation to a populated PostgreSql table and checks the schema and the data.</summary>
+public sealed class DesignerMatrixTests(PostgresFixture server) : IClassFixture<PostgresFixture>
+{
+    private const DatabaseDialect Dialect = DatabaseDialect.PostgreSql;
+    private const string? Schema = "public";
+
+    /// <summary>The case names, for <c>MemberData</c>.</summary>
+    public static TheoryData<string> Names() => DesignerScenarios.Names(Dialect);
+
+    private async Task<IDatabaseConnection> OpenAsync() => await new PostgresDatabaseProvider().OpenAsync(
+        new ConnectionProfile(Guid.NewGuid(), "designer", Dialect, server.Host, server.Port, PostgresFixture.Database, PostgresFixture.UserName, null, null),
+        PostgresFixture.Password,
+        CancellationToken.None);
+
+    [Theory(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    [MemberData(nameof(Names))]
+    public async Task Operation_ProducesSqlTheServerAcceptsAndKeepsData(string name)
+    {
+        await using var connection = await OpenAsync();
+        await DesignerScenarios.RunAsync(connection, Dialect, Schema, name);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task AutoIncrementChange_IsRefusedByTheValidator()
+    {
+        await using var connection = await OpenAsync();
+        await DesignerScenarios.AutoIncrementChangeIsRefusedAsync(connection, Dialect, Schema);
+    }
+}

@@ -85,7 +85,7 @@ public static class TableDiff
         foreach (var o in original.Indexes)
         {
             var e = edited.Indexes.FirstOrDefault(i => i.OriginalName == o.OriginalName);
-            if (e is null || e.IsUnique != o.IsUnique || !o.Columns.SequenceEqual(Map(e.Columns), StringComparer.Ordinal))
+            if (e is null || e.Name != o.Name || e.IsUnique != o.IsUnique || !o.Columns.SequenceEqual(Map(e.Columns), StringComparer.Ordinal))
             {
                 dropIndexes.Add(new DropIndex(o.Name));
                 if (e is not null)

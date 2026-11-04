@@ -24,6 +24,9 @@ public sealed record DesignIssue(
 /// <summary>Checks an edited <see cref="TableDesign"/> before any SQL is generated.</summary>
 public static class DesignValidator
 {
+    private static bool IsLongType(string type) =>
+        type.Trim().EndsWith("text", StringComparison.OrdinalIgnoreCase) || type.Trim().EndsWith("blob", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>Validates a design.</summary>
     /// <param name="edited">The design to check.</param>
     /// <param name="original">The design the table had when the editor opened; null for a new table.</param>
@@ -125,6 +128,13 @@ public static class DesignValidator
             }
 
             CheckColumns("index", i.Name, i.Columns);
+            if (dialect == DatabaseDialect.MySql)
+            {
+                foreach (var n in i.Columns.Where(n => columns.TryGetValue(n, out var col) && IsLongType(col.DataType)))
+                {
+                    Error(CoreMessageCodes.DesignIndexNeedsLength, $"The index '{i.Name}' cannot use the text or blob column '{n}'.", i.Name, i.Name, n);
+                }
+            }
         }
 
         var fkNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

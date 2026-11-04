@@ -388,6 +388,7 @@ internal static class UiTextCatalogEn
         ("issue.design.indexNameDuplicate", "The index name '{0}' is used twice."),
         ("issue.design.indexNoColumn", "The index '{0}' has no column."),
         ("issue.design.indexColumnMissing", "The index '{0}' uses the missing column '{1}'."),
+        ("issue.design.indexNeedsLength", "The index '{0}' cannot use the text or blob column '{1}': MySQL needs a key length, which the designer cannot set."),
         ("issue.design.foreignKeyNameEmpty", "A foreign key name is empty."),
         ("issue.design.foreignKeyNameDuplicate", "The foreign key name '{0}' is used twice."),
         ("issue.design.foreignKeyNoColumn", "The foreign key '{0}' has no column."),
