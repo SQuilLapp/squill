@@ -88,8 +88,9 @@ public sealed class SqliteAlterTests
                 "CREATE TABLE \"u__squill_new\" (\n    \"id\" INTEGER NOT NULL,\n    \"a2\" TEXT,\n    \"b\" TEXT,\n    \"n\" TEXT,\n    PRIMARY KEY (\"id\", \"a2\")\n)",
                 "INSERT INTO \"u__squill_new\" (\"id\", \"a2\", \"b\") SELECT \"id\", \"a\", \"b\" FROM \"t\"",
                 "DROP TABLE \"t\"",
-                "ALTER TABLE \"u__squill_new\" RENAME TO \"u\"",
-                "CREATE INDEX \"ix_b\" ON \"u\" (\"b\")",
+                "ALTER TABLE \"u__squill_new\" RENAME TO \"t\"",
+                "CREATE INDEX \"ix_b\" ON \"t\" (\"b\")",
+                "ALTER TABLE \"t\" RENAME TO \"u\"",
                 "PRAGMA foreign_key_check",
                 "PRAGMA foreign_keys = ON",
             ],
@@ -128,6 +129,6 @@ public sealed class SqliteAlterTests
         var sql = Alter(o, e);
         Assert.Single(sql, s => s == "PRAGMA foreign_keys = OFF");
         Assert.Single(sql, s => s.StartsWith("DROP TABLE", StringComparison.Ordinal));
-        Assert.DoesNotContain(sql, s => s.StartsWith("ALTER TABLE \"t\" RENAME", StringComparison.Ordinal));
+        Assert.DoesNotContain(sql, s => s.Contains("RENAME COLUMN", StringComparison.Ordinal));
     }
 }

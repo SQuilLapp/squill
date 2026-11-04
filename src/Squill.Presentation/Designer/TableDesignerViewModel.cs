@@ -34,7 +34,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         _dialogs = dialogs;
         _dialect = session.Profile.Dialect;
         TypeSuggestions = DataTypeCatalog.For(_dialect);
-        Original = existing is null ? null : TableDesign.FromTable(existing);
+        Original = existing is null ? null : TableDesign.FromTable(existing, session.Schema.Triggers);
         Columns.CollectionChanged += OnCollectionChanged;
         Indexes.CollectionChanged += OnCollectionChanged;
         ForeignKeys.CollectionChanged += OnCollectionChanged;
@@ -332,7 +332,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         var table = _session.Schema.FindTable(Design.Schema, Design.Name);
         if (table is null)
             return;
-        Original = TableDesign.FromTable(table);
+        Original = TableDesign.FromTable(table, _session.Schema.Triggers);
         OnPropertyChanged(nameof(Title));
         Load(Original);
     }

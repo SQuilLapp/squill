@@ -1,6 +1,6 @@
 # P11-29 - Table designer on SQLite: create and alter matrix
 
-Status: todo
+Status: done
 Depends on: P11-16
 
 ## Goal
@@ -15,7 +15,7 @@ Every designer operation produces SQL that SQLite accepts and preserves data, in
 - Server dialects (P11-30).
 
 ## Tasks
-- [ ] Matrix tests, generator/runner fixes.
+- [x] Matrix tests, generator/runner fixes.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green.

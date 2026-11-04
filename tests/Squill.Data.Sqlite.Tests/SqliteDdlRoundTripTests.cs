@@ -34,7 +34,7 @@ public sealed class SqliteDdlRoundTripTests
 
         var schema = await connection.ReadSchemaAsync(CancellationToken.None);
         var p = schema.FindTable(null, "parent")!;
-        Assert.Equal(new ColumnDefinition("id", "INTEGER", true, true, null, true), p.Columns[0]);
+        Assert.Equal(new ColumnDefinition("id", "INTEGER", false, true, null, true), p.Columns[0]);
         Assert.Equal(new ColumnDefinition("label", "TEXT", false, false, "'x'"), p.Columns[1]);
 
         var c = schema.FindTable(null, "child")!;

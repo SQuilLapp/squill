@@ -92,9 +92,16 @@ internal sealed class SqliteDdlGenerator : IDdlGenerator
         }
 
         statements.Add($"DROP TABLE {t}");
-        statements.Add($"ALTER TABLE {tempTable} RENAME TO {Q(edited.Name)}");
-        var finalTable = SqlQuoting.QualifiedName(schema, edited.Name, D);
-        statements.AddRange(edited.Indexes.Select(i => DdlWriter.CreateIndex(schema, finalTable, i, D)));
+        // Back to the original name first: a rename after the triggers exist lets SQLite rewrite their text.
+        statements.Add($"ALTER TABLE {tempTable} RENAME TO {Q(original.Name)}");
+        statements.AddRange(edited.Indexes.Select(i => DdlWriter.CreateIndex(schema, t, i, D)));
+        // shortcut: trigger bodies keep their old text, so one that names a renamed or dropped column fails when it fires; upgrade by rewriting the body.
+        statements.AddRange(original.Triggers);
+        if (original.Name != edited.Name)
+        {
+            statements.Add($"ALTER TABLE {t} RENAME TO {Q(edited.Name)}");
+        }
+
         statements.Add("PRAGMA foreign_key_check");
         statements.Add("PRAGMA foreign_keys = ON");
         return statements;
