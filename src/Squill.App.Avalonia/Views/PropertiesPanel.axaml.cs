@@ -37,7 +37,7 @@ public sealed partial class PropertiesPanel : UserControl
         IsVisible = _table is not null;
         if (_table is not { } t)
             return;
-        var isView = t.Kind == TableKind.View;
+        var isView = t.Kind.IsViewLike();
         KindIcon.Data = (global::Avalonia.Media.Geometry?)(this.FindResource(isView ? "SquillIconView" : "SquillIconTable"));
         NameText.Text = t.Name;
         var kind = UiText.Get(isView ? "properties.kindView" : "properties.kindTable");

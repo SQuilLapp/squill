@@ -23,7 +23,7 @@ public sealed record ColumnRow(string Name, string DataType, bool IsPrimaryKey, 
 public sealed record PropertiesModel(TableInfo Table)
 {
     /// <summary>Gets whether the object is a view.</summary>
-    public bool IsView => Table.Kind == TableKind.View;
+    public bool IsView => Table.Kind.IsViewLike();
 
     /// <summary>Gets the subtitle: the kind, then the schema when there is one.</summary>
     public string Subtitle

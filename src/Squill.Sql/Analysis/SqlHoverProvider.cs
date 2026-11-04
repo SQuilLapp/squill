@@ -64,7 +64,7 @@ public static class SqlHoverProvider
     private static HoverInfo Describe(TextRange range, TableInfo t)
     {
         var name = t.Schema is null ? t.Name : t.Schema + "." + t.Name;
-        var view = t.Kind == TableKind.View;
+        var view = t.Kind.IsViewLike();
         var markdown = $"**{(view ? "view" : "table")}** {name} ({t.Columns.Count} {(t.Columns.Count == 1 ? "column" : "columns")})";
         return new HoverInfo(range, markdown, view ? SqlMessageCodes.HoverView : SqlMessageCodes.HoverTable, [t.Columns.Count.ToString(CultureInfo.InvariantCulture), name]);
     }

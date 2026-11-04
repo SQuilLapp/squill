@@ -70,7 +70,7 @@ public sealed record ErModel(IReadOnlyList<ErEntity> Entities, IReadOnlyList<ErR
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         var tables = snapshot.Tables
-            .Where(t => (filter?.IncludeViews == true || t.Kind != TableKind.View)
+            .Where(t => (filter?.IncludeViews == true || !t.Kind.IsViewLike())
                         && (filter?.Keys is not { } keys || keys.Contains(KeyOf(t.Schema, t.Name), StringComparer.OrdinalIgnoreCase)))
             .OrderBy(t => t.Schema, StringComparer.OrdinalIgnoreCase)
             .ThenBy(t => t.Name, StringComparer.OrdinalIgnoreCase)
@@ -86,7 +86,7 @@ public sealed record ErModel(IReadOnlyList<ErEntity> Entities, IReadOnlyList<ErR
             entities.Add(new ErEntity(
                 KeyOf(t.Schema, t.Name), t.Schema, t.Name, t.Kind,
                 [.. t.Columns.Select(c => new ErColumn(c.Name, c.DataType, c.IsPrimaryKey, fkColumns.Contains(c.Name), c.IsNullable))]));
-            if (t.Kind == TableKind.View)
+            if (t.Kind.IsViewLike())
                 continue;
 
             foreach (var fk in t.ForeignKeys)
@@ -94,7 +94,7 @@ public sealed record ErModel(IReadOnlyList<ErEntity> Entities, IReadOnlyList<ErR
                 var parent = snapshot.FindTable(fk.ReferencedSchema ?? t.Schema, fk.ReferencedTable)
                              ?? (fk.ReferencedSchema is null ? snapshot.FindTable(null, fk.ReferencedTable) : null);
                 var toKey = parent is null ? null : KeyOf(parent.Schema, parent.Name);
-                if (parent is null || toKey is null || !keySet.Contains(toKey) || parent.Kind == TableKind.View)
+                if (parent is null || toKey is null || !keySet.Contains(toKey) || parent.Kind.IsViewLike())
                 {
                     unresolved++;
                     continue;

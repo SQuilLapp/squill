@@ -211,8 +211,8 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
                 parent.IsExpanded = groups.Count == 1;
                 database.Children.Add(parent);
             }
-            AddGroup(parent, session, "explorer.tables", group.Where(t => t.Kind != TableKind.View), groups.Count == 1);
-            AddGroup(parent, session, "explorer.views", group.Where(t => t.Kind == TableKind.View), false);
+            AddGroup(parent, session, "explorer.tables", group.Where(t => !t.Kind.IsViewLike()), groups.Count == 1);
+            AddGroup(parent, session, "explorer.views", group.Where(t => t.Kind.IsViewLike()), false);
         }
         connection.Children.Add(database);
     }
@@ -233,7 +233,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
 
     private static ExplorerNode TableNode(ConnectionSession session, TableInfo table)
     {
-        var node = Node(table.Name, table.Kind == TableKind.View ? ExplorerNodeKind.View : ExplorerNodeKind.Table, session, table: table);
+        var node = Node(table.Name, table.Kind.IsViewLike() ? ExplorerNodeKind.View : ExplorerNodeKind.Table, session, table: table);
         var columns = Node(UiText.Get("explorer.columns"), ExplorerNodeKind.Folder, session, count: table.Columns.Count);
         foreach (var c in table.Columns)
         {

@@ -1,6 +1,6 @@
 # P11-15 - Core: routines, triggers, view definitions and materialized views in the schema model
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -17,7 +17,7 @@ Depends on: none
 - Readers (P11-16 ... P11-19), UI (P11-20 ...), sequences, user-defined types, synonyms (recorded as not supported in the ADR of P11-40).
 
 ## Tasks
-- [ ] Types, `TableKind` switch audit, tests (construction, defaults, `FindTable` unaffected).
+- [x] Types, `TableKind` switch audit, tests (construction, defaults, `FindTable` unaffected).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green.

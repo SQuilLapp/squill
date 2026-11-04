@@ -88,7 +88,7 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
     }
 
     private static CompletionItem Table(TableInfo t, DatabaseDialect dialect, TextRange range) =>
-        new(t.Name, CompletionKind.Struct, IdentifierQuoting.Quote(t.Name, dialect), t.Kind == TableKind.View ? "view" : "table", "0" + t.Name, range);
+        new(t.Name, CompletionKind.Struct, IdentifierQuoting.Quote(t.Name, dialect), t.Kind.IsViewLike() ? "view" : "table", "0" + t.Name, range);
 
     private static List<CompletionItem> Columns(SchemaSnapshot schema, ScopeInfo scope, List<string> qualifiers, DatabaseDialect dialect, TextRange range)
     {
