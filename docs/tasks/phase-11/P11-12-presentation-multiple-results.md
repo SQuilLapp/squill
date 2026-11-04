@@ -1,6 +1,6 @@
 # P11-12 - Presentation: several results and messages per statement
 
-Status: todo
+Status: done
 Depends on: P11-11
 
 ## Goal
@@ -15,7 +15,7 @@ Depends on: P11-11
 - Rendering in the heads (P11-13, P11-14).
 
 ## Tasks
-- [ ] View-model changes, catalog keys fr/en, tests with a fake reader that returns two sets and messages, and one that returns messages only.
+- [x] View-model changes, catalog keys fr/en, tests with a fake reader that returns two sets and messages, and one that returns messages only.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green (localization guards included).

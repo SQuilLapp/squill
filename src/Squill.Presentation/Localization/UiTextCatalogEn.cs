@@ -76,6 +76,9 @@ internal static class UiTextCatalogEn
 
         // Results, status bar
         ("results.result", "Result {0}"),
+        ("results.messages", "Messages"),
+        ("results.setOf", "{0} ({1}/{2})"),
+        ("query.notEditableSets", "Not editable: the statement returned several result sets"),
         ("results.export", "Export"),
         ("results.exportRows", "EXPORT {0} ROWS"),
         ("results.empty", "Run a query to see the results here."),

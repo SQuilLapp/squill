@@ -220,21 +220,46 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         try
         {
             var reader = await _session.Connection.ExecuteAsync(sql, parameters, ct);
-            if (reader.Columns.Count == 0)
+            try
             {
-                var affected = reader.RecordsAffected;
-                await reader.DisposeAsync();
-                rows = affected >= 0 ? affected : null;
-                AddResult(ResultViewModel.ForMessage(NextTitle(), affected >= 0 ? UiText.FormatPlural("query.rowsAffected", (int)Math.Min(affected, int.MaxValue)) : UiText.Get("query.commandCompleted"), _dialogs));
+                var title = NextTitle();
+                List<(ResultViewModel Result, StreamingGridDataSource Grid)> sets = [];
+                if (reader.Columns.Count == 0)
+                {
+                    var affected = reader.RecordsAffected;
+                    rows = affected >= 0 ? affected : null;
+                    AddResult(ResultViewModel.ForMessage(title, affected >= 0 ? UiText.FormatPlural("query.rowsAffected", (int)Math.Min(affected, int.MaxValue)) : UiText.Get("query.commandCompleted"), _dialogs));
+                }
+                else
+                {
+                    do
+                    {
+                        if (reader.Columns.Count == 0)
+                            continue;
+                        var grid = new StreamingGridDataSource(reader, maxRows, _dispatcher, disposeReader: false);
+                        var result = ResultViewModel.ForGrid(title, grid, _dialogs);
+                        AddResult(result);
+                        await grid.StartAsync(ct);
+                        sets.Add((result, grid));
+                    }
+                    while (await reader.NextResultAsync(ct));
+
+                    rows = sets.Count > 0 ? sets[0].Grid.RowCount : null;
+                    if (sets.Count == 1)
+                        AttachEditor(sets[0].Result, sets[0].Grid, original);
+                    for (var i = 0; i < sets.Count && sets.Count > 1; i++)
+                    {
+                        sets[i].Result.SetReadOnly(UiText.Get("query.notEditableSets"));
+                        sets[i].Result.SetTitle(UiText.Format("results.setOf", title, i + 1, sets.Count));
+                    }
+                }
+
+                if (reader.Messages.Count > 0)
+                    AddResult(ResultViewModel.ForMessages(UiText.Get("results.messages"), string.Join(Environment.NewLine, reader.Messages), _dialogs));
             }
-            else
+            finally
             {
-                var grid = new StreamingGridDataSource(reader, maxRows, _dispatcher);
-                var result = ResultViewModel.ForGrid(NextTitle(), grid, _dialogs);
-                AddResult(result);
-                await grid.StartAsync(ct);
-                AttachEditor(result, grid, original);
-                rows = grid.RowCount;
+                await reader.DisposeAsync();
             }
 
             succeeded = true;

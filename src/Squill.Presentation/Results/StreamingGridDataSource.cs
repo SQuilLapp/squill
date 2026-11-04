@@ -13,6 +13,8 @@ public sealed class StreamingGridDataSource : IGridDataSource
     private static readonly long ThrottleTicks = Stopwatch.Frequency / 20;
 
     private readonly IResultReader _reader;
+    private readonly IReadOnlyList<ColumnInfo> _columns;
+    private readonly bool _disposeReader;
     private readonly int _maxRows;
     private readonly IUiDispatcher _dispatcher;
     private readonly Lock _gate = new();
@@ -23,21 +25,24 @@ public sealed class StreamingGridDataSource : IGridDataSource
     private long _lastRaise;
 
     /// <summary>Creates a data source over <paramref name="reader"/>.</summary>
-    /// <param name="reader">The reader to drain; disposed when <see cref="StartAsync"/> ends.</param>
+    /// <param name="reader">The reader to drain, positioned on the result set to read.</param>
     /// <param name="maxRows">The maximum number of rows to keep.</param>
     /// <param name="dispatcher">Used to raise <see cref="Changed"/> on the UI thread.</param>
-    public StreamingGridDataSource(IResultReader reader, int maxRows, IUiDispatcher dispatcher)
+    /// <param name="disposeReader">Whether <see cref="StartAsync"/> disposes <paramref name="reader"/> when it ends; <see langword="false"/> when the caller moves on to the next result set.</param>
+    public StreamingGridDataSource(IResultReader reader, int maxRows, IUiDispatcher dispatcher, bool disposeReader = true)
     {
         ArgumentNullException.ThrowIfNull(reader);
         ArgumentNullException.ThrowIfNull(dispatcher);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxRows);
         _reader = reader;
+        _columns = [.. reader.Columns];
+        _disposeReader = disposeReader;
         _maxRows = maxRows;
         _dispatcher = dispatcher;
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<ColumnInfo> Columns => _reader.Columns;
+    public IReadOnlyList<ColumnInfo> Columns => _columns;
 
     /// <inheritdoc/>
     public long RowCount => Volatile.Read(ref _rowCount);
@@ -79,7 +84,8 @@ public sealed class StreamingGridDataSource : IGridDataSource
         }
         finally
         {
-            await _reader.DisposeAsync();
+            if (_disposeReader)
+                await _reader.DisposeAsync();
             RaiseChanged();
         }
     }

@@ -76,6 +76,9 @@ internal static class UiTextCatalogFr
 
         // Results, status bar
         ("results.result", "Résultat {0}"),
+        ("results.messages", "Messages du serveur"),
+        ("results.setOf", "{0} ({1} sur {2})"),
+        ("query.notEditableSets", "Non modifiable : l'instruction a renvoyé plusieurs jeux de résultats"),
         ("results.export", "Exporter"),
         ("results.exportRows", "EXPORTER {0} LIGNES"),
         ("results.empty", "Exécutez une requête pour voir les résultats ici."),

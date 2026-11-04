@@ -52,6 +52,31 @@ public sealed class QueryTabViewModelTests
         }
     }
 
+    private sealed class MultiReader(int[] sets, string[] messages) : IResultReader
+    {
+        private int _set;
+        private bool _read;
+        public IReadOnlyList<ColumnInfo> Columns => _set < sets.Length && sets[_set] >= 0 ? [Col] : [];
+        public long RecordsAffected => -1;
+        public IReadOnlyList<string> Messages => messages;
+
+        public ValueTask<object?[][]?> ReadBatchAsync(int maxRows, CancellationToken cancellationToken)
+        {
+            if (_read || _set >= sets.Length)
+                return ValueTask.FromResult<object?[][]?>(null);
+            _read = true;
+            return ValueTask.FromResult<object?[][]?>([.. Enumerable.Range(0, Math.Max(sets[_set], 0)).Select(i => new object?[] { i })]);
+        }
+
+        public ValueTask<bool> NextResultAsync(CancellationToken cancellationToken)
+        {
+            _read = false;
+            return ValueTask.FromResult(++_set < sets.Length);
+        }
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
     private sealed class FakeConnection : IDatabaseConnection
     {
         public List<string> Executed { get; } = [];
@@ -72,6 +97,10 @@ public sealed class QueryTabViewModelTests
                 throw new TimeoutException("Command timeout expired");
             if (sql.Contains("boom", StringComparison.Ordinal))
                 throw new InvalidOperationException("boom failed");
+            if (sql.Contains("multi", StringComparison.Ordinal))
+                return new MultiReader([2, 4], ["hello", "world"]);
+            if (sql.Contains("print", StringComparison.Ordinal))
+                return new MultiReader([-1], ["only a message"]);
             var reader = sql.StartsWith("SELECT", StringComparison.Ordinal)
                 ? new FakeReader(true, 3, -1)
                 : new FakeReader(false, 0, sql.StartsWith("UPDATE", StringComparison.Ordinal) ? AffectedOverride ?? 5 : -1);
@@ -188,6 +217,33 @@ public sealed class QueryTabViewModelTests
         Assert.Equal("boom failed", f.Vm.Results[1].Text);
         Assert.Equal(2, f.Connection.Executed.Count);
         Assert.Equal([true, false], f.History.Entries.Select(e => e.Succeeded));
+    }
+
+    [Fact]
+    public async Task Run_TwoSetsAndMessages_ShowsEverySetThenMessages()
+    {
+        using var _ = UiText.Override(UiLanguage.English);
+        var f = new Fixture("SELECT multi;");
+
+        await f.Vm.RunCommand.ExecuteAsync(null);
+
+        Assert.Equal(["Result 1 (1/2)", "Result 1 (2/2)", "Messages"], f.Vm.Results.Select(r => r.Title));
+        Assert.Equal([ResultKind.Grid, ResultKind.Grid, ResultKind.Messages], f.Vm.Results.Select(r => r.Kind));
+        Assert.Equal([2, 4], f.Vm.Results.Take(2).Select(r => (int)r.Grid!.RowCount));
+        Assert.Equal("hello" + Environment.NewLine + "world", f.Vm.Results[2].Text);
+        Assert.All(f.Vm.Results.Take(2), r => Assert.NotNull(r.ReadOnlyReason));
+        Assert.Equal(2, f.History.Entries.Single().RowCount);
+    }
+
+    [Fact]
+    public async Task Run_MessagesOnly_ShowsCompletionAndMessages()
+    {
+        var f = new Fixture("print 1;");
+
+        await f.Vm.RunCommand.ExecuteAsync(null);
+
+        Assert.Equal([ResultKind.Message, ResultKind.Messages], f.Vm.Results.Select(r => r.Kind));
+        Assert.Equal("only a message", f.Vm.Results[1].Text);
     }
 
     [Fact]
