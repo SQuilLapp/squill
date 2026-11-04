@@ -1,6 +1,6 @@
 # P11-24 - Presentation: browse other databases of a connection
 
-Status: todo
+Status: done
 Depends on: P11-23
 
 ## Goal
@@ -16,7 +16,7 @@ Under a connected server node the explorer lists the server's databases (Postgre
 - Heads (they render the existing node kind `Database`; verify in P11-36 ... P11-39), creating databases.
 
 ## Tasks
-- [ ] Tree, session ownership, tab binding, tests with `FakeDatabaseProvider` (two databases, one failing to open), catalog keys.
+- [x] Tree, session ownership, tab binding, tests with `FakeDatabaseProvider` (two databases, one failing to open), catalog keys.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green.

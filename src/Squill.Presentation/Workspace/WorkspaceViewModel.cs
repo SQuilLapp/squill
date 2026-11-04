@@ -172,15 +172,16 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(HasSession))]
     private async Task DisconnectAsync()
     {
-        if (ActiveSession is not { } session)
+        if (ActiveSession?.Root is not { } session)
             return;
-        foreach (var tab in Tabs.Where(t => t.Session == session).ToList())
+        foreach (var tab in Tabs.Where(t => t.Session.Root == session).ToList())
             Tabs.Remove(tab);
-        foreach (var designer in Designers.Where(d => d.Session == session).ToList())
+        foreach (var designer in Designers.Where(d => d.Session.Root == session).ToList())
             RemoveDesigner(designer);
-        foreach (var diagram in Diagrams.Where(d => d.Session == session).ToList())
+        foreach (var diagram in Diagrams.Where(d => d.Session.Root == session).ToList())
             RemoveDiagram(diagram);
-        _tabCounters.Remove(session);
+        foreach (var opened in session.OpenedDatabases.Prepend(session))
+            _tabCounters.Remove(opened);
         await _manager.CloseAsync(session);
         ActiveSession = Sessions.LastOrDefault();
         ActiveTab = Tabs.LastOrDefault(t => t.Session == ActiveSession);
@@ -411,7 +412,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         _tabCounters[session] = _tabCounters.GetValueOrDefault(session) + 1;
         var tab = new QueryTabViewModel(session, editor, _history, _settings, _dispatcher, _dialogs)
         {
-            Title = UiText.Format("tab.query", _tabCounters[session]),
+            Title = session.Parent is null
+                ? UiText.Format("tab.query", _tabCounters[session])
+                : UiText.Format("tab.queryOn", _tabCounters[session], session.Profile.Name, session.Profile.Database),
         };
         tab.ScriptRequested += script => AddTab(session, script);
         Tabs.Add(tab);

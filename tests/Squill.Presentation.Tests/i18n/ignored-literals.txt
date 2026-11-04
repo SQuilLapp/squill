@@ -62,6 +62,7 @@ src/Squill.Presentation/Results/GridBenchReport.cs|p95 frame ms {Percentile(rend
 src/Squill.Presentation/Results/GridBenchReport.cs|p95 interval ms {Percentile(frameMs, 0.95):F3}|developer benchmark report
 src/Squill.Presentation/Results/JsonResultExporter.cs|The result is still loading and cannot be exported.|developer guard, the view-model checks first
 src/Squill.Presentation/Results/SyntheticGridSource.cs|value {row}-{column}|synthetic benchmark data
+src/Squill.Presentation/Sessions/ConnectionSession.cs|This session cannot open other databases.|programmer-error exception message
 src/Squill.Presentation/Sessions/SqlRunner.cs|BEGIN TRANSACTION|SQL statement
 src/Squill.Presentation/Sessions/SqlRunner.cs|COMMIT TRANSACTION|SQL statement
 src/Squill.Presentation/Sessions/SqlRunner.cs|ROLLBACK TRANSACTION|SQL statement

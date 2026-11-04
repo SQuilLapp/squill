@@ -84,17 +84,22 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     public void Reload(ConnectionSession session)
     {
         ArgumentNullException.ThrowIfNull(session);
-        if (FindConnection(session.Profile.Id) is { } node)
-        {
+        if (FindConnection(session.Root.Profile.Id) is not { } node)
+            return;
+        if (session.Parent is null)
             Populate(node);
-            ApplyFilter();
+        else if (node.Children.FirstOrDefault(c => c.Session == session) is { } database)
+        {
+            database.Children.Clear();
+            PopulateDatabase(database, session);
         }
+        ApplyFilter();
     }
 
     [RelayCommand]
     private async Task RefreshAsync(CancellationToken ct)
     {
-        ConnectionSession[] targets = SelectedNode?.Session is { } selected ? [selected] : [.. _sessions];
+        ConnectionSession[] targets = SelectedNode?.Session is { } selected ? [selected] : [.. _sessions.SelectMany(s => s.OpenedDatabases.Prepend(s))];
         foreach (var session in targets)
         {
             await session.RefreshSchemaAsync(ct);
@@ -220,7 +225,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
 
     private ExplorerNode? FindConnection(Guid id) => Connections().FirstOrDefault(n => n.Profile!.Id == id);
 
-    private static void Populate(ExplorerNode connection)
+    private void Populate(ExplorerNode connection)
     {
         connection.Children.Clear();
         if (connection.Session is not { } session)
@@ -232,6 +237,45 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
             Session = session,
             IsExpanded = true,
         };
+        PopulateDatabase(database, session);
+        connection.Children.Add(database);
+        foreach (var other in session.Databases.Where(d => !string.Equals(d, profile.Database, StringComparison.OrdinalIgnoreCase)))
+        {
+            var node = new ExplorerNode(other, ExplorerNodeKind.Database) { Profile = profile with { Database = other } };
+            if (session.FindDatabase(other) is { } opened)
+            {
+                node.Session = opened;
+                PopulateDatabase(node, opened);
+                node.IsExpanded = true;
+            }
+            node.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(ExplorerNode.IsExpanded) && node.IsExpanded && node.Session is null)
+                    _ = OpenDatabaseAsync(node, session);
+            };
+            connection.Children.Add(node);
+        }
+    }
+
+    private async Task OpenDatabaseAsync(ExplorerNode node, ConnectionSession parent)
+    {
+        node.ErrorText = null;
+        try
+        {
+            var opened = await parent.OpenDatabaseAsync(node.Title, CancellationToken.None);
+            node.Session = opened;
+            PopulateDatabase(node, opened);
+            ApplyFilter();
+        }
+        catch (Exception ex)
+        {
+            node.ErrorText = ex.Message;
+            node.IsExpanded = false;
+        }
+    }
+
+    private static void PopulateDatabase(ExplorerNode database, ConnectionSession session)
+    {
         var snapshot = session.Schema;
         var schemas = snapshot.Tables.Select(t => t.Schema ?? "").Concat(snapshot.Routines.Select(r => r.Schema)).Distinct(StringComparer.Ordinal).ToList();
         foreach (var key in schemas)
@@ -255,7 +299,6 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
             AddFolder(parent, session, "explorer.triggers", triggers.Select(t => new ExplorerNode(t.Name, ExplorerNodeKind.Trigger, t.Table)
                 { Profile = session.Profile, Session = session, Trigger = t }));
         }
-        connection.Children.Add(database);
     }
 
     private static void AddGroup(ExplorerNode parent, ConnectionSession session, string titleKey, IEnumerable<TableInfo> tables, bool expanded)

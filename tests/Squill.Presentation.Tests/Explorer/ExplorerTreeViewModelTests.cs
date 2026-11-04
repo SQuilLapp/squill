@@ -327,6 +327,97 @@ public sealed class ExplorerTreeViewModelTests
         Assert.Equal(2, Descendants(node).Single(d => d.Kind == ExplorerNodeKind.Schema).Count);
     }
 
+    private (ExplorerNode Connection, ConnectionSession Root, List<ConnectionSession> Opened) ConnectServer(ConnectionProfile profile)
+    {
+        _list.Profiles.Add(profile);
+        var opened = new List<ConnectionSession>();
+        ConnectionSession? root = null;
+        var own = new SchemaSnapshot(null, [Table("public", "own")]);
+        var remote = new SchemaSnapshot(null, [Table("public", "remote")]);
+        root = new ConnectionSession(profile, new FakeConnection(own), own, null)
+        {
+            Databases = ["d", "other", "bad"],
+            DatabaseOpener = async (name, _) =>
+            {
+                await Task.Yield();
+                if (name == "bad")
+                    throw new InvalidOperationException("permission denied");
+                var session = new ConnectionSession(profile with { Database = name }, new FakeConnection(remote), remote, null) { Parent = root };
+                opened.Add(session);
+                return session;
+            },
+        };
+        _sessions.Add(root);
+        return (_tree.Roots.Single(), root, opened);
+    }
+
+    private static async Task WaitAsync(Func<bool> condition)
+    {
+        for (var i = 0; i < 200 && !condition(); i++)
+            await Task.Delay(10);
+        Assert.True(condition());
+    }
+
+    [Fact]
+    public void Connect_ListsOtherDatabasesAfterTheOwnOne_Collapsed_AndNotOpened()
+    {
+        var (connection, _, opened) = ConnectServer(Profile("p"));
+
+        Assert.Equal(["d", "other", "bad"], connection.Children.Select(c => c.Title));
+        Assert.All(connection.Children, c => Assert.Equal(ExplorerNodeKind.Database, c.Kind));
+        Assert.True(connection.Children[0].IsExpanded);
+        Assert.False(connection.Children[1].IsExpanded);
+        Assert.Null(connection.Children[1].Session);
+        Assert.Empty(opened);
+    }
+
+    [Fact]
+    public async Task ExpandOtherDatabase_OpensDerivedSession_ShowsItsSchema_AndReusesItAfterRebuild()
+    {
+        var (connection, root, opened) = ConnectServer(Profile("p"));
+        var other = connection.Children[1];
+
+        other.IsExpanded = true;
+        await WaitAsync(() => other.Session is not null);
+
+        Assert.Same(root, other.Session!.Parent);
+        Assert.Equal("other", other.Profile!.Database);
+        Assert.Contains(Descendants(other), n => n is { Kind: ExplorerNodeKind.Table, Title: "remote" } && n.Session == other.Session);
+        _tree.Reload(root);
+        Assert.Same(other.Session, connection.Children[1].Session);
+        Assert.Single(opened);
+    }
+
+    [Fact]
+    public async Task ExpandOtherDatabase_Failure_ShowsTheMessageAndCollapses()
+    {
+        var (connection, _, _) = ConnectServer(Profile("p"));
+        var bad = connection.Children[2];
+
+        bad.IsExpanded = true;
+        await WaitAsync(() => bad.ErrorText is not null);
+
+        Assert.Equal("permission denied", bad.Trailing);
+        Assert.False(bad.IsExpanded);
+        Assert.Null(bad.Session);
+    }
+
+    [Fact]
+    public async Task RefreshCommand_OnDerivedNode_RefreshesOnlyThatSession()
+    {
+        var (connection, root, _) = ConnectServer(Profile("p"));
+        var other = connection.Children[1];
+        other.IsExpanded = true;
+        await WaitAsync(() => other.Session is not null);
+        _tree.SelectedNode = Descendants(other).First(n => n.Kind == ExplorerNodeKind.Table);
+
+        await _tree.RefreshCommand.ExecuteAsync(null);
+
+        Assert.Same(other.Session, connection.Children[1].Session);
+        Assert.Contains(Descendants(connection.Children[1]), n => n.Title == "remote");
+        Assert.Contains(Descendants(connection.Children[0]), n => n.Title == "own");
+    }
+
     private sealed class FakeStore : IProfileStore
     {
         public ValueTask<IReadOnlyList<ConnectionProfile>> ListAsync(CancellationToken ct) => ValueTask.FromResult<IReadOnlyList<ConnectionProfile>>([]);
