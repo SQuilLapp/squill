@@ -387,5 +387,6 @@
   <Style Selector="Border.engine.postgres"><Setter Property="Background" Value="{DynamicResource SquillEnginePostgresBrush}" /></Style>
   <Style Selector="Border.engine.mysql"><Setter Property="Background" Value="{DynamicResource SquillEngineMysqlBrush}" /></Style>
   <Style Selector="Border.engine.sqlserver"><Setter Property="Background" Value="{DynamicResource SquillEngineSqlserverBrush}" /></Style>
+  <Style Selector="Border.engine.oracle"><Setter Property="Background" Value="#FFC74634" /></Style>
   <Style Selector="Border.engine.sqlite"><Setter Property="Background" Value="{DynamicResource SquillEngineSqliteBrush}" /></Style>
 </Styles>

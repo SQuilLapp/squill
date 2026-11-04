@@ -115,10 +115,11 @@ public sealed partial class ConnectionEditorWindow : Window
             DatabaseDialect.PostgreSql => ("PG", "postgres"),
             DatabaseDialect.MySql => ("My", "mysql"),
             DatabaseDialect.SqlServer => ("MS", "sqlserver"),
+            DatabaseDialect.Oracle => ("OR", "oracle"),
             _ => ("SL", "sqlite"),
         };
         HeaderLetters.Text = letters;
-        SetClasses(HeaderEngine, engineClass, "postgres", "mysql", "sqlserver", "sqlite");
+        SetClasses(HeaderEngine, engineClass, "postgres", "mysql", "sqlserver", "sqlite", "oracle");
         HeaderName.Text = string.IsNullOrWhiteSpace(editor.Name) ? UiText.Get("connections.newConnection") : editor.Name;
         HeaderSubtitle.Text = UiText.Get("connections.newUnsaved");
         HeaderSubtitle.IsVisible = _list?.SelectedProfile is null;
@@ -136,7 +137,7 @@ public sealed partial class ConnectionEditorWindow : Window
         SetClasses(HeaderEnv, envClass, "env-prod", "env-staging", "env-dev", "env-local");
         ProductionHint.IsVisible = editor.Environment == ConnectionEnvironment.Production;
 
-        foreach (var tile in new[] { TilePostgres, TileMySql, TileSqlServer, TileSqlite })
+        foreach (var tile in new[] { TilePostgres, TileMySql, TileSqlServer, TileSqlite, TileOracle })
             tile.Classes.Set("selected", tile.Tag is DatabaseDialect d && d == editor.Dialect);
         foreach (var tile in new[] { EnvProduction, EnvStaging, EnvDevelopment, EnvLocal })
             tile.Classes.Set("selected", tile.Tag is ConnectionEnvironment env && env == editor.Environment);
@@ -215,6 +216,7 @@ public sealed partial class ConnectionEditorWindow : Window
             DatabaseDialect.PostgreSql => ("PG", "postgres"),
             DatabaseDialect.MySql => ("My", "mysql"),
             DatabaseDialect.SqlServer => ("MS", "sqlserver"),
+            DatabaseDialect.Oracle => ("OR", "oracle"),
             _ => ("SL", "sqlite"),
         };
         var badge = new Border { Classes = { "engine", engineClass }, Child = new TextBlock { Text = letters } };

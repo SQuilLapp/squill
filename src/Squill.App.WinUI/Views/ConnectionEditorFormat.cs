@@ -9,7 +9,7 @@ internal static class ConnectionEditorFormat
 {
     /// <summary>Gets the engine tiles, in the order drawn.</summary>
     public static DatabaseDialect[] Engines { get; } =
-        [DatabaseDialect.PostgreSql, DatabaseDialect.MySql, DatabaseDialect.SqlServer, DatabaseDialect.Sqlite];
+        [DatabaseDialect.PostgreSql, DatabaseDialect.MySql, DatabaseDialect.SqlServer, DatabaseDialect.Sqlite, DatabaseDialect.Oracle];
 
     /// <summary>Gets the environment tiles, in the order drawn (2 x 2).</summary>
     public static ConnectionEnvironment[] Environments { get; } =
@@ -23,6 +23,7 @@ internal static class ConnectionEditorFormat
         DatabaseDialect.PostgreSql => ("PG", "Postgres"),
         DatabaseDialect.MySql => ("My", "Mysql"),
         DatabaseDialect.SqlServer => ("MS", "Sqlserver"),
+        DatabaseDialect.Oracle => ("OR", "Oracle"),
         _ => ("SL", "Sqlite"),
     };
 
@@ -34,6 +35,7 @@ internal static class ConnectionEditorFormat
         DatabaseDialect.PostgreSql => "PostgreSQL",
         DatabaseDialect.MySql => "MySQL",
         DatabaseDialect.SqlServer => "SQL Server",
+        DatabaseDialect.Oracle => "Oracle",
         _ => "SQLite",
     };
 

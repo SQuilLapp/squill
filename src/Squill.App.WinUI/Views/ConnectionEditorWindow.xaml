@@ -45,7 +45,7 @@
 
           <StackPanel Grid.Row="2" Spacing="8">
             <TextBlock Style="{StaticResource CapsTextBlockStyle}" loc:Loc.Key="connections.engine" />
-            <Grid x:Name="EngineHost" ColumnDefinitions="*,*,*,*" ColumnSpacing="7" />
+            <Grid x:Name="EngineHost" ColumnDefinitions="*,*,*,*,*" ColumnSpacing="7" />
           </StackPanel>
 
           <StackPanel Grid.Row="2" Grid.Column="2" Spacing="8">

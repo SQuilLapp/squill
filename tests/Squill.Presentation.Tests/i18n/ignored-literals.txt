@@ -9,6 +9,8 @@ src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|group|style class 
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|MS|engine badge abbreviation, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|MySQL|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|My|engine badge abbreviation, not translated
+src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|OR|engine badge abbreviation, not translated
+src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|Oracle|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|PG|engine badge abbreviation, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|PostgreSQL|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SL|engine badge abbreviation, not translated
