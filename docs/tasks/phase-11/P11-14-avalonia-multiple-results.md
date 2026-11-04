@@ -1,6 +1,6 @@
 # P11-14 - Avalonia head: result tabs for several sets and a Messages tab
 
-Status: todo
+Status: done
 Depends on: P11-12
 
 ## Goal
@@ -13,7 +13,7 @@ Same as P11-13 on the Avalonia head.
 - WinUI (P11-13).
 
 ## Tasks
-- [ ] AXAML, headless test, one capture `en`.
+- [x] AXAML, headless test. (Capture `en` not taken: no way to feed the running app a multi-set result; the headless test renders the real view.)
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green; Avalonia AOT publish with zero IL2xxx/IL3xxx warnings.
