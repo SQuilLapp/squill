@@ -115,4 +115,20 @@ public sealed class SqliteDatabaseProviderTests
             File.Delete(path);
         }
     }
+
+    [Fact]
+    public async Task ListDatabasesAsync_File_ReturnsItsFileNameOnly()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"squill-{Guid.NewGuid():N}.db");
+        try
+        {
+            await using (var connection = await OpenAsync(Memory with { FilePath = path }))
+                Assert.Equal([Path.GetFileName(path)], await connection.ListDatabasesAsync(CancellationToken.None));
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            File.Delete(path);
+        }
+    }
 }

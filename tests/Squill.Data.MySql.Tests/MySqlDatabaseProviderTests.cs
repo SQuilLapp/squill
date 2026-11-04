@@ -91,4 +91,23 @@ public sealed class MySqlDatabaseProviderTests(MySqlFixture server) : IClassFixt
         await using var connection = await OpenAsync(Profile() with { CommandTimeoutSeconds = 1 });
         await Assert.ThrowsAnyAsync<Exception>(async () => await QueryAsync(connection, "select count(*) from information_schema.columns a, information_schema.columns b, information_schema.columns c, information_schema.columns d"));
     }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ListDatabasesAsync_SecondDatabase_IsListedAndSystemOnesAreNot()
+    {
+        await using var connection = await OpenAsync();
+        await QueryAsync(connection, "drop database if exists squill_second");
+        await QueryAsync(connection, "create database squill_second");
+        try
+        {
+            var names = await connection.ListDatabasesAsync(CancellationToken.None);
+            Assert.Contains("squill_second", names);
+            Assert.Contains(MySqlFixture.Database, names);
+            Assert.DoesNotContain(names, n => n is "information_schema" or "mysql" or "performance_schema" or "sys");
+        }
+        finally
+        {
+            await QueryAsync(connection, "drop database if exists squill_second");
+        }
+    }
 }

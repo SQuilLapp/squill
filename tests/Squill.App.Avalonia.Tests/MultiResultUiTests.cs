@@ -68,6 +68,8 @@ public sealed class MultiResultUiTests
         public ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken) =>
             ValueTask.FromResult<IResultReader>(new MultiReader());
 
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) => ValueTask.FromResult<IReadOnlyList<string>>([]);
+
         public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => ValueTask.FromResult(SchemaSnapshot.Empty);
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;

@@ -36,5 +36,12 @@ internal sealed class MySqlDatabaseConnection(MySqlConnection connection, int co
         MySqlSchemaReader.ReadAsync(connection, cancellationToken);
 
     /// <inheritdoc />
+    public async ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken)
+    {
+        await using var reader = await ExecuteAsync("select schema_name from information_schema.schemata where schema_name not in ('information_schema','mysql','performance_schema','sys') order by 1", [], cancellationToken);
+        return [.. (await reader.ReadAllAsync(256, cancellationToken)).Select(r => (string)r[0]!)];
+    }
+
+    /// <inheritdoc />
     public ValueTask DisposeAsync() => connection.DisposeAsync();
 }

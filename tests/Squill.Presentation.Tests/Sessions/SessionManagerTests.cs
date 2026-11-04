@@ -165,6 +165,8 @@ public sealed class SessionManagerTests
         public ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken) =>
             throw new NotSupportedException();
 
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) => ValueTask.FromResult<IReadOnlyList<string>>([]);
+
         public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>
             owner.SchemaFailure is { } failure ? throw failure : ValueTask.FromResult(owner.Schema);
 

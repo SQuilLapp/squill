@@ -245,6 +245,8 @@ public sealed class WorkspaceViewModelTests
             return ValueTask.FromResult<IResultReader>(new FakeReader(owner.ReturnGrid));
         }
 
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) => ValueTask.FromResult<IReadOnlyList<string>>([]);
+
         public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => ValueTask.FromResult(owner.ReturnGrid ? new SchemaSnapshot(null, [GridTable]) : SchemaSnapshot.Empty);
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;

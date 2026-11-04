@@ -1,6 +1,6 @@
 # P11-23 - Data: list the databases of a server
 
-Status: todo
+Status: done
 Depends on: P11-02, P11-03, P11-04
 
 ## Goal
@@ -16,7 +16,7 @@ A connection can list the other databases of its server (PostgreSQL, MySQL, SQL 
 - Using the list (P11-24), creating or dropping databases.
 
 ## Tasks
-- [ ] Contract, four implementations, tests.
+- [x] Contract, four implementations, tests.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; default test run green; `rtk pwsh eng/run-docker-tests.ps1 -Engine all` green; no container left.

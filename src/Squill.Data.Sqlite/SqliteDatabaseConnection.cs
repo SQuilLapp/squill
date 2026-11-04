@@ -34,5 +34,9 @@ internal sealed class SqliteDatabaseConnection(SqliteConnection connection, int 
         SqliteSchemaReader.ReadAsync(connection, cancellationToken);
 
     /// <inheritdoc />
+    public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) =>
+        ValueTask.FromResult<IReadOnlyList<string>>([Path.GetFileName(connection.DataSource) is { Length: > 0 } name ? name : "main"]);
+
+    /// <inheritdoc />
     public ValueTask DisposeAsync() => connection.DisposeAsync();
 }

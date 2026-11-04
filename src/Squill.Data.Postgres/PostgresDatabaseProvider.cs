@@ -20,7 +20,7 @@ public sealed class PostgresDatabaseProvider : IDatabaseProvider
         {
             Host = profile.Host,
             Port = profile.Port ?? 5432,
-            Database = profile.Database,
+            Database = string.IsNullOrEmpty(profile.Database) ? "postgres" : profile.Database,
             Username = profile.UserName,
             Password = password,
             Timeout = profile.ConnectTimeoutSeconds,

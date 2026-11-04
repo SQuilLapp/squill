@@ -88,4 +88,23 @@ public sealed class PostgresDatabaseProviderTests(PostgresFixture server) : ICla
         await using var connection = await OpenAsync(Profile() with { CommandTimeoutSeconds = 1 });
         await Assert.ThrowsAnyAsync<Exception>(async () => await QueryAsync(connection, "select pg_sleep(5)"));
     }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ListDatabasesAsync_SecondDatabase_IsListedAndSystemOnesAreNot()
+    {
+        await using var connection = await OpenAsync();
+        await QueryAsync(connection, "drop database if exists squill_second");
+        await QueryAsync(connection, "create database squill_second");
+        try
+        {
+            var names = await connection.ListDatabasesAsync(CancellationToken.None);
+            Assert.Contains("squill_second", names);
+            Assert.Contains(PostgresFixture.Database, names);
+            Assert.DoesNotContain(names, n => n is "template0" or "template1");
+        }
+        finally
+        {
+            await QueryAsync(connection, "drop database if exists squill_second");
+        }
+    }
 }

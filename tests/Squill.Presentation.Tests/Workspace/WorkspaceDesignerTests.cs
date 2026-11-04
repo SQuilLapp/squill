@@ -344,6 +344,8 @@ public sealed class WorkspaceDesignerTests
             return ValueTask.FromResult<IResultReader>(new FakeReader());
         }
 
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) => ValueTask.FromResult<IReadOnlyList<string>>([]);
+
         public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => ValueTask.FromResult(owner.Schema);
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;

@@ -52,4 +52,10 @@ public sealed class PostgresConnectionStringTests
         Assert.Equal(7, builder.Timeout);
         Assert.Equal(9, builder.CommandTimeout);
     }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void BuildConnectionString_EmptyDatabase_ConnectsToPostgres(string? database) =>
+        Assert.Equal("postgres", new NpgsqlConnectionStringBuilder(PostgresDatabaseProvider.BuildConnectionString(Profile with { Database = database }, null)).Database);
 }

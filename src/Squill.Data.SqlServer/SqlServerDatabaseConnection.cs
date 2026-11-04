@@ -43,5 +43,12 @@ internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int 
         SqlServerSchemaReader.ReadAsync(connection, cancellationToken);
 
     /// <inheritdoc />
+    public async ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken)
+    {
+        await using var reader = await ExecuteAsync("select name from sys.databases where state = 0 and name not in ('master','tempdb','model','msdb') order by 1", [], cancellationToken);
+        return [.. (await reader.ReadAllAsync(256, cancellationToken)).Select(r => (string)r[0]!)];
+    }
+
+    /// <inheritdoc />
     public ValueTask DisposeAsync() => connection.DisposeAsync();
 }

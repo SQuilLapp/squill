@@ -108,6 +108,8 @@ public sealed class QueryTabViewModelTests
             return reader;
         }
 
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) => ValueTask.FromResult<IReadOnlyList<string>>([]);
+
         public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken)
         {
             SchemaReads++;

@@ -52,4 +52,10 @@ public sealed class MySqlConnectionStringTests
         Assert.Equal(7u, builder.ConnectionTimeout);
         Assert.Equal(9u, builder.DefaultCommandTimeout);
     }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void BuildConnectionString_EmptyDatabase_IsAccepted(string? database) =>
+        Assert.Equal("", new MySqlConnectionStringBuilder(MySqlDatabaseProvider.BuildConnectionString(Profile with { Database = database }, null)).Database);
 }

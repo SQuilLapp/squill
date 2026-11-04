@@ -68,4 +68,10 @@ public sealed class SqlServerConnectionStringTests
         Assert.Equal(7, builder.ConnectTimeout);
         Assert.Equal(9, builder.CommandTimeout);
     }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void BuildConnectionString_EmptyDatabase_ConnectsToServerDefault(string? database) =>
+        Assert.Equal("", new SqlConnectionStringBuilder(SqlServerDatabaseProvider.BuildConnectionString(Profile with { Database = database }, null)).InitialCatalog);
 }

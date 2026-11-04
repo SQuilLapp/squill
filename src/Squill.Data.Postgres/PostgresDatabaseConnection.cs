@@ -36,6 +36,13 @@ internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, Np
         PostgresSchemaReader.ReadAsync(connection, cancellationToken);
 
     /// <inheritdoc />
+    public async ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken)
+    {
+        await using var reader = await ExecuteAsync("select datname from pg_database where not datistemplate and datallowconn order by 1", [], cancellationToken);
+        return [.. (await reader.ReadAllAsync(256, cancellationToken)).Select(r => (string)r[0]!)];
+    }
+
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         await connection.DisposeAsync();

@@ -91,4 +91,22 @@ public sealed class SqlServerDatabaseProviderTests(SqlServerFixture server) : IC
         await using var connection = await OpenAsync(Profile() with { CommandTimeoutSeconds = 1 });
         await Assert.ThrowsAnyAsync<Exception>(async () => await QueryAsync(connection, "waitfor delay '00:00:05'"));
     }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ListDatabasesAsync_SecondDatabase_IsListedAndSystemOnesAreNot()
+    {
+        await using var connection = await OpenAsync();
+        await QueryAsync(connection, "drop database if exists squill_second");
+        await QueryAsync(connection, "create database squill_second");
+        try
+        {
+            var names = await connection.ListDatabasesAsync(CancellationToken.None);
+            Assert.Contains("squill_second", names);
+            Assert.DoesNotContain(names, n => n is "master" or "tempdb" or "model" or "msdb");
+        }
+        finally
+        {
+            await QueryAsync(connection, "drop database if exists squill_second");
+        }
+    }
 }
