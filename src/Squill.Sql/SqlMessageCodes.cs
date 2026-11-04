@@ -69,6 +69,27 @@ public static class SqlMessageCodes
     /// <summary>The <c>sql.hover.column.notNullPk</c> message.</summary>
     public const string HoverColumnNotNullPk = "sql.hover.column.notNullPk";
 
+    /// <summary>The <c>sql.hover.column.nullableFk</c> message.</summary>
+    public const string HoverColumnNullableFk = "sql.hover.column.nullableFk";
+
+    /// <summary>The <c>sql.hover.column.notNullFk</c> message.</summary>
+    public const string HoverColumnNotNullFk = "sql.hover.column.notNullFk";
+
+    /// <summary>The <c>sql.hover.column.nullablePkFk</c> message.</summary>
+    public const string HoverColumnNullablePkFk = "sql.hover.column.nullablePkFk";
+
+    /// <summary>The <c>sql.hover.column.notNullPkFk</c> message.</summary>
+    public const string HoverColumnNotNullPkFk = "sql.hover.column.notNullPkFk";
+
+    /// <summary>The <c>sql.hover.viewDefinition</c> message.</summary>
+    public const string HoverViewDefinition = "sql.hover.viewDefinition";
+
+    /// <summary>The <c>sql.hover.function</c> message.</summary>
+    public const string HoverFunction = "sql.hover.function";
+
+    /// <summary>The <c>sql.hover.procedure</c> message.</summary>
+    public const string HoverProcedure = "sql.hover.procedure";
+
     /// <summary>Every code of this class.</summary>
     public static readonly IReadOnlyList<string> All =
     [
@@ -94,5 +115,12 @@ public static class SqlMessageCodes
         HoverColumnNotNull,
         HoverColumnNullablePk,
         HoverColumnNotNullPk,
+        HoverColumnNullableFk,
+        HoverColumnNotNullFk,
+        HoverColumnNullablePkFk,
+        HoverColumnNotNullPkFk,
+        HoverViewDefinition,
+        HoverFunction,
+        HoverProcedure,
     ];
 }

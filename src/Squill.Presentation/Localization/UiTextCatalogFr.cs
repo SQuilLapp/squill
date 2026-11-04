@@ -430,5 +430,13 @@ internal static class UiTextCatalogFr
         ("issue.sql.hover.column.notNull", "`{0}` : {1}, non nul"),
         ("issue.sql.hover.column.nullablePk", "`{0}` : {1}, nullable, PK"),
         ("issue.sql.hover.column.notNullPk", "`{0}` : {1}, non nul, PK"),
+        ("issue.sql.hover.column.nullableFk", "`{0}` : {1}, nullable, FK vers {2}"),
+        ("issue.sql.hover.column.notNullFk", "`{0}` : {1}, non nul, FK vers {2}"),
+        ("issue.sql.hover.column.nullablePkFk", "`{0}` : {1}, nullable, PK, FK vers {2}"),
+        ("issue.sql.hover.column.notNullPkFk", "`{0}` : {1}, non nul, PK, FK vers {2}"),
+        ("issue.sql.hover.viewDefinition.one", "**vue** {1} ({0} colonne) : `{2}`"),
+        ("issue.sql.hover.viewDefinition.other", "**vue** {1} ({0} colonnes) : `{2}`"),
+        ("issue.sql.hover.function", "**fonction** {0} retourne {1}"),
+        ("issue.sql.hover.procedure", "**procédure** {0}"),
     ];
 }

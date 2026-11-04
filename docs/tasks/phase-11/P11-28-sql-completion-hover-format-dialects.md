@@ -1,6 +1,6 @@
 # P11-28 - Completion, hover, signature help and formatter per dialect
 
-Status: todo
+Status: done
 Depends on: P11-27, P11-17, P11-18, P11-19
 
 ## Goal
@@ -16,7 +16,8 @@ Editor intelligence is correct for each dialect on the shared sample schemas: ri
 - New completion features, fuzzy ranking changes.
 
 ## Tasks
-- [ ] Tests, catalog additions, fixes.
+- [x] Tests (`DialectIntelligenceTests`): 15 completion cases, 20 signature-help cases, 4 hover cases and the corpus formatter check per dialect; catalog additions; fixes (completion of `INSERT INTO t (` columns, foreign-key `JOIN ... ON` conditions, stored functions in expressions, hover of foreign keys, view definitions and routines with new `sql.hover.*` codes in the En and Fr catalogs).
+- Deviation: the sample snapshots are built in the test from what the schema readers return (as `SqlCorpusTests` does) instead of JSON resources captured from containers; no provider SQL changed, so the container suites were not run.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green; snapshot resources committed.

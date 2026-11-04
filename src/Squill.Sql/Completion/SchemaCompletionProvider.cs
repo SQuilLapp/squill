@@ -49,6 +49,11 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
                 || previous.Equals("UPDATE", StringComparison.OrdinalIgnoreCase)
                 || (previous == "," && scope.Clause == ClauseKind.From));
 
+        if (qualifiers.Count == 0 && InsertTarget(tokens, end) is var (insertSchema, insertTable) && schema.FindTable(insertSchema, insertTable) is { } target)
+        {
+            return [.. target.Columns.Select(c => new CompletionItem(c.Name, CompletionKind.Field, IdentifierQuoting.Quote(c.Name, request.Dialect), c.DataType, "0" + c.Name, range))];
+        }
+
         if (tablePosition)
         {
             return Tables(schema, qualifiers, request.Dialect, range);
@@ -57,10 +62,64 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
         if (scope.Clause is ClauseKind.Select or ClauseKind.Where or ClauseKind.On or ClauseKind.GroupBy
             or ClauseKind.Having or ClauseKind.OrderBy or ClauseKind.Set)
         {
-            return Columns(schema, scope, qualifiers, request.Dialect, range);
+            var columns = Columns(schema, scope, qualifiers, request.Dialect, range);
+            if (scope.Clause == ClauseKind.On && qualifiers.Count == 0)
+            {
+                columns.InsertRange(0, JoinConditions(schema, scope, request.Dialect, range));
+            }
+
+            return columns;
         }
 
         return [];
+    }
+
+    /// <summary>Recognizes <c>INSERT INTO [schema.]table (a, b, |</c> and returns the target the column list belongs to.</summary>
+    private static (string? Schema, string Table)? InsertTarget(List<(TokenKind Kind, string Text)> tokens, int end)
+    {
+        var i = end - 1;
+        while (i >= 1 && tokens[i].Text == "," && tokens[i - 1].Kind is TokenKind.Identifier or TokenKind.QuotedIdentifier or TokenKind.Keyword)
+        {
+            i -= 2;
+        }
+
+        if (i < 2 || tokens[i].Text != "(" || tokens[i - 1].Kind is not (TokenKind.Identifier or TokenKind.QuotedIdentifier))
+        {
+            return null;
+        }
+
+        var name = Unquote(tokens[i - 1]);
+        var j = i - 2;
+        string? owner = null;
+        if (j >= 1 && tokens[j].Text == "." && tokens[j - 1].Kind is TokenKind.Identifier or TokenKind.QuotedIdentifier)
+        {
+            owner = Unquote(tokens[j - 1]);
+            j -= 2;
+        }
+
+        return j >= 0 && tokens[j].Text.Equals("INTO", StringComparison.OrdinalIgnoreCase) ? (owner, name) : null;
+    }
+
+    /// <summary>Proposes <c>a.fk = b.pk</c> conditions for every foreign key between two visible tables.</summary>
+    private static IEnumerable<CompletionItem> JoinConditions(SchemaSnapshot schema, ScopeInfo scope, DatabaseDialect dialect, TextRange range)
+    {
+        var sources = scope.Sources.Where(s => s.DerivedColumns is null).Select(s => (Source: s, Table: schema.FindTable(s.Schema, s.Name))).Where(x => x.Table is not null).ToList();
+        foreach (var (child, childTable) in sources)
+        {
+            foreach (var fk in childTable!.ForeignKeys)
+            {
+                foreach (var (parent, parentTable) in sources.Where(p => !ReferenceEquals(p.Source, child)
+                    && string.Equals(p.Table!.Name, fk.ReferencedTable, StringComparison.OrdinalIgnoreCase)
+                    && (fk.ReferencedSchema is null || string.Equals(p.Table.Schema, fk.ReferencedSchema, StringComparison.OrdinalIgnoreCase))))
+                {
+                    var left = IdentifierQuoting.Quote(child.Alias ?? child.Name, dialect);
+                    var right = IdentifierQuoting.Quote(parent.Alias ?? parent.Name, dialect);
+                    var text = string.Join(" AND ", fk.Columns.Select((c, i) =>
+                        $"{left}.{IdentifierQuoting.Quote(c, dialect)} = {right}.{IdentifierQuoting.Quote(i < fk.ReferencedColumns.Count ? fk.ReferencedColumns[i] : c, dialect)}"));
+                    yield return new CompletionItem(text, CompletionKind.Snippet, text, fk.Name, "00" + text, range);
+                }
+            }
+        }
     }
 
     private static List<CompletionItem> Tables(SchemaSnapshot schema, List<string> qualifiers, DatabaseDialect dialect, TextRange range)
