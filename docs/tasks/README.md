@@ -220,7 +220,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-28](phase-11/P11-28-sql-completion-hover-format-dialects.md) | Completion, hover, signature help and formatter per dialect | P11-27, P11-17 ... P11-19 | done |
 | [P11-29](phase-11/P11-29-designer-ddl-sqlite.md) | Table designer on SQLite: create and alter matrix | P11-16 | done |
 | [P11-30](phase-11/P11-30-designer-ddl-servers.md) | Table designer DDL on PostgreSQL, MySQL and SQL Server | P11-02 ... P11-04 | done |
-| [P11-31](phase-11/P11-31-er-diagram-engines.md) | ER diagram on real schemas of every engine | P11-02 ... P11-04, P11-16 | todo |
+| [P11-31](phase-11/P11-31-er-diagram-engines.md) | ER diagram on real schemas of every engine | P11-02 ... P11-04, P11-16 | done |
 | [P11-32](phase-11/P11-32-export-engines.md) | Result export verified per engine | P11-25 | todo |
 | [P11-33](phase-11/P11-33-grid-edit-commit-engines.md) | Grid edit and commit through the Presentation layer on every engine | P11-02 ... P11-04, P11-16, P11-26 | todo |
 | [P11-34](phase-11/P11-34-terminal-engine-clients.md) | Terminal: native client launch per engine | P11-06 | todo |

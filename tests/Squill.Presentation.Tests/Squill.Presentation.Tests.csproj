@@ -11,4 +11,8 @@
     <ProjectReference Include="..\..\src\Squill.Presentation\Squill.Presentation.csproj" />
     <ProjectReference Include="..\..\src\Squill.Data.Sqlite\Squill.Data.Sqlite.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/ErStressScenario.cs" Link="Diagram/ErStressScenario.cs" />
+    <Content Include="Diagram/Snapshots/*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
