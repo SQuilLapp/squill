@@ -32,7 +32,7 @@ public static class SqlDiagnosticsProvider
             {
                 switch (r.Node)
                 {
-                    case TableRef t when IsUnknownTable(schema, t, r.Ctes):
+                    case TableRef { IsOpaque: false } t when IsUnknownTable(schema, t, r.Ctes):
                         result.Add(new SqlDiagnostic(
                             NameRange(text, t, t.Name, t.Schema?.Length ?? 0, last: false), DiagnosticSeverity.Error,
                             $"Unknown table '{t.Name}'", "SQL1001", SqlMessageCodes.UnknownTable, [t.Name]));
@@ -52,6 +52,12 @@ public static class SqlDiagnosticsProvider
     private static bool IsUnknownTable(SchemaSnapshot schema, TableRef t, IReadOnlyList<string> ctes)
     {
         if (t.Schema is null && ctes.Any(c => string.Equals(c, t.Name, StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+
+        // T-SQL temporary tables are created by the script itself
+        if (t.Name.StartsWith('#'))
         {
             return false;
         }

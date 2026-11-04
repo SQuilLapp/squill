@@ -24,8 +24,8 @@ internal sealed class MySqlResultReader : IResultReader
         _reader = reader;
         _messages = messages;
         _detach = detach;
-        Columns = ReadColumns(reader);
         _bitWidths = ReadBitWidths(reader);
+        Columns = ReadColumns(reader, _bitWidths);
     }
 
     // BIT(n) columns read as ulong; the width tells a flag (BIT(1) -> bool) from a bit string (BIT(n) -> big-endian bytes, shown as hex).
@@ -52,11 +52,16 @@ internal sealed class MySqlResultReader : IResultReader
         return bytes;
     }
 
-    private static ColumnInfo[] ReadColumns(MySqlDataReader reader)
+    // A BIT column is reported with the type ReadValue converts it to, so a typed cell parses back into a value the driver accepts.
+    private static ColumnInfo[] ReadColumns(MySqlDataReader reader, int[] bitWidths)
     {
         var columns = new ColumnInfo[reader.FieldCount];
         for (var i = 0; i < columns.Length; i++)
-            columns[i] = new ColumnInfo(reader.GetName(i), reader.GetDataTypeName(i), reader.GetFieldType(i), true, i);
+        {
+            var type = bitWidths[i] == 0 ? reader.GetFieldType(i) : bitWidths[i] == 1 ? typeof(bool) : typeof(byte[]);
+            columns[i] = new ColumnInfo(reader.GetName(i), reader.GetDataTypeName(i), type, true, i);
+        }
+
         return columns;
     }
 
@@ -98,8 +103,8 @@ internal sealed class MySqlResultReader : IResultReader
             _finished = true;
             return false;
         }
-        Columns = ReadColumns(_reader);
         _bitWidths = ReadBitWidths(_reader);
+        Columns = ReadColumns(_reader, _bitWidths);
         _finished = false;
         return true;
     }

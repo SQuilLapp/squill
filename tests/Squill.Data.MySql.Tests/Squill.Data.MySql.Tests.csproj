@@ -20,5 +20,8 @@
     <Compile Include="../Shared/CancelScenario.cs" Link="CancelScenario.cs" />
     <Compile Include="../Shared/MultiResultScenario.cs" Link="MultiResultScenario.cs" />
     <Content Include="../Shared/SampleSchema/mysql.sql" Link="SampleSchema/mysql.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../Shared/SqlCorpusScenario.cs" Link="SqlCorpusScenario.cs" />
+    <Compile Include="../Shared/SqlCorpus.cs" Link="SqlCorpus.cs" />
+    <Content Include="../Shared/SqlCorpus/*.sql" Link="SqlCorpus/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

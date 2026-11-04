@@ -81,6 +81,13 @@ public abstract class SqlTokenizerBase : ISqlTokenizer
             return Quoted(TokenKind.QuotedIdentifier, text, pos, '"');
         }
 
+        // X'41' and B'101' (also E'..' handled by PostgreSQL): a string prefixed by a one-letter radix tag
+        if (c is 'x' or 'X' or 'b' or 'B' && next == '\'')
+        {
+            var quoted = Quoted(TokenKind.StringLiteral, text, pos + 1, '\'');
+            return new Token(TokenKind.StringLiteral, pos, quoted.End - pos);
+        }
+
         if (char.IsAsciiDigit(c) || (c == '.' && char.IsAsciiDigit(next)))
         {
             return new Token(TokenKind.NumberLiteral, pos, ReadNumber(text, pos));
@@ -99,12 +106,32 @@ public abstract class SqlTokenizerBase : ISqlTokenizer
             return new Token(TokenKind.Punctuation, pos, 1);
         }
 
-        if ((c == '<' && next is '=' or '>') || (c is '>' or '!' && next == '=') || (c == '|' && next == '|'))
+        var length = OperatorLength(text, pos);
+        if (length > 0)
         {
-            return new Token(TokenKind.Operator, pos, 2);
+            return new Token(TokenKind.Operator, pos, length);
         }
 
-        return new Token(c is '+' or '-' or '*' or '/' or '%' or '=' or '<' or '>' ? TokenKind.Operator : TokenKind.Unknown, pos, 1);
+        return new Token(c is '+' or '-' or '*' or '/' or '%' or '=' or '<' or '>' or '~' or '&' or '|' or '^' ? TokenKind.Operator : TokenKind.Unknown, pos, 1);
+    }
+
+    private static readonly string[] MultiCharOperators =
+    [
+        "->>", "<=>", "!~*", "->", "==", "<>", "<=", ">=", "!=", "||", "@>", "<@", "~*", "!~", "<<", ">>", "&&", ":=",
+    ];
+
+    // Length of the multi-character operator at pos (longest first), or 0.
+    private static int OperatorLength(string text, int pos)
+    {
+        foreach (var op in MultiCharOperators)
+        {
+            if (string.CompareOrdinal(text, pos, op, 0, op.Length) == 0)
+            {
+                return op.Length;
+            }
+        }
+
+        return 0;
     }
 
     private static Token Run(TokenKind kind, string text, int pos, Func<char, bool> accept)
@@ -181,6 +208,17 @@ public abstract class SqlTokenizerBase : ISqlTokenizer
 
     private static int ReadNumber(string text, int pos)
     {
+        if (text[pos] == '0' && pos + 1 < text.Length && text[pos + 1] is 'x' or 'X' && pos + 2 < text.Length && char.IsAsciiHexDigit(text[pos + 2]))
+        {
+            var j = pos + 2;
+            while (j < text.Length && char.IsAsciiHexDigit(text[j]))
+            {
+                j++;
+            }
+
+            return j - pos;
+        }
+
         var i = SkipDigits(text, pos);
         if (i < text.Length && text[i] == '.')
         {

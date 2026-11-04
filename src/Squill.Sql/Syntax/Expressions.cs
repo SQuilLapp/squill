@@ -44,7 +44,8 @@ public sealed record StarExpr(string? Qualifier, int Start, int Length) : Expres
 /// <param name="Distinct">Whether the argument list starts with <c>DISTINCT</c>.</param>
 /// <param name="Start">Zero-based offset of the first character.</param>
 /// <param name="Length">Number of characters.</param>
-public sealed record FunctionCall(string Name, IReadOnlyList<Expression> Args, bool Distinct, int Start, int Length)
+/// <param name="Extra">Expressions that qualify the call without being arguments: <c>ORDER BY</c> inside an aggregate, <c>FILTER (WHERE ...)</c>, and the <c>PARTITION BY</c> and <c>ORDER BY</c> of an <c>OVER</c> clause; <see langword="null"/> when there are none.</param>
+public sealed record FunctionCall(string Name, IReadOnlyList<Expression> Args, bool Distinct, int Start, int Length, IReadOnlyList<Expression>? Extra = null)
     : Expression(Start, Length);
 
 /// <summary>A binary operation; also the <c>IN</c>, <c>BETWEEN</c>, <c>IS</c> and <c>LIKE</c> forms.</summary>

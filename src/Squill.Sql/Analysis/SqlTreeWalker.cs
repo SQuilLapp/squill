@@ -78,7 +78,12 @@ internal static class SqlTreeWalker
 
                 break;
             case UpdateStatement u:
-                Source(u.Target, ctes, NoAliases, refs);
+                // T-SQL "UPDATE a SET ... FROM t a JOIN ...": the target may be an alias the FROM declares
+                if (u.From is null || u.Target.Schema is not null || !Declares(u.From, u.Target.Name))
+                {
+                    Source(u.Target, ctes, NoAliases, refs);
+                }
+
                 foreach (var a in u.Set)
                 {
                     Expr(a.Value, ctes, NoAliases, refs);
@@ -101,6 +106,14 @@ internal static class SqlTreeWalker
                 break;
         }
     }
+
+    private static bool Declares(TableSource source, string name) => source switch
+    {
+        TableRef t => string.Equals(t.Alias ?? t.Name, name, StringComparison.OrdinalIgnoreCase),
+        SubquerySource s => string.Equals(s.Alias, name, StringComparison.OrdinalIgnoreCase),
+        JoinSource j => Declares(j.Left, name) || Declares(j.Right, name),
+        _ => false,
+    };
 
     private static void Source(TableSource? source, IReadOnlyList<string> ctes, IReadOnlySet<string> aliases, List<TreeRef> refs)
     {
@@ -138,7 +151,7 @@ internal static class SqlTreeWalker
                 Expr(u.Operand, ctes, aliases, refs);
                 break;
             case FunctionCall f:
-                foreach (var a in f.Args)
+                foreach (var a in f.Args.Concat(f.Extra ?? []))
                 {
                     Expr(a, ctes, aliases, refs);
                 }

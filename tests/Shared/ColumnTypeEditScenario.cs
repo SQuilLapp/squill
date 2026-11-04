@@ -21,8 +21,9 @@ public static class ColumnTypeEditScenario
         foreach (var (column, dataType, text) in cases)
         {
             await RunAsync(connection, $"delete from {table}");
-            await using var meta = await connection.ExecuteAsync($"select {SqlQuoting.Quote(column, dialect)} from {table}", [], CancellationToken.None);
-            var info = meta.Columns[0];
+            ColumnInfo info;
+            await using (var meta = await connection.ExecuteAsync($"select {SqlQuoting.Quote(column, dialect)} from {table}", [], CancellationToken.None))
+                info = meta.Columns[0]; // the reader must be closed before the next command on the same connection
             Assert.True(CellValueParser.TryParse(text, info, out var value, out var error), $"{column}: {error}");
 
             var def = new ColumnDefinition(column, dataType, true, false, null);

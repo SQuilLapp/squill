@@ -27,6 +27,10 @@ public sealed class MySqlConnectionStringTests
     [Fact]
     public void BuildConnectionString_ExplicitPort_IsKept() =>
         Assert.Equal(3307u, new MySqlConnectionStringBuilder(MySqlDatabaseProvider.BuildConnectionString(Profile with { Port = 3307 }, null)).Port);
+    [Fact]
+    public void BuildConnectionString_AllowsUserVariables() =>
+        Assert.True(new MySqlConnectionStringBuilder(MySqlDatabaseProvider.BuildConnectionString(Profile, null)).AllowUserVariables);
+
 
     [Theory]
     [InlineData(null)]

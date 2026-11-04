@@ -26,6 +26,7 @@ public sealed class MySqlDatabaseProvider : IDatabaseProvider
             ConnectionTimeout = (uint)profile.ConnectTimeoutSeconds,
             DefaultCommandTimeout = (uint)profile.CommandTimeoutSeconds,
             ConvertZeroDateTime = true,
+            AllowUserVariables = true, // SET @x = 1 and @x := 2 are ordinary MySQL; without it the driver reads @x as a missing parameter
         };
         if (profile.Tls != TlsMode.Default)
             builder.SslMode = profile.Tls switch

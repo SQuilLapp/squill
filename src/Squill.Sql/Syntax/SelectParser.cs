@@ -204,6 +204,11 @@ internal sealed class SelectParser(SqlParserCore core)
             core.Match("ALL");
         }
 
+        while (core.Dialect == DatabaseDialect.MySql && (core.Match("SQL_CALC_FOUND_ROWS") || core.Match("SQL_NO_CACHE") || core.Match("SQL_SMALL_RESULT")
+            || core.Match("SQL_BIG_RESULT") || core.Match("HIGH_PRIORITY") || core.Match("STRAIGHT_JOIN")))
+        {
+        }
+
         Expression? top = null;
         if (core.Dialect == DatabaseDialect.SqlServer && core.Match("TOP"))
         {
@@ -216,6 +221,12 @@ internal sealed class SelectParser(SqlParserCore core)
         }
 
         var items = ParseItems();
+        if (core.Dialect != DatabaseDialect.MySql && core.Match("INTO"))
+        {
+            // SELECT ... INTO target: the new table is not looked up
+            ParseNamedTable(allowCall: false, allowAlias: false);
+        }
+
         var from = core.Match("FROM") ? ParseFrom() : null;
         var where = core.Match("WHERE") ? _expressions.ParseExpression() : null;
         var groupBy = new List<Expression>();
@@ -230,6 +241,22 @@ internal sealed class SelectParser(SqlParserCore core)
         }
 
         var having = core.Match("HAVING") ? _expressions.ParseExpression() : null;
+        if (core.Match("WINDOW"))
+        {
+            // named window definitions: WINDOW w AS (...), x AS (...)
+            do
+            {
+                core.Next();
+                core.Match("AS");
+                if (core.MatchPunct('('))
+                {
+                    core.SkipToCloseParen();
+                    core.Expect(')');
+                }
+            }
+            while (core.MatchPunct(','));
+        }
+
         var orderBy = new List<OrderItem>();
         if (core.Match("ORDER"))
         {
@@ -279,8 +306,45 @@ internal sealed class SelectParser(SqlParserCore core)
             core.Match("ONLY");
         }
 
+        SkipTrailingClauses();
         return new SelectStatement([], distinct, items, from, where, groupBy, having, orderBy, limit, offset, top,
             start, core.LastEnd - start);
+    }
+
+    // Clauses after the row limit that are not modeled: FOR UPDATE / FOR SHARE / FOR XML, LOCK IN SHARE MODE and OPTION (...).
+    private void SkipTrailingClauses()
+    {
+        while (true)
+        {
+            if (core.IsWord(core.Peek(), "OPTION") && core.IsPunct(core.Peek(1), '('))
+            {
+                core.Next();
+                core.Next();
+                core.SkipToCloseParen();
+                core.Expect(')');
+            }
+            else if (core.IsWord(core.Peek(), "FOR") || core.IsWord(core.Peek(), "LOCK"))
+            {
+                core.Next();
+                var depth = 0;
+                while (!core.AtEnd)
+                {
+                    var token = core.Peek();
+                    if (depth == 0 && (core.IsPunct(token, ')') || core.IsPunct(token, ';') || core.IsWord(token, "UNION") || core.IsWord(token, "INTERSECT")
+                        || core.IsWord(token, "EXCEPT") || core.IsWord(token, "OPTION")))
+                    {
+                        break;
+                    }
+
+                    depth += core.IsPunct(token, '(') ? 1 : core.IsPunct(token, ')') ? -1 : 0;
+                    core.Next();
+                }
+            }
+            else
+            {
+                return;
+            }
+        }
     }
 
     private void ExpectBy()
@@ -369,9 +433,13 @@ internal sealed class SelectParser(SqlParserCore core)
 
     /// <summary>Parses a table source with its joins.</summary>
     /// <returns>The source node.</returns>
-    public TableSource ParseFrom()
+    public TableSource ParseFrom() => ContinueJoins(ParsePrimarySource());
+
+    /// <summary>Parses the joins that follow an already parsed source.</summary>
+    /// <param name="left">The first source.</param>
+    /// <returns><paramref name="left"/> itself when no join follows, otherwise the join tree.</returns>
+    public TableSource ContinueJoins(TableSource left)
     {
-        var left = ParsePrimarySource();
         while (true)
         {
             var kind = PeekJoin(out var tokens);
@@ -410,6 +478,27 @@ internal sealed class SelectParser(SqlParserCore core)
             return JoinKind.Comma;
         }
 
+        if (core.IsWord(core.Peek(), "STRAIGHT_JOIN"))
+        {
+            return JoinKind.Inner;
+        }
+
+        // T-SQL: CROSS APPLY and OUTER APPLY
+        if (core.Dialect == DatabaseDialect.SqlServer && core.IsWord(core.Peek(1), "APPLY"))
+        {
+            if (core.IsWord(core.Peek(), "CROSS"))
+            {
+                tokens = 2;
+                return JoinKind.Cross;
+            }
+
+            if (core.IsWord(core.Peek(), "OUTER"))
+            {
+                tokens = 2;
+                return JoinKind.Left;
+            }
+        }
+
         var count = 0;
         if (core.IsWord(core.Peek(count), "NATURAL"))
         {
@@ -445,6 +534,11 @@ internal sealed class SelectParser(SqlParserCore core)
 
     private TableSource ParsePrimarySource()
     {
+        if (core.IsWord(core.Peek(), "LATERAL") && (core.IsPunct(core.Peek(1), '(') || core.Peek(1).Kind is TokenKind.Identifier or TokenKind.QuotedIdentifier))
+        {
+            core.Next();
+        }
+
         var first = core.Peek();
         if (core.MatchPunct('('))
         {
@@ -464,6 +558,29 @@ internal sealed class SelectParser(SqlParserCore core)
         return ParseNamedTable(allowCall: true, allowAlias: true);
     }
 
+    // T-SQL WITH (NOLOCK, ...), SQLite INDEXED BY name / NOT INDEXED: not modeled.
+    private void SkipTableHint()
+    {
+        if (core.Dialect == DatabaseDialect.SqlServer && core.IsWord(core.Peek(), "WITH") && core.IsPunct(core.Peek(1), '('))
+        {
+            core.Next();
+            core.Next();
+            core.SkipToCloseParen();
+            core.Expect(')');
+        }
+        else if (core.Dialect == DatabaseDialect.Sqlite && core.IsWord(core.Peek(), "INDEXED") && core.IsWord(core.Peek(1), "BY"))
+        {
+            core.Next();
+            core.Next();
+            core.Next();
+        }
+        else if (core.Dialect == DatabaseDialect.Sqlite && core.IsWord(core.Peek(), "NOT") && core.IsWord(core.Peek(1), "INDEXED"))
+        {
+            core.Next();
+            core.Next();
+        }
+    }
+
     /// <summary>Parses <c>[schema.]name [[AS] alias]</c>; the name is empty (with a diagnostic) when missing.</summary>
     /// <param name="allowCall">Whether a following parenthesized list is a table function call to skip.</param>
     /// <param name="allowAlias">Whether an alias may follow.</param>
@@ -472,6 +589,7 @@ internal sealed class SelectParser(SqlParserCore core)
     {
         var first = core.Peek();
         var parts = new List<string>();
+        var opaque = false;
         while (true)
         {
             var token = core.Peek();
@@ -480,6 +598,13 @@ internal sealed class SelectParser(SqlParserCore core)
             {
                 core.Next();
                 parts.Add(core.NameOf(token));
+            }
+            else if (token.Kind == TokenKind.Parameter && parts.Count == 0 && core.Dialect == DatabaseDialect.SqlServer)
+            {
+                // a T-SQL table variable
+                core.Next();
+                parts.Add(core.NameOf(token));
+                opaque = true;
             }
             else
             {
@@ -507,10 +632,25 @@ internal sealed class SelectParser(SqlParserCore core)
             core.Next();
             core.SkipToCloseParen();
             core.Expect(')');
+            opaque = true;
         }
 
-        var alias = allowAlias && parts[^1].Length > 0 ? ParseAlias(allowStringAfterAs: false) : null;
+        var sqliteIndexHint = core.Dialect == DatabaseDialect.Sqlite && core.IsWord(core.Peek(), "INDEXED") && core.IsWord(core.Peek(1), "BY");
+        var alias = allowAlias && parts[^1].Length > 0 && !sqliteIndexHint ? ParseAlias(allowStringAfterAs: false) : null;
+        if (alias is not null && core.IsPunct(core.Peek(), '('))
+        {
+            // column alias list: generate_series(1, 3) AS g(i)
+            core.Next();
+            core.SkipToCloseParen();
+            core.Expect(')');
+        }
+
+        if (allowAlias)
+        {
+            SkipTableHint();
+        }
+
         var start = parts.Count == 1 && parts[0].Length == 0 ? core.LastEnd : first.Start;
-        return new TableRef(parts.Count > 1 ? parts[^2] : null, parts[^1], alias, start, core.LastEnd - start);
+        return new TableRef(parts.Count > 1 ? parts[^2] : null, parts[^1], alias, start, core.LastEnd - start, opaque);
     }
 }

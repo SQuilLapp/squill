@@ -39,7 +39,14 @@ internal sealed class PostgresResultReader : IResultReader
     {
         try
         {
-            return reader.GetFieldType(i);
+            var type = reader.GetFieldType(i);
+            // The slim data source reports every array as System.Array; give the two kinds the grid can edit their concrete type.
+            return type != typeof(Array) ? type : reader.GetDataTypeName(i) switch
+            {
+                "integer[]" => typeof(int[]),
+                "text[]" or "character varying[]" => typeof(string[]),
+                _ => type,
+            };
         }
         catch (InvalidCastException)
         {

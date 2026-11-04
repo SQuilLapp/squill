@@ -1,6 +1,6 @@
 # P11-27 - Dialect corpus: parser and diagnostics against real servers
 
-Status: todo
+Status: done
 Depends on: P11-02, P11-03, P11-04
 
 ## Goal
@@ -16,7 +16,7 @@ For each dialect, a corpus of valid statements that real servers accept must pro
 - Completion, hover, formatting (P11-28).
 
 ## Tasks
-- [ ] Corpus files (valid and invalid), tests A and B, parser fixes.
+- [x] Corpus files (valid and invalid), tests A and B, parser fixes.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; default test run green; `rtk pwsh eng/run-docker-tests.ps1 -Engine all` green; no container left.
