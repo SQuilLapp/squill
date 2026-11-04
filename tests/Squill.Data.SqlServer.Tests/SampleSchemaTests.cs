@@ -42,6 +42,8 @@ public sealed class SampleSchemaTests(SqlServerFixture server) : IClassFixture<S
             ["all_types", "customers", "fk_actions", "fk_targets", "fk_targets_b", "fk_targets_c", "fk_targets_d", "no_pk", "order_items", "order_totals", "orders"],
             snapshot.Tables.Where(t => t.Schema == schema).Select(t => t.Name).Order());
         Assert.Equal(TableKind.View, snapshot.FindTable(schema, "order_totals")!.Kind);
+        Assert.Equal(["add_numbers", "customer_orders", "touch_customers"], snapshot.Routines.Where(r => r.Schema == schema).Select(r => r.Name).Order());
+        Assert.Single(snapshot.Triggers, t => t.Schema == schema && t.Name == "orders_stamp");
 
         Assert.Equal(["order_id", "line_no"], snapshot.FindTable(schema, "order_items")!.Columns.Where(c => c.IsPrimaryKey).Select(c => c.Name));
         Assert.DoesNotContain(snapshot.FindTable(schema, "no_pk")!.Columns, c => c.IsPrimaryKey);

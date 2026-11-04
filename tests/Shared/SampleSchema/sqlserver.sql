@@ -1,6 +1,8 @@
 -- SQuilL sample schema for SQL Server 2022. Idempotent: safe to run twice.
 -- Batches are separated by lines holding only GO (not a T-SQL statement: the loader of the tests splits on them).
 drop view if exists sample.order_totals;
+drop function if exists sample.add_numbers, sample.customer_orders;
+drop procedure if exists sample.touch_customers;
 drop table if exists sample.all_types, sample.fk_actions, sample.fk_targets, sample.fk_targets_b, sample.fk_targets_c, sample.fk_targets_d, sample.no_pk, sample.order_items, sample.orders, sample.customers;
 GO
 drop schema if exists sample;
@@ -80,3 +82,11 @@ create table sample.all_types (
     c_rowversion rowversion,
     c_identity int identity(1, 1)
 );
+GO
+create function sample.add_numbers(@a int, @b int) returns int as begin return @a + @b; end;
+GO
+create function sample.customer_orders(@customer_id int) returns table as return select id, total from sample.orders where customer_id = @customer_id;
+GO
+create procedure sample.touch_customers @min_id int, @max_id int as update sample.customers set name = name where id between @min_id and @max_id;
+GO
+create trigger sample.orders_stamp on sample.orders after insert as begin set nocount on; end;

@@ -8,6 +8,9 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
     private static readonly string[] Setup =
     [
         "drop view if exists dbo.person_nick",
+        "drop function if exists dbo.add_two",
+        "drop function if exists dbo.person_ids",
+        "drop procedure if exists dbo.bump",
         "drop table if exists dbo.actions",
         "drop table if exists dbo.ident",
         "drop table if exists dbo.named_pk",
@@ -40,6 +43,10 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
         "create unique index person_tenant_nick on dbo.person (tenant, nick)",
         "create index person_country on dbo.person (country)",
         "create view dbo.person_nick as select id, nick from dbo.person",
+        "create function dbo.add_two(@a int, @b nvarchar(10)) returns int as begin return @a + 1; end",
+        "create function dbo.person_ids(@tenant int) returns table as return select id from dbo.person where tenant = @tenant",
+        "create procedure dbo.bump @n int, @total int output as set @total = @n + 1",
+        "create trigger dbo.person_stamp on dbo.person instead of insert, update as begin set nocount on; end",
     ];
 
     [Theory]
@@ -142,5 +149,36 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
         Assert.Equal("pk_named", snapshot.FindTable("dbo", "named_pk")!.PrimaryKeyName);
         Assert.StartsWith("PK__", snapshot.FindTable("dbo", "ident")!.PrimaryKeyName);
         Assert.Null(snapshot.FindTable("dbo", "person_nick")!.PrimaryKeyName);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_ViewDefinition_IsFilledOnViewsOnly()
+    {
+        var snapshot = await ReadAsync();
+        Assert.Contains("dbo.person", snapshot.FindTable("dbo", "person_nick")!.Definition);
+        Assert.Null(snapshot.FindTable("dbo", "person")!.Definition);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_Routines_HaveSignaturesReturnTypesAndDefinitions()
+    {
+        var routines = (await ReadAsync()).Routines.Where(r => r.Schema == "dbo").ToList();
+        Assert.Equal(["add_two", "bump", "person_ids"], routines.Select(r => r.Name));
+        var scalar = routines.Single(r => r.Name == "add_two");
+        Assert.Equal((RoutineKind.Function, "add_two(@a int, @b nvarchar(10))", "int"), (scalar.Kind, scalar.Signature, scalar.ReturnType));
+        Assert.Contains("create function dbo.add_two", scalar.Definition, StringComparison.OrdinalIgnoreCase);
+        var table = routines.Single(r => r.Name == "person_ids");
+        Assert.Equal((RoutineKind.Function, "person_ids(@tenant int)", "TABLE"), (table.Kind, table.Signature, table.ReturnType));
+        var procedure = routines.Single(r => r.Name == "bump");
+        Assert.Equal((RoutineKind.Procedure, "bump(@n int, @total int)"), (procedure.Kind, procedure.Signature));
+        Assert.Null(procedure.ReturnType);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_Triggers_HaveTimingEventsAndDefinition()
+    {
+        var trigger = Assert.Single((await ReadAsync()).Triggers, t => t.Schema == "dbo");
+        Assert.Equal(("person", "person_stamp", "INSTEAD OF", "INSERT OR UPDATE"), (trigger.Table, trigger.Name, trigger.Timing, trigger.Events));
+        Assert.Contains("instead of insert", trigger.Definition, StringComparison.OrdinalIgnoreCase);
     }
 }

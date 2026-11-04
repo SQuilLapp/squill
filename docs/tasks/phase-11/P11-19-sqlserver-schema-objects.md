@@ -1,6 +1,6 @@
 # P11-19 - Data.SqlServer: routines, triggers, view definitions
 
-Status: todo
+Status: done
 Depends on: P11-15, P11-04
 
 ## Goal
@@ -16,7 +16,7 @@ The SQL Server reader returns functions, stored procedures, triggers and view de
 - UI, CLR objects, synonyms, sequences.
 
 ## Tasks
-- [ ] Queries, mapping, tests, sample schema update.
+- [x] Queries, mapping, tests, sample schema update.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; default test run green; `rtk pwsh eng/run-docker-tests.ps1 -Engine sqlserver` green; no container left.
