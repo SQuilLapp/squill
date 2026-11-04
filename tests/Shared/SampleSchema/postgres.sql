@@ -45,6 +45,15 @@ create view sample.order_totals as
     from sample.customers c left join sample.orders o on o.customer_id = c.id
     group by c.id, c.name;
 
+create materialized view sample.customer_counts as select count(*) as customers from sample.customers;
+
+create function sample.add_numbers(a integer, b integer) returns integer language sql as 'select a + b';
+create function sample.add_numbers(a numeric, b numeric) returns numeric language sql as 'select a + b';
+create procedure sample.touch_customers() language sql as 'update sample.customers set name = name';
+
+create function sample.stamp_order() returns trigger language plpgsql as 'begin return new; end';
+create trigger orders_stamp before insert or update on sample.orders for each row execute function sample.stamp_order();
+
 create table sample.all_types (
     c_smallint smallint,
     c_integer integer,

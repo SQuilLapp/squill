@@ -27,9 +27,12 @@ public sealed class SampleSchemaTests(PostgresFixture server) : IClassFixture<Po
         var snapshot = await connection.ReadSchemaAsync(CancellationToken.None);
         var sample = snapshot.Tables.Where(t => t.Schema == "sample").ToList();
         Assert.Equal(
-            ["all_types", "customers", "fk_actions", "fk_targets", "no_pk", "order_items", "order_totals", "orders"],
+            ["all_types", "customer_counts", "customers", "fk_actions", "fk_targets", "no_pk", "order_items", "order_totals", "orders"],
             sample.Select(t => t.Name).Order());
         Assert.Equal(TableKind.View, snapshot.FindTable("sample", "order_totals")!.Kind);
+        Assert.Equal(TableKind.MaterializedView, snapshot.FindTable("sample", "customer_counts")!.Kind);
+        Assert.Equal(3, snapshot.Routines.Count(r => r.Schema == "sample" && r.Name is "add_numbers" or "touch_customers"));
+        Assert.Equal("orders_stamp", Assert.Single(snapshot.Triggers, t => t.Schema == "sample").Name);
 
         Assert.Equal(["order_id", "line_no"], snapshot.FindTable("sample", "order_items")!.Columns.Where(c => c.IsPrimaryKey).Select(c => c.Name));
         Assert.DoesNotContain(snapshot.FindTable("sample", "no_pk")!.Columns, c => c.IsPrimaryKey);
