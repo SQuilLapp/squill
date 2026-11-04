@@ -104,7 +104,11 @@ public sealed partial class SidebarView : UserControl
 
     private void OnTreeDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (_workspace is not null && Tree.SelectedItem is ExplorerNode node)
+        if (_workspace is null || Tree.SelectedItem is not ExplorerNode node)
+            return;
+        if (node.Kind is ExplorerNodeKind.View or ExplorerNodeKind.MaterializedView or ExplorerNodeKind.Function or ExplorerNodeKind.Procedure or ExplorerNodeKind.Trigger)
+            _workspace.Explorer.OpenDefinitionCommand.Execute(node);
+        else
             _workspace.Explorer.ActivateCommand.Execute(node);
     }
 
@@ -138,7 +142,12 @@ public sealed partial class SidebarView : UserControl
         else if (node.Kind == ExplorerNodeKind.Table)
         {
             Add(UiText.Get("explorer.designTable"), () => explorer.DesignCommand.Execute(node));
+            Add(UiText.Get("explorer.scriptCreateTable"), () => explorer.ScriptCreateTableCommand.Execute(node));
             Add(UiText.Get("explorer.dropTable"), () => explorer.DropCommand.Execute(node));
+        }
+        else if (node.Kind is ExplorerNodeKind.View or ExplorerNodeKind.MaterializedView or ExplorerNodeKind.Function or ExplorerNodeKind.Procedure or ExplorerNodeKind.Trigger)
+        {
+            Add(UiText.Get("explorer.openDefinition"), () => explorer.OpenDefinitionCommand.Execute(node));
         }
         else
         {

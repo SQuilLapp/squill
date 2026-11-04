@@ -16,6 +16,10 @@ public static class ExplorerGlyphs
         ExplorerNodeKind.Column => "c",
         ExplorerNodeKind.Index => "i",
         ExplorerNodeKind.ForeignKey => "fk",
+        ExplorerNodeKind.MaterializedView => "mv",
+        ExplorerNodeKind.Function => "fn",
+        ExplorerNodeKind.Procedure => "pr",
+        ExplorerNodeKind.Trigger => "tr",
         _ => ">",
     };
 
@@ -53,7 +57,8 @@ public static class ExplorerGlyphs
     /// <param name="kind">The node kind.</param>
     /// <returns>The visibility.</returns>
     public static Visibility ShowPlain(ExplorerNodeKind kind) =>
-        Show(kind is ExplorerNodeKind.Column or ExplorerNodeKind.Index or ExplorerNodeKind.ForeignKey);
+        Show(kind is ExplorerNodeKind.Column or ExplorerNodeKind.Index or ExplorerNodeKind.ForeignKey
+            or ExplorerNodeKind.MaterializedView or ExplorerNodeKind.Function or ExplorerNodeKind.Procedure or ExplorerNodeKind.Trigger);
 
     /// <summary>Draws connection titles semibold and the objects regular.</summary>
     /// <param name="kind">The node kind.</param>

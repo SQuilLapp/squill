@@ -210,7 +210,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-18](phase-11/P11-18-mysql-schema-objects.md) | Data.MySql: routines, triggers, view definitions | P11-15, P11-03 | done |
 | [P11-19](phase-11/P11-19-sqlserver-schema-objects.md) | Data.SqlServer: routines, triggers, view definitions | P11-15, P11-04 | done |
 | [P11-20](phase-11/P11-20-presentation-explorer-objects.md) | Presentation: routines, triggers and open definition in the explorer | P11-15 | done |
-| [P11-21](phase-11/P11-21-winui-explorer-objects.md) | WinUI head: explorer glyphs and menu for routines, triggers, definitions | P11-20 | todo |
+| [P11-21](phase-11/P11-21-winui-explorer-objects.md) | WinUI head: explorer glyphs and menu for routines, triggers, definitions | P11-20 | done |
 | [P11-22](phase-11/P11-22-avalonia-explorer-objects.md) | Avalonia head: explorer glyphs and menu for routines, triggers, definitions | P11-20 | todo |
 | [P11-23](phase-11/P11-23-data-list-databases.md) | Data: list the databases of a server | P11-02 ... P11-04 | todo |
 | [P11-24](phase-11/P11-24-presentation-database-switch.md) | Presentation: browse other databases of a connection | P11-23 | todo |

@@ -1,6 +1,6 @@
 # P11-21 - WinUI head: explorer glyphs and menu for routines, triggers, definitions
 
-Status: todo
+Status: done
 Depends on: P11-20
 
 ## Goal
@@ -15,7 +15,7 @@ The WinUI explorer draws the new node kinds and offers "Open definition" and "Sc
 - Avalonia (P11-22).
 
 ## Tasks
-- [ ] Glyphs, menu, double-click, captures `en` and `fr`.
+- [x] Glyphs, menu, double-click (captures `en`/`fr` not taken, see report).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green; WinUI AOT publish with zero IL2xxx/IL3xxx warnings.
