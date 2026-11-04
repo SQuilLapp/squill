@@ -135,6 +135,8 @@ internal static class UiTextCatalogFr
         ("results.exportFailed", "Export impossible"),
         ("results.rowsLoading", "Les lignes sont encore en cours de chargement"),
         ("results.columnReadOnly", "Cette colonne est en lecture seule"),
+        ("results.columnGenerated", "Cette colonne est calculée par la base de données et ne peut pas être modifiée"),
+        ("results.columnTypeUnsupported", "Ce type de colonne ne peut pas être modifié en toute sécurité"),
         ("results.rowDeleted", "La ligne est marquée pour suppression"),
         ("results.commitBlocked.title", "Validation bloquée"),
         ("results.commitBlocked.message", "Une requête est encore en cours sur cette connexion."),

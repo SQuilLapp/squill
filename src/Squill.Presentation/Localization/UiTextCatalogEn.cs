@@ -135,6 +135,8 @@ internal static class UiTextCatalogEn
         ("results.exportFailed", "Export failed"),
         ("results.rowsLoading", "Rows are still loading"),
         ("results.columnReadOnly", "This column is read-only"),
+        ("results.columnGenerated", "This column is computed by the database and cannot be edited"),
+        ("results.columnTypeUnsupported", "This column type cannot be edited safely"),
         ("results.rowDeleted", "Row is marked for deletion"),
         ("results.commitBlocked.title", "Commit blocked"),
         ("results.commitBlocked.message", "A query is still running on this connection."),

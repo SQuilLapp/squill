@@ -215,7 +215,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-23](phase-11/P11-23-data-list-databases.md) | Data: list the databases of a server | P11-02 ... P11-04 | done |
 | [P11-24](phase-11/P11-24-presentation-database-switch.md) | Presentation: browse other databases of a connection | P11-23 | done |
 | [P11-25](phase-11/P11-25-column-types-read.md) | Column types read and displayed correctly on every engine | P11-02 ... P11-04, P11-16 | done |
-| [P11-26](phase-11/P11-26-column-types-edit.md) | Column types edited and written back correctly on every engine | P11-25 | todo |
+| [P11-26](phase-11/P11-26-column-types-edit.md) | Column types edited and written back correctly on every engine | P11-25 | done |
 | [P11-27](phase-11/P11-27-sql-corpus-parser-diagnostics.md) | Dialect corpus: parser and diagnostics against real servers | P11-02 ... P11-04 | todo |
 | [P11-28](phase-11/P11-28-sql-completion-hover-format-dialects.md) | Completion, hover, signature help and formatter per dialect | P11-27, P11-17 ... P11-19 | todo |
 | [P11-29](phase-11/P11-29-designer-ddl-sqlite.md) | Table designer on SQLite: create and alter matrix | P11-16 | todo |

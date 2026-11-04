@@ -16,6 +16,7 @@
   <ItemGroup>
     <Compile Include="../Shared/DmlScenario.cs" Link="DmlScenario.cs" />
     <Compile Include="../Shared/ColumnTypeScenario.cs" Link="ColumnTypeScenario.cs" />
+    <Compile Include="../Shared/ColumnTypeEditScenario.cs" Link="ColumnTypeEditScenario.cs" />
     <Compile Include="../Shared/CancelScenario.cs" Link="CancelScenario.cs" />
     <Compile Include="../Shared/MultiResultScenario.cs" Link="MultiResultScenario.cs" />
     <Content Include="../Shared/SampleSchema/sqlserver.sql" Link="SampleSchema/sqlserver.sql" CopyToOutputDirectory="PreserveNewest" />

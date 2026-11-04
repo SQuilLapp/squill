@@ -57,3 +57,9 @@ Written from `ColumnTypeReadTests` (one per driver test project, against `all_ty
 - Binary values are read whole (a 1 MB `bytea` or `varbinary(max)` reads without freezing) and only the first 32 bytes are displayed (`CellFormatter.MaxHexBytes`); copy and export use the same text.
 - A value whose formatting throws shows as `<unsupported: TypeName>`.
 - The `DateTime.MinValue` to `0000-00-00` mapping applies to every engine; no other engine stores year 1 in a `date`/`datetime` column that SQuilL reads.
+
+## Editing
+
+`CellValueParser` turns the displayed text back into the CLR value; the round trip is checked by `ColumnTypeEditTests` (SQLite always, the others with Docker). `integer[]`/`text[]` parse as `int[]`/`string[]`; `timestamptz` text is read as UTC; `0000-00-00` becomes `DateTime.MinValue`. `DmlGenerator` appends `::json`/`::jsonb` to the parameter of a PostgreSQL json column (MySQL json and SQL Server xml take a string).
+
+Read-only columns, with the reason shown when the user tries to edit: generated or computed (`ColumnDefinition.IsGenerated`: PostgreSQL `GENERATED` columns and identity `ALWAYS`, MySQL `VIRTUAL`/`STORED GENERATED`, SQL Server computed columns and `rowversion`); types without a safe text form (`sql_variant`, `hierarchyid`, `geography`, `geometry`, ranges, arrays other than `integer[]`/`text[]`, and results typed as composites, `inet`, `cidr`, `macaddr`). SQLite generated columns are not listed in the table schema, so they show the generic "read-only" reason.

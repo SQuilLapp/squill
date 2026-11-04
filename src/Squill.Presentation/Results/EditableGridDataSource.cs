@@ -1,5 +1,6 @@
 using Squill.Core;
 using Squill.Core.Editing;
+using Squill.Presentation.Localization;
 
 namespace Squill.Presentation.Results;
 
@@ -158,6 +159,28 @@ public sealed class EditableGridDataSource : IGridDataSource
     /// <returns><c>true</c> when the row is persisted.</returns>
     public bool IsPersistedRow(long row) => row < BaseVisibleCount || row >= RowCount || !_extra[(int)(row - BaseVisibleCount)].IsPending;
 
+    /// <summary>Gets why a column cannot be edited.</summary>
+    /// <param name="column">Result column index.</param>
+    /// <returns>A localized reason, or <c>null</c> when the column can be edited.</returns>
+    public string? GetReadOnlyReason(int column)
+    {
+        var mapped = _target.ByOrdinal(column);
+        if (mapped is null || column < 0 || column >= Columns.Count)
+        {
+            return UiText.Get("results.columnReadOnly");
+        }
+
+        var reason = ColumnEditability.Of(mapped.Definition);
+        if (reason == ReadOnlyReason.Generated)
+        {
+            return UiText.Get("results.columnGenerated");
+        }
+
+        return reason == ReadOnlyReason.UnsupportedType || !CellValueParser.IsSupported(Columns[column].ClrType)
+            ? UiText.Get("results.columnTypeUnsupported")
+            : null;
+    }
+
     /// <summary>Records a new value for a cell.</summary>
     /// <param name="row">Visible row index.</param>
     /// <param name="column">Column index; must be editable.</param>
@@ -167,7 +190,7 @@ public sealed class EditableGridDataSource : IGridDataSource
     public void SetCell(long row, int column, object? value)
     {
         CheckMutable(row);
-        if (!_target.IsEditable(column))
+        if (GetReadOnlyReason(column) is not null)
         {
             throw new ArgumentException($"Column {column} is read-only.", nameof(column));
         }

@@ -20,7 +20,8 @@ internal static class SqlServerSchemaReader
                    select 1 from sys.indexes pk
                    join sys.index_columns pkc on pkc.object_id = pk.object_id and pkc.index_id = pk.index_id
                    where pk.object_id = o.object_id and pk.is_primary_key = 1 and pkc.column_id = c.column_id) then 1 else 0 end as bit),
-               c.is_identity, kc.name, m.definition
+               c.is_identity, kc.name, m.definition,
+               cast(case when c.is_computed = 1 or ty.name = 'timestamp' then 1 else 0 end as bit)
         from objs o
         join sys.schemas s on s.schema_id = o.schema_id
         join sys.columns c on c.object_id = o.object_id
@@ -117,7 +118,7 @@ internal static class SqlServerSchemaReader
         var columns = (await ReadAsync(connection, ColumnsSql, r => (
             Schema: r.GetString(0), Table: r.GetString(1), Kind: r.GetString(2) == "V" ? TableKind.View : TableKind.Table,
             Column: new ColumnDefinition(r.GetString(3), FormatDataType(r.GetString(4), r.GetInt16(5), r.GetByte(6), r.GetByte(7)),
-                r.GetBoolean(8), r.GetBoolean(10), r.IsDBNull(9) ? null : r.GetString(9), r.GetBoolean(11)),
+                r.GetBoolean(8), r.GetBoolean(10), r.IsDBNull(9) ? null : r.GetString(9), r.GetBoolean(11), r.GetBoolean(14)),
             PrimaryKeyName: r.IsDBNull(12) ? null : r.GetString(12), Definition: r.IsDBNull(13) ? null : r.GetString(13)), cancellationToken))
             .GroupBy(c => (c.Schema, c.Table, c.Kind, c.Definition))
             .ToList();

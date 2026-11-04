@@ -1,6 +1,6 @@
 # P11-26 - Column types edited and written back correctly on every engine
 
-Status: todo
+Status: done
 Depends on: P11-25
 
 ## Goal
@@ -16,7 +16,7 @@ Editing a cell of every supported type and committing writes the intended value,
 - New editors (calendar, JSON editor), spatial types.
 
 ## Tasks
-- [ ] Parser, DML casts, generated-column flag, read-only reasons, tests.
+- [x] Parser, DML casts, generated-column flag, read-only reasons, tests.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; default test run green; `rtk pwsh eng/run-docker-tests.ps1 -Engine all` green; no container left.

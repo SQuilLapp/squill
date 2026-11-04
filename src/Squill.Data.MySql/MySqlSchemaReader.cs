@@ -72,7 +72,8 @@ internal static class MySqlSchemaReader
             Table: r.GetString(0), Kind: r.GetString(1) == "VIEW" ? TableKind.View : TableKind.Table,
             Definition: r.IsDBNull(8) ? null : r.GetString(8),
             Column: new ColumnDefinition(r.GetString(2), r.GetString(3), r.GetString(4) == "YES", r.GetString(6) == "PRI", r.IsDBNull(5) ? null : r.GetString(5),
-                r.GetString(7).Contains("auto_increment", StringComparison.OrdinalIgnoreCase))), cancellationToken))
+                r.GetString(7).Contains("auto_increment", StringComparison.OrdinalIgnoreCase),
+                r.GetString(7).Contains(" GENERATED", StringComparison.OrdinalIgnoreCase))), cancellationToken))
             .GroupBy(c => (c.Table, c.Kind, c.Definition))
             .ToList();
         var indexes = (await ReadAsync(connection, IndexesSql, r => (

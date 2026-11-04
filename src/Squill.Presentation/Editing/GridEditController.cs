@@ -200,7 +200,7 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
     /// <summary>Returns whether a result column maps to a table column.</summary>
     /// <param name="column">Result column index.</param>
     /// <returns><see langword="true"/> when the column can be edited.</returns>
-    public bool IsColumnEditable(int column) => column >= 0 && column < editor.Grid.Columns.Count && editor.Target.IsEditable(column);
+    public bool IsColumnEditable(int column) => column >= 0 && column < editor.Grid.Columns.Count && editor.Grid.GetReadOnlyReason(column) is null;
 
     /// <summary>Returns whether a result column is part of the target table's primary key.</summary>
     /// <param name="column">Result column index.</param>

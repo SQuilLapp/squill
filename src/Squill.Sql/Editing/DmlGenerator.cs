@@ -59,6 +59,14 @@ public static class DmlGenerator
             return "@" + name;
         }
 
+        // Typed text parameters need an explicit cast on PostgreSQL (json/jsonb); MySQL json and SQL Server xml accept a string.
+        string BindFor(string column, object? value)
+        {
+            var bound = Bind(value);
+            var type = target.Columns.FirstOrDefault(c => string.Equals(c.Definition.Name, column, StringComparison.Ordinal))?.Definition.DataType;
+            return ParameterCast(dialect, type) is { } cast ? bound + cast : bound;
+        }
+
         string Col(string name) => SqlQuoting.Quote(name, dialect);
 
         string KeyPredicate(IReadOnlyList<ColumnValue> key)
@@ -77,7 +85,7 @@ public static class DmlGenerator
                 var output = returnedKey is not null && dialect == DatabaseDialect.SqlServer ? $" OUTPUT INSERTED.{returnedKey}" : "";
                 sql = ins.Values.Count == 0
                     ? dialect == DatabaseDialect.MySql ? $"INSERT INTO {table} () VALUES ()" : $"INSERT INTO {table}{output} DEFAULT VALUES"
-                    : $"INSERT INTO {table} ({string.Join(", ", ins.Values.Select(v => Col(v.Column)))}){output} VALUES ({string.Join(", ", ins.Values.Select(v => Bind(v.Value)))})";
+                    : $"INSERT INTO {table} ({string.Join(", ", ins.Values.Select(v => Col(v.Column)))}){output} VALUES ({string.Join(", ", ins.Values.Select(v => BindFor(v.Column, v.Value)))})";
                 if (returnedKey is not null && dialect != DatabaseDialect.SqlServer)
                     sql += $" RETURNING {returnedKey}";
                 break;
@@ -85,7 +93,7 @@ public static class DmlGenerator
                 if (upd.Changes.Count == 0)
                     throw new ArgumentException("An update needs at least one change.", nameof(edit));
                 CheckColumns(upd.Changes, target);
-                var set = string.Join(", ", upd.Changes.Select(c => $"{Col(c.Column)} = {Bind(c.Value)}"));
+                var set = string.Join(", ", upd.Changes.Select(c => $"{Col(c.Column)} = {BindFor(c.Column, c.Value)}"));
                 sql = $"UPDATE {table} SET {set} WHERE {KeyPredicate(upd.Key)}";
                 break;
             case DeleteRow del:
@@ -97,6 +105,12 @@ public static class DmlGenerator
 
         return new DmlStatement(sql, ps);
     }
+
+    // Suffix appended to a bound parameter so the engine converts the text to the column type.
+    private static string? ParameterCast(DatabaseDialect dialect, string? dataType) =>
+        dialect == DatabaseDialect.PostgreSql && dataType is { } t && (t.Equals("json", StringComparison.OrdinalIgnoreCase) || t.Equals("jsonb", StringComparison.OrdinalIgnoreCase))
+            ? "::" + t.ToLowerInvariant()
+            : null;
 
     private static void CheckColumns(IReadOnlyList<ColumnValue> values, EditTarget target)
     {

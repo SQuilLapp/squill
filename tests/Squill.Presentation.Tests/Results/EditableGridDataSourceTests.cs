@@ -24,6 +24,25 @@ public sealed class EditableGridDataSourceTests
     private static EditableGridDataSource Make(int rows = 5, bool complete = true) => new(Source(rows, complete), Target());
 
     [Fact]
+    public void GeneratedAndUnsupportedColumnsAreReadOnlyWithAReason()
+    {
+        using var _ = Squill.Presentation.Localization.UiText.Override(Squill.Presentation.Localization.UiLanguage.English);
+        var defs = new[]
+        {
+            new ColumnDefinition("Id", "int", false, true, null, true),
+            new ColumnDefinition("Name", "text", true, false, null, false, true),
+            new ColumnDefinition("Data", "geography", true, false, null),
+        };
+        var target = new EditTarget("main", "T", [.. defs.Select((d, i) => new EditColumn(i, d))], ["Id"], new TableInfo("main", "T", TableKind.Table, defs, [], []));
+        var g = new EditableGridDataSource(Source(2), target);
+        Assert.Null(g.GetReadOnlyReason(0));
+        Assert.Equal("This column is computed by the database and cannot be edited", g.GetReadOnlyReason(1));
+        Assert.Equal("This column type cannot be edited safely", g.GetReadOnlyReason(2));
+        Assert.Equal("This column is read-only", g.GetReadOnlyReason(7));
+        Assert.Throws<ArgumentException>(() => g.SetCell(0, 1, "x"));
+    }
+
+    [Fact]
     public void EditAndEditBackClearsChange()
     {
         var g = Make();

@@ -15,7 +15,7 @@ internal static class PostgresSchemaReader
         select n.nspname, c.relname, c.relkind::text, a.attname::text, format_type(a.atttypid, a.atttypmod),
                not a.attnotnull, pg_get_expr(d.adbin, d.adrelid),
                coalesce(a.attnum = any(pk.indkey::int2[]), false), a.attidentity::text, pc.conname::text,
-               case when c.relkind in ('v', 'm') then pg_get_viewdef(c.oid, true) end
+               case when c.relkind in ('v', 'm') then pg_get_viewdef(c.oid, true) end, a.attgenerated::text
         from pg_class c
         join pg_namespace n on n.oid = c.relnamespace
         join pg_attribute a on a.attrelid = c.oid and a.attnum > 0 and not a.attisdropped
@@ -93,7 +93,8 @@ internal static class PostgresSchemaReader
             Definition: r.IsDBNull(10) ? null : r.GetString(10),
             PrimaryKeyName: r.IsDBNull(9) ? null : r.GetString(9),
             Column: new ColumnDefinition(r.GetString(3), r.GetString(4), r.GetBoolean(5), r.GetBoolean(7), r.IsDBNull(6) ? null : r.GetString(6),
-                r.GetString(8) != "" || (!r.IsDBNull(6) && r.GetString(6).StartsWith("nextval(", StringComparison.Ordinal)))), cancellationToken))
+                r.GetString(8) != "" || (!r.IsDBNull(6) && r.GetString(6).StartsWith("nextval(", StringComparison.Ordinal)),
+                r.GetString(8) == "a" || r.GetString(11) != "")), cancellationToken))
             .GroupBy(c => (c.Schema, c.Table, c.Kind, c.Definition))
             .ToList();
         var indexes = (await ReadAsync(connection, IndexesSql, r => (
