@@ -26,11 +26,40 @@ internal sealed class SqlServerResultReader : IResultReader
         Columns = ReadColumns(reader);
     }
 
+    // CLR user-defined types (hierarchyid, geography, geometry) need Microsoft.SqlServer.Types, which is reflection-based and not shipped:
+    // they come back as their serialized bytes (shown as hex) instead of throwing.
+    private static Type FieldType(SqlDataReader reader, int i)
+    {
+        try
+        {
+            return reader.GetFieldType(i);
+        }
+        catch (Exception e) when (e is IOException or InvalidCastException or NotSupportedException)
+        {
+            return typeof(byte[]);
+        }
+    }
+
+    private static object ReadValue(SqlDataReader reader, int i)
+    {
+        try
+        {
+            return reader.GetValue(i);
+        }
+        catch (Exception e) when (e is IOException or InvalidCastException or NotSupportedException)
+        {
+            var length = (int)reader.GetBytes(i, 0, null, 0, 0);
+            var bytes = new byte[length];
+            reader.GetBytes(i, 0, bytes, 0, length);
+            return bytes;
+        }
+    }
+
     private static ColumnInfo[] ReadColumns(SqlDataReader reader)
     {
         var columns = new ColumnInfo[reader.FieldCount];
         for (var i = 0; i < columns.Length; i++)
-            columns[i] = new ColumnInfo(reader.GetName(i), reader.GetDataTypeName(i), reader.GetFieldType(i), true, i);
+            columns[i] = new ColumnInfo(reader.GetName(i), reader.GetDataTypeName(i), FieldType(reader, i), true, i);
         return columns;
     }
 
@@ -70,7 +99,7 @@ internal sealed class SqlServerResultReader : IResultReader
             }
             var row = new object?[Columns.Count];
             for (var i = 0; i < row.Length; i++)
-                row[i] = _reader.IsDBNull(i) ? null : _reader.GetValue(i);
+                row[i] = _reader.IsDBNull(i) ? null : ReadValue(_reader, i);
             rows.Add(row);
         }
         return rows.Count == 0 ? null : [.. rows];

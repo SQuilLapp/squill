@@ -11,9 +11,11 @@
     <PackageReference Include="Testcontainers.PostgreSql" />
     <ProjectReference Include="..\..\src\Squill.Data.Postgres\Squill.Data.Postgres.csproj" />
     <ProjectReference Include="..\..\src\Squill.Sql\Squill.Sql.csproj" />
+    <ProjectReference Include="..\..\src\Squill.Presentation\Squill.Presentation.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../Shared/DmlScenario.cs" Link="DmlScenario.cs" />
+    <Compile Include="../Shared/ColumnTypeScenario.cs" Link="ColumnTypeScenario.cs" />
     <Compile Include="../Shared/CancelScenario.cs" Link="CancelScenario.cs" />
     <Compile Include="../Shared/MultiResultScenario.cs" Link="MultiResultScenario.cs" />
     <Content Include="../Shared/SampleSchema/postgres.sql" Link="SampleSchema/postgres.sql" CopyToOutputDirectory="PreserveNewest" />

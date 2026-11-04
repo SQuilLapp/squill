@@ -25,6 +25,7 @@ public sealed class MySqlDatabaseProvider : IDatabaseProvider
             Password = password ?? string.Empty,
             ConnectionTimeout = (uint)profile.ConnectTimeoutSeconds,
             DefaultCommandTimeout = (uint)profile.CommandTimeoutSeconds,
+            ConvertZeroDateTime = true,
         };
         if (profile.Tls != TlsMode.Default)
             builder.SslMode = profile.Tls switch

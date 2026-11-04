@@ -36,9 +36,9 @@ public sealed class PostgresDatabaseProvider : IDatabaseProvider
         return builder.ConnectionString;
     }
 
-    // The slim builder keeps the AOT footprint small; arrays are needed by the schema queries and array columns, TLS by the Tls profile option.
+    // The slim builder keeps the AOT footprint small; arrays are needed by the schema queries and array columns, the other type groups so that every column type reads, TLS by the Tls profile option.
     private static NpgsqlDataSource BuildDataSource(string connectionString) =>
-        new NpgsqlSlimDataSourceBuilder(connectionString).EnableArrays().EnableTransportSecurity().Build();
+        new NpgsqlSlimDataSourceBuilder(connectionString).EnableArrays().EnableNetworkTypes().EnableJsonTypes().EnableRanges().EnableMultiranges().EnableRecords().EnableGeometricTypes().EnableTransportSecurity().Build();
 
     /// <inheritdoc />
     public async ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken)

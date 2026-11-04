@@ -30,8 +30,42 @@ internal sealed class PostgresResultReader : IResultReader
     {
         var columns = new ColumnInfo[reader.FieldCount];
         for (var i = 0; i < columns.Length; i++)
-            columns[i] = new ColumnInfo(reader.GetName(i), reader.GetDataTypeName(i), reader.GetFieldType(i), true, i);
+            columns[i] = new ColumnInfo(reader.GetName(i), reader.GetDataTypeName(i), FieldType(reader, i), true, i);
         return columns;
+    }
+
+    // Npgsql refuses to read some types (inet, ranges, composites...) as object: show their text form instead.
+    private static Type FieldType(NpgsqlDataReader reader, int i)
+    {
+        try
+        {
+            return reader.GetFieldType(i);
+        }
+        catch (InvalidCastException)
+        {
+            return typeof(string);
+        }
+    }
+
+    // Types the AOT-safe slim data source cannot map (enums, intervals with months...) come back as their type name instead of throwing.
+    private static object ReadValue(NpgsqlDataReader reader, int i)
+    {
+        try
+        {
+            return reader.GetValue(i);
+        }
+        catch (InvalidCastException)
+        {
+            try
+            {
+                return reader.GetString(i);
+            }
+            catch (InvalidCastException)
+            {
+                var name = reader.GetPostgresType(i).Name;
+                return name.Length == 0 ? "<unsupported type>" : "<" + name + ">";
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -58,7 +92,7 @@ internal sealed class PostgresResultReader : IResultReader
             }
             var row = new object?[Columns.Count];
             for (var i = 0; i < row.Length; i++)
-                row[i] = _reader.IsDBNull(i) ? null : _reader.GetValue(i);
+                row[i] = _reader.IsDBNull(i) ? null : ReadValue(_reader, i);
             rows.Add(row);
         }
         return rows.Count == 0 ? null : [.. rows];

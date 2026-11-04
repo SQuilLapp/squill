@@ -1,6 +1,6 @@
 # P11-25 - Column types read and displayed correctly on every engine
 
-Status: todo
+Status: done
 Depends on: P11-02, P11-03, P11-04, P11-16
 
 ## Goal
@@ -17,7 +17,7 @@ Every column type of the sample schemas comes back from a `SELECT` as a sensible
 - Editing these types (P11-26).
 
 ## Tasks
-- [ ] Tests, formatter fixes, reader fixes, doc table.
+- [x] Tests, formatter fixes, reader fixes, doc table.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; default test run green; `rtk pwsh eng/run-docker-tests.ps1 -Engine all` green; no container left.
