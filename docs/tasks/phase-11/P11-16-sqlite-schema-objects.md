@@ -1,6 +1,6 @@
 # P11-16 - Data.Sqlite: triggers and view definitions, SQLite sample schema
 
-Status: todo
+Status: done
 Depends on: P11-15
 
 ## Goal
@@ -15,7 +15,7 @@ The SQLite reader fills `TableInfo.Definition` for views and `SchemaSnapshot.Tri
 - Routines (SQLite has none).
 
 ## Tasks
-- [ ] Reader changes, sample file, tests (view definition, trigger fields, no internal tables).
+- [x] Reader changes, sample file, tests (view definition, trigger fields, no internal tables).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green.

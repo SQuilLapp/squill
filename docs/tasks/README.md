@@ -205,7 +205,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-13](phase-11/P11-13-winui-multiple-results.md) | WinUI head: result tabs for several sets and a Messages tab | P11-12 | done |
 | [P11-14](phase-11/P11-14-avalonia-multiple-results.md) | Avalonia head: result tabs for several sets and a Messages tab | P11-12 | done |
 | [P11-15](phase-11/P11-15-core-schema-objects-model.md) | Core: routines, triggers, view definitions and materialized views | none | done |
-| [P11-16](phase-11/P11-16-sqlite-schema-objects.md) | Data.Sqlite: triggers and view definitions, SQLite sample schema | P11-15 | todo |
+| [P11-16](phase-11/P11-16-sqlite-schema-objects.md) | Data.Sqlite: triggers and view definitions, SQLite sample schema | P11-15 | done |
 | [P11-17](phase-11/P11-17-postgres-schema-objects.md) | Data.Postgres: routines, triggers, view definitions, materialized views | P11-15, P11-02 | todo |
 | [P11-18](phase-11/P11-18-mysql-schema-objects.md) | Data.MySql: routines, triggers, view definitions | P11-15, P11-03 | todo |
 | [P11-19](phase-11/P11-19-sqlserver-schema-objects.md) | Data.SqlServer: routines, triggers, view definitions | P11-15, P11-04 | todo |

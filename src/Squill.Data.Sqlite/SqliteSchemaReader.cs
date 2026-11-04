@@ -14,16 +14,90 @@ internal static class SqliteSchemaReader
     /// <returns>The schema snapshot.</returns>
     public static async ValueTask<SchemaSnapshot> ReadAsync(SqliteConnection connection, CancellationToken cancellationToken)
     {
+        var objects = await ReadAsync(connection, "SELECT type, name, tbl_name, sql FROM sqlite_master WHERE type IN ('view','trigger')",
+            r => (Type: r.GetString(0), Name: r.GetString(1), Table: r.GetString(2), Sql: r.IsDBNull(3) ? null : r.GetString(3)), cancellationToken);
+        var viewSql = objects.Where(o => o.Type == "view").ToDictionary(o => o.Name, o => o.Sql, StringComparer.Ordinal);
+
+        // pragma_table_list marks FTS and other shadow tables as 'shadow', so only real tables, virtual tables and views remain.
         var tables = new List<TableInfo>();
-        foreach (var (name, kind) in await ReadAsync(connection, """SELECT name, type FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite\_%' ESCAPE '\' ORDER BY name""",
+        foreach (var (name, kind) in await ReadAsync(connection, """SELECT name, type FROM pragma_table_list WHERE schema = 'main' AND type IN ('table','view','virtual') AND name NOT LIKE 'sqlite\_%' ESCAPE '\' ORDER BY name""",
                      r => (r.GetString(0), r.GetString(1) == "view" ? TableKind.View : TableKind.Table), cancellationToken))
         {
             var columns = await ReadColumnsAsync(connection, name, cancellationToken);
             var indexes = kind == TableKind.Table ? await ReadIndexesAsync(connection, name, cancellationToken) : [];
             var foreignKeys = kind == TableKind.Table ? await ReadForeignKeysAsync(connection, name, cancellationToken) : [];
-            tables.Add(new TableInfo(Schema, name, kind, columns, indexes, foreignKeys));
+            var definition = kind == TableKind.View && viewSql.TryGetValue(name, out var sql) && sql is not null ? ViewBody(sql) : null;
+            tables.Add(new TableInfo(Schema, name, kind, columns, indexes, foreignKeys, Definition: definition));
         }
-        return new SchemaSnapshot(Schema, tables);
+
+        var triggers = objects.Where(o => o.Type == "trigger" && o.Sql is not null)
+            .Select(o => { var (timing, events) = TriggerHeader(o.Sql!); return new TriggerInfo(Schema, o.Table, o.Name, timing, events, o.Sql); })
+            .OrderBy(t => t.Table, StringComparer.Ordinal).ThenBy(t => t.Name, StringComparer.Ordinal)
+            .ToList();
+        return new SchemaSnapshot(Schema, tables) { Triggers = triggers };
+    }
+
+    /// <summary>Splits a stored statement into top-level words, quoted identifiers and single punctuation characters (parentheses nest, their content is skipped).</summary>
+    private static List<(string Text, int Start, int End)> Tokens(string sql)
+    {
+        var tokens = new List<(string, int, int)>();
+        var depth = 0;
+        for (var i = 0; i < sql.Length;)
+        {
+            var c = sql[i];
+            if (char.IsWhiteSpace(c)) { i++; continue; }
+            var start = i;
+            var atTop = depth == 0;
+            if (c is '"' or '\'' or '`' or '[')
+            {
+                var close = c == '[' ? ']' : c;
+                for (i++; i < sql.Length; i++)
+                {
+                    if (sql[i] != close) continue;
+                    if (close != ']' && i + 1 < sql.Length && sql[i + 1] == close) { i++; continue; } // doubled quote
+                    break;
+                }
+                i++;
+            }
+            else if (char.IsLetterOrDigit(c) || c == '_')
+            {
+                while (i < sql.Length && (char.IsLetterOrDigit(sql[i]) || sql[i] == '_')) i++;
+            }
+            else
+            {
+                i++;
+                if (c == '(') depth++;
+                else if (c == ')') depth--;
+            }
+            if (atTop) tokens.Add((sql[start..Math.Min(i, sql.Length)], start, Math.Min(i, sql.Length)));
+        }
+        return tokens;
+    }
+
+    private static bool Is(string token, string word) => token.Equals(word, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Returns the SELECT after the top-level AS of a stored CREATE VIEW, or the whole statement when no AS is found.</summary>
+    internal static string ViewBody(string sql)
+    {
+        var tokens = Tokens(sql);
+        // shortcut: the first top-level AS ends the header; a view named AS must be quoted, which Tokens keeps apart.
+        var at = tokens.FindIndex(t => Is(t.Text, "AS"));
+        return at < 0 || at + 1 >= tokens.Count ? sql : sql[tokens[at + 1].Start..].TrimEnd().TrimEnd(';').TrimEnd();
+    }
+
+    /// <summary>Reads the timing (BEFORE by default) and the single event of a stored CREATE TRIGGER.</summary>
+    internal static (string Timing, string Events) TriggerHeader(string sql)
+    {
+        var words = Tokens(sql).Select(t => t.Text).ToList();
+        var i = words.FindIndex(w => Is(w, "TRIGGER")) + 1;
+        if (i > 0 && i + 2 < words.Count && Is(words[i], "IF") && Is(words[i + 1], "NOT") && Is(words[i + 2], "EXISTS")) i += 3;
+        if (i > 0) i++; // trigger name
+        if (i < words.Count && words[i] == ".") i += 2;
+        var timing = "BEFORE";
+        if (i < words.Count && Is(words[i], "INSTEAD")) { timing = "INSTEAD OF"; i += 2; }
+        else if (i < words.Count && (Is(words[i], "BEFORE") || Is(words[i], "AFTER"))) { timing = words[i].ToUpperInvariant(); i++; }
+        var events = i >= 0 && i < words.Count ? words[i].ToUpperInvariant() : "";
+        return (timing, events);
     }
 
     private static string Quote(string name) => "\"" + name.Replace("\"", "\"\"") + "\"";
