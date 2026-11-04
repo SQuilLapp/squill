@@ -30,6 +30,8 @@ public sealed class SampleSchemaTests(MySqlFixture server) : IClassFixture<MySql
             ["all_types", "customers", "fk_actions", "fk_targets", "no_pk", "order_items", "order_totals", "orders"],
             snapshot.Tables.Where(t => t.Schema == schema).Select(t => t.Name).Order());
         Assert.Equal(TableKind.View, snapshot.FindTable(schema, "order_totals")!.Kind);
+        Assert.Equal(["add_numbers", "touch_customers"], snapshot.Routines.Select(r => r.Name).Where(n => n is "add_numbers" or "touch_customers").Order());
+        Assert.Single(snapshot.Triggers, t => t.Name == "orders_stamp");
 
         Assert.Equal(["order_id", "line_no"], snapshot.FindTable(schema, "order_items")!.Columns.Where(c => c.IsPrimaryKey).Select(c => c.Name));
         Assert.DoesNotContain(snapshot.FindTable(schema, "no_pk")!.Columns, c => c.IsPrimaryKey);

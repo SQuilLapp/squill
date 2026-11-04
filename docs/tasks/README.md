@@ -207,7 +207,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-15](phase-11/P11-15-core-schema-objects-model.md) | Core: routines, triggers, view definitions and materialized views | none | done |
 | [P11-16](phase-11/P11-16-sqlite-schema-objects.md) | Data.Sqlite: triggers and view definitions, SQLite sample schema | P11-15 | done |
 | [P11-17](phase-11/P11-17-postgres-schema-objects.md) | Data.Postgres: routines, triggers, view definitions, materialized views | P11-15, P11-02 | done |
-| [P11-18](phase-11/P11-18-mysql-schema-objects.md) | Data.MySql: routines, triggers, view definitions | P11-15, P11-03 | todo |
+| [P11-18](phase-11/P11-18-mysql-schema-objects.md) | Data.MySql: routines, triggers, view definitions | P11-15, P11-03 | done |
 | [P11-19](phase-11/P11-19-sqlserver-schema-objects.md) | Data.SqlServer: routines, triggers, view definitions | P11-15, P11-04 | todo |
 | [P11-20](phase-11/P11-20-presentation-explorer-objects.md) | Presentation: routines, triggers and open definition in the explorer | P11-15 | todo |
 | [P11-21](phase-11/P11-21-winui-explorer-objects.md) | WinUI head: explorer glyphs and menu for routines, triggers, definitions | P11-20 | todo |

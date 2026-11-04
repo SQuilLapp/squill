@@ -8,6 +8,8 @@ public sealed class MySqlSchemaReaderTests(MySqlFixture server) : IClassFixture<
     private static readonly string[] Setup =
     [
         "drop view if exists person_nick",
+        "drop function if exists add_two",
+        "drop procedure if exists bump",
         "drop table if exists actions",
         "drop table if exists person",
         "drop table if exists country",
@@ -34,6 +36,9 @@ public sealed class MySqlSchemaReaderTests(MySqlFixture server) : IClassFixture<
             constraint fk_d foreign key (d) references country (code))
         """,
         "create view person_nick as select id, nick from person",
+        "create function add_two(a int, b int) returns int deterministic return a + b",
+        "create procedure bump(in n int, out total int) set total = n + 1",
+        "create trigger person_stamp before insert on person for each row set new.nick = lower(new.nick)",
     ];
 
     private async Task<SchemaSnapshot> ReadAsync()
@@ -116,5 +121,33 @@ public sealed class MySqlSchemaReaderTests(MySqlFixture server) : IClassFixture<
         Assert.Equal((ReferentialAction.Restrict, ReferentialAction.Cascade), (keys["fk_b"].OnDelete, keys["fk_b"].OnUpdate));
         Assert.Equal((ReferentialAction.NoAction, ReferentialAction.Restrict), (keys["fk_c"].OnDelete, keys["fk_c"].OnUpdate));
         Assert.Contains(keys["fk_d"].OnDelete, new[] { ReferentialAction.NoAction, ReferentialAction.Restrict });
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_ViewDefinition_IsFilledOnViewsOnly()
+    {
+        var snapshot = await ReadAsync();
+        Assert.Contains("person", snapshot.FindTable(MySqlFixture.Database, "person_nick")!.Definition);
+        Assert.Null(snapshot.FindTable(MySqlFixture.Database, "person")!.Definition);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_Routines_HaveSignaturesReturnTypesAndBodies()
+    {
+        var routines = (await ReadAsync()).Routines;
+        var function = routines.Single(r => r.Name == "add_two");
+        Assert.Equal((RoutineKind.Function, "add_two(a int, b int)", "int"), (function.Kind, function.Signature, function.ReturnType));
+        Assert.Contains("a + b", function.Definition);
+        var procedure = routines.Single(r => r.Name == "bump");
+        Assert.Equal((RoutineKind.Procedure, "bump(n int, OUT total int)"), (procedure.Kind, procedure.Signature));
+        Assert.Null(procedure.ReturnType);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_Triggers_HaveTimingEventAndStatement()
+    {
+        var trigger = Assert.Single((await ReadAsync()).Triggers, t => t.Table == "person");
+        Assert.Equal((MySqlFixture.Database, "person", "person_stamp", "BEFORE", "INSERT"), (trigger.Schema, trigger.Table, trigger.Name, trigger.Timing, trigger.Events));
+        Assert.Contains("lower", trigger.Definition);
     }
 }

@@ -1,6 +1,6 @@
 # P11-18 - Data.MySql: routines, triggers, view definitions
 
-Status: todo
+Status: done
 Depends on: P11-15, P11-03
 
 ## Goal
@@ -16,7 +16,7 @@ The MySQL reader returns stored functions and procedures, triggers and view defi
 - UI, events, MariaDB.
 
 ## Tasks
-- [ ] Queries, mapping, tests, sample schema update.
+- [x] Queries, mapping, tests, sample schema update.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; default test run green; `rtk pwsh eng/run-docker-tests.ps1 -Engine mysql` green; no container left.

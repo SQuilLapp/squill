@@ -1,6 +1,9 @@
 -- SQuilL sample schema for MySQL 8. Idempotent: safe to run twice. MySQL has no schemas: the objects live in the connection's database.
 set foreign_key_checks = 0;
 drop view if exists order_totals;
+drop function if exists add_numbers;
+drop procedure if exists touch_customers;
+drop trigger if exists orders_stamp;
 drop table if exists all_types, fk_actions, fk_targets, no_pk, order_items, orders, customers;
 set foreign_key_checks = 1;
 
@@ -46,6 +49,10 @@ create view order_totals as
     select c.id as customer_id, c.name, count(o.id) as orders, coalesce(sum(o.total), 0) as total
     from customers c left join orders o on o.customer_id = c.id
     group by c.id, c.name;
+
+create function add_numbers(a int, b int) returns int deterministic return a + b;
+create procedure touch_customers(in min_id int, in max_id int) update customers set name = name where id between min_id and max_id;
+create trigger orders_stamp before insert on orders for each row set new.total = coalesce(new.total, 0);
 
 create table all_types (
     c_tinyint tinyint,
