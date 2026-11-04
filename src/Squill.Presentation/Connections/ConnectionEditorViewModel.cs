@@ -180,6 +180,7 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         DatabaseDialect.PostgreSql => 5432,
         DatabaseDialect.MySql => 3306,
         DatabaseDialect.SqlServer => 1433,
+        DatabaseDialect.Oracle => 1521,
         _ => null,
     };
 

@@ -17,6 +17,7 @@
     <PackageReference Include="Avalonia.AvaloniaEdit" />
     <ProjectReference Include="..\Squill.Presentation\Squill.Presentation.csproj" />
     <ProjectReference Include="..\Squill.Data.MySql\Squill.Data.MySql.csproj" />
+    <ProjectReference Include="..\Squill.Data.Oracle\Squill.Data.Oracle.csproj" />
     <ProjectReference Include="..\Squill.Data.Postgres\Squill.Data.Postgres.csproj" />
     <ProjectReference Include="..\Squill.Data.SqlServer\Squill.Data.SqlServer.csproj" />
     <ProjectReference Include="..\Squill.Data.Sqlite\Squill.Data.Sqlite.csproj" />

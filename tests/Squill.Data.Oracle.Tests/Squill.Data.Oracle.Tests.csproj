@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Testcontainers.Oracle" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
+    <ProjectReference Include="..\..\src\Squill.Data.Oracle\Squill.Data.Oracle.csproj" />
+    <!-- The real bridge, started as "dotnet Squill.OracleBridge.dll" by the Docker-gated tests. -->
+    <ProjectReference Include="..\..\src\Squill.OracleBridge\Squill.OracleBridge.csproj" />
+  </ItemGroup>
+</Project>

@@ -11,6 +11,8 @@
     <!-- Transitive of SqlClient 7.1.1 resolves to 9.0.18, which has known advisories (NU1902/NU1903): pinned to a patched version. -->
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
     <PackageVersion Include="MySqlConnector" Version="2.6.2" />
+    <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="23.26.400" />
+    <PackageVersion Include="Testcontainers.Oracle" Version="4.16.0" />
     <PackageVersion Include="Testcontainers.MySql" Version="4.16.0" />
     <PackageVersion Include="Testcontainers.MsSql" Version="4.16.0" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.16.0" />

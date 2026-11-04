@@ -11,4 +11,6 @@ public enum DatabaseDialect
     SqlServer,
     /// <summary>SQLite.</summary>
     Sqlite,
+    /// <summary>Oracle Database, reached through the out-of-process bridge (proof of concept).</summary>
+    Oracle,
 }

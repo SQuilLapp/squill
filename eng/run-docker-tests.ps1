@@ -3,18 +3,18 @@
 .SYNOPSIS
 Runs the Docker-gated driver tests (Testcontainers) on Podman.
 .PARAMETER Engine
-postgres, mysql, sqlserver or all (default).
+postgres, mysql, sqlserver, oracle (a large image, so not part of all) or all (default).
 .PARAMETER Filter
 Extra arguments passed to the test application, split on spaces, for example '--filter-method *ConnectionString*'.
 #>
 param(
-    [ValidateSet('postgres', 'mysql', 'sqlserver', 'all')][string]$Engine = 'all',
+    [ValidateSet('postgres', 'mysql', 'sqlserver', 'oracle', 'all')][string]$Engine = 'all',
     [string]$Filter = ''
 )
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$projects = @{ postgres = 'Postgres'; mysql = 'MySql'; sqlserver = 'SqlServer' }
+$projects = @{ postgres = 'Postgres'; mysql = 'MySql'; sqlserver = 'SqlServer'; oracle = 'Oracle' }
 $engines = $Engine -eq 'all' ? @('postgres', 'mysql', 'sqlserver') : @($Engine)
 
 if (-not (Get-Command podman -ErrorAction SilentlyContinue)) {

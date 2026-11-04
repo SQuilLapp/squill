@@ -37,6 +37,8 @@ src/Squill.App.WinUI/Views/TableDesignerView.xaml|ON UPDATE|SQL keyword, not tra
 src/Squill.Core/Design/DesignValidator.cs|Changing the type of '{a.After.Name}' may fail or lose data.|English fallback of a coded issue, rendered through issue.design.typeChangeRisk
 src/Squill.Core/Design/DesignValidator.cs|Data in column '{d.Name}' is lost.|English fallback of a coded issue, rendered through issue.design.dropColumnDataLoss
 src/Squill.Core/Design/DesignValidator.cs|Existing NULLs make '{a.After.Name}' fail to become non-nullable.|English fallback of a coded issue, rendered through issue.design.nullsBlockNotNull
+src/Squill.OracleBridge/OracleSession.cs|The connection is not open.|bridge protocol error, shown as a driver message
+src/Squill.OracleBridge/OracleSession.cs|Unknown operation '{request.Op}'.|bridge protocol error, shown as a driver message
 src/Squill.Presentation/Designer/TableDesignerViewModel.cs|The foreign key '{fk.Name}' references the missing table '{fk.ReferencedTable}'.|English fallback of a coded issue, rendered through issue.design.foreignKeyTableMissing
 src/Squill.Presentation/Designer/TableDesignerViewModel.cs|Views depending on this table are not recreated.|English fallback of a coded issue, rendered through issue.design.viewsNotRecreated
 src/Squill.Presentation/Designer/TableDesignerViewModel.cs|\n|line separator between warnings

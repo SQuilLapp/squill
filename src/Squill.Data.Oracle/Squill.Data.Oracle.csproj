@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <InternalsVisibleTo Include="Squill.OracleBridge" />
+    <InternalsVisibleTo Include="Squill.Data.Oracle.Tests" />
+    <ProjectReference Include="..\Squill.Data\Squill.Data.csproj" />
+  </ItemGroup>
+</Project>
