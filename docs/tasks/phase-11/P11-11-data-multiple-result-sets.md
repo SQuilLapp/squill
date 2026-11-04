@@ -1,6 +1,6 @@
 # P11-11 - Data: multiple result sets and server messages
 
-Status: todo
+Status: done
 Depends on: P11-04
 
 ## Goal
@@ -16,7 +16,7 @@ A statement that returns several result sets (a SQL Server `EXEC` of a procedure
 - Showing several results in the UI (P11-12 ... P11-14).
 
 ## Tasks
-- [ ] Contract, four drivers, tests: SQLite (a single set, `NextResultAsync` false), Docker-gated SQL Server (a procedure with two selects and a `PRINT`), MySQL (`CALL` of a procedure with two selects), PostgreSQL (`DO $$ begin raise notice 'hi'; end $$` gives the message, and `select 1; select 2` in one command text gives two sets; if Npgsql rejects it with parameters, test without).
+- [x] Contract, four drivers, tests: SQLite (a single set, `NextResultAsync` false), Docker-gated SQL Server (a procedure with two selects and a `PRINT`), MySQL (`CALL` of a procedure with two selects), PostgreSQL (`DO $$ begin raise notice 'hi'; end $$` gives the message, and `select 1; select 2` in one command text gives two sets; if Npgsql rejects it with parameters, test without).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; default test run green; `rtk pwsh eng/run-docker-tests.ps1 -Engine all` green; no container left.

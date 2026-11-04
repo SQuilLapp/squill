@@ -13,15 +13,19 @@ internal sealed class MySqlDatabaseConnection(MySqlConnection connection, int co
     public async ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken)
     {
         var command = new MySqlCommand(sql, connection) { CommandTimeout = commandTimeoutSeconds };
+        var messages = new List<string>();
+        MySqlInfoMessageEventHandler handler = (_, a) => { foreach (var e in a.Errors) messages.Add(e.Message); };
+        connection.InfoMessage += handler;
         try
         {
             foreach (var parameter in parameters)
                 command.Parameters.Add(new MySqlParameter(parameter.Name, parameter.Value ?? DBNull.Value));
             var reader = await command.ExecuteReaderAsync(cancellationToken);
-            return new MySqlResultReader(command, reader);
+            return new MySqlResultReader(command, reader, messages, () => connection.InfoMessage -= handler);
         }
         catch
         {
+            connection.InfoMessage -= handler;
             await command.DisposeAsync();
             throw;
         }

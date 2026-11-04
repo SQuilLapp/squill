@@ -13,21 +13,26 @@ internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int 
     public async ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken)
     {
         var command = new SqlCommand(sql, connection) { CommandTimeout = commandTimeoutSeconds };
+        var messages = new List<string>();
+        SqlInfoMessageEventHandler handler = (_, a) => { foreach (SqlError e in a.Errors) messages.Add(e.Message); };
+        connection.InfoMessage += handler;
         try
         {
             foreach (var parameter in parameters)
                 command.Parameters.Add(new SqlParameter("@" + parameter.Name, parameter.Value ?? DBNull.Value));
             var reader = await command.ExecuteReaderAsync(cancellationToken);
-            return new SqlServerResultReader(command, reader);
+            return new SqlServerResultReader(command, reader, messages, () => connection.InfoMessage -= handler);
         }
         catch (SqlException ex) when (cancellationToken.IsCancellationRequested)
         {
             // SqlClient reports a cancelled command as a SqlException; callers expect the standard cancellation exception.
+            connection.InfoMessage -= handler;
             await command.DisposeAsync();
             throw new OperationCanceledException(ex.Message, ex, cancellationToken);
         }
         catch
         {
+            connection.InfoMessage -= handler;
             await command.DisposeAsync();
             throw;
         }

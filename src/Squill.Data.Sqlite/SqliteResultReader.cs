@@ -23,14 +23,19 @@ internal sealed class SqliteResultReader : IResultReader
         _commandTimeoutSeconds = commandTimeoutSeconds;
         _command = command;
         _reader = reader;
+        Columns = ReadColumns(reader);
+    }
+
+    private static ColumnInfo[] ReadColumns(SqliteDataReader reader)
+    {
         var columns = new ColumnInfo[reader.FieldCount];
         for (var i = 0; i < columns.Length; i++)
             columns[i] = new ColumnInfo(reader.GetName(i), reader.GetDataTypeName(i), reader.GetFieldType(i), true, i);
-        Columns = columns;
+        return columns;
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<ColumnInfo> Columns { get; }
+    public IReadOnlyList<ColumnInfo> Columns { get; private set; }
 
     /// <inheritdoc />
     public long RecordsAffected => _finished ? _reader.RecordsAffected : -1;
@@ -59,6 +64,22 @@ internal sealed class SqliteResultReader : IResultReader
             rows.Add(row);
         }
         return rows.Count == 0 ? null : [.. rows];
+    }
+
+    /// <inheritdoc />
+    public ValueTask<bool> NextResultAsync(CancellationToken cancellationToken) =>
+        SqliteInterrupt.RunAsync(_connection, _commandTimeoutSeconds, () => MoveNextAsync(cancellationToken), cancellationToken);
+
+    private async ValueTask<bool> MoveNextAsync(CancellationToken cancellationToken)
+    {
+        if (!await _reader.NextResultAsync(cancellationToken))
+        {
+            _finished = true;
+            return false;
+        }
+        Columns = ReadColumns(_reader);
+        _finished = false;
+        return true;
     }
 
     /// <inheritdoc />

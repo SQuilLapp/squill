@@ -19,9 +19,13 @@ internal static class SqlRunner
         var reader = await connection.ExecuteAsync(sql, parameters, ct);
         try
         {
-            while (await reader.ReadBatchAsync(DrainBatchSize, ct) is not null)
+            do
             {
+                while (await reader.ReadBatchAsync(DrainBatchSize, ct) is not null)
+                {
+                }
             }
+            while (await reader.NextResultAsync(ct));
 
             return reader.RecordsAffected;
         }
@@ -43,11 +47,15 @@ internal static class SqlRunner
         try
         {
             object?[]? first = null;
-            while (await reader.ReadBatchAsync(DrainBatchSize, ct) is { } batch)
+            do
             {
-                if (first is null && batch.Length > 0)
-                    first = batch[0];
+                while (await reader.ReadBatchAsync(DrainBatchSize, ct) is { } batch)
+                {
+                    if (first is null && batch.Length > 0)
+                        first = batch[0];
+                }
             }
+            while (await reader.NextResultAsync(ct));
 
             return first;
         }

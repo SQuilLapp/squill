@@ -200,7 +200,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-08](phase-11/P11-08-winui-connection-options.md) | WinUI head: connection options in the connection editor | P11-06, P11-07 | done |
 | [P11-09](phase-11/P11-09-avalonia-connection-options.md) | Avalonia head: connection options in the connection manager |X|
 | [P11-10](phase-11/P11-10-cancel-and-timeout.md) | Cancel and timeout proven on every engine | P11-07 | done |
-| [P11-11](phase-11/P11-11-data-multiple-result-sets.md) | Data: multiple result sets and server messages | P11-04 | todo |
+| [P11-11](phase-11/P11-11-data-multiple-result-sets.md) | Data: multiple result sets and server messages | P11-04 | done |
 | [P11-12](phase-11/P11-12-presentation-multiple-results.md) | Presentation: several results and messages per statement | P11-11 | todo |
 | [P11-13](phase-11/P11-13-winui-multiple-results.md) | WinUI head: result tabs for several sets and a Messages tab | P11-12 | todo |
 | [P11-14](phase-11/P11-14-avalonia-multiple-results.md) | Avalonia head: result tabs for several sets and a Messages tab | P11-12 | todo |

@@ -8,23 +8,37 @@ internal sealed class SqlServerResultReader : IResultReader
 {
     private readonly SqlCommand _command;
     private readonly SqlDataReader _reader;
+    private readonly List<string> _messages;
+    private readonly Action _detach;
     private bool _finished;
 
     /// <summary>Takes ownership of an executed command and its open reader, and captures the column metadata.</summary>
     /// <param name="command">Command that produced <paramref name="reader"/>; disposed with this instance.</param>
     /// <param name="reader">Open reader positioned before the first row.</param>
-    public SqlServerResultReader(SqlCommand command, SqlDataReader reader)
+    /// <param name="messages">Filled by the connection with the server messages received while the command runs.</param>
+    /// <param name="detach">Unsubscribes the message handler; called on disposal.</param>
+    public SqlServerResultReader(SqlCommand command, SqlDataReader reader, List<string> messages, Action detach)
     {
         _command = command;
         _reader = reader;
+        _messages = messages;
+        _detach = detach;
+        Columns = ReadColumns(reader);
+    }
+
+    private static ColumnInfo[] ReadColumns(SqlDataReader reader)
+    {
         var columns = new ColumnInfo[reader.FieldCount];
         for (var i = 0; i < columns.Length; i++)
             columns[i] = new ColumnInfo(reader.GetName(i), reader.GetDataTypeName(i), reader.GetFieldType(i), true, i);
-        Columns = columns;
+        return columns;
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<ColumnInfo> Columns { get; }
+    public IReadOnlyList<ColumnInfo> Columns { get; private set; }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> Messages => _messages;
 
     /// <inheritdoc />
     public long RecordsAffected => _finished ? _reader.RecordsAffected : -1;
@@ -63,8 +77,29 @@ internal sealed class SqlServerResultReader : IResultReader
     }
 
     /// <inheritdoc />
+    public async ValueTask<bool> NextResultAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (!await _reader.NextResultAsync(cancellationToken))
+            {
+                _finished = true;
+                return false;
+            }
+        }
+        catch (SqlException ex) when (cancellationToken.IsCancellationRequested)
+        {
+            throw new OperationCanceledException(ex.Message, ex, cancellationToken);
+        }
+        Columns = ReadColumns(_reader);
+        _finished = false;
+        return true;
+    }
+
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        _detach();
         // Disposing an unfinished reader makes the driver drain the rest of the result; stop the statement on the server first.
         if (!_finished)
             _command.Cancel();

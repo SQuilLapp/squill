@@ -13,15 +13,19 @@ internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, Np
     public async ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken)
     {
         var command = new NpgsqlCommand(sql, connection) { CommandTimeout = commandTimeoutSeconds };
+        var messages = new List<string>();
+        NoticeEventHandler handler = (_, a) => { messages.Add(a.Notice.MessageText); };
+        connection.Notice += handler;
         try
         {
             foreach (var parameter in parameters)
                 command.Parameters.Add(new NpgsqlParameter(parameter.Name, parameter.Value ?? DBNull.Value));
             var reader = await command.ExecuteReaderAsync(cancellationToken);
-            return new PostgresResultReader(command, reader);
+            return new PostgresResultReader(command, reader, messages, () => connection.Notice -= handler);
         }
         catch
         {
+            connection.Notice -= handler;
             await command.DisposeAsync();
             throw;
         }
