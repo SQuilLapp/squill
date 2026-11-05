@@ -1,0 +1,235 @@
+{
+  "Columns": [
+    {
+      "Name": "c_tinyint",
+      "DataType": "tinyint",
+      "Clr": "Byte",
+      "Text": "1",
+      "Items": null
+    },
+    {
+      "Name": "c_smallint",
+      "DataType": "smallint",
+      "Clr": "Int16",
+      "Text": "7",
+      "Items": null
+    },
+    {
+      "Name": "c_int",
+      "DataType": "int",
+      "Clr": "Int32",
+      "Text": "70000",
+      "Items": null
+    },
+    {
+      "Name": "c_bigint",
+      "DataType": "bigint",
+      "Clr": "Int64",
+      "Text": "5000000000",
+      "Items": null
+    },
+    {
+      "Name": "c_decimal",
+      "DataType": "decimal",
+      "Clr": "Decimal",
+      "Text": "1234.5000",
+      "Items": null
+    },
+    {
+      "Name": "c_real",
+      "DataType": "real",
+      "Clr": "Single",
+      "Text": "1.5",
+      "Items": null
+    },
+    {
+      "Name": "c_float",
+      "DataType": "float",
+      "Clr": "Double",
+      "Text": "2.25",
+      "Items": null
+    },
+    {
+      "Name": "c_bit",
+      "DataType": "bit",
+      "Clr": "Boolean",
+      "Text": "true",
+      "Items": null
+    },
+    {
+      "Name": "c_char",
+      "DataType": "char",
+      "Clr": "String",
+      "Text": "ab ",
+      "Items": null
+    },
+    {
+      "Name": "c_nvarchar",
+      "DataType": "nvarchar",
+      "Clr": "String",
+      "Text": "h\u00E9llo",
+      "Items": null
+    },
+    {
+      "Name": "c_varchar_max",
+      "DataType": "varchar",
+      "Clr": "String",
+      "Text": "vc",
+      "Items": null
+    },
+    {
+      "Name": "c_varbinary_max",
+      "DataType": "varbinary",
+      "Clr": "Byte[]",
+      "Text": "CAFE",
+      "Items": null
+    },
+    {
+      "Name": "c_date",
+      "DataType": "date",
+      "Clr": "DateTime",
+      "Text": "2024-05-06T00:00:00.0000000",
+      "Items": null
+    },
+    {
+      "Name": "c_time",
+      "DataType": "time",
+      "Clr": "TimeSpan",
+      "Text": "07:08:09.1230000",
+      "Items": null
+    },
+    {
+      "Name": "c_datetime2",
+      "DataType": "datetime2",
+      "Clr": "DateTime",
+      "Text": "2024-05-06T07:08:09.1230000",
+      "Items": null
+    },
+    {
+      "Name": "c_datetimeoffset",
+      "DataType": "datetimeoffset",
+      "Clr": "DateTimeOffset",
+      "Text": "2024-05-06T07:08:09.1230000\u002B02:00",
+      "Items": null
+    },
+    {
+      "Name": "c_smalldatetime",
+      "DataType": "smalldatetime",
+      "Clr": "DateTime",
+      "Text": "2024-05-06T07:08:00.0000000",
+      "Items": null
+    },
+    {
+      "Name": "c_money",
+      "DataType": "money",
+      "Clr": "Decimal",
+      "Text": "12.3456",
+      "Items": null
+    },
+    {
+      "Name": "c_guid",
+      "DataType": "uniqueidentifier",
+      "Clr": "Guid",
+      "Text": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      "Items": null
+    },
+    {
+      "Name": "c_xml",
+      "DataType": "xml",
+      "Clr": "String",
+      "Text": "\u003Ca x=\u00221\u0022 /\u003E",
+      "Items": null
+    },
+    {
+      "Name": "c_rowversion",
+      "DataType": "timestamp",
+      "Clr": "Byte[]",
+      "Text": "0000000000000FA1",
+      "Items": null
+    },
+    {
+      "Name": "c_identity",
+      "DataType": "int",
+      "Clr": "Int32",
+      "Text": "1",
+      "Items": null
+    },
+    {
+      "Name": "c_variant",
+      "DataType": "sql_variant",
+      "Clr": "Decimal",
+      "Text": "1.5",
+      "Items": null
+    },
+    {
+      "Name": "c_hierarchy",
+      "DataType": "master.sys.hierarchyid",
+      "Clr": "Byte[]",
+      "Text": "5B40",
+      "Items": null
+    },
+    {
+      "Name": "c_geography",
+      "DataType": "master.sys.geography",
+      "Clr": "Byte[]",
+      "Text": "E6100000010CCDCCCCCCCCCC47403333333333935EC0",
+      "Items": null
+    },
+    {
+      "Name": "c_geometry",
+      "DataType": "master.sys.geometry",
+      "Clr": "Byte[]",
+      "Text": "00000000010C000000000000F03F0000000000000040",
+      "Items": null
+    },
+    {
+      "Name": "s_comma",
+      "DataType": "varchar",
+      "Clr": "String",
+      "Text": "a,b",
+      "Items": null
+    },
+    {
+      "Name": "s_quote",
+      "DataType": "varchar",
+      "Clr": "String",
+      "Text": "say \u0022hi\u0022",
+      "Items": null
+    },
+    {
+      "Name": "s_crlf",
+      "DataType": "varchar",
+      "Clr": "String",
+      "Text": "l1\r\nl2",
+      "Items": null
+    },
+    {
+      "Name": "s_unicode",
+      "DataType": "nvarchar",
+      "Clr": "String",
+      "Text": "h\u00E9llo \uD83D\uDE00 \u65E5\u672C",
+      "Items": null
+    },
+    {
+      "Name": "s_empty",
+      "DataType": "varchar",
+      "Clr": "String",
+      "Text": "",
+      "Items": null
+    },
+    {
+      "Name": "s_null",
+      "DataType": "nvarchar",
+      "Clr": "null",
+      "Text": null,
+      "Items": null
+    },
+    {
+      "Name": "s_decimal",
+      "DataType": "decimal",
+      "Clr": "Decimal",
+      "Text": "12345678901234567890.123456789",
+      "Items": null
+    }
+  ]
+}

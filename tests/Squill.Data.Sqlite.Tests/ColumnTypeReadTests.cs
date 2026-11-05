@@ -18,7 +18,10 @@ public sealed class ColumnTypeReadTests
             "insert into all_types (c_integer, c_numeric, c_real, c_text, c_blob, c_datetime, c_boolean, c_untyped) values (42, 12.5, 1.5, 'héllo', x'cafe', '2024-05-06 07:08:09', 1, 3.25)", [], TestContext.Current.CancellationToken))
             Assert.Null(await insert.ReadBatchAsync(1, TestContext.Current.CancellationToken));
 
-        var row = await ColumnTypeScenario.ReadAsync(connection, "select * from all_types");
+        List<CapturedColumn> capture = [];
+        var row = await ColumnTypeScenario.ReadAsync(connection, "select * from all_types", capture);
+        await ColumnTypeScenario.ReadAsync(connection, "select 'a,b' as s_comma, 'say \"hi\"' as s_quote, 'l1' || char(13) || char(10) || 'l2' as s_crlf, 'héllo 😀 日本' as s_unicode, '' as s_empty, null as s_null", capture);
+        ExportSnapshotScenario.WriteIfRequested(DatabaseDialect.Sqlite, capture);
         Assert.Equal(
             """
             c_id|Int64|1

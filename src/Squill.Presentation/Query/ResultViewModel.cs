@@ -118,13 +118,16 @@ public sealed partial class ResultViewModel : ViewModelBase
             return;
         }
 
+        // Grid is the committed result: the edits live in Editor.Grid and are never exported.
+        if (Editor is { HasPendingChanges: true } editor
+            && !await _dialogs.ConfirmAsync(UiText.Get("results.exportPending.title"), UiText.FormatPlural("results.exportPending.confirm", editor.PendingCount)))
+            return;
         try
         {
             var path = await _dialogs.PickSaveFileAsync(Title, exporter.FileExtension);
             if (path is null)
                 return;
-            await using var file = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
-            await exporter.ExportAsync(Grid, file, CancellationToken.None);
+            await ResultFileWriter.WriteAsync(exporter, Grid, path, CancellationToken.None);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
         {

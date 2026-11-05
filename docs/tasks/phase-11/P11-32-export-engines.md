@@ -1,6 +1,6 @@
 # P11-32 - Result export verified per engine
 
-Status: todo
+Status: done
 Depends on: P11-25
 
 ## Goal
@@ -16,7 +16,7 @@ CSV and JSON export (P4-11) give correct, re-importable output for the values ea
 - New formats (Excel, SQL INSERT), clipboard formats.
 
 ## Tasks
-- [ ] Resources, tests, exporter fixes.
+- [x] Resources, tests, exporter fixes.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green.

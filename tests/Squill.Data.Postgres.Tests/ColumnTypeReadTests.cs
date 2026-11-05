@@ -63,11 +63,14 @@ public sealed class ColumnTypeReadTests(PostgresFixture server) : IClassFixture<
             values (7, 70000, 5000000000, 1234.5, 1.5, 2.25, true, 'héllo', 'vc', 'ab', '\xcafe', '2024-05-06', '07:08:09', '2024-05-06 07:08:09', '2024-05-06 07:08:09+02', '1 day 02:03:04', 'A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11', '{"a": 1}', '{"b":[1,2]}', '192.168.1.5/24', '{1,2,3}', '{a,"b c"}', (select min(e) from unnest(enum_range(null::sample.mood)) e))
             """, [], TestContext.Current.CancellationToken))
             Assert.Null(await insert.ReadBatchAsync(1, TestContext.Current.CancellationToken));
-        var row = await ColumnTypeScenario.ReadAsync(connection, "select * from sample.all_types");
+        List<CapturedColumn> capture = [];
+        var row = await ColumnTypeScenario.ReadAsync(connection, "select * from sample.all_types", capture);
         var extras = await ColumnTypeScenario.ReadAsync(connection,
-            "select '[1,5)'::int4range as c_range, '08:00:2b:01:02:03'::macaddr as c_mac, 'NaN'::float8 as c_nan, 'Infinity'::float8 as c_infinity, '10.0.0.0/8'::cidr as c_cidr, '-1 day -02:03:04.5'::interval as c_negative_interval, '1 year 2 mons'::interval as c_month_interval, null::int[] as c_null_array, row(1, 'x') as c_composite, ('a=>1')::text as c_plain, decode(repeat('61', 1048576), 'hex') as c_big_bytea");
+            "select '[1,5)'::int4range as c_range, '08:00:2b:01:02:03'::macaddr as c_mac, 'NaN'::float8 as c_nan, 'Infinity'::float8 as c_infinity, '10.0.0.0/8'::cidr as c_cidr, '-1 day -02:03:04.5'::interval as c_negative_interval, '1 year 2 mons'::interval as c_month_interval, null::int[] as c_null_array, row(1, 'x') as c_composite, ('a=>1')::text as c_plain, decode(repeat('61', 1048576), 'hex') as c_big_bytea", capture);
         foreach (var p in extras)
             row[p.Key] = p.Value;
+        await ColumnTypeScenario.ReadAsync(connection, "select 'a,b'::text as s_comma, 'say \"hi\"'::text as s_quote, E'l1\\r\\nl2' as s_crlf, 'héllo 😀 日本'::text as s_unicode, ''::text as s_empty, null::text as s_null, 12345678901234567890.123456789::numeric as s_decimal", capture);
+        ExportSnapshotScenario.WriteIfRequested(DatabaseDialect.PostgreSql, capture);
         Assert.Equal(Expected.ReplaceLineEndings("\n"), ColumnTypeScenario.Dump(row));
     }
 }

@@ -1,0 +1,235 @@
+{
+  "Columns": [
+    {
+      "Name": "c_tinyint",
+      "DataType": "TINYINT",
+      "Clr": "SByte",
+      "Text": "1",
+      "Items": null
+    },
+    {
+      "Name": "c_smallint",
+      "DataType": "SMALLINT",
+      "Clr": "Int16",
+      "Text": "7",
+      "Items": null
+    },
+    {
+      "Name": "c_int",
+      "DataType": "INT",
+      "Clr": "Int32",
+      "Text": "70000",
+      "Items": null
+    },
+    {
+      "Name": "c_bigint",
+      "DataType": "BIGINT",
+      "Clr": "Int64",
+      "Text": "5000000000",
+      "Items": null
+    },
+    {
+      "Name": "c_decimal",
+      "DataType": "DECIMAL",
+      "Clr": "Decimal",
+      "Text": "1234.5000",
+      "Items": null
+    },
+    {
+      "Name": "c_float",
+      "DataType": "FLOAT",
+      "Clr": "Single",
+      "Text": "1.5",
+      "Items": null
+    },
+    {
+      "Name": "c_double",
+      "DataType": "DOUBLE",
+      "Clr": "Double",
+      "Text": "2.25",
+      "Items": null
+    },
+    {
+      "Name": "c_bit",
+      "DataType": "BIT",
+      "Clr": "Boolean",
+      "Text": "true",
+      "Items": null
+    },
+    {
+      "Name": "c_bool",
+      "DataType": "BOOL",
+      "Clr": "Boolean",
+      "Text": "true",
+      "Items": null
+    },
+    {
+      "Name": "c_char",
+      "DataType": "CHAR(3)",
+      "Clr": "String",
+      "Text": "ab",
+      "Items": null
+    },
+    {
+      "Name": "c_varchar",
+      "DataType": "VARCHAR",
+      "Clr": "String",
+      "Text": "vc",
+      "Items": null
+    },
+    {
+      "Name": "c_text",
+      "DataType": "VARCHAR",
+      "Clr": "String",
+      "Text": "h\u00E9llo",
+      "Items": null
+    },
+    {
+      "Name": "c_blob",
+      "DataType": "BLOB",
+      "Clr": "Byte[]",
+      "Text": "CAFE",
+      "Items": null
+    },
+    {
+      "Name": "c_date",
+      "DataType": "DATE",
+      "Clr": "DateTime",
+      "Text": "2024-05-06T00:00:00.0000000",
+      "Items": null
+    },
+    {
+      "Name": "c_time",
+      "DataType": "TIME",
+      "Clr": "TimeSpan",
+      "Text": "-12:03:04",
+      "Items": null
+    },
+    {
+      "Name": "c_datetime",
+      "DataType": "DATETIME",
+      "Clr": "DateTime",
+      "Text": "2024-05-06T07:08:09.1230000",
+      "Items": null
+    },
+    {
+      "Name": "c_timestamp",
+      "DataType": "TIMESTAMP",
+      "Clr": "DateTime",
+      "Text": "2024-05-06T07:08:09.0000000",
+      "Items": null
+    },
+    {
+      "Name": "c_year",
+      "DataType": "YEAR",
+      "Clr": "Int32",
+      "Text": "2024",
+      "Items": null
+    },
+    {
+      "Name": "c_json",
+      "DataType": "JSON",
+      "Clr": "String",
+      "Text": "{\u0022a\u0022: 1}",
+      "Items": null
+    },
+    {
+      "Name": "c_enum",
+      "DataType": "ENUM",
+      "Clr": "String",
+      "Text": "ok",
+      "Items": null
+    },
+    {
+      "Name": "c_set",
+      "DataType": "SET",
+      "Clr": "String",
+      "Text": "a,c",
+      "Items": null
+    },
+    {
+      "Name": "c_auto",
+      "DataType": "INT",
+      "Clr": "Int32",
+      "Text": "1",
+      "Items": null
+    },
+    {
+      "Name": "c_zero_date",
+      "DataType": "DATE",
+      "Clr": "DateTime",
+      "Text": "0001-01-01T00:00:00.0000000",
+      "Items": null
+    },
+    {
+      "Name": "c_zero_datetime",
+      "DataType": "DATETIME",
+      "Clr": "DateTime",
+      "Text": "0001-01-01T00:00:00.0000000",
+      "Items": null
+    },
+    {
+      "Name": "c_bit8",
+      "DataType": "BLOB",
+      "Clr": "Byte[]",
+      "Text": "AA",
+      "Items": null
+    },
+    {
+      "Name": "c_double_cast",
+      "DataType": "DOUBLE",
+      "Clr": "Double",
+      "Text": "1.5",
+      "Items": null
+    },
+    {
+      "Name": "s_comma",
+      "DataType": "VARCHAR",
+      "Clr": "String",
+      "Text": "a,b",
+      "Items": null
+    },
+    {
+      "Name": "s_quote",
+      "DataType": "VARCHAR",
+      "Clr": "String",
+      "Text": "say \u0022hi\u0022",
+      "Items": null
+    },
+    {
+      "Name": "s_crlf",
+      "DataType": "VARCHAR",
+      "Clr": "String",
+      "Text": "l1\r\nl2",
+      "Items": null
+    },
+    {
+      "Name": "s_unicode",
+      "DataType": "VARCHAR",
+      "Clr": "String",
+      "Text": "h\u00E9llo \uD83D\uDE00 \u65E5\u672C",
+      "Items": null
+    },
+    {
+      "Name": "s_empty",
+      "DataType": "VARCHAR",
+      "Clr": "String",
+      "Text": "",
+      "Items": null
+    },
+    {
+      "Name": "s_null",
+      "DataType": "NULL",
+      "Clr": "null",
+      "Text": null,
+      "Items": null
+    },
+    {
+      "Name": "s_decimal",
+      "DataType": "DECIMAL",
+      "Clr": "Decimal",
+      "Text": "12345678901234567890.123456789",
+      "Items": null
+    }
+  ]
+}

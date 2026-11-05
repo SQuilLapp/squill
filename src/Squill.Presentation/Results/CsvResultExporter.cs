@@ -2,7 +2,10 @@ using System.Text;
 
 namespace Squill.Presentation.Results;
 
-/// <summary>Exports a result as RFC 4180 CSV: UTF-8 without BOM, <c>\r\n</c> line ends, header row.</summary>
+/// <summary>
+/// Exports a result as RFC 4180 CSV: UTF-8 without BOM, <c>\r\n</c> line ends, header row. CSV has no NULL: NULL and the empty string are both an empty field.
+/// Binary values are written in full as <c>0x</c> hex, dates and times as <see cref="CellFormatter.Format"/> gives them (<c>yyyy-MM-dd HH:mm:ss</c>).
+/// </summary>
 public sealed class CsvResultExporter : IResultExporter
 {
     private static readonly char[] SpecialChars = [',', '"', '\r', '\n'];
@@ -42,7 +45,7 @@ public sealed class CsvResultExporter : IResultExporter
                 {
                     if (c > 0)
                         line.Append(',');
-                    AppendField(line, CellFormatter.Format(source.GetCell(r, c), columns[c]));
+                    AppendField(line, FormatCell(source.GetCell(r, c), columns[c]));
                 }
 
                 line.Append("\r\n");
@@ -52,6 +55,9 @@ public sealed class CsvResultExporter : IResultExporter
             await writer.FlushAsync(ct).ConfigureAwait(false);
         }
     }
+
+    private static string? FormatCell(object? value, Squill.Core.ColumnInfo column) =>
+        value is byte[] bytes ? "0x" + Convert.ToHexStringLower(bytes) : CellFormatter.Format(value, column);
 
     private static void AppendField(StringBuilder line, string? text)
     {

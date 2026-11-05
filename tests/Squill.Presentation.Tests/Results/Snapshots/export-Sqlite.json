@@ -1,0 +1,109 @@
+{
+  "Columns": [
+    {
+      "Name": "c_id",
+      "DataType": "INTEGER",
+      "Clr": "Int64",
+      "Text": "1",
+      "Items": null
+    },
+    {
+      "Name": "c_integer",
+      "DataType": "INTEGER",
+      "Clr": "Int64",
+      "Text": "42",
+      "Items": null
+    },
+    {
+      "Name": "c_numeric",
+      "DataType": "NUMERIC",
+      "Clr": "Double",
+      "Text": "12.5",
+      "Items": null
+    },
+    {
+      "Name": "c_real",
+      "DataType": "REAL",
+      "Clr": "Double",
+      "Text": "1.5",
+      "Items": null
+    },
+    {
+      "Name": "c_text",
+      "DataType": "TEXT",
+      "Clr": "String",
+      "Text": "h\u00E9llo",
+      "Items": null
+    },
+    {
+      "Name": "c_blob",
+      "DataType": "BLOB",
+      "Clr": "Byte[]",
+      "Text": "CAFE",
+      "Items": null
+    },
+    {
+      "Name": "c_datetime",
+      "DataType": "DATETIME",
+      "Clr": "String",
+      "Text": "2024-05-06 07:08:09",
+      "Items": null
+    },
+    {
+      "Name": "c_boolean",
+      "DataType": "BOOLEAN",
+      "Clr": "Int64",
+      "Text": "1",
+      "Items": null
+    },
+    {
+      "Name": "c_untyped",
+      "DataType": "REAL",
+      "Clr": "Double",
+      "Text": "3.25",
+      "Items": null
+    },
+    {
+      "Name": "s_comma",
+      "DataType": "TEXT",
+      "Clr": "String",
+      "Text": "a,b",
+      "Items": null
+    },
+    {
+      "Name": "s_quote",
+      "DataType": "TEXT",
+      "Clr": "String",
+      "Text": "say \u0022hi\u0022",
+      "Items": null
+    },
+    {
+      "Name": "s_crlf",
+      "DataType": "TEXT",
+      "Clr": "String",
+      "Text": "l1\r\nl2",
+      "Items": null
+    },
+    {
+      "Name": "s_unicode",
+      "DataType": "TEXT",
+      "Clr": "String",
+      "Text": "h\u00E9llo \uD83D\uDE00 \u65E5\u672C",
+      "Items": null
+    },
+    {
+      "Name": "s_empty",
+      "DataType": "TEXT",
+      "Clr": "String",
+      "Text": "",
+      "Items": null
+    },
+    {
+      "Name": "s_null",
+      "DataType": "BLOB",
+      "Clr": "null",
+      "Text": null,
+      "Items": null
+    }
+  ]
+}

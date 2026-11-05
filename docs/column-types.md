@@ -63,3 +63,20 @@ Written from `ColumnTypeReadTests` (one per driver test project, against `all_ty
 `CellValueParser` turns the displayed text back into the CLR value; the round trip is checked by `ColumnTypeEditTests` (SQLite always, the others with Docker). `integer[]`/`text[]` parse as `int[]`/`string[]`; `timestamptz` text is read as UTC; `0000-00-00` becomes `DateTime.MinValue`. `DmlGenerator` appends `::json`/`::jsonb` to the parameter of a PostgreSQL json column (MySQL json and SQL Server xml take a string).
 
 Read-only columns, with the reason shown when the user tries to edit: generated or computed (`ColumnDefinition.IsGenerated`: PostgreSQL `GENERATED` columns and identity `ALWAYS`, MySQL `VIRTUAL`/`STORED GENERATED`, SQL Server computed columns and `rowversion`); types without a safe text form (`sql_variant`, `hierarchyid`, `geography`, `geometry`, ranges, arrays other than `integer[]`/`text[]`, and results typed as composites, `inet`, `cidr`, `macaddr`). SQLite generated columns are not listed in the table schema, so they show the generic "read-only" reason.
+
+## Export
+
+Checked per engine by `ExportSnapshotTests` over the rows captured in `tests/Squill.Presentation.Tests/Results/Snapshots` (regenerate with `SQUILL_UPDATE_SNAPSHOTS=1` and `eng/run-docker-tests.ps1`, filter `*ColumnTypeReadTests*`).
+
+| Value | CSV | JSON |
+| --- | --- | --- |
+| NULL / empty string | both an empty field (CSV has no NULL) | `null` / `""` |
+| Text with `,` `"` CR LF, Unicode | RFC 4180 quoting, UTF-8 without BOM | string |
+| Integers, decimals, floats | invariant text, decimals unrounded | numbers; `NaN` and infinities are strings |
+| Date and time | `yyyy-MM-dd HH:mm:ss[.fff]` (offset appended) | ISO 8601 with `T`; MySQL zero dates stay `0000-00-00...` |
+| Binary | `0x` + full lower-case hex | base64 |
+| Arrays | `{a,b}` | JSON array |
+| `json` / `jsonb` / `JSON` columns | text | embedded JSON value (text if invalid) |
+| Other (inet, range, enum, ...) | invariant text | string |
+
+A file is written to a temporary name next to the target and moved over it at the end, so a cancelled or failed export leaves no partial file. The export always holds the committed values: with uncommitted grid edits the user is asked first (`results.exportPending`).

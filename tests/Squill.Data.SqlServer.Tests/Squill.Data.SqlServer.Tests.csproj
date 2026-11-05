@@ -18,6 +18,7 @@
     <Compile Include="../Shared/ErStressScenario.cs" Link="ErStressScenario.cs" />
     <Compile Include="../Shared/DesignerScenarios.cs" Link="DesignerScenarios.cs" />
     <Compile Include="../Shared/ColumnTypeScenario.cs" Link="ColumnTypeScenario.cs" />
+    <Compile Include="../Shared/ExportSnapshotScenario.cs" Link="ExportSnapshotScenario.cs" />
     <Compile Include="../Shared/ColumnTypeEditScenario.cs" Link="ColumnTypeEditScenario.cs" />
     <Compile Include="../Shared/CancelScenario.cs" Link="CancelScenario.cs" />
     <Compile Include="../Shared/MultiResultScenario.cs" Link="MultiResultScenario.cs" />

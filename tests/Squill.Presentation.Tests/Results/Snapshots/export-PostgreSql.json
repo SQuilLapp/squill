@@ -1,0 +1,305 @@
+{
+  "Columns": [
+    {
+      "Name": "c_smallint",
+      "DataType": "smallint",
+      "Clr": "Int16",
+      "Text": "7",
+      "Items": null
+    },
+    {
+      "Name": "c_integer",
+      "DataType": "integer",
+      "Clr": "Int32",
+      "Text": "70000",
+      "Items": null
+    },
+    {
+      "Name": "c_bigint",
+      "DataType": "bigint",
+      "Clr": "Int64",
+      "Text": "5000000000",
+      "Items": null
+    },
+    {
+      "Name": "c_numeric",
+      "DataType": "numeric(18, 4)",
+      "Clr": "Decimal",
+      "Text": "1234.5000",
+      "Items": null
+    },
+    {
+      "Name": "c_real",
+      "DataType": "real",
+      "Clr": "Single",
+      "Text": "1.5",
+      "Items": null
+    },
+    {
+      "Name": "c_double",
+      "DataType": "double precision",
+      "Clr": "Double",
+      "Text": "2.25",
+      "Items": null
+    },
+    {
+      "Name": "c_boolean",
+      "DataType": "boolean",
+      "Clr": "Boolean",
+      "Text": "true",
+      "Items": null
+    },
+    {
+      "Name": "c_text",
+      "DataType": "text",
+      "Clr": "String",
+      "Text": "h\u00E9llo",
+      "Items": null
+    },
+    {
+      "Name": "c_varchar",
+      "DataType": "character varying(50)",
+      "Clr": "String",
+      "Text": "vc",
+      "Items": null
+    },
+    {
+      "Name": "c_char",
+      "DataType": "character(3)",
+      "Clr": "String",
+      "Text": "ab ",
+      "Items": null
+    },
+    {
+      "Name": "c_bytea",
+      "DataType": "bytea",
+      "Clr": "Byte[]",
+      "Text": "CAFE",
+      "Items": null
+    },
+    {
+      "Name": "c_date",
+      "DataType": "date",
+      "Clr": "DateOnly",
+      "Text": "2024-05-06",
+      "Items": null
+    },
+    {
+      "Name": "c_time",
+      "DataType": "time without time zone",
+      "Clr": "TimeOnly",
+      "Text": "07:08:09.0000000",
+      "Items": null
+    },
+    {
+      "Name": "c_timestamp",
+      "DataType": "timestamp without time zone",
+      "Clr": "DateTime",
+      "Text": "2024-05-06T07:08:09.0000000",
+      "Items": null
+    },
+    {
+      "Name": "c_timestamptz",
+      "DataType": "timestamp with time zone",
+      "Clr": "DateTime",
+      "Text": "2024-05-06T05:08:09.0000000Z",
+      "Items": null
+    },
+    {
+      "Name": "c_interval",
+      "DataType": "interval",
+      "Clr": "TimeSpan",
+      "Text": "1.02:03:04",
+      "Items": null
+    },
+    {
+      "Name": "c_uuid",
+      "DataType": "uuid",
+      "Clr": "Guid",
+      "Text": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      "Items": null
+    },
+    {
+      "Name": "c_json",
+      "DataType": "json",
+      "Clr": "String",
+      "Text": "{\u0022a\u0022: 1}",
+      "Items": null
+    },
+    {
+      "Name": "c_jsonb",
+      "DataType": "jsonb",
+      "Clr": "String",
+      "Text": "{\u0022b\u0022: [1, 2]}",
+      "Items": null
+    },
+    {
+      "Name": "c_inet",
+      "DataType": "inet",
+      "Clr": "opaque",
+      "Text": "192.168.1.5",
+      "Items": null
+    },
+    {
+      "Name": "c_int_array",
+      "DataType": "integer[]",
+      "Clr": "Int32[]",
+      "Text": null,
+      "Items": [
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    {
+      "Name": "c_text_array",
+      "DataType": "text[]",
+      "Clr": "String[]",
+      "Text": null,
+      "Items": [
+        "a",
+        "b c"
+      ]
+    },
+    {
+      "Name": "c_enum",
+      "DataType": "-.-",
+      "Clr": "String",
+      "Text": "\u003C-\u003E",
+      "Items": null
+    },
+    {
+      "Name": "c_serial",
+      "DataType": "integer",
+      "Clr": "Int32",
+      "Text": "1",
+      "Items": null
+    },
+    {
+      "Name": "c_identity",
+      "DataType": "integer",
+      "Clr": "Int32",
+      "Text": "1",
+      "Items": null
+    },
+    {
+      "Name": "c_range",
+      "DataType": "int4range",
+      "Clr": "opaque",
+      "Text": "[1,5)",
+      "Items": null
+    },
+    {
+      "Name": "c_mac",
+      "DataType": "macaddr",
+      "Clr": "opaque",
+      "Text": "08002B010203",
+      "Items": null
+    },
+    {
+      "Name": "c_nan",
+      "DataType": "double precision",
+      "Clr": "Double",
+      "Text": "NaN",
+      "Items": null
+    },
+    {
+      "Name": "c_infinity",
+      "DataType": "double precision",
+      "Clr": "Double",
+      "Text": "Infinity",
+      "Items": null
+    },
+    {
+      "Name": "c_cidr",
+      "DataType": "cidr",
+      "Clr": "opaque",
+      "Text": "10.0.0.0/8",
+      "Items": null
+    },
+    {
+      "Name": "c_negative_interval",
+      "DataType": "interval",
+      "Clr": "TimeSpan",
+      "Text": "-1.02:03:04.5000000",
+      "Items": null
+    },
+    {
+      "Name": "c_month_interval",
+      "DataType": "interval",
+      "Clr": "String",
+      "Text": "\u003Cinterval\u003E",
+      "Items": null
+    },
+    {
+      "Name": "c_null_array",
+      "DataType": "integer[]",
+      "Clr": "null",
+      "Text": null,
+      "Items": null
+    },
+    {
+      "Name": "c_composite",
+      "DataType": "record",
+      "Clr": "opaque",
+      "Text": "{1,x}",
+      "Items": null
+    },
+    {
+      "Name": "c_plain",
+      "DataType": "text",
+      "Clr": "String",
+      "Text": "a=\u003E1",
+      "Items": null
+    },
+    {
+      "Name": "s_comma",
+      "DataType": "text",
+      "Clr": "String",
+      "Text": "a,b",
+      "Items": null
+    },
+    {
+      "Name": "s_quote",
+      "DataType": "text",
+      "Clr": "String",
+      "Text": "say \u0022hi\u0022",
+      "Items": null
+    },
+    {
+      "Name": "s_crlf",
+      "DataType": "text",
+      "Clr": "String",
+      "Text": "l1\r\nl2",
+      "Items": null
+    },
+    {
+      "Name": "s_unicode",
+      "DataType": "text",
+      "Clr": "String",
+      "Text": "h\u00E9llo \uD83D\uDE00 \u65E5\u672C",
+      "Items": null
+    },
+    {
+      "Name": "s_empty",
+      "DataType": "text",
+      "Clr": "String",
+      "Text": "",
+      "Items": null
+    },
+    {
+      "Name": "s_null",
+      "DataType": "text",
+      "Clr": "null",
+      "Text": null,
+      "Items": null
+    },
+    {
+      "Name": "s_decimal",
+      "DataType": "numeric",
+      "Clr": "Decimal",
+      "Text": "12345678901234567890.123456789",
+      "Items": null
+    }
+  ]
+}
