@@ -45,6 +45,15 @@ public sealed class SqlServerDatabaseProvider : IDatabaseProvider
             await connection.OpenAsync(cancellationToken);
             return new SqlServerDatabaseConnection(connection, profile.CommandTimeoutSeconds);
         }
+        catch (SqlException ex) when (ex.InnerException is not null)
+        {
+            await connection.DisposeAsync();
+            // On Linux SqlClient reports a failed TLS handshake as a generic pre-login error and keeps the certificate reason in the inner exceptions; surface it.
+            var reasons = new List<string>();
+            for (var inner = ex.InnerException; inner is not null; inner = inner.InnerException)
+                reasons.Add(inner.Message);
+            throw new InvalidOperationException(ex.Message + " " + string.Join(' ', reasons), ex);
+        }
         catch
         {
             await connection.DisposeAsync();

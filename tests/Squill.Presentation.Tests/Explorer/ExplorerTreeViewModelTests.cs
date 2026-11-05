@@ -408,7 +408,7 @@ public sealed class ExplorerTreeViewModelTests
         var (connection, root, _) = ConnectServer(Profile("p"));
         var other = connection.Children[1];
         other.IsExpanded = true;
-        await WaitAsync(() => other.Session is not null);
+        await WaitAsync(() => other.Session is not null && Descendants(other).Any(n => n.Kind == ExplorerNodeKind.Table));
         _tree.SelectedNode = Descendants(other).First(n => n.Kind == ExplorerNodeKind.Table);
 
         await _tree.RefreshCommand.ExecuteAsync(null);
