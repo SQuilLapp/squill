@@ -1,6 +1,6 @@
 # P11-39 - End-to-end verification: SQL Server
 
-Status: todo
+Status: automated part done, manual part pending the owner (checklist `docs/verification/sqlserver.md`)
 Depends on: P11-37, P11-19, P11-24, P11-27, P11-28, P11-30, P11-31, P11-32
 
 ## Goal
@@ -14,7 +14,8 @@ Same as P11-37 against a SQL Server 2022 container (Podman machine at 4096 MiB).
 - Azure SQL, Windows authentication, features absent from the app.
 
 ## Tasks
-- [ ] Drive, fix, report.
+- [x] Automated part: query-flow scenario and SQL Server-specific tests against the container (all green).
+- [ ] Manual part: the owner ticks `docs/verification/sqlserver.md` section 3.
 
 ## Acceptance criteria
 - Report complete. `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green; AOT publishes clean; no container or process left.
