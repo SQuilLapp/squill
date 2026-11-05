@@ -204,7 +204,12 @@ internal static class UiTextCatalogEn
         ("snippets.deleteConfirm", "Delete the snippet '{0}'?"),
         ("terminal.localShell", "Local shell"),
         ("terminal.noDatabaseFile", "Connection '{0}' has no database file."),
-        ("terminal.cliNotFound", "'{0}' was not found on PATH; install it to open a {1} terminal."),
+        ("terminal.cliNotFound", "{0} was not found on PATH or in the default install folders, so no {1} terminal can open. {2}"),
+        ("terminal.install.psql", "Install the PostgreSQL client tools (psql)."),
+        ("terminal.install.mysql", "Install the MySQL client (mysql)."),
+        ("terminal.install.sqlcmd", "Install the sqlcmd utility from Microsoft."),
+        ("terminal.install.sqlite3", "Install the SQLite command-line shell (sqlite3)."),
+        ("terminal.tunnelNotOpen", "Connect '{0}' first: its SSH tunnel must be open to start the terminal."),
 
         // Connections window
         ("connections.title", "Connections — SQuilL"),

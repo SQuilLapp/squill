@@ -378,7 +378,18 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         if (profile is not null)
         {
             var password = await _profiles.GetPasswordAsync(profile.Id, ct);
-            var cli = TerminalLauncher.ForProfile(profile, password, _findOnPath, out reason);
+            int? tunnelPort = null;
+            if (profile.Ssh is not null)
+            {
+                // The tunnel belongs to the open session and lives as long as it does.
+                tunnelPort = _manager.Sessions.FirstOrDefault(s => s.Profile.Id == profile.Id)?.TunnelPort;
+                if (tunnelPort is null)
+                {
+                    await _dialogs.ShowErrorAsync(UiText.Get("workspace.terminal"), UiText.Format("terminal.tunnelNotOpen", profile.Name));
+                    return;
+                }
+            }
+            var cli = TerminalLauncher.ForProfile(profile, password, _findOnPath, out reason, tunnelPort);
             if (cli is null)
             {
                 await _dialogs.ShowErrorAsync(UiText.Get("workspace.terminal"), reason ?? UiText.Get("workspace.terminalNotStarted"));

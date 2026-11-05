@@ -204,7 +204,12 @@ internal static class UiTextCatalogFr
         ("snippets.deleteConfirm", "Supprimer le script '{0}' ?"),
         ("terminal.localShell", "Shell local"),
         ("terminal.noDatabaseFile", "La connexion '{0}' n'a pas de fichier de base de données."),
-        ("terminal.cliNotFound", "'{0}' est introuvable dans le PATH ; installez-le pour ouvrir un terminal {1}."),
+        ("terminal.cliNotFound", "{0} est introuvable dans le PATH et les dossiers d'installation par défaut : impossible d'ouvrir un terminal {1}. {2}"),
+        ("terminal.install.psql", "Installez les outils clients PostgreSQL (psql)."),
+        ("terminal.install.mysql", "Installez le client MySQL (mysql)."),
+        ("terminal.install.sqlcmd", "Installez l'utilitaire sqlcmd de Microsoft."),
+        ("terminal.install.sqlite3", "Installez le shell en ligne de commande SQLite (sqlite3)."),
+        ("terminal.tunnelNotOpen", "Connectez d'abord '{0}' : son tunnel SSH doit être ouvert pour lancer le terminal."),
 
         // Connections window
         ("connections.title", "Connexions — SQuilL"),

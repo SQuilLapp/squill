@@ -1,6 +1,6 @@
 # P11-34 - Terminal: native client launch per engine
 
-Status: todo
+Status: done
 Depends on: P11-06
 
 ## Goal
@@ -16,8 +16,8 @@ The terminal tab launches the right command-line client for each engine with the
 - Embedded SQL shell inside SQuilL, new terminal features.
 
 ## Tasks
-- [ ] Tests for the 4 launches (with and without SSH, with spaces in names), discovery, missing-client message, fixes.
-- [ ] If a client exists on the machine (`sqlite3`, `psql`...), launch it once headless with `--version` through the same launcher code path as a smoke test; skip silently with a printed reason otherwise (never fail on a missing client).
+- [x] Tests for the 4 launches (with and without SSH, with spaces in names), discovery, missing-client message, fixes.
+- [x] If a client exists on the machine (`sqlite3`, `psql`...), launch it once headless with `--version` through the same launcher code path as a smoke test; skip silently with a printed reason otherwise (never fail on a missing client).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green.

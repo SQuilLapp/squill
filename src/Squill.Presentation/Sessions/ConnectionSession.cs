@@ -33,6 +33,9 @@ public sealed class ConnectionSession : IAsyncDisposable
     public IEnumerable<ConnectionSession> OpenedDatabases =>
         _derived.Values.Where(t => t is { IsCompletedSuccessfully: true }).Select(t => t.Result);
 
+    /// <summary>Gets the local port of the session's SSH tunnel, or <see langword="null"/> without a tunnel.</summary>
+    public int? TunnelPort => _tunnel?.LocalPort;
+
     /// <summary>Gets the profile the session was opened from (with the original host, not the tunnel's).</summary>
     public ConnectionProfile Profile { get; }
 
