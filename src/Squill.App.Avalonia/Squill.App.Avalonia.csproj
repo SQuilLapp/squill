@@ -25,12 +25,12 @@
     <AvaloniaResource Include="..\..\assets\brand\app-icons\windows\squill-32.png" Link="Assets\squill-32.png" />
     <AvaloniaResource Include="..\..\assets\fonts\*.ttf" Link="Assets\Fonts\%(Filename)%(Extension)" />
   </ItemGroup>
-  <!-- Optional LoomTerminal (ADR 0002): set LoomTerminalPath in the git-ignored Directory.Build.local.props. Without it the head has no terminal tabs. -->
-  <PropertyGroup Condition="'$(LoomTerminalPath)' != ''">
+  <!-- LoomTerminal (ADR 0002) comes from NuGet. -->
+  <PropertyGroup>
     <DefineConstants>$(DefineConstants);SQUILL_LOOMTERMINAL</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition="'$(LoomTerminalPath)' != ''">
-    <ProjectReference Include="$(LoomTerminalPath)\src\LoomTerminal.Avalonia\LoomTerminal.Avalonia.csproj" />
+  <ItemGroup>
+    <PackageReference Include="LoomTerminal.Avalonia" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Squill.App.Shared\LoomTerminalHost.cs" Link="Terminal\LoomTerminalHost.cs" />

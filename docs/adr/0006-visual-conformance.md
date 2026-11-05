@@ -19,7 +19,7 @@ Phase 9 (cards P9-01 to P9-27) restyled both heads (WinUI 3 and Avalonia) after 
 - Hover, pressed and focus states were never driven by hand. Neither were most popups: the menu, flyout, tooltip and dialog popups of the WinUI styles, the parameters prompt, the relation tooltip of the ER diagram, the unsaved dot and hover close button of tabs, and the connected status bar of WinUI.
 - The DML and provider tests that need Docker (PostgreSQL, MySQL / MariaDB, SQL Server) have never run.
 - WinUI gets `LoomEditor.WinUI` and `LoomTerminal.WinUI` from NuGet; their use (editor frame, read-only DDL preview) was checked only through the published exe. LoomEditor exposes decorations only, so the wavy diagnostic underline, inline diagnostic pill, margin triangle, current-statement background and completion popup are not matched.
-- Avalonia still uses AvaloniaEdit as its editor (same unmatched items), and its LoomTerminal control comes from a local checkout through `LoomTerminalPath`.
+- Avalonia still uses AvaloniaEdit as its editor (same unmatched items); its LoomTerminal control comes from the `LoomTerminal.Avalonia` NuGet package.
 - WinUI explorer rows are 28 high instead of 24 (the `TreeViewItemPresenter` clips below that height).
 - No screenshots were added to the README: none were captured for it.
 

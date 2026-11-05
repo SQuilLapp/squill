@@ -92,19 +92,9 @@ dotnet run --project tools/Squill.TokenGen -c Release -- tokens/squill.tokens.js
 
 The `release` GitHub workflow (`.github/workflows/release.yml`) runs the same script.
 
-### Optional LoomTerminal
+### LoomTerminal
 
-The WinUI head gets its SQL editor and terminal tabs from the [`LoomEditor.WinUI`](https://www.nuget.org/packages/LoomEditor.WinUI) and [`LoomTerminal.WinUI`](https://www.nuget.org/packages/LoomTerminal.WinUI) NuGet packages (see [ADR 0002](docs/adr/0002-editor-and-terminal-components.md)); nothing to configure. The Avalonia LoomTerminal control (not published yet) is used from a local checkout. Create the git-ignored `Directory.Build.local.props` at the repository root:
-
-```xml
-<Project>
-  <PropertyGroup>
-    <LoomTerminalPath>D:\LoomTerminal</LoomTerminalPath>
-  </PropertyGroup>
-</Project>
-```
-
-`LoomTerminalPath` can be omitted: without it the Avalonia head has no terminal UI (the Avalonia head uses AvaloniaEdit as its editor). It does not affect the WinUI head. CI builds without it. The WinUI head targets `net11.0-windows10.0.26100.0`.
+Both heads get their terminal tabs from the [`LoomTerminal.WinUI`](https://www.nuget.org/packages/LoomTerminal.WinUI) and [`LoomTerminal.Avalonia`](https://www.nuget.org/packages/LoomTerminal.Avalonia) NuGet packages (see [ADR 0002](docs/adr/0002-editor-and-terminal-components.md)); nothing to configure. The WinUI head targets `net11.0-windows10.0.26100.0`.
 
 ## Project layout
 
