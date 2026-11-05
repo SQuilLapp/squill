@@ -152,7 +152,7 @@ public sealed class OracleProviderTests
         WireCell Num(int v) => WireValue.Encode(v)!;
         var sets = new Dictionary<string, (WireColumn[], WireCell?[][])>
         {
-            ["sys_context"] = (one, [[Text("HR")]]),
+            ["from dual"] = (one, [[Text("HR")]]),
             ["from all_constraints"] = (one, [[Text("HR"), Text("EMP"), Text("EMP_PK"), Text("ID")]]),
             ["from all_tab_columns"] = (one,
             [
@@ -189,28 +189,23 @@ public sealed class OracleProviderTests
         Assert.Equal(["HR", "SCOTT"], await connection.ListDatabasesAsync(CancellationToken.None));
     }
 
-    [Theory]
-    [InlineData("11.2.0.2.0", 11)]
-    [InlineData("23.0.0.0.0", 23)]
-    [InlineData("Oracle Database 19c", 0)]
-    [InlineData("", 0)]
-    public void MajorVersion_VersionString_ParsesLeadingNumber(string version, int expected) =>
-        Assert.Equal(expected, OracleSchemaReader.MajorVersion(version));
-
-    [Theory]
-    [InlineData("11.2.0.2.0", false)]
-    [InlineData("19.0.0.0.0", true)]
-    public async Task ReadSchemaAsync_ServerVersion_ChoosesTheSchemaFilter(string version, bool usesOracleMaintained)
+    [Fact]
+    public async Task ReadSchemaAsync_CatalogQueries_KeepCurrentSchemaAndDoNotUseOracleMaintained()
     {
-        await using var bridge = new FakeBridge(FakeBridge.Scripted(new() { ["sys_context"] = ([new WireColumn("X", "VARCHAR2", "s")], [[new WireCell("s", "HR")]]), ["from all_"] = ([], []) }, version));
+        await using var bridge = new FakeBridge(FakeBridge.Scripted(new() { ["sys_context('USERENV', 'CURRENT_SCHEMA') from dual"] = ([new WireColumn("X", "VARCHAR2", "s")], [[new WireCell("s", "HR")]]), ["from all_"] = ([], []) }));
         await using var connection = await OpenAsync(bridge);
 
         await connection.ReadSchemaAsync(CancellationToken.None);
 
         var catalogQueries = bridge.Requests.Where(r => r.Op == "execute" && r.Sql!.Contains("from all_", StringComparison.Ordinal)).Select(r => r.Sql!).ToList();
-        Assert.NotEmpty(catalogQueries);
-        Assert.All(catalogQueries, q => Assert.Equal(usesOracleMaintained, q.Contains("oracle_maintained", StringComparison.Ordinal)));
+        Assert.Equal(3, catalogQueries.Count);
+        Assert.All(catalogQueries, q =>
+        {
+            Assert.DoesNotContain("oracle_maintained", q, StringComparison.Ordinal);
+            Assert.Contains("= sys_context('USERENV', 'CURRENT_SCHEMA')", q, StringComparison.Ordinal);
+        });
     }
+
 
     [Fact]
     public void Registry_OracleProvider_ServesTheOracleDialect()

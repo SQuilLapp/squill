@@ -8,48 +8,40 @@ internal static class OracleSchemaReader
 {
     private const string SystemUsers = "('SYS', 'SYSTEM', 'SYSMAN', 'DBSNMP', 'OUTLN', 'XDB', 'CTXSYS', 'MDSYS', 'ORDSYS', 'ORDDATA', 'ORDPLUGINS', 'SI_INFORMTN_SCHEMA', 'WMSYS', 'EXFSYS', 'LBACSYS', 'DVSYS', 'OLAPSYS', 'APPQOSSYS', 'AUDSYS', 'GSMADMIN_INTERNAL', 'OJVMSYS', 'DIP', 'ANONYMOUS', 'XS$NULL', 'MDDATA', 'SPATIAL_CSW_ADMIN_USR', 'SPATIAL_WFS_ADMIN_USR', 'FLOWS_FILES', 'DBSFWUSER', 'REMOTE_SCHEDULER_AGENT', 'SYS$UMF', 'GGSYS', 'GSMCATUSER', 'GSMUSER', 'PUBLIC')";
 
-    /// <summary>The major version of an Oracle version string such as <c>11.2.0.2.0</c> or <c>23.0.0.0.0</c>; 0 when unreadable.</summary>
-    internal static int MajorVersion(string serverVersion)
-    {
-        var digits = new string([.. serverVersion.TrimStart().TakeWhile(char.IsAsciiDigit)]);
-        return int.TryParse(digits, CultureInfo.InvariantCulture, out var major) ? major : 0;
-    }
-
     /// <summary>
-    /// A predicate that keeps only the user schemas in <paramref name="column"/>. From Oracle 12c the server flags its own schemas
-    /// (<c>oracle_maintained</c>); older servers (11g, XE) have no such column, so a fixed list of system schemas is used.
+    /// A predicate that keeps only the user schemas in <paramref name="column"/>: the connected user's own schema, plus everything that is not
+    /// a known Oracle system schema. <c>all_users.oracle_maintained</c> is not used: it is absent before 12c and was found unset (no row
+    /// with 'N') on a 19c server, which hid every table.
     /// </summary>
-    internal static string UserFilter(string column, int majorVersion) => majorVersion >= 12
-        ? $"{column} in (select username from all_users where oracle_maintained = 'N')"
-        : $"{column} not in {SystemUsers} and {column} not like 'APEX%' and {column} not like 'FLOWS%'";
+    internal static string UserFilter(string column) =>
+        $"({column} = sys_context('USERENV', 'CURRENT_SCHEMA') or ({column} not in {SystemUsers} and {column} not like 'APEX%' and {column} not like 'FLOWS%'))";
 
-    private static string RelationsSql(int major) => $"""
+    private static string RelationsSql() => $"""
         select owner, object_name, object_type from all_objects
-        where object_type in ('TABLE', 'VIEW') and object_name not like 'BIN$%' and {UserFilter("owner", major)}
+        where object_type in ('TABLE', 'VIEW') and object_name not like 'BIN$%' and {UserFilter("owner")}
         order by owner, object_name
         """;
 
-    private static string ColumnsSql(int major) => $"""
+    private static string ColumnsSql() => $"""
         select owner, table_name, column_name, data_type, char_length, data_precision, data_scale, nullable
-        from all_tab_columns where {UserFilter("owner", major)}
+        from all_tab_columns where {UserFilter("owner")}
         order by owner, table_name, column_id
         """;
 
-    private static string PrimaryKeysSql(int major) => $"""
+    private static string PrimaryKeysSql() => $"""
         select c.owner, c.table_name, c.constraint_name, cc.column_name
         from all_constraints c
         join all_cons_columns cc on cc.owner = c.owner and cc.constraint_name = c.constraint_name
-        where c.constraint_type = 'P' and {UserFilter("c.owner", major)}
+        where c.constraint_type = 'P' and {UserFilter("c.owner")}
         """;
 
     /// <summary>Reads the snapshot over an open connection.</summary>
     public static async ValueTask<SchemaSnapshot> ReadAsync(IDatabaseConnection connection, CancellationToken cancellationToken)
     {
-        var major = MajorVersion(connection.ServerVersion);
         var currentSchema = Text((await QueryAsync(connection, "select sys_context('USERENV', 'CURRENT_SCHEMA') from dual", cancellationToken)).FirstOrDefault()?[0]);
 
         var primaryKeys = new Dictionary<(string, string), (string Name, HashSet<string> Columns)>();
-        foreach (var r in await QueryAsync(connection, PrimaryKeysSql(major), cancellationToken))
+        foreach (var r in await QueryAsync(connection, PrimaryKeysSql(), cancellationToken))
         {
             var key = (Text(r[0])!, Text(r[1])!);
             if (!primaryKeys.TryGetValue(key, out var pk))
@@ -58,7 +50,7 @@ internal static class OracleSchemaReader
         }
 
         var columns = new Dictionary<(string, string), List<ColumnDefinition>>();
-        foreach (var r in await QueryAsync(connection, ColumnsSql(major), cancellationToken))
+        foreach (var r in await QueryAsync(connection, ColumnsSql(), cancellationToken))
         {
             var key = (Text(r[0])!, Text(r[1])!);
             if (!columns.TryGetValue(key, out var list))
@@ -69,7 +61,7 @@ internal static class OracleSchemaReader
         }
 
         List<TableInfo> tables = [];
-        foreach (var r in await QueryAsync(connection, RelationsSql(major), cancellationToken))
+        foreach (var r in await QueryAsync(connection, RelationsSql(), cancellationToken))
         {
             var key = (Text(r[0])!, Text(r[1])!);
             tables.Add(new TableInfo(key.Item1, key.Item2, Text(r[2]) == "VIEW" ? TableKind.View : TableKind.Table,

@@ -26,7 +26,7 @@ internal sealed class OracleDatabaseConnection(BridgeClient client, string serve
     public async ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken)
     {
         // Oracle has no cross-database browsing here: the "databases" are the schemas (users) of the connected service.
-        var filter = OracleSchemaReader.UserFilter("username", OracleSchemaReader.MajorVersion(ServerVersion));
+        var filter = OracleSchemaReader.UserFilter("username");
         await using var reader = await ExecuteAsync($"select username from all_users where {filter} order by username", [], cancellationToken);
         return [.. (await reader.ReadAllAsync(256, cancellationToken)).Select(r => (string)r[0]!)];
     }
