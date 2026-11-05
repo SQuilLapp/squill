@@ -32,6 +32,7 @@ public sealed partial class MainWindow
                 FillTerminalMenu(menu, workspace);
         };
         ToolsMenu.Items.Add(menu);
+        SyncMenuItems();
         workspace.Terminals.CollectionChanged += OnTerminalsChanged;
     }
 

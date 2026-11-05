@@ -14,6 +14,7 @@ internal static class UiTextCatalogEn
         ("menu.database", "Database"),
         ("menu.tools", "Tools"),
         ("menu.help", "Help"),
+        ("menu.main", "Main menu"),
         ("search.placeholder", "Search objects, files, actions..."),
         ("menu.newTab", "New tab"),
         ("menu.closeTab", "Close tab"),

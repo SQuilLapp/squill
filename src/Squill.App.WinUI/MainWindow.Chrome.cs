@@ -20,7 +20,7 @@ public sealed partial class MainWindow
 {
     private const int DefaultWidth = 1440;
     private const int DefaultHeight = 900;
-    private const int MinWidth = 960;
+    private const int MinWidth = 720;
     private const int MinHeight = 600;
 
     private readonly List<(MenuFlyoutItem Item, Func<ICommand?> Command, Func<object?> Parameter)> _commandItems = [];
@@ -30,6 +30,9 @@ public sealed partial class MainWindow
     private FrameworkElement _railSettings = null!;
     private FrameworkElement _commandSearchIcon = null!;
     private string? _dataDirectory;
+    private double _menuWidth;
+    private bool _menuCollapsed;
+    private readonly List<(MenuBarItem Menu, MenuFlyoutSubItem Sub)> _hamburger = [];
     private QueryTabViewModel? _menuTab;
 
     private void InitializeChrome()
@@ -38,12 +41,16 @@ public sealed partial class MainWindow
         SetTitleBar(TitleBar);
         TitleIcon.Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "squill-32.png")));
         BuildMenu();
+        BuildHamburger();
         BuildRail();
         BuildCommandSearch();
         Root.ActualThemeChanged += (_, _) => PaintChrome();
+        TitleBar.SizeChanged += (_, _) => UpdateTitleLayout();
         Root.Loaded += (_, _) =>
         {
             SizeWindow();
+            _menuWidth = MainMenu.ActualWidth;
+            UpdateTitleLayout();
             Sidebar.Focus(FocusState.Programmatic);
             PaintChrome();
         };
@@ -110,6 +117,56 @@ public sealed partial class MainWindow
     }
 
     private MenuBarItem ToolsMenu { get; set; } = null!;
+
+    // Narrow window: the menu bar folds into a hamburger button whose flyout holds the same items (moved, never copied, so commands and shortcuts stay in sync).
+    private void BuildHamburger()
+    {
+        ToolTipService.SetToolTip(HamburgerButton, UiText.Get("menu.main"));
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(HamburgerButton, UiText.Get("menu.main"));
+        var flyout = new MenuFlyout();
+        foreach (var menu in MainMenu.Items.OfType<MenuBarItem>())
+        {
+            var sub = new MenuFlyoutSubItem { Text = menu.Title };
+            _hamburger.Add((menu, sub));
+            flyout.Items.Add(sub);
+        }
+
+        HamburgerButton.Flyout = flyout;
+    }
+
+    /// <summary>Puts every menu item in the menu bar or in the hamburger flyout, according to the current mode.</summary>
+    private void SyncMenuItems()
+    {
+        foreach (var (menu, sub) in _hamburger)
+        {
+            var (from, to) = _menuCollapsed ? (menu.Items, sub.Items) : (sub.Items, menu.Items);
+            foreach (var item in from.ToList())
+            {
+                from.Remove(item);
+                to.Add(item);
+            }
+        }
+    }
+
+    // The search box shrinks first (never below 80 px); when the menu bar would leave it less than 200 px, the menu becomes a hamburger.
+    private void UpdateTitleLayout()
+    {
+        if (_menuWidth <= 0 && !_menuCollapsed)
+            _menuWidth = MainMenu.ActualWidth;
+        if (_menuWidth <= 0 || Root.XamlRoot is not { } xamlRoot)
+            return;
+        var inset = AppWindow.TitleBar.RightInset / xamlRoot.RasterizationScale;
+        TitleGrid.ColumnDefinitions[2].Width = new GridLength(inset);
+        var left = 14 + 16 + 8;
+        var room = TitleBar.ActualWidth - inset - left - _menuWidth - 24;
+        var collapse = room < 200;
+        if (collapse == _menuCollapsed && HamburgerButton.Visibility == (collapse ? Visibility.Visible : Visibility.Collapsed))
+            return;
+        _menuCollapsed = collapse;
+        HamburgerButton.Visibility = collapse ? Visibility.Visible : Visibility.Collapsed;
+        MainMenu.Visibility = collapse ? Visibility.Collapsed : Visibility.Visible;
+        SyncMenuItems();
+    }
 
     private static MenuBarItem Menu(string key, params MenuFlyoutItemBase[] items)
     {
