@@ -97,7 +97,8 @@ public abstract record TableSource(int Start, int Length) : SyntaxNode(Start, Le
 /// <param name="Alias">The alias, or <see langword="null"/>.</param>
 /// <param name="Start">Zero-based offset of the first character.</param>
 /// <param name="Length">Number of characters.</param>
-public sealed record TableRef(string? Schema, string Name, string? Alias, int Start, int Length) : TableSource(Start, Length);
+/// <param name="IsOpaque">Whether the name is a table function or a table variable, which the schema cannot describe.</param>
+public sealed record TableRef(string? Schema, string Name, string? Alias, int Start, int Length, bool IsOpaque = false) : TableSource(Start, Length);
 
 /// <summary>A parenthesized query used as a table.</summary>
 /// <param name="Query">The query.</param>

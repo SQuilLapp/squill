@@ -49,29 +49,78 @@ public static class SqlHoverProvider
                 List<string> qualifiers = c.Qualifier is null ? [] : [.. c.Qualifier.Split('.')];
                 var hits = SqlScopeResolver.Resolve(script, token.Start).Sources
                     .Where(s => SchemaCompletionProvider.Matches(s, qualifiers) && s.DerivedColumns is null)
-                    .Select(s => schema.FindTable(s.Schema, s.Name)?.Columns.FirstOrDefault(x => Same(x.Name, word)))
-                    .OfType<ColumnDefinition>()
+                    .Select(s => schema.FindTable(s.Schema, s.Name) is { } owner && owner.Columns.FirstOrDefault(x => Same(x.Name, word)) is { } col ? (Table: owner, Column: col) : default)
+                    .Where(h => h.Column is not null)
                     .Distinct()
                     .ToList();
-                return hits.Count == 1 ? Describe(range, hits[0]) : null;
+                return hits.Count == 1 ? Describe(range, hits[0].Table, hits[0].Column) : null;
             default:
-                return null;
+                return DescribeRoutine(schema, text, token, word, range);
         }
     }
 
     private static bool Same(string a, string b) => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>Describes a stored routine named by an identifier that is followed by an opening parenthesis or follows EXEC/EXECUTE/CALL.</summary>
+    private static HoverInfo? DescribeRoutine(SchemaSnapshot schema, string text, Token token, string word, TextRange range)
+    {
+        var next = text.AsSpan(token.End).TrimStart();
+        var called = next.StartsWith("(");
+        var before = text.AsSpan(0, token.Start).TrimEnd();
+        var executed = before.EndsWith("exec", StringComparison.OrdinalIgnoreCase) || before.EndsWith("execute", StringComparison.OrdinalIgnoreCase) || before.EndsWith("call", StringComparison.OrdinalIgnoreCase);
+        if (!called && !executed)
+        {
+            return null;
+        }
+
+        var routine = schema.Routines.FirstOrDefault(r => Same(r.Name, word));
+        if (routine is null)
+        {
+            return null;
+        }
+
+        var name = routine.Schema + "." + routine.Signature;
+        return routine.ReturnType is { } returns
+            ? new HoverInfo(range, $"**function** {name} returns {returns}", SqlMessageCodes.HoverFunction, [name, returns])
+            : new HoverInfo(range, $"**procedure** {name}", SqlMessageCodes.HoverProcedure, [name]);
+    }
+
     private static HoverInfo Describe(TextRange range, TableInfo t)
     {
         var name = t.Schema is null ? t.Name : t.Schema + "." + t.Name;
-        var view = t.Kind == TableKind.View;
+        var view = t.Kind.IsViewLike();
+        if (view && FirstLine(t.Definition) is { } line)
+        {
+            var count = t.Columns.Count.ToString(CultureInfo.InvariantCulture);
+            return new HoverInfo(range, $"**view** {name} ({t.Columns.Count} {(t.Columns.Count == 1 ? "column" : "columns")}): `{line}`", SqlMessageCodes.HoverViewDefinition, [count, name, line]);
+        }
+
         var markdown = $"**{(view ? "view" : "table")}** {name} ({t.Columns.Count} {(t.Columns.Count == 1 ? "column" : "columns")})";
         return new HoverInfo(range, markdown, view ? SqlMessageCodes.HoverView : SqlMessageCodes.HoverTable, [t.Columns.Count.ToString(CultureInfo.InvariantCulture), name]);
     }
 
-    private static HoverInfo Describe(TextRange range, ColumnDefinition c)
+    private static string? FirstLine(string? definition) =>
+        definition?.Split((char)10).Select(l => l.Trim()).FirstOrDefault(l => l.Length > 0);
+
+    private static HoverInfo Describe(TextRange range, TableInfo t, ColumnDefinition c)
     {
         var markdown = $"`{c.Name}`: {c.DataType}, {(c.IsNullable ? "nullable" : "not null")}{(c.IsPrimaryKey ? ", PK" : string.Empty)}";
+        var fk = t.ForeignKeys.FirstOrDefault(f => f.Columns.Any(x => Same(x, c.Name)));
+        if (fk is not null)
+        {
+            var index = fk.Columns.ToList().FindIndex(x => Same(x, c.Name));
+            var target = (fk.ReferencedSchema is null ? string.Empty : fk.ReferencedSchema + ".") + fk.ReferencedTable
+                + (index < fk.ReferencedColumns.Count ? "(" + fk.ReferencedColumns[index] + ")" : string.Empty);
+            var fkCode = (c.IsNullable, c.IsPrimaryKey) switch
+            {
+                (true, false) => SqlMessageCodes.HoverColumnNullableFk,
+                (false, false) => SqlMessageCodes.HoverColumnNotNullFk,
+                (true, true) => SqlMessageCodes.HoverColumnNullablePkFk,
+                (false, true) => SqlMessageCodes.HoverColumnNotNullPkFk,
+            };
+            return new HoverInfo(range, markdown + ", FK to " + target, fkCode, [c.Name, c.DataType, target]);
+        }
+
         var code = (c.IsNullable, c.IsPrimaryKey) switch
         {
             (true, false) => SqlMessageCodes.HoverColumnNullable,

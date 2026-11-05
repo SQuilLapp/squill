@@ -57,6 +57,62 @@ public sealed class SessionManagerTests
     }
 
     [Fact]
+    public async Task OpenAsync_ListsTheServerDatabases_AndToleratesAFailedListing()
+    {
+        _provider.Databases = ["app", "other"];
+        Assert.Equal(["app", "other"], (await _manager.OpenAsync(Profile(), CancellationToken.None)).Databases);
+
+        _provider.ListFailure = new InvalidOperationException("no privilege");
+        Assert.Empty((await _manager.OpenAsync(Profile(), CancellationToken.None)).Databases);
+    }
+
+    [Fact]
+    public async Task OpenDatabaseAsync_OpensDerivedSessionOnce_WithSamePasswordAndTunnel()
+    {
+        _store.Password = "pw";
+        _store.SshSecret = "secret";
+        var root = await _manager.OpenAsync(Profile(Ssh), CancellationToken.None);
+
+        var first = await root.OpenDatabaseAsync("other", CancellationToken.None);
+        var second = await root.OpenDatabaseAsync("OTHER", CancellationToken.None);
+
+        Assert.Same(first, second);
+        Assert.Same(root, first.Parent);
+        Assert.Same(root, first.Root);
+        Assert.Equal("other", first.Profile.Database);
+        Assert.Equal("other", _provider.OpenedWith!.Database);
+        Assert.Equal(("127.0.0.1", 40123, "pw"), (_provider.OpenedWith.Host, _provider.OpenedWith.Port, _provider.Password));
+        Assert.Equal(1, _tunnels.Opened);
+        Assert.Same(root, Assert.Single(_manager.Sessions));
+        Assert.Same(root, await root.OpenDatabaseAsync("app", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task OpenDatabaseAsync_Failure_IsNotCached()
+    {
+        var root = await _manager.OpenAsync(Profile(), CancellationToken.None);
+        _provider.Failing.Add("bad");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => root.OpenDatabaseAsync("bad", CancellationToken.None));
+        _provider.Failing.Clear();
+
+        Assert.Equal("bad", (await root.OpenDatabaseAsync("bad", CancellationToken.None)).Profile.Database);
+    }
+
+    [Fact]
+    public async Task CloseAsync_DisposesEveryDerivedConnection()
+    {
+        var root = await _manager.OpenAsync(Profile(), CancellationToken.None);
+        await root.OpenDatabaseAsync("a", CancellationToken.None);
+        await root.OpenDatabaseAsync("b", CancellationToken.None);
+        Assert.Equal(3, _provider.OpenCount);
+
+        await _manager.CloseAsync(root);
+
+        Assert.Equal(3, _log.Count(l => l == "connection disposed"));
+    }
+
+    [Fact]
     public async Task CloseAsync_DisposesConnectionThenTunnel()
     {
         var session = await _manager.OpenAsync(Profile(Ssh), CancellationToken.None);
@@ -146,6 +202,10 @@ public sealed class SessionManagerTests
         public ConnectionProfile? OpenedWith { get; private set; }
         public string? Password { get; private set; }
         public Exception? Failure { get; set; }
+        public Exception? ListFailure { get; set; }
+        public string[] Databases { get; set; } = [];
+        public HashSet<string> Failing { get; } = [];
+        public int OpenCount { get; private set; }
         public Exception? SchemaFailure { get; set; }
         public SchemaSnapshot Schema { get; set; } = SchemaSnapshot.Empty;
 
@@ -153,6 +213,9 @@ public sealed class SessionManagerTests
         {
             if (Failure is { } failure)
                 throw failure;
+            if (profile.Database is { } d && Failing.Contains(d))
+                throw new InvalidOperationException("cannot open " + d);
+            OpenCount++;
             (OpenedWith, Password) = (profile, password);
             return ValueTask.FromResult<IDatabaseConnection>(new FakeConnection(this, log));
         }
@@ -164,6 +227,9 @@ public sealed class SessionManagerTests
 
         public ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken) =>
             throw new NotSupportedException();
+
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) =>
+            owner.ListFailure is { } failure ? throw failure : ValueTask.FromResult<IReadOnlyList<string>>(owner.Databases);
 
         public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>
             owner.SchemaFailure is { } failure ? throw failure : ValueTask.FromResult(owner.Schema);

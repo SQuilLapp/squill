@@ -8,6 +8,7 @@ namespace Squill.Core;
 /// <param name="Indexes">Indexes of the table.</param>
 /// <param name="ForeignKeys">Foreign keys of the table.</param>
 /// <param name="PrimaryKeyName">Primary-key constraint name; null when the engine has no meaningful name or there is no primary key.</param>
+/// <param name="Definition">The defining <c>SELECT</c> of a view or materialized view; null for tables or when not read.</param>
 public sealed record TableInfo(
     string? Schema,
     string Name,
@@ -15,4 +16,5 @@ public sealed record TableInfo(
     IReadOnlyList<ColumnDefinition> Columns,
     IReadOnlyList<IndexInfo> Indexes,
     IReadOnlyList<ForeignKeyInfo> ForeignKeys,
-    string? PrimaryKeyName = null);
+    string? PrimaryKeyName = null,
+    string? Definition = null);

@@ -43,6 +43,20 @@ public sealed class DmlGeneratorTests
         _ => $"\"{id}\"",
     };
 
+    [Theory]
+    [InlineData(DatabaseDialect.PostgreSql, "json", "INSERT INTO \"main\".\"Users\" (\"Id\") VALUES (@p0::json)")]
+    [InlineData(DatabaseDialect.PostgreSql, "jsonb", "INSERT INTO \"main\".\"Users\" (\"Id\") VALUES (@p0::jsonb)")]
+    [InlineData(DatabaseDialect.MySql, "json", "INSERT INTO `main`.`Users` (`Id`) VALUES (@p0)")]
+    [InlineData(DatabaseDialect.SqlServer, "xml", "INSERT INTO [main].[Users] ([Id]) VALUES (@p0)")]
+    public void JsonParametersAreCastOnPostgresOnly(DatabaseDialect dialect, string dataType, string expected)
+    {
+        var def = new ColumnDefinition("Id", dataType, true, true, null);
+        var target = new EditTarget("main", "Users", [new EditColumn(0, def)], ["Id"], new TableInfo("main", "Users", TableKind.Table, [def], [], []));
+        Assert.Equal(expected, DmlGenerator.Generate(new InsertRow([V("Id", "{}")]), target, dialect).Sql);
+        var update = DmlGenerator.Generate(new UpdateRow([V("Id", 1)], [V("Id", "{}")]), target, dialect).Sql;
+        Assert.Contains(dialect == DatabaseDialect.PostgreSql ? $"= @p0::{dataType} WHERE" : "= @p0 WHERE", update);
+    }
+
     [Theory, MemberData(nameof(QualifiedUsers))]
     public void Insert_WithValues(DatabaseDialect d, string table)
     {
@@ -123,5 +137,18 @@ public sealed class DmlGeneratorTests
         Assert.Throws<ArgumentException>(() => DmlGenerator.Generate(new UpdateRow([V("Id", 1)], []), Users, d));
         Assert.Throws<ArgumentException>(() => DmlGenerator.Generate(new UpdateRow([V("Id", 1)], [V("Nope", 1)]), Users, d));
         Assert.Throws<ArgumentException>(() => DmlGenerator.Generate(new InsertRow([V("Nope", 1)]), Users, d));
+    }
+
+    [Theory]
+    [InlineData(DatabaseDialect.PostgreSql, "character(5)", "WHERE \"K\" = @p1::bpchar")]
+    [InlineData(DatabaseDialect.PostgreSql, "character varying(5)", "WHERE \"K\" = @p1")]
+    [InlineData(DatabaseDialect.SqlServer, "char(5)", "WHERE [K] = @p1")]
+    public void KeyOfPaddedCharType_PostgresComparesAsBpchar(DatabaseDialect d, string dataType, string expected)
+    {
+        var key = new ColumnDefinition("K", dataType, false, true, null);
+        var v = new ColumnDefinition("V", "int", true, false, null);
+        var target = new EditTarget(null, "t", [new EditColumn(0, key), new EditColumn(1, v)], ["K"], new TableInfo("", "t", TableKind.Table, [key, v], [], []));
+        var sql = DmlGenerator.Generate(new UpdateRow([V("K", "ab   ")], [V("V", 1)]), target, d).Sql;
+        Assert.Contains(expected, sql.Replace("\"K\"", d == DatabaseDialect.PostgreSql ? "\"K\"" : "[K]"));
     }
 }

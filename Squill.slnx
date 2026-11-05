@@ -4,10 +4,12 @@
     <Project Path="src/Squill.Core/Squill.Core.csproj" />
     <Project Path="src/Squill.Data/Squill.Data.csproj" />
     <Project Path="src/Squill.Data.MySql/Squill.Data.MySql.csproj" />
+    <Project Path="src/Squill.Data.Oracle/Squill.Data.Oracle.csproj" />
     <Project Path="src/Squill.Data.Postgres/Squill.Data.Postgres.csproj" />
     <Project Path="src/Squill.Data.SqlServer/Squill.Data.SqlServer.csproj" />
     <Project Path="src/Squill.Data.Sqlite/Squill.Data.Sqlite.csproj" />
     <Project Path="src/Squill.DesignSystem/Squill.DesignSystem.csproj" />
+    <Project Path="src/Squill.OracleBridge/Squill.OracleBridge.csproj" />
     <Project Path="src/Squill.Platform/Squill.Platform.csproj" />
     <Project Path="src/Squill.Presentation/Squill.Presentation.csproj" />
     <Project Path="src/Squill.Sql/Squill.Sql.csproj" />
@@ -25,6 +27,7 @@
     <Project Path="tests/Squill.Core.Tests/Squill.Core.Tests.csproj" />
     <Project Path="tests/Squill.Data.Tests/Squill.Data.Tests.csproj" />
     <Project Path="tests/Squill.Data.MySql.Tests/Squill.Data.MySql.Tests.csproj" />
+    <Project Path="tests/Squill.Data.Oracle.Tests/Squill.Data.Oracle.Tests.csproj" />
     <Project Path="tests/Squill.Data.Postgres.Tests/Squill.Data.Postgres.Tests.csproj" />
     <Project Path="tests/Squill.Data.Sqlite.Tests/Squill.Data.Sqlite.Tests.csproj" />
     <Project Path="tests/Squill.Data.SqlServer.Tests/Squill.Data.SqlServer.Tests.csproj" />

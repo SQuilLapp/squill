@@ -9,6 +9,7 @@
         <ResourceDictionary Source="Styles/SquillFonts.xaml" />
         <ResourceDictionary Source="Styles/Controls.xaml" />
         <ResourceDictionary Source="Styles/Icons.xaml" />
+        <ResourceDictionary Source="Styles/EngineIcons.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>

@@ -127,6 +127,34 @@ public sealed class QueryTabEditingTests : IAsyncLifetime
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task Export_WithPendingChanges_AsksThenWritesTheCommittedValues(bool accept)
+    {
+        var result = await RunAsync("SELECT * FROM t");
+        result.Editor!.TrySetCell(0, 1, "edited");
+        _dialogs.ConfirmResult = accept;
+        _dialogs.SavePathResult = Path.Combine(Path.GetTempPath(), $"squill-{Guid.NewGuid():N}.csv");
+        try
+        {
+            await result.ExportCommand.ExecuteAsync(new Squill.Presentation.Results.CsvResultExporter());
+
+            Assert.Single(_dialogs.Confirms);
+            Assert.Equal(accept, File.Exists(_dialogs.SavePathResult));
+            if (accept)
+            {
+                var csv = await File.ReadAllTextAsync(_dialogs.SavePathResult, TestContext.Current.CancellationToken);
+                Assert.Contains("1,a\r\n", csv);
+                Assert.DoesNotContain("edited", csv);
+            }
+        }
+        finally
+        {
+            File.Delete(_dialogs.SavePathResult);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task Run_WithPendingChanges_AsksFirst(bool accept)
     {
         var result = await RunAsync("SELECT * FROM t");

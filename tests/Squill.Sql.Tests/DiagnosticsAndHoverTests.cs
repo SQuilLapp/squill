@@ -66,6 +66,14 @@ public sealed class DiagnosticsAndHoverTests
     }
 
     [Fact]
+    public void GetDiagnostics_OraclePseudoColumn_IsKnownOnlyForOracle()
+    {
+        const string text = "select * from users where rownum <= 10";
+        Assert.Empty(SqlDiagnosticsProvider.GetDiagnostics(new SqlRequest(text, 0, DatabaseDialect.Oracle, Schema)));
+        Assert.Equal("SQL1002", Assert.Single(Diagnose(text, Schema)).Code);
+    }
+
+    [Fact]
     public void GetDiagnostics_UnknownQualifiedColumn_IsWarning()
     {
         const string text = "select u.nope from users u";

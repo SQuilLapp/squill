@@ -28,6 +28,17 @@ public sealed class TSqlTokenizer : SqlTokenizerBase
             var quoted = Quoted(TokenKind.StringLiteral, text, pos + 1, '\'');
             token = new Token(TokenKind.StringLiteral, pos, quoted.End - pos);
         }
+        else if (c == '$' && char.IsAsciiDigit(next))
+        {
+            // money literal: $5.00
+            var end = pos + 1;
+            while (end < text.Length && (char.IsAsciiDigit(text[end]) || text[end] == '.'))
+            {
+                end++;
+            }
+
+            token = new Token(TokenKind.NumberLiteral, pos, end - pos);
+        }
         else if (c == '/' && next == '*')
         {
             token = new Token(TokenKind.BlockComment, pos, ReadNestedComment(text, pos) - pos);

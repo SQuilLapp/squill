@@ -60,6 +60,111 @@ public sealed class ConnectionViewModelTests
         Assert.Equal(["Le nom est obligatoire.", "L'hôte est obligatoire."], NewEditor().Validate());
     }
 
+    [Theory]
+    [InlineData(DatabaseDialect.PostgreSql, true, false, true)]
+    [InlineData(DatabaseDialect.MySql, true, false, true)]
+    [InlineData(DatabaseDialect.SqlServer, true, true, true)]
+    [InlineData(DatabaseDialect.Sqlite, false, false, false)]
+    public void Dialect_SetsSupportedOptions(DatabaseDialect dialect, bool tls, bool trust, bool timeouts)
+    {
+        var editor = NewEditor();
+        editor.Dialect = dialect;
+
+        Assert.Equal(tls, editor.SupportsTls);
+        Assert.Equal(trust, editor.SupportsTrustCertificate);
+        Assert.Equal(timeouts, editor.SupportsTimeouts);
+    }
+
+    [Fact]
+    public async Task Save_Options_RoundTripThroughProfile()
+    {
+        var editor = NewEditor();
+        editor.Name = "x";
+        editor.Dialect = DatabaseDialect.SqlServer;
+        editor.Host = "h";
+        editor.Tls = TlsMode.VerifyFull;
+        editor.TrustServerCertificate = true;
+        editor.ConnectTimeoutText = "30";
+        editor.CommandTimeoutText = "120";
+
+        await editor.SaveCommand.ExecuteAsync(null);
+
+        var saved = Assert.Single(_store.Saved).Profile;
+        Assert.Equal((TlsMode.VerifyFull, true, 30, 120), (saved.Tls, saved.TrustServerCertificate, saved.ConnectTimeoutSeconds, saved.CommandTimeoutSeconds));
+        var reopened = NewEditor(saved);
+        Assert.Equal((TlsMode.VerifyFull, true, "30", "120"), (reopened.Tls, reopened.TrustServerCertificate, reopened.ConnectTimeoutText, reopened.CommandTimeoutText));
+    }
+
+    [Fact]
+    public async Task Save_MariaDb_RoundTripsAndIsClearedWhenTheEngineChanges()
+    {
+        var editor = NewEditor();
+        editor.Name = "x";
+        editor.Dialect = DatabaseDialect.MySql;
+        editor.MariaDb = true;
+        editor.Host = "h";
+        await editor.SaveCommand.ExecuteAsync(null);
+
+        var saved = Assert.Single(_store.Saved).Profile;
+        Assert.True(saved.MariaDb);
+        var reopened = NewEditor(saved);
+        Assert.True(reopened.MariaDb);
+        reopened.Dialect = DatabaseDialect.PostgreSql;
+        Assert.False(reopened.MariaDb);
+    }
+
+    [Fact]
+    public async Task Save_Sqlite_DropsServerOnlyOptions()
+    {
+        var editor = NewEditor();
+        editor.Name = "x";
+        editor.Dialect = DatabaseDialect.Sqlite;
+        editor.FilePath = "a.db";
+        editor.Tls = TlsMode.Require;
+        editor.TrustServerCertificate = true;
+        editor.ConnectTimeoutText = "99";
+        editor.CommandTimeoutText = "7";
+
+        await editor.SaveCommand.ExecuteAsync(null);
+
+        var saved = Assert.Single(_store.Saved).Profile;
+        Assert.Equal((TlsMode.Default, false, 15, 7), (saved.Tls, saved.TrustServerCertificate, saved.ConnectTimeoutSeconds, saved.CommandTimeoutSeconds));
+    }
+
+    [Fact]
+    public void Validate_NegativeTimeout_ReportsRange()
+    {
+        var editor = NewEditor();
+        editor.Name = "x";
+        editor.Host = "h";
+        editor.ConnectTimeoutText = "-1";
+
+        Assert.Equal([IssueText.Format(CoreMessageCodes.ConnectionConnectTimeoutRange, ["86400"], "")], editor.Validate());
+    }
+
+    [Fact]
+    public void Validate_NonNumericTimeout_Reports()
+    {
+        var editor = NewEditor();
+        editor.Name = "x";
+        editor.Host = "h";
+        editor.CommandTimeoutText = "abc";
+
+        Assert.Equal([UiText.Get("connections.errCommandTimeout")], editor.Validate());
+    }
+
+    [Fact]
+    public void Validate_Sqlite_IgnoresConnectTimeout()
+    {
+        var editor = NewEditor();
+        editor.Name = "x";
+        editor.Dialect = DatabaseDialect.Sqlite;
+        editor.FilePath = "a.db";
+        editor.ConnectTimeoutText = "abc";
+
+        Assert.Empty(editor.Validate());
+    }
+
     [Fact]
     public void Validate_Sqlite_RequiresFilePathNotHost()
     {
@@ -377,6 +482,8 @@ public sealed class ConnectionViewModelTests
 
         public ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken) =>
             throw new NotSupportedException();
+
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) => ValueTask.FromResult<IReadOnlyList<string>>([]);
 
         public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
 

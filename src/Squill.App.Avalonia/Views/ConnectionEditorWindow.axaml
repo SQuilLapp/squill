@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:core="using:Squill.Core"
         xmlns:cn="using:Squill.Presentation.Connections"
+        xmlns:controls="using:Squill.App.Avalonia.Controls"
         xmlns:loc="using:Squill.App.Avalonia.Localization"
         x:Class="Squill.App.Avalonia.Views.ConnectionEditorWindow"
         x:DataType="cn:ConnectionEditorViewModel"
@@ -42,9 +43,6 @@
       <Setter Property="Background" Value="{DynamicResource SquillEnvLocalSoftBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource SquillEnvLocalBrush}" />
     </Style>
-    <Style Selector="Border.engine.big"><Setter Property="Width" Value="32" /><Setter Property="Height" Value="32" /></Style>
-    <Style Selector="Border.engine.big > TextBlock"><Setter Property="FontSize" Value="13" /></Style>
-    <Style Selector="Border.engine.tile"><Setter Property="Width" Value="20" /><Setter Property="Height" Value="20" /></Style>
     <Style Selector="Border.square"><Setter Property="Width" Value="8" /><Setter Property="Height" Value="8" /><Setter Property="CornerRadius" Value="2" /></Style>
     <Style Selector="Border.square.env-prod"><Setter Property="Background" Value="{DynamicResource SquillEnvProdBrush}" /></Style>
     <Style Selector="Border.square.env-staging"><Setter Property="Background" Value="{DynamicResource SquillEnvStagingBrush}" /></Style>
@@ -73,7 +71,7 @@
       <ScrollViewer>
         <Grid Margin="32" ColumnDefinitions="*,32,339" RowDefinitions="Auto,24,Auto,Auto,Auto">
           <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="14">
-            <Border Name="HeaderEngine" Classes="engine big"><TextBlock Name="HeaderLetters" /></Border>
+            <controls:EngineIcon Name="HeaderEngine" Width="32" Height="32" />
             <StackPanel VerticalAlignment="Center">
               <TextBlock Name="HeaderName" FontSize="{DynamicResource SquillFontSizeTitle}" FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" />
               <TextBlock Name="HeaderSubtitle" Foreground="{DynamicResource SquillFg3Brush}" />
@@ -83,18 +81,24 @@
 
           <StackPanel Grid.Row="2" Spacing="8">
             <TextBlock Text="{loc:Text connections.engine}" Classes="caps" />
-            <UniformGrid Columns="4">
+            <UniformGrid Columns="6">
               <Button Name="TilePostgres" Classes="tile" Tag="{x:Static core:DatabaseDialect.PostgreSql}" Click="OnEngineTile" Margin="0,0,7,0">
-                <StackPanel Spacing="2"><Border Classes="engine postgres tile" HorizontalAlignment="Center"><TextBlock Text="PG" /></Border><TextBlock Text="PostgreSQL" HorizontalAlignment="Center" /></StackPanel>
+                <StackPanel Spacing="2"><controls:EngineIcon Dialect="PostgreSql" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="PostgreSQL" HorizontalAlignment="Center" /></StackPanel>
               </Button>
               <Button Name="TileMySql" Classes="tile" Tag="{x:Static core:DatabaseDialect.MySql}" Click="OnEngineTile" Margin="0,0,7,0">
-                <StackPanel Spacing="2"><Border Classes="engine mysql tile" HorizontalAlignment="Center"><TextBlock Text="My" /></Border><TextBlock Text="MySQL" HorizontalAlignment="Center" /></StackPanel>
+                <StackPanel Spacing="2"><controls:EngineIcon Dialect="MySql" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="MySQL" HorizontalAlignment="Center" /></StackPanel>
+              </Button>
+              <Button Name="TileMariaDb" Classes="tile" Tag="{x:Static core:DatabaseDialect.MySql}" Click="OnEngineTile" Margin="0,0,7,0">
+                <StackPanel Spacing="2"><controls:EngineIcon Dialect="MySql" MariaDb="True" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="MariaDB" HorizontalAlignment="Center" /></StackPanel>
               </Button>
               <Button Name="TileSqlServer" Classes="tile" Tag="{x:Static core:DatabaseDialect.SqlServer}" Click="OnEngineTile" Margin="0,0,7,0">
-                <StackPanel Spacing="2"><Border Classes="engine sqlserver tile" HorizontalAlignment="Center"><TextBlock Text="MS" /></Border><TextBlock Text="SQL Server" HorizontalAlignment="Center" /></StackPanel>
+                <StackPanel Spacing="2"><controls:EngineIcon Dialect="SqlServer" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="SQL Server" HorizontalAlignment="Center" /></StackPanel>
               </Button>
-              <Button Name="TileSqlite" Classes="tile" Tag="{x:Static core:DatabaseDialect.Sqlite}" Click="OnEngineTile">
-                <StackPanel Spacing="2"><Border Classes="engine sqlite tile" HorizontalAlignment="Center"><TextBlock Text="SL" /></Border><TextBlock Text="SQLite" HorizontalAlignment="Center" /></StackPanel>
+              <Button Name="TileSqlite" Classes="tile" Tag="{x:Static core:DatabaseDialect.Sqlite}" Click="OnEngineTile" Margin="0,0,7,0">
+                <StackPanel Spacing="2"><controls:EngineIcon Dialect="Sqlite" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="SQLite" HorizontalAlignment="Center" /></StackPanel>
+              </Button>
+              <Button Name="TileOracle" Classes="tile" Tag="{x:Static core:DatabaseDialect.Oracle}" Click="OnEngineTile">
+                <StackPanel Spacing="2"><controls:EngineIcon Dialect="Oracle" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="Oracle" HorizontalAlignment="Center" /></StackPanel>
               </Button>
             </UniformGrid>
           </StackPanel>
@@ -166,6 +170,27 @@
                     <TextBox PasswordChar="&#x25CF;" Text="{Binding Password, Mode=TwoWay}" />
                   </StackPanel>
                 </StackPanel>
+
+                <Expander Header="{loc:Text connections.advanced}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                  <StackPanel Spacing="14">
+                    <StackPanel Name="TlsFields" Spacing="6">
+                      <TextBlock Text="{loc:Text connections.tls}" Classes="lbl" />
+                      <ComboBox Name="TlsBox" HorizontalAlignment="Stretch" SelectionChanged="OnTlsChanged" />
+                      <CheckBox Name="TrustBox" Content="{loc:Text connections.trustCertificate}" IsChecked="{Binding TrustServerCertificate, Mode=TwoWay}" />
+                    </StackPanel>
+                    <Grid ColumnDefinitions="*,16,*">
+                      <StackPanel Name="ConnectTimeoutFields" Spacing="6">
+                        <TextBlock Text="{loc:Text connections.connectTimeout}" Classes="lbl" />
+                        <TextBox Name="ConnectTimeoutBox" Text="{Binding ConnectTimeoutText, Mode=TwoWay}" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="2" Spacing="6">
+                        <TextBlock Text="{loc:Text connections.commandTimeout}" Classes="lbl" />
+                        <TextBox Name="CommandTimeoutBox" Text="{Binding CommandTimeoutText, Mode=TwoWay}" />
+                      </StackPanel>
+                    </Grid>
+                    <TextBlock Text="{loc:Text connections.timeoutHint}" FontSize="12" Foreground="{DynamicResource SquillFg3Brush}" />
+                  </StackPanel>
+                </Expander>
               </StackPanel>
             </TabItem>
             <TabItem Name="SshTab" Header="{loc:Text connections.tabSsh}">

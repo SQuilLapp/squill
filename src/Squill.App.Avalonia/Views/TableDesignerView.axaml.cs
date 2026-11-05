@@ -12,15 +12,15 @@ namespace Squill.App.Avalonia.Views;
 /// <summary>The editing surface of a table designer: header, column, index and foreign key tabs, highlighted script preview and issues.</summary>
 public sealed partial class TableDesignerView : UserControl
 {
-    private readonly SqlColorizer _colorizer = new();
+    private readonly AvaloniaSqlEditor _script = new() { IsReadOnly = true, WordWrap = true };
     private TableDesignerViewModel? _bound;
 
     /// <summary>Creates the view.</summary>
     public TableDesignerView()
     {
         InitializeComponent();
-        ScriptEditor.Bind(TemplatedControl.FontFamilyProperty, ScriptEditor.GetResourceObservable("SquillFontMono"));
-        ScriptEditor.TextArea.TextView.LineTransformers.Add(_colorizer);
+        _script.UseCompactLayout();
+        ScriptHost.Child = _script.Control;
         // Focusing a cell of a row selects that row, so the toolbar and the detail card follow the keyboard and the pointer.
         AddHandler(GotFocusEvent, OnRowFocused, RoutingStrategies.Bubble, handledEventsToo: true);
         DataContextChanged += (_, _) => Rebind();
@@ -34,7 +34,7 @@ public sealed partial class TableDesignerView : UserControl
         if (_bound is null)
             return;
         _bound.PropertyChanged += OnDesignerChanged;
-        _colorizer.Dialect = _bound.Session.Profile.Dialect;
+        _script.SetDialect(_bound.Session.Profile.Dialect);
         ShowScript();
     }
 
@@ -46,9 +46,7 @@ public sealed partial class TableDesignerView : UserControl
 
     private void ShowScript()
     {
-        ScriptEditor.Text = _bound?.Script ?? "";
-        _colorizer.Invalidate();
-        ScriptEditor.TextArea.TextView.Redraw();
+        _script.Text = _bound?.Script ?? "";
     }
 
     private void OnRowFocused(object? sender, RoutedEventArgs e)

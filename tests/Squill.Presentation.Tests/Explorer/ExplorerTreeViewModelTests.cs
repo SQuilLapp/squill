@@ -327,6 +327,97 @@ public sealed class ExplorerTreeViewModelTests
         Assert.Equal(2, Descendants(node).Single(d => d.Kind == ExplorerNodeKind.Schema).Count);
     }
 
+    private (ExplorerNode Connection, ConnectionSession Root, List<ConnectionSession> Opened) ConnectServer(ConnectionProfile profile)
+    {
+        _list.Profiles.Add(profile);
+        var opened = new List<ConnectionSession>();
+        ConnectionSession? root = null;
+        var own = new SchemaSnapshot(null, [Table("public", "own")]);
+        var remote = new SchemaSnapshot(null, [Table("public", "remote")]);
+        root = new ConnectionSession(profile, new FakeConnection(own), own, null)
+        {
+            Databases = ["d", "other", "bad"],
+            DatabaseOpener = async (name, _) =>
+            {
+                await Task.Yield();
+                if (name == "bad")
+                    throw new InvalidOperationException("permission denied");
+                var session = new ConnectionSession(profile with { Database = name }, new FakeConnection(remote), remote, null) { Parent = root };
+                opened.Add(session);
+                return session;
+            },
+        };
+        _sessions.Add(root);
+        return (_tree.Roots.Single(), root, opened);
+    }
+
+    private static async Task WaitAsync(Func<bool> condition)
+    {
+        for (var i = 0; i < 200 && !condition(); i++)
+            await Task.Delay(10);
+        Assert.True(condition());
+    }
+
+    [Fact]
+    public void Connect_ListsOtherDatabasesAfterTheOwnOne_Collapsed_AndNotOpened()
+    {
+        var (connection, _, opened) = ConnectServer(Profile("p"));
+
+        Assert.Equal(["d", "other", "bad"], connection.Children.Select(c => c.Title));
+        Assert.All(connection.Children, c => Assert.Equal(ExplorerNodeKind.Database, c.Kind));
+        Assert.True(connection.Children[0].IsExpanded);
+        Assert.False(connection.Children[1].IsExpanded);
+        Assert.Null(connection.Children[1].Session);
+        Assert.Empty(opened);
+    }
+
+    [Fact]
+    public async Task ExpandOtherDatabase_OpensDerivedSession_ShowsItsSchema_AndReusesItAfterRebuild()
+    {
+        var (connection, root, opened) = ConnectServer(Profile("p"));
+        var other = connection.Children[1];
+
+        other.IsExpanded = true;
+        await WaitAsync(() => other.Session is not null);
+
+        Assert.Same(root, other.Session!.Parent);
+        Assert.Equal("other", other.Profile!.Database);
+        Assert.Contains(Descendants(other), n => n is { Kind: ExplorerNodeKind.Table, Title: "remote" } && n.Session == other.Session);
+        _tree.Reload(root);
+        Assert.Same(other.Session, connection.Children[1].Session);
+        Assert.Single(opened);
+    }
+
+    [Fact]
+    public async Task ExpandOtherDatabase_Failure_ShowsTheMessageAndCollapses()
+    {
+        var (connection, _, _) = ConnectServer(Profile("p"));
+        var bad = connection.Children[2];
+
+        bad.IsExpanded = true;
+        await WaitAsync(() => bad.ErrorText is not null);
+
+        Assert.Equal("permission denied", bad.Trailing);
+        Assert.False(bad.IsExpanded);
+        Assert.Null(bad.Session);
+    }
+
+    [Fact]
+    public async Task RefreshCommand_OnDerivedNode_RefreshesOnlyThatSession()
+    {
+        var (connection, root, _) = ConnectServer(Profile("p"));
+        var other = connection.Children[1];
+        other.IsExpanded = true;
+        await WaitAsync(() => other.Session is not null && Descendants(other).Any(n => n.Kind == ExplorerNodeKind.Table));
+        _tree.SelectedNode = Descendants(other).First(n => n.Kind == ExplorerNodeKind.Table);
+
+        await _tree.RefreshCommand.ExecuteAsync(null);
+
+        Assert.Same(other.Session, connection.Children[1].Session);
+        Assert.Contains(Descendants(connection.Children[1]), n => n.Title == "remote");
+        Assert.Contains(Descendants(connection.Children[0]), n => n.Title == "own");
+    }
+
     private sealed class FakeStore : IProfileStore
     {
         public ValueTask<IReadOnlyList<ConnectionProfile>> ListAsync(CancellationToken ct) => ValueTask.FromResult<IReadOnlyList<ConnectionProfile>>([]);
@@ -343,8 +434,64 @@ public sealed class ExplorerTreeViewModelTests
         public ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken) =>
             throw new NotSupportedException();
 
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) => ValueTask.FromResult<IReadOnlyList<string>>([]);
+
         public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => ValueTask.FromResult(next);
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private ExplorerNode ConnectWithObjects(ConnectionProfile profile)
+    {
+        var table = new TableInfo("public", "person", TableKind.Table, [Id], [], []);
+        var view = new TableInfo("public", "v", TableKind.View, [Id], [], [], null, "SELECT 1");
+        var snapshot = new SchemaSnapshot("public", [table, view])
+        {
+            Routines = [new RoutineInfo("public", "f", RoutineKind.Function, "f(a int)", "int", "CREATE FUNCTION f ..."), new RoutineInfo("public", "p", RoutineKind.Procedure, "p()", null, "CREATE PROCEDURE p ...")],
+            Triggers = [new TriggerInfo("public", "person", "tr", "BEFORE", "INSERT", "CREATE TRIGGER tr ...")],
+        };
+        _list.Profiles.Add(profile);
+        _sessions.Add(Session(profile, snapshot));
+        return _tree.Roots.Single(n => n.Profile == profile);
+    }
+
+    [Fact]
+    public void Populate_RoutinesAndTriggers_AppearInFoldersWithCounts()
+    {
+        var schema = ConnectWithObjects(Profile("c")).Children.Single().Children.Single();
+        Assert.Equal([UiText.Get("explorer.tables"), UiText.Get("explorer.views"), UiText.Get("explorer.routines"), UiText.Get("explorer.triggers")], schema.Children.Select(c => c.Title));
+        Assert.Equal([1, 1, 2, 1], schema.Children.Select(c => c.Count));
+        Assert.Equal([ExplorerNodeKind.Function, ExplorerNodeKind.Procedure], schema.Children[2].Children.Select(c => c.Kind));
+        Assert.Equal(ExplorerNodeKind.Trigger, schema.Children[3].Children.Single().Kind);
+    }
+
+    [Fact]
+    public void Populate_NoRoutinesOrTriggers_ShowsNoEmptyFolder()
+    {
+        var profile = Profile("c");
+        _list.Profiles.Add(profile);
+        var node = Connect(profile, Table("public", "t"));
+        Assert.DoesNotContain(Descendants(node), n => n.Title == UiText.Get("explorer.routines") || n.Title == UiText.Get("explorer.triggers"));
+    }
+
+    [Fact]
+    public void OpenDefinition_ObjectNodes_RaiseScriptWithDefinition()
+    {
+        var connection = ConnectWithObjects(Profile("c"));
+        var scripts = new List<string>();
+        _tree.ScriptRequested += (_, r) => scripts.Add(r.Text);
+        foreach (var kind in new[] { ExplorerNodeKind.View, ExplorerNodeKind.Function, ExplorerNodeKind.Trigger, ExplorerNodeKind.Table })
+            _tree.OpenDefinitionCommand.Execute(Descendants(connection).First(n => n.Kind == kind));
+        Assert.Equal(["CREATE VIEW \"public\".\"v\" AS\nSELECT 1", "CREATE FUNCTION f ...", "CREATE TRIGGER tr ..."], scripts);
+    }
+
+    [Fact]
+    public void ScriptCreateTable_Table_RaisesCreateTableScript()
+    {
+        var connection = ConnectWithObjects(Profile("c"));
+        string? text = null;
+        _tree.ScriptRequested += (_, r) => text = r.Text;
+        _tree.ScriptCreateTableCommand.Execute(Descendants(connection).First(n => n.Kind == ExplorerNodeKind.Table));
+        Assert.Contains("CREATE TABLE", text);
     }
 }

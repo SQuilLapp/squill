@@ -20,21 +20,34 @@ public sealed class PostgresDatabaseProvider : IDatabaseProvider
         {
             Host = profile.Host,
             Port = profile.Port ?? 5432,
-            Database = profile.Database,
+            Database = string.IsNullOrEmpty(profile.Database) ? "postgres" : profile.Database,
             Username = profile.UserName,
             Password = password,
+            Timeout = profile.ConnectTimeoutSeconds,
+            CommandTimeout = profile.CommandTimeoutSeconds,
         };
+        if (profile.Tls != TlsMode.Default)
+            builder.SslMode = profile.Tls switch
+            {
+                TlsMode.Disable => SslMode.Disable,
+                TlsMode.Require => SslMode.Require,
+                _ => SslMode.VerifyFull,
+            };
         return builder.ConnectionString;
     }
+
+    // The slim builder keeps the AOT footprint small; arrays are needed by the schema queries and array columns, the other type groups so that every column type reads, TLS by the Tls profile option.
+    private static NpgsqlDataSource BuildDataSource(string connectionString) =>
+        new NpgsqlSlimDataSourceBuilder(connectionString).EnableArrays().EnableNetworkTypes().EnableJsonTypes().EnableRanges().EnableMultiranges().EnableRecords().EnableGeometricTypes().EnableTransportSecurity().Build();
 
     /// <inheritdoc />
     public async ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken)
     {
-        var dataSource = new NpgsqlSlimDataSourceBuilder(BuildConnectionString(profile, password)).Build();
+        var dataSource = BuildDataSource(BuildConnectionString(profile, password));
         try
         {
             var connection = await dataSource.OpenConnectionAsync(cancellationToken);
-            return new PostgresDatabaseConnection(dataSource, connection);
+            return new PostgresDatabaseConnection(dataSource, connection, profile.CommandTimeoutSeconds);
         }
         catch
         {

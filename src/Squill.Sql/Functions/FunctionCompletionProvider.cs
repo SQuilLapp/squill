@@ -27,7 +27,11 @@ public sealed class FunctionCompletionProvider : ISqlCompletionProvider
         }
 
         var range = new TextRange(start, offset - start);
-        return [.. FunctionCatalog.For(request.Dialect)
-            .Select(f => new CompletionItem(f.Name, CompletionKind.Function, f.Name, f.Display, null, range))];
+        var builtIn = FunctionCatalog.For(request.Dialect)
+            .Select(f => new CompletionItem(f.Name, CompletionKind.Function, f.Name, f.Display, null, range));
+        var stored = (request.Schema?.Routines ?? [])
+            .Where(r => r.Kind == RoutineKind.Function)
+            .Select(r => new CompletionItem(r.Name, CompletionKind.Function, IdentifierQuoting.Quote(r.Name, request.Dialect), r.Signature + (r.ReturnType is null ? string.Empty : " -> " + r.ReturnType), "1" + r.Name, range));
+        return [.. builtIn, .. stored];
     }
 }

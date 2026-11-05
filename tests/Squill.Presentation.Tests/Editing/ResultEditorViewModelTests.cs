@@ -96,6 +96,8 @@ public sealed class ResultEditorViewModelTests
             return new Reader(isKey && Rows.Count > 0 ? Rows.Dequeue() : [], dml ? (Affected.Count > 0 ? Affected.Dequeue() : 1) : -1);
         }
 
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) => ValueTask.FromResult<IReadOnlyList<string>>([]);
+
         public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => ValueTask.FromResult(SchemaSnapshot.Empty);
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;

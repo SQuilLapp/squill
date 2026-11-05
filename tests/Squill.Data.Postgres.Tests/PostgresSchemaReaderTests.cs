@@ -29,6 +29,11 @@ public sealed class PostgresSchemaReaderTests(PostgresFixture server) : IClassFi
             c int references ref.country2 (id));
         create view app.person_nick as select id, nick from app.person;
         create materialized view app.person_count as select count(*) as n from app.person;
+        create function app.add(a int, b int) returns int language sql as 'select a + b';
+        create function app.add(a numeric, b numeric) returns numeric language sql as 'select a + b';
+        create procedure app.noop() language sql as 'select 1';
+        create function app.touch() returns trigger language plpgsql as 'begin return new; end';
+        create trigger person_touch before insert or update on app.person for each row execute function app.touch();
         """;
 
     private async Task<SchemaSnapshot> ReadAsync()
@@ -85,11 +90,15 @@ public sealed class PostgresSchemaReaderTests(PostgresFixture server) : IClassFi
     }
 
     [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
-    public async Task ReadSchemaAsync_ViewsAndMaterializedViews_AreViews()
+    public async Task ReadSchemaAsync_ViewsAndMaterializedViews_AreDistinguishedWithDefinitions()
     {
         var snapshot = await ReadAsync();
-        Assert.Equal(TableKind.View, snapshot.FindTable("app", "person_nick")!.Kind);
-        Assert.Equal(TableKind.View, snapshot.FindTable("app", "person_count")!.Kind);
+        var view = snapshot.FindTable("app", "person_nick")!;
+        Assert.Equal(TableKind.View, view.Kind);
+        Assert.Equal(TableKind.MaterializedView, snapshot.FindTable("app", "person_count")!.Kind);
+        Assert.Contains("FROM app.person", view.Definition);
+        Assert.Contains("count(*)", snapshot.FindTable("app", "person_count")!.Definition);
+        Assert.Null(snapshot.FindTable("app", "person")!.Definition);
         Assert.Equal(["id", "nick"], snapshot.FindTable("app", "person_nick")!.Columns.Select(c => c.Name));
     }
 
@@ -123,5 +132,27 @@ public sealed class PostgresSchemaReaderTests(PostgresFixture server) : IClassFi
         Assert.Equal("pk_named", snapshot.FindTable("app", "named_pk")!.PrimaryKeyName);
         Assert.Equal("person_pkey", snapshot.FindTable("app", "person")!.PrimaryKeyName);
         Assert.Null(snapshot.FindTable("app", "person_nick")!.PrimaryKeyName);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_Routines_AreFunctionsAndProceduresIncludingOverloads()
+    {
+        var all = (await ReadAsync()).Routines;
+        var routines = all.Where(r => r.Schema == "app").ToList();
+        Assert.Equal(["add(a integer, b integer)", "add(a numeric, b numeric)", "noop()", "touch()"], routines.Select(r => r.Signature));
+        Assert.Equal(["integer", "numeric"], routines.Where(r => r.Name == "add").Select(r => r.ReturnType));
+        var noop = routines.Single(r => r.Name == "noop");
+        Assert.Equal(RoutineKind.Procedure, noop.Kind);
+        Assert.Null(noop.ReturnType);
+        Assert.Contains("create or replace procedure app.noop", noop.Definition, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(all, r => r.Schema == "pg_catalog");
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_Triggers_HaveTimingEventsAndDefinition()
+    {
+        var trigger = Assert.Single((await ReadAsync()).Triggers);
+        Assert.Equal(("app", "person", "person_touch", "BEFORE", "INSERT OR UPDATE"), (trigger.Schema, trigger.Table, trigger.Name, trigger.Timing, trigger.Events));
+        Assert.Contains("EXECUTE FUNCTION app.touch()", trigger.Definition);
     }
 }

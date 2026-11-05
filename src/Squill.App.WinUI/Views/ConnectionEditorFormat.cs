@@ -8,8 +8,13 @@ namespace Squill.App.WinUI.Views;
 internal static class ConnectionEditorFormat
 {
     /// <summary>Gets the engine tiles, in the order drawn.</summary>
-    public static DatabaseDialect[] Engines { get; } =
-        [DatabaseDialect.PostgreSql, DatabaseDialect.MySql, DatabaseDialect.SqlServer, DatabaseDialect.Sqlite];
+    public static Engine[] Engines { get; } =
+        [new(DatabaseDialect.PostgreSql), new(DatabaseDialect.MySql), new(DatabaseDialect.MySql, true), new(DatabaseDialect.SqlServer), new(DatabaseDialect.Sqlite), new(DatabaseDialect.Oracle)];
+
+    /// <summary>An engine tile: a dialect, and for MySQL whether the profile targets MariaDB.</summary>
+    /// <param name="Dialect">The dialect.</param>
+    /// <param name="MariaDb">Whether this is the MariaDB flavor of <see cref="DatabaseDialect.MySql"/>.</param>
+    public readonly record struct Engine(DatabaseDialect Dialect, bool MariaDb = false);
 
     /// <summary>Gets the environment tiles, in the order drawn (2 x 2).</summary>
     public static ConnectionEnvironment[] Environments { get; } =
@@ -17,23 +22,29 @@ internal static class ConnectionEditorFormat
 
     /// <summary>Gets the two letters and the style suffix (<c>EngineBadge{Suffix}Style</c>) of an engine.</summary>
     /// <param name="dialect">The engine.</param>
+    /// <param name="mariaDb">Whether a MySQL profile targets MariaDB.</param>
     /// <returns>The badge letters and the style suffix.</returns>
-    public static (string Letters, string Suffix) Badge(DatabaseDialect dialect) => dialect switch
+    public static (string Letters, string Suffix) Badge(DatabaseDialect dialect, bool mariaDb = false) => dialect switch
     {
+        DatabaseDialect.MySql when mariaDb => ("MA", "Mariadb"),
         DatabaseDialect.PostgreSql => ("PG", "Postgres"),
         DatabaseDialect.MySql => ("My", "Mysql"),
         DatabaseDialect.SqlServer => ("MS", "Sqlserver"),
+        DatabaseDialect.Oracle => ("OR", "Oracle"),
         _ => ("SL", "Sqlite"),
     };
 
     /// <summary>Gets the display name of an engine.</summary>
     /// <param name="dialect">The engine.</param>
+    /// <param name="mariaDb">Whether a MySQL profile targets MariaDB.</param>
     /// <returns>The name drawn under the badge of the tile.</returns>
-    public static string EngineName(DatabaseDialect dialect) => dialect switch
+    public static string EngineName(DatabaseDialect dialect, bool mariaDb = false) => dialect switch
     {
+        DatabaseDialect.MySql when mariaDb => "MariaDB",
         DatabaseDialect.PostgreSql => "PostgreSQL",
         DatabaseDialect.MySql => "MySQL",
         DatabaseDialect.SqlServer => "SQL Server",
+        DatabaseDialect.Oracle => "Oracle",
         _ => "SQLite",
     };
 

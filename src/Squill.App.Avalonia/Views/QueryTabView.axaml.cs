@@ -118,7 +118,8 @@ public sealed partial class QueryTabView : UserControl
         ShowGrid();
         ShowEditBar();
         ResultGrid.IsVisible = result?.Kind == ResultKind.Grid;
-        Message.IsVisible = result?.Kind == ResultKind.Message;
+        Message.IsVisible = result?.Kind is ResultKind.Message or ResultKind.Messages;
+        Message.Classes.Set("mono", result?.Kind == ResultKind.Messages);
         Message.Text = result?.Text;
         Empty.IsVisible = result is null;
         ExportButton.IsEnabled = result?.Kind == ResultKind.Grid;

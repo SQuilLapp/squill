@@ -6,12 +6,18 @@ namespace Squill.Data.SqlServer.Tests;
 
 public sealed class SqlServerDatabaseProviderTests(SqlServerFixture server) : IClassFixture<SqlServerFixture>
 {
-    // The container presents a self-signed certificate; the provider trusts it only for "localhost".
-    private ValueTask<IDatabaseConnection> OpenAsync() =>
-        new SqlServerDatabaseProvider().OpenAsync(
-            new ConnectionProfile(Guid.NewGuid(), "ms", DatabaseDialect.SqlServer, "localhost", server.Port, SqlServerFixture.Database, SqlServerFixture.UserName, null, null),
-            SqlServerFixture.Password,
-            CancellationToken.None);
+    // The container presents a self-signed certificate; the provider trusts it only for loopback hosts.
+    private ConnectionProfile Profile() =>
+        new(Guid.NewGuid(), "ms", DatabaseDialect.SqlServer, server.Host, server.Port, SqlServerFixture.Database, SqlServerFixture.UserName, null, null);
+
+    private ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile? profile = null) =>
+        new SqlServerDatabaseProvider().OpenAsync(profile ?? Profile(), SqlServerFixture.Password, CancellationToken.None);
+
+    private static async Task<List<object?[]>> QueryAsync(IDatabaseConnection connection, string sql)
+    {
+        await using var reader = await connection.ExecuteAsync(sql, [], CancellationToken.None);
+        return await reader.ReadAllAsync(100, CancellationToken.None);
+    }
 
     [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
     public async Task ExecuteAsync_TypedValuesAndNull_AreReadBack()
@@ -68,9 +74,39 @@ public sealed class SqlServerDatabaseProviderTests(SqlServerFixture server) : IC
     }
 
     [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
-    public async Task ReadSchemaAsync_NotImplemented_ThrowsNotSupported()
+    public async Task OpenAsync_LoopbackIpWithTrustFlag_ConnectsEncrypted()
+    {
+        await using var connection = await OpenAsync(Profile() with { Host = "127.0.0.1", Tls = TlsMode.Require, TrustServerCertificate = true });
+        var rows = await QueryAsync(connection, "select encrypt_option from sys.dm_exec_connections where session_id = @@spid");
+        Assert.Equal("TRUE", Assert.Single(rows)[0]);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task OpenAsync_TlsVerifyFull_RejectsSelfSignedCertificate() =>
+        await Assert.ThrowsAnyAsync<Exception>(async () => await OpenAsync(Profile() with { Host = "127.0.0.1", Tls = TlsMode.VerifyFull }));
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ExecuteAsync_SlowStatement_FailsAfterCommandTimeout()
+    {
+        await using var connection = await OpenAsync(Profile() with { CommandTimeoutSeconds = 1 });
+        await Assert.ThrowsAnyAsync<Exception>(async () => await QueryAsync(connection, "waitfor delay '00:00:05'"));
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ListDatabasesAsync_SecondDatabase_IsListedAndSystemOnesAreNot()
     {
         await using var connection = await OpenAsync();
-        await Assert.ThrowsAsync<NotSupportedException>(async () => await connection.ReadSchemaAsync(CancellationToken.None));
+        await QueryAsync(connection, "drop database if exists squill_second");
+        await QueryAsync(connection, "create database squill_second");
+        try
+        {
+            var names = await connection.ListDatabasesAsync(CancellationToken.None);
+            Assert.Contains("squill_second", names);
+            Assert.DoesNotContain(names, n => n is "master" or "tempdb" or "model" or "msdb");
+        }
+        finally
+        {
+            await QueryAsync(connection, "drop database if exists squill_second");
+        }
     }
 }

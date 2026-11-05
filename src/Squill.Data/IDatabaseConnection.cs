@@ -13,4 +13,7 @@ public interface IDatabaseConnection : IAsyncDisposable
 
     /// <summary>Reads the tables and views of the connected database.</summary>
     ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken);
+
+    /// <summary>Lists the user databases of the server, system ones excluded; SQLite returns its single file name.</summary>
+    ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken);
 }

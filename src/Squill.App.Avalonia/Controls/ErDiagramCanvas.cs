@@ -41,6 +41,7 @@ public sealed class ErDiagramCanvas : Control
     private ErPoint _pressed;
     private ErPoint _last;
     private bool _panning;
+    private bool _minimap;
     private string? _draggedKey;
     private bool _moved;
 
@@ -135,6 +136,14 @@ public sealed class ErDiagramCanvas : Control
         var screen = ToPoint(e.GetPosition(this));
         _pressed = _last = screen;
         _moved = false;
+        if (d.CenterFromMinimap(screen, new ErSize(Bounds.Width, Bounds.Height)))
+        {
+            _minimap = true;
+            e.Pointer.Capture(this);
+            e.Handled = true;
+            return;
+        }
+
         if (d.HitTestEntity(d.ToWorld(screen)) is { } hit)
         {
             _draggedKey = hit.Key;
@@ -160,6 +169,12 @@ public sealed class ErDiagramCanvas : Control
         if (d is null)
             return;
         var screen = ToPoint(e.GetPosition(this));
+        if (_minimap)
+        {
+            d.CenterFromMinimap(screen, new ErSize(Bounds.Width, Bounds.Height));
+            return;
+        }
+
         if (!_panning && _draggedKey is null)
         {
             UpdateRelationTip(d, d.ToWorld(screen));
@@ -184,6 +199,7 @@ public sealed class ErDiagramCanvas : Control
             _diagram?.EndDrag();
         _draggedKey = null;
         _panning = false;
+        _minimap = false;
         e.Pointer.Capture(null);
     }
 

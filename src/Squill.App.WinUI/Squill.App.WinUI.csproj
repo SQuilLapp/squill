@@ -24,6 +24,7 @@
     <PackageReference Include="Velopack" />
     <ProjectReference Include="..\Squill.Presentation\Squill.Presentation.csproj" />
     <ProjectReference Include="..\Squill.Data.MySql\Squill.Data.MySql.csproj" />
+    <ProjectReference Include="..\Squill.Data.Oracle\Squill.Data.Oracle.csproj" />
     <ProjectReference Include="..\Squill.Data.Postgres\Squill.Data.Postgres.csproj" />
     <ProjectReference Include="..\Squill.Data.SqlServer\Squill.Data.SqlServer.csproj" />
     <ProjectReference Include="..\Squill.Data.Sqlite\Squill.Data.Sqlite.csproj" />
@@ -47,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Squill.App.Shared\LoomTerminalHost.cs" Link="Terminal\LoomTerminalHost.cs" />
+    <Compile Include="..\Squill.App.Shared\LoomSqlProviders.cs" Link="Editors\LoomSqlProviders.cs" />
   </ItemGroup>
   <!-- LoomEditor and LoomTerminal target the 26100 Windows SDK; a project cannot reference a higher Windows TFM. -->
   <PropertyGroup>
@@ -59,4 +61,5 @@
     </ItemGroup>
     <Copy SourceFiles="@(AppXamlResource)" DestinationFiles="@(AppXamlResource->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
+  <Import Project="..\..\eng\OracleBridge.targets" />
 </Project>

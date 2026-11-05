@@ -22,7 +22,7 @@ public sealed class InsertPlanTests
     [Theory]
     [InlineData(DatabaseDialect.Sqlite, "INSERT INTO \"main\".\"T\" (\"Name\") VALUES (@p0) RETURNING \"Id\"", null)]
     [InlineData(DatabaseDialect.PostgreSql, "INSERT INTO \"main\".\"T\" (\"Name\") VALUES (@p0) RETURNING \"Id\"", null)]
-    [InlineData(DatabaseDialect.SqlServer, "INSERT INTO [main].[T] ([Name]) OUTPUT INSERTED.[Id] VALUES (@p0)", null)]
+    [InlineData(DatabaseDialect.SqlServer, "INSERT INTO [main].[T] ([Name]) VALUES (@p0); SELECT SCOPE_IDENTITY()", null)]
     [InlineData(DatabaseDialect.MySql, "INSERT INTO `main`.`T` (`Name`) VALUES (@p0)", "SELECT LAST_INSERT_ID()")]
     public void GeneratedKey(DatabaseDialect d, string sql, string? keyQuery)
     {
@@ -46,10 +46,10 @@ public sealed class InsertPlanTests
     }
 
     [Fact]
-    public void NoValues_SqlServerOutputBeforeDefaultValues()
+    public void NoValues_SqlServerScopeIdentity()
     {
         var plan = DmlGenerator.PlanInsert(new InsertRow([]), Target("Id"), DatabaseDialect.SqlServer);
-        Assert.Equal("INSERT INTO [main].[T] OUTPUT INSERTED.[Id] DEFAULT VALUES", plan.Insert.Sql);
+        Assert.Equal("INSERT INTO [main].[T] DEFAULT VALUES; SELECT SCOPE_IDENTITY()", plan.Insert.Sql);
     }
 
     [Fact]

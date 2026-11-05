@@ -15,9 +15,13 @@ public static class SqlSnippets
     {
         ArgumentNullException.ThrowIfNull(t);
         var name = t.Schema is { Length: > 0 } schema ? $"{Quote(schema, d)}.{Quote(t.Name, d)}" : Quote(t.Name, d);
-        return d == DatabaseDialect.SqlServer
-            ? $"SELECT TOP {n} * FROM {name}"
-            : $"SELECT * FROM {name} LIMIT {n}";
+        // Oracle has no LIMIT; ROWNUM works on every version (FETCH FIRST needs 12c).
+        return d switch
+        {
+            DatabaseDialect.SqlServer => $"SELECT TOP {n} * FROM {name}",
+            DatabaseDialect.Oracle => $"SELECT * FROM {name} WHERE ROWNUM <= {n}",
+            _ => $"SELECT * FROM {name} LIMIT {n}",
+        };
     }
 
     /// <summary>Quotes an identifier, doubling the closing quote character inside it.</summary>

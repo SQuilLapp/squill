@@ -13,6 +13,8 @@ public sealed class DiagramTabViewModelTests
     private static readonly ColumnDefinition Id = new("id", "int", false, true, null);
     private static readonly ColumnDefinition ParentId = new("p_id", "int", false, false, null);
 
+    private static ErSize ErMinimapPanel => DiagramTabViewModel.MinimapSize;
+
     private static TableInfo Plain(string name) => new(null, name, TableKind.Table, [Id], [], []);
 
     private static TableInfo Child(string name, string parent) =>
@@ -49,6 +51,8 @@ public sealed class DiagramTabViewModelTests
 
         public ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken) =>
             throw new NotSupportedException();
+
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) => ValueTask.FromResult<IReadOnlyList<string>>([]);
 
         public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => ValueTask.FromResult(next);
 
@@ -115,6 +119,22 @@ public sealed class DiagramTabViewModelTests
         Assert.Equal(2, store.Saved.Positions.Count);
         await vm.InitializeAsync(TestContext.Current.CancellationToken);
         Assert.Equal(box.X + 300, vm.Boxes["b"].X);
+    }
+
+    [Fact]
+    public void CenterFromMinimap_ClickInsidePanel_MovesTheViewAndOutsideDoesNot()
+    {
+        var (vm, _) = Create(Schema(Plain("a"), Child("b", "a"), Child("c", "a")));
+        var canvas = new ErSize(1000, 600);
+        var panelLeft = canvas.Width - ErMinimapPanel.Width - 12;
+        var panelTop = canvas.Height - ErMinimapPanel.Height - 12;
+
+        Assert.False(vm.CenterFromMinimap(new ErPoint(10, 10), canvas));
+        Assert.Equal((0, 0), (vm.OffsetX, vm.OffsetY));
+
+        Assert.True(vm.CenterFromMinimap(new ErPoint(panelLeft + 10, panelTop + 10), canvas));
+        Assert.NotEqual((0, 0), (vm.OffsetX, vm.OffsetY));
+        Assert.False(vm.CenterFromMinimap(new ErPoint(panelLeft + 10, panelTop + 10), new ErSize(200, 100)));
     }
 
     [Fact]

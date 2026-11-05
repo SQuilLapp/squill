@@ -187,6 +187,48 @@ public sealed partial class DiagramTabViewModel : ViewModelBase, IDisposable
         OffsetY = screenAnchor.Y - (world.Y * Zoom);
     }
 
+    /// <summary>Size of the minimap panel drawn in the bottom-right corner of the canvas, with its margin and inner padding (shared by both heads).</summary>
+    public static ErSize MinimapSize { get; } = new(209, 108);
+
+    private const double MinimapMargin = 12;
+    private const double MinimapPadding = 8;
+
+    /// <summary>Recenters the view on the diagram point that a pointer position over the minimap stands for.</summary>
+    /// <param name="screen">Pointer position in canvas pixels.</param>
+    /// <param name="canvas">Size of the canvas in pixels.</param>
+    /// <returns><see langword="true"/> when the pointer is over the minimap (and the view moved); <see langword="false"/> when the minimap is hidden or the pointer is elsewhere.</returns>
+    public bool CenterFromMinimap(ErPoint screen, ErSize canvas)
+    {
+        var (width, height) = (MinimapSize.Width, MinimapSize.Height);
+        if (Boxes.Count == 0 || canvas.Width < width + (2 * MinimapMargin) || canvas.Height < height + (2 * MinimapMargin))
+            return false;
+        var panelX = canvas.Width - width - MinimapMargin;
+        var panelY = canvas.Height - height - MinimapMargin;
+        if (screen.X < panelX || screen.X > panelX + width || screen.Y < panelY || screen.Y > panelY + height)
+            return false;
+
+        // The same mapping as the heads draw: the view and every box, scaled to fit the panel and centered in it.
+        var topLeft = ToWorld(new ErPoint(0, 0));
+        var bottomRight = ToWorld(new ErPoint(canvas.Width, canvas.Height));
+        double minX = topLeft.X, minY = topLeft.Y, maxX = bottomRight.X, maxY = bottomRight.Y;
+        foreach (var box in Boxes.Values)
+        {
+            minX = Math.Min(minX, box.X);
+            minY = Math.Min(minY, box.Y);
+            maxX = Math.Max(maxX, box.Right);
+            maxY = Math.Max(maxY, box.Bottom);
+        }
+
+        double worldWidth = Math.Max(1, maxX - minX), worldHeight = Math.Max(1, maxY - minY);
+        var scale = Math.Min((width - (2 * MinimapPadding)) / worldWidth, (height - (2 * MinimapPadding)) / worldHeight);
+        var originX = panelX + ((width - (worldWidth * scale)) / 2) - (minX * scale);
+        var originY = panelY + ((height - (worldHeight * scale)) / 2) - (minY * scale);
+        var target = new ErPoint((screen.X - originX) / scale, (screen.Y - originY) / scale);
+        OffsetX = (canvas.Width / 2) - (target.X * Zoom);
+        OffsetY = (canvas.Height / 2) - (target.Y * Zoom);
+        return true;
+    }
+
     /// <summary>Moves the view.</summary>
     /// <param name="dx">Horizontal shift in screen pixels.</param>
     /// <param name="dy">Vertical shift in screen pixels.</param>

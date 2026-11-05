@@ -6,11 +6,11 @@ namespace Squill.Data.MySql.Tests;
 
 public sealed class MySqlDatabaseProviderTests(MySqlFixture server) : IClassFixture<MySqlFixture>
 {
-    private ValueTask<IDatabaseConnection> OpenAsync() =>
-        new MySqlDatabaseProvider().OpenAsync(
-            new ConnectionProfile(Guid.NewGuid(), "my", DatabaseDialect.MySql, server.Host, server.Port, MySqlFixture.Database, MySqlFixture.UserName, null, null),
-            MySqlFixture.Password,
-            CancellationToken.None);
+    private ConnectionProfile Profile() =>
+        new(Guid.NewGuid(), "my", DatabaseDialect.MySql, server.Host, server.Port, MySqlFixture.Database, MySqlFixture.UserName, null, null);
+
+    private ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile? profile = null) =>
+        new MySqlDatabaseProvider().OpenAsync(profile ?? Profile(), MySqlFixture.Password, CancellationToken.None);
 
     private static async Task<List<object?[]>> QueryAsync(IDatabaseConnection connection, string sql, params QueryParameter[] parameters)
     {
@@ -74,9 +74,40 @@ public sealed class MySqlDatabaseProviderTests(MySqlFixture server) : IClassFixt
     }
 
     [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
-    public async Task ReadSchemaAsync_NotImplemented_ThrowsNotSupported()
+    public async Task OpenAsync_TlsRequire_ConnectsWithSelfSignedCertificate()
+    {
+        await using var connection = await OpenAsync(Profile() with { Tls = TlsMode.Require });
+        var rows = await QueryAsync(connection, "show session status like 'Ssl_cipher'");
+        Assert.False(string.IsNullOrEmpty((string?)Assert.Single(rows)[1]));
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task OpenAsync_TlsVerifyFull_RejectsSelfSignedCertificate() =>
+        await Assert.ThrowsAnyAsync<Exception>(async () => await OpenAsync(Profile() with { Tls = TlsMode.VerifyFull }));
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ExecuteAsync_SlowStatement_FailsAfterCommandTimeout()
+    {
+        await using var connection = await OpenAsync(Profile() with { CommandTimeoutSeconds = 1 });
+        await Assert.ThrowsAnyAsync<Exception>(async () => await QueryAsync(connection, "select count(*) from information_schema.columns a, information_schema.columns b, information_schema.columns c, information_schema.columns d"));
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ListDatabasesAsync_SecondDatabase_IsListedAndSystemOnesAreNot()
     {
         await using var connection = await OpenAsync();
-        await Assert.ThrowsAsync<NotSupportedException>(async () => await connection.ReadSchemaAsync(CancellationToken.None));
+        await QueryAsync(connection, "drop database if exists squill_second");
+        await QueryAsync(connection, "create database squill_second");
+        try
+        {
+            var names = await connection.ListDatabasesAsync(CancellationToken.None);
+            Assert.Contains("squill_second", names);
+            Assert.Contains(MySqlFixture.Database, names);
+            Assert.DoesNotContain(names, n => n is "information_schema" or "mysql" or "performance_schema" or "sys");
+        }
+        finally
+        {
+            await QueryAsync(connection, "drop database if exists squill_second");
+        }
     }
 }

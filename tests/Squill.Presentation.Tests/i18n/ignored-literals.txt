@@ -1,17 +1,14 @@
 # relative/path|exact text|reason   (kept sorted; the text is the literal as written in the source)
 src/Squill.App.Avalonia/Controls/ErDiagramCanvas.cs|avares://Squill.App.Avalonia/Assets/Fonts#JetBrains Mono, Cascadia Code, monospace|font family resource uri
-src/Squill.App.Avalonia/Editors/AvaloniaSqlEditor.cs|Cascadia Code, Consolas, Menlo, monospace|font family list
 src/Squill.App.Avalonia/MainWindow.axaml|Ctrl+K|keyboard accelerator text, not translated
 src/Squill.App.Avalonia/Services/AvaloniaDialogService.cs|mono|style class name, not text
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFg3Brush|resource key
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFgBrush|resource key
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|group|style class name
-src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|MS|engine badge abbreviation, not translated
+src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|MariaDB|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|MySQL|product name, not translated
-src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|My|engine badge abbreviation, not translated
-src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|PG|engine badge abbreviation, not translated
+src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|Oracle|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|PostgreSQL|product name, not translated
-src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SL|engine badge abbreviation, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SQL Server|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SQLite|product name, not translated
 src/Squill.App.Avalonia/Views/DiagramTabView.axaml|Ctrl+0|keyboard accelerator text, not translated
@@ -37,6 +34,8 @@ src/Squill.App.WinUI/Views/TableDesignerView.xaml|ON UPDATE|SQL keyword, not tra
 src/Squill.Core/Design/DesignValidator.cs|Changing the type of '{a.After.Name}' may fail or lose data.|English fallback of a coded issue, rendered through issue.design.typeChangeRisk
 src/Squill.Core/Design/DesignValidator.cs|Data in column '{d.Name}' is lost.|English fallback of a coded issue, rendered through issue.design.dropColumnDataLoss
 src/Squill.Core/Design/DesignValidator.cs|Existing NULLs make '{a.After.Name}' fail to become non-nullable.|English fallback of a coded issue, rendered through issue.design.nullsBlockNotNull
+src/Squill.OracleBridge/OracleSession.cs|The connection is not open.|bridge protocol error, shown as a driver message
+src/Squill.OracleBridge/OracleSession.cs|Unknown operation '{request.Op}'.|bridge protocol error, shown as a driver message
 src/Squill.Presentation/Designer/TableDesignerViewModel.cs|The foreign key '{fk.Name}' references the missing table '{fk.ReferencedTable}'.|English fallback of a coded issue, rendered through issue.design.foreignKeyTableMissing
 src/Squill.Presentation/Designer/TableDesignerViewModel.cs|Views depending on this table are not recreated.|English fallback of a coded issue, rendered through issue.design.viewsNotRecreated
 src/Squill.Presentation/Designer/TableDesignerViewModel.cs|\n|line separator between warnings
@@ -44,7 +43,9 @@ src/Squill.Presentation/Diagram/ErSvgExporter.cs| stroke-dasharray=\"6 4\"|SVG m
 src/Squill.Presentation/Editing/ChangeSetBuilder.cs|duplicate key in pending rows|English fallback of a coded issue, rendered through issue.edit.duplicateKey
 src/Squill.Presentation/Editing/ChangeSetBuilder.cs|{c.Definition.Name} cannot be NULL|English fallback of a coded issue, rendered through issue.edit.columnNull
 src/Squill.Presentation/Editing/ChangeSetBuilder.cs|{d.Name} is required|English fallback of a coded issue, rendered through issue.edit.columnRequired
+src/Squill.Presentation/Explorer/DefinitionScript.cs|ON {SqlQuoting.Quote(trigger.Table, dialect)} FOR EACH ROW\n{trigger.Definition.Trim()}|SQL text, never translated
 src/Squill.Presentation/Localization/IssueText.cs|issue.|catalog key prefix, not text
+src/Squill.Presentation/Results/CellFormatter.cs|<unsupported: |placeholder for a value that cannot be formatted, data not UI text
 src/Squill.Presentation/Results/CellFormatter.cs|yyyy-MM-dd HH:mm:ss.fffzzz|invariant data format string
 src/Squill.Presentation/Results/CellFormatter.cs|yyyy-MM-dd HH:mm:ss.fff|invariant data format string
 src/Squill.Presentation/Results/CellFormatter.cs|yyyy-MM-dd HH:mm:sszzz|invariant data format string
@@ -61,7 +62,10 @@ src/Squill.Presentation/Results/GridBenchReport.cs|p95 frame ms {Percentile(rend
 src/Squill.Presentation/Results/GridBenchReport.cs|p95 interval ms {Percentile(frameMs, 0.95):F3}|developer benchmark report
 src/Squill.Presentation/Results/JsonResultExporter.cs|The result is still loading and cannot be exported.|developer guard, the view-model checks first
 src/Squill.Presentation/Results/SyntheticGridSource.cs|value {row}-{column}|synthetic benchmark data
+src/Squill.Presentation/Sessions/ConnectionSession.cs|This session cannot open other databases.|programmer-error exception message
 src/Squill.Presentation/Sessions/SqlRunner.cs|BEGIN TRANSACTION|SQL statement
 src/Squill.Presentation/Sessions/SqlRunner.cs|COMMIT TRANSACTION|SQL statement
 src/Squill.Presentation/Sessions/SqlRunner.cs|ROLLBACK TRANSACTION|SQL statement
+src/Squill.Presentation/Terminal/TerminalLauncher.cs|Client SDK|install folder name, not display text
+src/Squill.Presentation/Terminal/TerminalLauncher.cs|Microsoft SQL Server|install folder name, not display text
 src/Squill.Sql/Analysis/SqlDiagnosticsProvider.cs|SQL0001|diagnostic code, not display text

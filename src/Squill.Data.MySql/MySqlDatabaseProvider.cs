@@ -23,7 +23,18 @@ public sealed class MySqlDatabaseProvider : IDatabaseProvider
             Database = profile.Database ?? string.Empty,
             UserID = profile.UserName ?? string.Empty,
             Password = password ?? string.Empty,
+            ConnectionTimeout = (uint)profile.ConnectTimeoutSeconds,
+            DefaultCommandTimeout = (uint)profile.CommandTimeoutSeconds,
+            ConvertZeroDateTime = true,
+            AllowUserVariables = true, // SET @x = 1 and @x := 2 are ordinary MySQL; without it the driver reads @x as a missing parameter
         };
+        if (profile.Tls != TlsMode.Default)
+            builder.SslMode = profile.Tls switch
+            {
+                TlsMode.Disable => MySqlSslMode.None,
+                TlsMode.Require => MySqlSslMode.Required,
+                _ => MySqlSslMode.VerifyFull,
+            };
         return builder.ConnectionString;
     }
 
@@ -34,7 +45,7 @@ public sealed class MySqlDatabaseProvider : IDatabaseProvider
         try
         {
             await connection.OpenAsync(cancellationToken);
-            return new MySqlDatabaseConnection(connection);
+            return new MySqlDatabaseConnection(connection, profile.CommandTimeoutSeconds);
         }
         catch
         {

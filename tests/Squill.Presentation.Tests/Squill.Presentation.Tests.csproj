@@ -9,6 +9,15 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <ProjectReference Include="..\..\src\Squill.Presentation\Squill.Presentation.csproj" />
+    <PackageReference Include="Testcontainers" />
     <ProjectReference Include="..\..\src\Squill.Data.Sqlite\Squill.Data.Sqlite.csproj" />
+    <ProjectReference Include="..\..\src\Squill.Data.Postgres\Squill.Data.Postgres.csproj" />
+    <Compile Include="../Shared/SshJumpFixture.cs" Link="Sessions/SshJumpFixture.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/ErStressScenario.cs" Link="Diagram/ErStressScenario.cs" />
+    <Compile Include="../Shared/ExportSnapshotScenario.cs" Link="Results/ExportSnapshotScenario.cs" />
+    <Content Include="Results/Snapshots/*.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Diagram/Snapshots/*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

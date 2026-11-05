@@ -8,9 +8,9 @@ internal static class SqlServerSchemaReader
 {
     private const string TablesCte = """
         with objs as (
-            select object_id, schema_id, name, 'U' as kind from sys.tables
+            select object_id, schema_id, name, 'U' as kind from sys.tables where is_ms_shipped = 0
             union all
-            select object_id, schema_id, name, 'V' as kind from sys.views)
+            select object_id, schema_id, name, 'V' as kind from sys.views where is_ms_shipped = 0)
         """;
 
     private const string ColumnsSql = TablesCte + """
@@ -20,11 +20,13 @@ internal static class SqlServerSchemaReader
                    select 1 from sys.indexes pk
                    join sys.index_columns pkc on pkc.object_id = pk.object_id and pkc.index_id = pk.index_id
                    where pk.object_id = o.object_id and pk.is_primary_key = 1 and pkc.column_id = c.column_id) then 1 else 0 end as bit),
-               c.is_identity, kc.name
+               c.is_identity, kc.name, m.definition,
+               cast(case when c.is_computed = 1 or ty.name = 'timestamp' then 1 else 0 end as bit)
         from objs o
         join sys.schemas s on s.schema_id = o.schema_id
         join sys.columns c on c.object_id = o.object_id
         join sys.types ty on ty.user_type_id = c.user_type_id
+        left join sys.sql_modules m on m.object_id = o.object_id
         left join sys.key_constraints kc on kc.parent_object_id = o.object_id and kc.type = 'PK'
         left join sys.default_constraints d on d.parent_object_id = c.object_id and d.parent_column_id = c.column_id
         where s.name not in ('sys', 'INFORMATION_SCHEMA')
@@ -59,6 +61,35 @@ internal static class SqlServerSchemaReader
         order by ps.name, pt.name, f.name, fc.constraint_column_id
         """;
 
+    private const string RoutinesSql = """
+        select o.object_id, s.name, o.name, o.type, m.definition
+        from sys.objects o
+        join sys.schemas s on s.schema_id = o.schema_id
+        left join sys.sql_modules m on m.object_id = o.object_id
+        where o.type in ('P', 'FN', 'IF', 'TF') and o.is_ms_shipped = 0 and s.name not in ('sys', 'INFORMATION_SCHEMA')
+        order by s.name, o.name
+        """;
+
+    // Parameter 0 is the return value of a scalar function.
+    private const string ParametersSql = """
+        select p.object_id, p.parameter_id, p.name, ty.name, p.max_length, p.precision, p.scale
+        from sys.parameters p
+        join sys.types ty on ty.user_type_id = p.user_type_id
+        order by p.object_id, p.parameter_id
+        """;
+
+    private const string TriggersSql = """
+        select s.name, po.name, t.name, case when t.is_instead_of_trigger = 1 then 'INSTEAD OF' else 'AFTER' end,
+               (select string_agg(te.type_desc, ' OR ') within group (order by te.type) from sys.trigger_events te where te.object_id = t.object_id),
+               m.definition
+        from sys.triggers t
+        join sys.objects po on po.object_id = t.parent_id
+        join sys.schemas s on s.schema_id = po.schema_id
+        left join sys.sql_modules m on m.object_id = t.object_id
+        where t.parent_class = 1 and t.is_ms_shipped = 0 and s.name not in ('sys', 'INFORMATION_SCHEMA')
+        order by s.name, po.name, t.name
+        """;
+
     /// <summary>Formats a column type as <c>type(length)</c>, <c>type(precision,scale)</c> or the bare type name.</summary>
     /// <param name="typeName">Type name from <c>sys.types</c>.</param>
     /// <param name="maxLength">Storage size in bytes from <c>sys.columns</c>; -1 means <c>max</c>.</param>
@@ -77,16 +108,19 @@ internal static class SqlServerSchemaReader
     /// <summary>Reads the tables and views of every non-system schema of the connected database.</summary>
     /// <param name="connection">Open connection to read from.</param>
     /// <param name="cancellationToken">Token that cancels the queries.</param>
-    /// <returns>The schema snapshot, whose default schema is <c>schema_name()</c> of the connection.</returns>
+    /// <returns>
+    /// The schema snapshot, whose default schema is <c>schema_name()</c> of the connection; it includes functions, stored procedures and table
+    /// triggers. Definitions are <c>null</c> for encrypted modules.
+    /// </returns>
     public static async ValueTask<SchemaSnapshot> ReadAsync(SqlConnection connection, CancellationToken cancellationToken)
     {
         var defaultSchema = (await ReadAsync(connection, "select schema_name()", r => r.IsDBNull(0) ? null : r.GetString(0), cancellationToken))[0];
         var columns = (await ReadAsync(connection, ColumnsSql, r => (
             Schema: r.GetString(0), Table: r.GetString(1), Kind: r.GetString(2) == "V" ? TableKind.View : TableKind.Table,
             Column: new ColumnDefinition(r.GetString(3), FormatDataType(r.GetString(4), r.GetInt16(5), r.GetByte(6), r.GetByte(7)),
-                r.GetBoolean(8), r.GetBoolean(10), r.IsDBNull(9) ? null : r.GetString(9), r.GetBoolean(11)),
-            PrimaryKeyName: r.IsDBNull(12) ? null : r.GetString(12)), cancellationToken))
-            .GroupBy(c => (c.Schema, c.Table, c.Kind))
+                r.GetBoolean(8), r.GetBoolean(10), r.IsDBNull(9) ? null : r.GetString(9), r.GetBoolean(11), r.GetBoolean(14)),
+            PrimaryKeyName: r.IsDBNull(12) ? null : r.GetString(12), Definition: r.IsDBNull(13) ? null : r.GetString(13)), cancellationToken))
+            .GroupBy(c => (c.Schema, c.Table, c.Kind, c.Definition))
             .ToList();
         var indexes = (await ReadAsync(connection, IndexesSql, r => (
             Schema: r.GetString(0), Table: r.GetString(1), Name: r.GetString(2), Unique: r.GetBoolean(3), Column: r.GetString(4)), cancellationToken))
@@ -102,9 +136,23 @@ internal static class SqlServerSchemaReader
 
         var tables = columns
             .Select(g => new TableInfo(g.Key.Schema, g.Key.Table, g.Key.Kind,
-                g.Select(c => c.Column).ToList(), indexes[(g.Key.Schema, g.Key.Table)].ToList(), foreignKeys[(g.Key.Schema, g.Key.Table)].ToList(), g.First().PrimaryKeyName))
+                g.Select(c => c.Column).ToList(), indexes[(g.Key.Schema, g.Key.Table)].ToList(), foreignKeys[(g.Key.Schema, g.Key.Table)].ToList(), g.First().PrimaryKeyName, g.Key.Definition))
             .ToList();
-        return new SchemaSnapshot(defaultSchema, tables);
+        var parameters = (await ReadAsync(connection, ParametersSql, r => (
+            Id: r.GetInt32(0), Position: r.GetInt32(1), Name: r.GetString(2), Type: FormatDataType(r.GetString(3), r.GetInt16(4), r.GetByte(5), r.GetByte(6))), cancellationToken))
+            .ToLookup(p => p.Id);
+        var routines = await ReadAsync(connection, RoutinesSql, r =>
+        {
+            var type = r.GetString(3).Trim();
+            var ps = parameters[r.GetInt32(0)].ToList();
+            return new RoutineInfo(r.GetString(1), r.GetString(2), type == "P" ? RoutineKind.Procedure : RoutineKind.Function,
+                $"{r.GetString(2)}({string.Join(", ", ps.Where(p => p.Position > 0).Select(p => p.Name + " " + p.Type))})",
+                type switch { "P" => null, "FN" => ps.Where(p => p.Position == 0).Select(p => p.Type).FirstOrDefault(), _ => "TABLE" },
+                r.IsDBNull(4) ? null : r.GetString(4));
+        }, cancellationToken);
+        var triggers = await ReadAsync(connection, TriggersSql, r => new TriggerInfo(
+            r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3), r.GetString(4), r.IsDBNull(5) ? null : r.GetString(5)), cancellationToken);
+        return new SchemaSnapshot(defaultSchema, tables) { Routines = routines, Triggers = triggers };
     }
 
     private static ReferentialAction ToAction(byte code) => code switch

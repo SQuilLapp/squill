@@ -8,4 +8,7 @@ public enum ResultKind
 
     /// <summary>A text message: rows affected, completion or an error.</summary>
     Message,
+
+    /// <summary>The server messages of a statement (<c>PRINT</c>, <c>RAISE NOTICE</c>, warnings), one per line.</summary>
+    Messages,
 }

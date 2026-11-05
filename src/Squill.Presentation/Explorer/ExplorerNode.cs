@@ -26,6 +26,18 @@ public enum ExplorerNodeKind
     /// <summary>A view.</summary>
     View,
 
+    /// <summary>A materialized view.</summary>
+    MaterializedView,
+
+    /// <summary>A stored function.</summary>
+    Function,
+
+    /// <summary>A stored procedure.</summary>
+    Procedure,
+
+    /// <summary>A trigger.</summary>
+    Trigger,
+
     /// <summary>A column.</summary>
     Column,
 
@@ -59,14 +71,32 @@ public sealed partial class ExplorerNode(string title, ExplorerNodeKind kind, st
     /// <summary>Gets the number of objects under a schema or folder node, or <see langword="null"/>. Static: the filter does not change it.</summary>
     public int? Count { get; } = count;
 
-    /// <summary>Gets the one text the heads draw right-aligned: <see cref="Detail"/>, else the formatted <see cref="Count"/>, else <see langword="null"/>.</summary>
-    public string? Trailing => Detail ?? (Count is { } n ? DisplayFormat.Count(n) : null);
+    /// <summary>Gets the one text the heads draw right-aligned: the <see cref="ErrorText"/>, else <see cref="Detail"/>, else the formatted <see cref="Count"/>, else <see langword="null"/>.</summary>
+    public string? Trailing => ErrorText ?? Detail ?? (Count is { } n ? DisplayFormat.Count(n) : null);
+
+    /// <summary>Gets or sets the message of the last failure to open the database behind a database node, or <see langword="null"/>.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Trailing))]
+    public partial string? ErrorText { get; set; }
 
     /// <summary>Gets what the node represents.</summary>
     public ExplorerNodeKind Kind { get; } = kind;
 
     /// <summary>Gets the table or view behind a table or view node; <see langword="null"/> otherwise.</summary>
     public TableInfo? Table { get; } = table;
+
+    /// <summary>Gets or sets whether the connection behind this node is being opened, so the explorer can show a progress indicator.</summary>
+    [ObservableProperty]
+    public partial bool IsConnecting { get; set; }
+
+    /// <summary>Gets the function or procedure behind a routine node; <see langword="null"/> otherwise.</summary>
+    public RoutineInfo? Routine { get; init; }
+
+    /// <summary>Gets the trigger behind a trigger node; <see langword="null"/> otherwise.</summary>
+    public TriggerInfo? Trigger { get; init; }
+
+    /// <summary>Gets the stored definition text of a view, routine or trigger node, or <see langword="null"/>; read-only text for a properties panel.</summary>
+    public string? DefinitionText => Table?.Definition ?? Routine?.Definition ?? Trigger?.Definition;
 
     /// <summary>Gets the saved connection the node belongs to; <see langword="null"/> for connection folders.</summary>
     public ConnectionProfile? Profile { get; init; }

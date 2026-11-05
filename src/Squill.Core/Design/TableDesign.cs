@@ -17,11 +17,15 @@ public sealed record TableDesign(
     IReadOnlyList<IndexDesign> Indexes,
     IReadOnlyList<ForeignKeyDesign> ForeignKeys)
 {
+    /// <summary>Source of the triggers on the table, as read from the database; an engine that drops triggers with the table (SQLite rebuild) re-creates them from it.</summary>
+    public IReadOnlyList<string> Triggers { get; init; } = [];
+
     /// <summary>Creates a design that mirrors an existing table, with every original name equal to the current one.</summary>
     /// <param name="table">The table to copy.</param>
+    /// <param name="triggers">Triggers of the whole database; those on <paramref name="table"/> are kept in <see cref="Triggers"/>.</param>
     /// <returns>The draft.</returns>
     /// <exception cref="ArgumentException"><paramref name="table"/> is a view.</exception>
-    public static TableDesign FromTable(TableInfo table)
+    public static TableDesign FromTable(TableInfo table, IEnumerable<TriggerInfo>? triggers = null)
     {
         ArgumentNullException.ThrowIfNull(table);
         if (table.Kind != TableKind.Table)
@@ -36,7 +40,10 @@ public sealed record TableDesign(
             [.. table.Columns.Where(c => c.IsPrimaryKey).Select(c => c.Name)],
             table.PrimaryKeyName,
             [.. table.Indexes.Select(i => new IndexDesign(i.Name, i.Name, i.IsUnique, i.Columns))],
-            [.. table.ForeignKeys.Select(f => new ForeignKeyDesign(f.Name, f.Name, f.Columns, f.ReferencedSchema, f.ReferencedTable, f.ReferencedColumns, f.OnDelete, f.OnUpdate))]);
+            [.. table.ForeignKeys.Select(f => new ForeignKeyDesign(f.Name, f.Name, f.Columns, f.ReferencedSchema, f.ReferencedTable, f.ReferencedColumns, f.OnDelete, f.OnUpdate))])
+        {
+            Triggers = [.. (triggers ?? []).Where(t => t.Definition is not null && t.Table == table.Name && (t.Schema == (table.Schema ?? "") || table.Schema is null)).Select(t => t.Definition!)],
+        };
     }
 
     /// <summary>Creates an empty design for a table to be created.</summary>

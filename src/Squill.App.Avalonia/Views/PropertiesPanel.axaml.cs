@@ -33,11 +33,11 @@ public sealed partial class PropertiesPanel : UserControl
     public void Show(ExplorerNode? node, WorkspaceViewModel workspace)
     {
         _workspace = workspace;
-        _table = node is { Kind: ExplorerNodeKind.Table or ExplorerNodeKind.View, Table: { } table } ? table : null;
+        _table = node is { Kind: ExplorerNodeKind.Table or ExplorerNodeKind.View or ExplorerNodeKind.MaterializedView, Table: { } table } ? table : null;
         IsVisible = _table is not null;
         if (_table is not { } t)
             return;
-        var isView = t.Kind == TableKind.View;
+        var isView = t.Kind.IsViewLike();
         KindIcon.Data = (global::Avalonia.Media.Geometry?)(this.FindResource(isView ? "SquillIconView" : "SquillIconTable"));
         NameText.Text = t.Name;
         var kind = UiText.Get(isView ? "properties.kindView" : "properties.kindTable");

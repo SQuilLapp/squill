@@ -176,7 +176,7 @@ internal static class DmlScenario
         {
             bool b => (actual is bool ab ? ab : Convert.ToInt64(actual, CultureInfo.InvariantCulture) != 0) == b,
             // SQLite gives a decimal column REAL affinity, so it reads back as a double: compare with a tolerance there.
-            int or long or decimal => actual is double or float
+            int or long or ulong or decimal => actual is double or float
                 ? Math.Abs(Convert.ToDouble(actual, CultureInfo.InvariantCulture) - Convert.ToDouble(expected, CultureInfo.InvariantCulture)) < 1e-9
                 : Convert.ToDecimal(actual, CultureInfo.InvariantCulture) == Convert.ToDecimal(expected, CultureInfo.InvariantCulture),
             DateTime t => (actual as DateTime? ?? DateTime.Parse(actual.ToString()!, CultureInfo.InvariantCulture)) == t,

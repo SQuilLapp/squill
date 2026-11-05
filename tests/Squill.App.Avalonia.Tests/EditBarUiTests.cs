@@ -108,7 +108,7 @@ public sealed class EditBarUiTests
         }
     }
 
-    private static async Task RunAsync(Func<Task> body) => await await Headless.Session.Dispatch(body, TestContext.Current.CancellationToken);
+    private static async Task RunAsync(Func<Task> body) => await Headless.Session.Dispatch(body, TestContext.Current.CancellationToken);
 
     [Fact]
     public Task EditableResult_ShowsTheMarkerAndRowToolsButNoBannerUntilEdited() => RunAsync(async () =>

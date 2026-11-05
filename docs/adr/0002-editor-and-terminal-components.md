@@ -7,7 +7,7 @@
 SQuilL needs a SQL editor (the riskiest component, R1) and, where useful, a terminal (e.g. an SSH or local shell tab, `psql`/`mysql` consoles). The project owner maintains two native, Native-AOT-compatible components, both MIT licensed, no WebView:
 
 - **LoomEditor**: a C# port of Monaco for **WinUI 3 only** (Win2D rendering). Not published yet. Per its roadmap docs (its README is stale), it is at phase 11 (inline comments): text model, rendering, editing, TextMate + themes, editor features, accessibility, an LSP client (JSON-RPC over stdio: diagnostics, hover, completion, go-to-definition) and a diff editor exist. Phase 8's manual test plan is still pending, and the LSP client has not been verified against a real server for completion. Phase 12 (Avalonia backend) is planned, not scheduled.
-- **LoomTerminal**: a C# port of xterm.js, with WinUI 3 and Avalonia backends and a headless core. `0.1.0-alpha`, not published yet.
+- **LoomTerminal**: a C# port of xterm.js, with WinUI 3 and Avalonia backends and a headless core. published on NuGet (`0.2.0`: `LoomTerminal.WinUI`, `LoomTerminal.Avalonia`, `LoomTerminal.Core`).
 
 ## Decision
 - The SQL editor on Windows is **LoomEditor**, consumed through a thin `ISqlEditor` abstraction owned by `Squill.Presentation`, so view-models never reference a control type.
@@ -28,9 +28,9 @@ SQuilL needs a SQL editor (the riskiest component, R1) and, where useful, a term
 - Signature help and formatting provider interfaces in LoomEditor (absent today); external grammar registration.
 
 - P5-13 result (details and numbers in `docs/poc/editor.md`): completion, hover and markers work through LoomEditor's public providers; external grammar registration is not public, so SQL highlighting uses `SqlHighlighter` decorations of the viewport; signature help is deferred and formatting is not wired (no provider interface or `FormatDocumentCommand` in LoomEditor).
-- P6-02 result: both heads show LoomTerminal tabs through one `LoomTerminalHost` (`src/Squill.App.Shared`, linked into each head) behind `SQUILL_LOOMTERMINAL`, enabled by `LoomTerminalPath` in the git-ignored `Directory.Build.local.props`; without it no terminal UI is compiled.
+- P6-02 result: both heads show LoomTerminal tabs through one `LoomTerminalHost` (`src/Squill.App.Shared`, linked into each head); since P11-41 both heads take the control from NuGet and always compile the terminal tabs (the former optional `LoomTerminalPath` project reference is gone).
 
 ## Consequences
 - R1 changes from "build an editor" to "integrate and extend LoomEditor", gated by its phases 4-5; a SQuilL-side spike (plain-text editor in a WinUI shell with a stub `ISqlEditor`) can start now.
 - Interface-first: `ISqlEditor` lets the WinUI head swap implementations and lets tests run headless.
-- Terminal NuGet: the WinUI head references the published `LoomTerminal.WinUI` package (`0.1.0-alpha.2`, central version in `Directory.Packages.props`) and always compiles the terminal tabs, so the head always targets the 26100 Windows SDK. `LoomTerminal.Avalonia` is not packable yet, so the Avalonia head keeps the optional `LoomTerminalPath` project reference.
+- Terminal NuGet: the WinUI head references the published `LoomTerminal.WinUI` package (`0.2.0`, central version in `Directory.Packages.props`) and always compiles the terminal tabs, so the head always targets the 26100 Windows SDK. The Avalonia head references the published `LoomTerminal.Avalonia` package (`0.2.0`) the same way.

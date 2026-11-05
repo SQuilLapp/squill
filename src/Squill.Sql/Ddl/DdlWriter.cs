@@ -43,7 +43,8 @@ internal static class DdlWriter
     /// <summary>Builds the <c>CONSTRAINT ... FOREIGN KEY</c> clause.</summary>
     public static string ForeignKey(ForeignKeyDesign f, DatabaseDialect d) =>
         $"CONSTRAINT {SqlQuoting.Quote(f.Name, d)} FOREIGN KEY ({Columns(f.Columns, d)}) "
-        + $"REFERENCES {SqlQuoting.QualifiedName(f.ReferencedSchema, f.ReferencedTable, d)} ({Columns(f.ReferencedColumns, d)}) "
+        // SQLite rejects a schema-qualified parent table in REFERENCES.
+        + $"REFERENCES {SqlQuoting.QualifiedName(d == DatabaseDialect.Sqlite ? null : f.ReferencedSchema, f.ReferencedTable, d)} ({Columns(f.ReferencedColumns, d)}) "
         + $"ON DELETE {Action(f.OnDelete, d)} ON UPDATE {Action(f.OnUpdate, d)}";
 
     // SQL Server has no RESTRICT keyword; NO ACTION is its equivalent.
@@ -59,7 +60,7 @@ internal static class DdlWriter
         string.Join(", ", names.Select(n => SqlQuoting.Quote(n, d)));
 
     private static string IndexName(string? schema, string name, DatabaseDialect d) =>
-        d is DatabaseDialect.PostgreSql or DatabaseDialect.Sqlite && !(d == DatabaseDialect.Sqlite && schema == "main")
+        d == DatabaseDialect.Sqlite && schema != "main"
             ? SqlQuoting.QualifiedName(schema, name, d)
             : SqlQuoting.Quote(name, d);
 
@@ -69,7 +70,7 @@ internal static class DdlWriter
         var name = SqlQuoting.Quote(c.Name, d);
         if (rowidAlias)
         {
-            return $"{name} INTEGER PRIMARY KEY AUTOINCREMENT";
+            return $"{name} INTEGER{(c.IsNullable ? "" : " NOT NULL")} PRIMARY KEY AUTOINCREMENT";
         }
 
         var sql = $"{name} {c.DataType}";

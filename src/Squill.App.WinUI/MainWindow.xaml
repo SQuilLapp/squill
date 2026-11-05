@@ -26,9 +26,16 @@
       <ColumnDefinition Width="Auto" />
     </Grid.ColumnDefinitions>
     <Border x:Name="TitleBar" Grid.ColumnSpan="5" BorderThickness="0,0,0,1">
-      <Grid>
+      <Grid x:Name="TitleGrid" ColumnDefinitions="Auto,*,0">
         <StackPanel Orientation="Horizontal" Margin="14,0,0,0" HorizontalAlignment="Left">
           <Image x:Name="TitleIcon" Width="16" Height="16" Margin="0,0,8,0" />
+          <Button x:Name="HamburgerButton" Visibility="Collapsed" Width="32" Height="28" Padding="0" Background="Transparent" BorderThickness="0" VerticalAlignment="Center">
+            <Viewbox Width="14" Height="14">
+              <Canvas Width="24" Height="24">
+                <Path Data="M3,6 H21 M3,12 H21 M3,18 H21" Stroke="{ThemeResource SquillFgBrush}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+              </Canvas>
+            </Viewbox>
+          </Button>
           <MenuBar x:Name="MainMenu" VerticalAlignment="Center">
             <MenuBar.Resources>
               <Thickness x:Key="MenuBarItemMargin">0</Thickness>
@@ -36,8 +43,8 @@
             </MenuBar.Resources>
           </MenuBar>
         </StackPanel>
-        <Border x:Name="CommandSearch" Width="438" Height="27" CornerRadius="6" BorderThickness="1" Padding="8,0"
-                HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Border x:Name="CommandSearch" Grid.Column="1" MaxWidth="438" MinWidth="80" Height="27" CornerRadius="6" BorderThickness="1" Padding="8,0" Margin="12,0"
+                HorizontalAlignment="Stretch" VerticalAlignment="Center">
           <Grid ColumnDefinitions="*,Auto">
             <StackPanel x:Name="CommandSearchRow" Orientation="Horizontal" VerticalAlignment="Center">
               <TextBlock x:Name="CommandSearchText" FontSize="13" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />

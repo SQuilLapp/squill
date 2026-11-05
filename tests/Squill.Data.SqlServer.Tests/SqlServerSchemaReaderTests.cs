@@ -8,9 +8,13 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
     private static readonly string[] Setup =
     [
         "drop view if exists dbo.person_nick",
+        "drop function if exists dbo.add_two",
+        "drop function if exists dbo.person_ids",
+        "drop procedure if exists dbo.bump",
         "drop table if exists dbo.actions",
         "drop table if exists dbo.ident",
         "drop table if exists dbo.named_pk",
+        "drop table if exists dbo.country3",
         "drop table if exists dbo.country2",
         "drop table if exists dbo.person",
         "drop table if exists dbo.country",
@@ -26,18 +30,23 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
             constraint fk_person_country foreign key (country) references dbo.country (code))
         """,
         "create table dbo.country2 (id int primary key)",
+        "create table dbo.country3 (id int primary key)",
         "create table dbo.ident (id int identity(1,1) primary key, plain int null)",
         "create table dbo.named_pk (id int not null, constraint pk_named primary key (id))",
         """
         create table dbo.actions (
             id int primary key,
             a int references dbo.country2 (id) on delete cascade on update set null,
-            b int default 1 references dbo.country2 (id) on delete set default on update cascade,
+            b int default 1 references dbo.country3 (id) on delete set default on update cascade,
             c int references dbo.country2 (id))
         """,
         "create unique index person_tenant_nick on dbo.person (tenant, nick)",
         "create index person_country on dbo.person (country)",
         "create view dbo.person_nick as select id, nick from dbo.person",
+        "create function dbo.add_two(@a int, @b nvarchar(10)) returns int as begin return @a + 1; end",
+        "create function dbo.person_ids(@tenant int) returns table as return select id from dbo.person where tenant = @tenant",
+        "create procedure dbo.bump @n int, @total int output as set @total = @n + 1",
+        "create trigger dbo.person_stamp on dbo.person instead of insert, update as begin set nocount on; end",
     ];
 
     [Theory]
@@ -71,7 +80,7 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
     {
         var snapshot = await ReadAsync();
         Assert.Equal("dbo", snapshot.DefaultSchema);
-        Assert.Equal(["actions", "country", "country2", "ident", "named_pk", "person", "person_nick"], snapshot.Tables.Select(t => t.Name).Order());
+        Assert.Equal(["actions", "country", "country2", "country3", "ident", "named_pk", "person", "person_nick"], snapshot.Tables.Select(t => t.Name).Order());
         Assert.All(snapshot.Tables, t => Assert.Equal("dbo", t.Schema));
     }
 
@@ -140,5 +149,36 @@ public sealed class SqlServerSchemaReaderTests(SqlServerFixture server) : IClass
         Assert.Equal("pk_named", snapshot.FindTable("dbo", "named_pk")!.PrimaryKeyName);
         Assert.StartsWith("PK__", snapshot.FindTable("dbo", "ident")!.PrimaryKeyName);
         Assert.Null(snapshot.FindTable("dbo", "person_nick")!.PrimaryKeyName);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_ViewDefinition_IsFilledOnViewsOnly()
+    {
+        var snapshot = await ReadAsync();
+        Assert.Contains("dbo.person", snapshot.FindTable("dbo", "person_nick")!.Definition);
+        Assert.Null(snapshot.FindTable("dbo", "person")!.Definition);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_Routines_HaveSignaturesReturnTypesAndDefinitions()
+    {
+        var routines = (await ReadAsync()).Routines.Where(r => r.Schema == "dbo").ToList();
+        Assert.Equal(["add_two", "bump", "person_ids"], routines.Select(r => r.Name));
+        var scalar = routines.Single(r => r.Name == "add_two");
+        Assert.Equal((RoutineKind.Function, "add_two(@a int, @b nvarchar(10))", "int"), (scalar.Kind, scalar.Signature, scalar.ReturnType));
+        Assert.Contains("create function dbo.add_two", scalar.Definition, StringComparison.OrdinalIgnoreCase);
+        var table = routines.Single(r => r.Name == "person_ids");
+        Assert.Equal((RoutineKind.Function, "person_ids(@tenant int)", "TABLE"), (table.Kind, table.Signature, table.ReturnType));
+        var procedure = routines.Single(r => r.Name == "bump");
+        Assert.Equal((RoutineKind.Procedure, "bump(@n int, @total int)"), (procedure.Kind, procedure.Signature));
+        Assert.Null(procedure.ReturnType);
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ReadSchemaAsync_Triggers_HaveTimingEventsAndDefinition()
+    {
+        var trigger = Assert.Single((await ReadAsync()).Triggers, t => t.Schema == "dbo");
+        Assert.Equal(("person", "person_stamp", "INSTEAD OF", "INSERT OR UPDATE"), (trigger.Table, trigger.Name, trigger.Timing, trigger.Events));
+        Assert.Contains("instead of insert", trigger.Definition, StringComparison.OrdinalIgnoreCase);
     }
 }

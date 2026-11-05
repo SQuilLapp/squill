@@ -23,7 +23,7 @@ public sealed record ColumnRow(string Name, string DataType, bool IsPrimaryKey, 
 public sealed record PropertiesModel(TableInfo Table)
 {
     /// <summary>Gets whether the object is a view.</summary>
-    public bool IsView => Table.Kind == TableKind.View;
+    public bool IsView => Table.Kind.IsViewLike();
 
     /// <summary>Gets the subtitle: the kind, then the schema when there is one.</summary>
     public string Subtitle
@@ -52,5 +52,5 @@ public sealed record PropertiesModel(TableInfo Table)
     /// <param name="node">The selected node, or <see langword="null"/>.</param>
     /// <returns>The model for a table or view node; <see langword="null"/> for any other node, which hides the panel.</returns>
     public static PropertiesModel? For(ExplorerNode? node) =>
-        node is { Kind: ExplorerNodeKind.Table or ExplorerNodeKind.View, Table: { } table } ? new PropertiesModel(table) : null;
+        node is { Kind: ExplorerNodeKind.Table or ExplorerNodeKind.View or ExplorerNodeKind.MaterializedView, Table: { } table } ? new PropertiesModel(table) : null;
 }

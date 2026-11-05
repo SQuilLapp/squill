@@ -11,18 +11,22 @@
     <!-- Transitive of SqlClient 7.1.1 resolves to 9.0.18, which has known advisories (NU1902/NU1903): pinned to a patched version. -->
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
     <PackageVersion Include="MySqlConnector" Version="2.6.2" />
+    <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="23.26.400" />
+    <PackageVersion Include="Testcontainers" Version="4.16.0" />
+    <PackageVersion Include="Testcontainers.Oracle" Version="4.16.0" />
     <PackageVersion Include="Testcontainers.MySql" Version="4.16.0" />
     <PackageVersion Include="Testcontainers.MsSql" Version="4.16.0" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.16.0" />
     <PackageVersion Include="Avalonia" Version="12.1.5" />
     <PackageVersion Include="Avalonia.Desktop" Version="12.1.5" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.5" />
-    <PackageVersion Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
     <PackageVersion Include="Avalonia.Headless" Version="12.1.5" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.6.4" />
     <PackageVersion Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
-    <PackageVersion Include="LoomEditor.WinUI" Version="0.3.0" />
-    <PackageVersion Include="LoomTerminal.WinUI" Version="0.1.0-alpha.2" />
+    <PackageVersion Include="LoomEditor.Avalonia" Version="0.5.0" />
+    <PackageVersion Include="LoomEditor.WinUI" Version="0.5.0" />
+    <PackageVersion Include="LoomTerminal.WinUI" Version="0.2.0" />
+    <PackageVersion Include="LoomTerminal.Avalonia" Version="0.2.0" />
     <PackageVersion Include="Velopack" Version="1.2.161" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />

@@ -4,7 +4,10 @@ using Squill.Core;
 
 namespace Squill.Presentation.Results;
 
-/// <summary>Exports a result as an indented JSON array of objects, one per row.</summary>
+/// <summary>
+/// Exports a result as an indented JSON array of objects, one per row. NULL is <c>null</c>, numbers are native (<c>NaN</c> and infinities are strings),
+/// binary values are base64, dates and times are ISO 8601 strings, arrays are JSON arrays and JSON columns are embedded as JSON values.
+/// </summary>
 public sealed class JsonResultExporter : IResultExporter
 {
     /// <inheritdoc/>
@@ -78,7 +81,35 @@ public sealed class JsonResultExporter : IResultExporter
             case decimal v: writer.WriteNumberValue(v); break;
             case float v when float.IsFinite(v): writer.WriteNumberValue(v); break;
             case double v when double.IsFinite(v): writer.WriteNumberValue(v); break;
-            default: writer.WriteStringValue(CellFormatter.Format(value, column)); break;
+            case byte[] v: writer.WriteBase64StringValue(v); break;
+            case JsonDocument v: v.WriteTo(writer); break;
+            case JsonElement v: v.WriteTo(writer); break;
+            case string s when IsJsonColumn(column) && TryParse(s) is { } json: using (json) json.WriteTo(writer); break;
+            case Array a:
+                writer.WriteStartArray();
+                foreach (var item in a)
+                    WriteValue(writer, item, column);
+                writer.WriteEndArray();
+                break;
+            default: writer.WriteStringValue(Iso(value, CellFormatter.Format(value, column))); break;
         }
     }
+
+    private static bool IsJsonColumn(ColumnInfo column) => column.DataTypeName.Equals("json", StringComparison.OrdinalIgnoreCase) || column.DataTypeName.Equals("jsonb", StringComparison.OrdinalIgnoreCase);
+
+    private static JsonDocument? TryParse(string text)
+    {
+        try
+        {
+            return JsonDocument.Parse(text);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    // CellFormatter writes "yyyy-MM-dd HH:mm:ss"; ISO 8601 wants the T. The zero dates MySQL stores are not dates and stay as they are.
+    private static string? Iso(object? value, string? text) =>
+        value is DateTime or DateTimeOffset && text is not null && !text.StartsWith("0000-", StringComparison.Ordinal) ? text.Replace(' ', 'T') : text;
 }

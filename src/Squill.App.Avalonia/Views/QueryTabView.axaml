@@ -181,7 +181,7 @@
       <ProgressBar Grid.Row="2" IsIndeterminate="True" Height="2" IsVisible="{Binding IsRunning}" />
       <Grid Grid.Row="3">
         <c:DataGridView Name="ResultGrid" />
-        <TextBlock Name="Message" Margin="12" TextWrapping="Wrap" IsVisible="False"
+        <SelectableTextBlock Name="Message" Margin="12" TextWrapping="Wrap" IsVisible="False"
                    Foreground="{DynamicResource SquillFgBrush}" />
         <TextBlock Name="Empty" Margin="12" Text=""
                    Foreground="{DynamicResource SquillFg3Brush}" />

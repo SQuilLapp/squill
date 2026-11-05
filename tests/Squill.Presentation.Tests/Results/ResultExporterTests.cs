@@ -55,7 +55,7 @@ public sealed class ResultExporterTests
         Assert.Equal(2, row.GetProperty("id_2").GetInt64());
         Assert.Equal("a\"b", row.GetProperty("name").GetString());
         Assert.True(row.GetProperty("ok").GetBoolean());
-        Assert.Equal("2026-01-02 00:00:00", row.GetProperty("d").GetString());
+        Assert.Equal("2026-01-02T00:00:00", row.GetProperty("d").GetString());
         Assert.Equal(JsonValueKind.Null, row.GetProperty("n").ValueKind);
     }
 

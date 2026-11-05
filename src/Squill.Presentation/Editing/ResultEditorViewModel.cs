@@ -84,8 +84,10 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
     {
         if (!Grid.CanEdit)
             return UiText.Get("results.rowsLoading");
-        if (column < 0 || column >= Grid.Columns.Count || !Target.IsEditable(column))
+        if (column < 0 || column >= Grid.Columns.Count)
             return UiText.Get("results.columnReadOnly");
+        if (Grid.GetReadOnlyReason(column) is { } reason)
+            return reason;
         if (Grid.GetRowState(row) == RowState.Deleted)
             return UiText.Get("results.rowDeleted");
         if (!CellValueParser.TryParse(text, Grid.Columns[column], out var value, out var error))

@@ -53,9 +53,11 @@ public sealed class EditCommitterTests
             if (Fail?.Invoke(sql) is { } ex)
                 throw ex;
             var dml = sql.StartsWith("UPDATE", StringComparison.Ordinal) || sql.StartsWith("DELETE", StringComparison.Ordinal);
-            var isKey = sql.Contains("RETURNING", StringComparison.Ordinal) || sql.Contains("OUTPUT", StringComparison.Ordinal) || sql.Contains("LAST_INSERT_ID", StringComparison.Ordinal);
+            var isKey = sql.Contains("RETURNING", StringComparison.Ordinal) || sql.Contains("SCOPE_IDENTITY", StringComparison.Ordinal) || sql.Contains("LAST_INSERT_ID", StringComparison.Ordinal);
             return ValueTask.FromResult<IResultReader>(new Reader(isKey && Rows.Count > 0 ? Rows.Dequeue() : [], dml && Affected.Count > 0 ? Affected.Dequeue() : -1));
         }
+
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) => ValueTask.FromResult<IReadOnlyList<string>>([]);
 
         public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => ValueTask.FromResult(SchemaSnapshot.Empty);
 

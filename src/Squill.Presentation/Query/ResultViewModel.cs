@@ -58,12 +58,12 @@ public sealed partial class ResultViewModel : ViewModelBase
     public ResultKind Kind { get; }
 
     /// <summary>Gets the tab title, such as <c>Result 1</c>.</summary>
-    public string Title { get; }
+    public string Title { get; private set; }
 
     /// <summary>Gets the streaming rows of a <see cref="ResultKind.Grid"/> result, otherwise <see langword="null"/>.</summary>
     public StreamingGridDataSource? Grid { get; }
 
-    /// <summary>Gets the text of a <see cref="ResultKind.Message"/> result, otherwise an empty string.</summary>
+    /// <summary>Gets the text of a <see cref="ResultKind.Message"/> or <see cref="ResultKind.Messages"/> result, otherwise an empty string.</summary>
     public string Text { get; }
 
     internal void SetEditor(ResultEditorViewModel editor)
@@ -84,6 +84,12 @@ public sealed partial class ResultViewModel : ViewModelBase
         UpdateHeader();
     }
 
+    internal void SetTitle(string title)
+    {
+        Title = title;
+        UpdateHeader();
+    }
+
     internal void SetReadOnly(string reason) => ReadOnlyReason = reason;
 
     private void UpdateHeader()
@@ -98,6 +104,8 @@ public sealed partial class ResultViewModel : ViewModelBase
 
     internal static ResultViewModel ForMessage(string title, string text, IDialogService dialogs) => new(ResultKind.Message, title, null, text, dialogs);
 
+    internal static ResultViewModel ForMessages(string title, string text, IDialogService dialogs) => new(ResultKind.Messages, title, null, text, dialogs);
+
     [RelayCommand]
     private async Task ExportAsync(IResultExporter exporter)
     {
@@ -110,13 +118,16 @@ public sealed partial class ResultViewModel : ViewModelBase
             return;
         }
 
+        // Grid is the committed result: the edits live in Editor.Grid and are never exported.
+        if (Editor is { HasPendingChanges: true } editor
+            && !await _dialogs.ConfirmAsync(UiText.Get("results.exportPending.title"), UiText.FormatPlural("results.exportPending.confirm", editor.PendingCount)))
+            return;
         try
         {
             var path = await _dialogs.PickSaveFileAsync(Title, exporter.FileExtension);
             if (path is null)
                 return;
-            await using var file = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
-            await exporter.ExportAsync(Grid, file, CancellationToken.None);
+            await ResultFileWriter.WriteAsync(exporter, Grid, path, CancellationToken.None);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
         {

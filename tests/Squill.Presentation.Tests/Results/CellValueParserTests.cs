@@ -40,6 +40,48 @@ public sealed class CellValueParserTests
     }
 
     [Fact]
+    public void ArraysParseTheDisplayedForm()
+    {
+        int[] ints = [1, 2, 3];
+        Assert.Equal(ints, Assert.IsType<int[]>(Parse("{1,2,3}", typeof(int[]))));
+        Assert.Empty(Assert.IsType<int[]>(Parse("{}", typeof(int[]))));
+        string[] words = ["a", "b c"];
+        Assert.Equal(words, Assert.IsType<string[]>(Parse("{a,b c}", typeof(string[]))));
+        string?[] quoted = ["a,b", null, "q\""];
+        Assert.Equal(quoted, Assert.IsType<string[]>(Parse("{\"a,b\",NULL,\"q\\\"\"}", typeof(string[]))));
+        Fail("{1,x}", typeof(int[]));
+        Fail("1,2", typeof(int[]));
+    }
+
+    [Fact]
+    public void ZeroDatesAndUtcTimestamps()
+    {
+        Assert.Equal(DateTime.MinValue, Parse("0000-00-00", typeof(DateTime)));
+        Assert.Equal(DateTime.MinValue, Parse("0000-00-00 00:00:00", typeof(DateTime)));
+        var utc = Assert.IsType<DateTime>(CellValueParser.TryParse("2024-05-06 05:08:09", new ColumnInfo("c", "timestamptz", typeof(DateTime), true, 0), out var v, out _) ? v : null);
+        Assert.Equal(DateTimeKind.Utc, utc.Kind);
+    }
+
+    [Fact]
+    public void TimeTypesParseTheDisplayedForm()
+    {
+        Assert.Equal(new TimeSpan(1, 2, 3, 4, 500).Negate(), Parse("-1.02:03:04.5", typeof(TimeSpan)));
+        Assert.Equal(new DateOnly(2024, 5, 6), Parse("2024-05-06", typeof(DateOnly)));
+        Assert.Equal(new TimeOnly(7, 8, 9), Parse("07:08:09", typeof(TimeOnly)));
+        Assert.Equal(new DateTimeOffset(2024, 5, 6, 7, 8, 9, 123, TimeSpan.FromHours(2)), Parse("2024-05-06 07:08:09.123+02:00", typeof(DateTimeOffset)));
+        Assert.Equal(Guid.Parse("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"), Parse("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", typeof(Guid)));
+    }
+
+    [Fact]
+    public void SupportedTypes()
+    {
+        Assert.True(CellValueParser.IsSupported(typeof(int[])));
+        Assert.True(CellValueParser.IsSupported(typeof(TimeSpan)));
+        Assert.False(CellValueParser.IsSupported(typeof(object[])));
+        Assert.False(CellValueParser.IsSupported(typeof(System.Net.IPAddress)));
+    }
+
+    [Fact]
     public void BoolAcceptsWords()
     {
         using var _ = UiText.Override(UiLanguage.English);

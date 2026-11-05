@@ -90,6 +90,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
             ActiveSession = r.Session;
             _ = DropTableCommand.ExecuteAsync(r.Table);
         };
+        Explorer.ScriptRequested += (_, r) => AddTab(r.Session, r.Text);
         Explorer.ConnectRequested += (_, profile) => _ = ConnectCommand.ExecuteAsync(profile);
         Explorer.PropertyChanged += (_, e) =>
         {
@@ -154,6 +155,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     {
         if (profile is null)
             return;
+        Explorer.SetConnecting(profile.Id, true);
         try
         {
             ActiveSession = await _manager.OpenAsync(profile, ct);
@@ -166,20 +168,25 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         {
             await _dialogs.ShowErrorAsync(UiText.Get("workspace.connectionFailed"), ex.Message);
         }
+        finally
+        {
+            Explorer.SetConnecting(profile.Id, false);
+        }
     }
 
     [RelayCommand(CanExecute = nameof(HasSession))]
     private async Task DisconnectAsync()
     {
-        if (ActiveSession is not { } session)
+        if (ActiveSession?.Root is not { } session)
             return;
-        foreach (var tab in Tabs.Where(t => t.Session == session).ToList())
+        foreach (var tab in Tabs.Where(t => t.Session.Root == session).ToList())
             Tabs.Remove(tab);
-        foreach (var designer in Designers.Where(d => d.Session == session).ToList())
+        foreach (var designer in Designers.Where(d => d.Session.Root == session).ToList())
             RemoveDesigner(designer);
-        foreach (var diagram in Diagrams.Where(d => d.Session == session).ToList())
+        foreach (var diagram in Diagrams.Where(d => d.Session.Root == session).ToList())
             RemoveDiagram(diagram);
-        _tabCounters.Remove(session);
+        foreach (var opened in session.OpenedDatabases.Prepend(session))
+            _tabCounters.Remove(opened);
         await _manager.CloseAsync(session);
         ActiveSession = Sessions.LastOrDefault();
         ActiveTab = Tabs.LastOrDefault(t => t.Session == ActiveSession);
@@ -371,7 +378,18 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         if (profile is not null)
         {
             var password = await _profiles.GetPasswordAsync(profile.Id, ct);
-            var cli = TerminalLauncher.ForProfile(profile, password, _findOnPath, out reason);
+            int? tunnelPort = null;
+            if (profile.Ssh is not null)
+            {
+                // The tunnel belongs to the open session and lives as long as it does.
+                tunnelPort = _manager.Sessions.FirstOrDefault(s => s.Profile.Id == profile.Id)?.TunnelPort;
+                if (tunnelPort is null)
+                {
+                    await _dialogs.ShowErrorAsync(UiText.Get("workspace.terminal"), UiText.Format("terminal.tunnelNotOpen", profile.Name));
+                    return;
+                }
+            }
+            var cli = TerminalLauncher.ForProfile(profile, password, _findOnPath, out reason, tunnelPort);
             if (cli is null)
             {
                 await _dialogs.ShowErrorAsync(UiText.Get("workspace.terminal"), reason ?? UiText.Get("workspace.terminalNotStarted"));
@@ -410,7 +428,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         _tabCounters[session] = _tabCounters.GetValueOrDefault(session) + 1;
         var tab = new QueryTabViewModel(session, editor, _history, _settings, _dispatcher, _dialogs)
         {
-            Title = UiText.Format("tab.query", _tabCounters[session]),
+            Title = session.Parent is null
+                ? UiText.Format("tab.query", _tabCounters[session])
+                : UiText.Format("tab.queryOn", _tabCounters[session], session.Profile.Name, session.Profile.Database),
         };
         tab.ScriptRequested += script => AddTab(session, script);
         Tabs.Add(tab);

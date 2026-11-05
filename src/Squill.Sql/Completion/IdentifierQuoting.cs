@@ -5,13 +5,14 @@ namespace Squill.Sql.Completion;
 /// <summary>Quotes identifiers that are not plain names.</summary>
 internal static class IdentifierQuoting
 {
-    /// <summary>Gets the text to insert for <paramref name="name"/>: unchanged when it matches <c>[a-z_][a-z0-9_]*</c> once lowercased, quoted for the dialect otherwise.</summary>
+    /// <summary>Gets the text to insert for <paramref name="name"/>: unchanged when it matches <c>[a-z_][a-z0-9_]*</c> once lowercased (and, on PostgreSQL, has no capital), quoted for the dialect otherwise.</summary>
     /// <param name="name">The identifier.</param>
     /// <param name="dialect">The dialect that decides the quote characters.</param>
     /// <returns>The text to insert.</returns>
     public static string Quote(string name, DatabaseDialect dialect)
     {
-        if (IsPlain(name))
+        // PostgreSQL folds an unquoted name to lower case, so a name with capitals only resolves when quoted.
+        if (IsPlain(name) && !(dialect == DatabaseDialect.PostgreSql && name.Any(char.IsUpper)))
         {
             return name;
         }

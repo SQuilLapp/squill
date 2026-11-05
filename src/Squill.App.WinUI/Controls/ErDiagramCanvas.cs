@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Numerics;
 using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
@@ -17,7 +18,7 @@ using Windows.UI;
 namespace Squill.App.WinUI.Controls;
 
 /// <summary>Custom-drawn ER diagram on Win2D: entity boxes and relation edges under the pan and zoom of a <see cref="DiagramTabViewModel"/>; it holds no layout logic.</summary>
-public sealed partial class ErDiagramCanvas : Grid
+public sealed partial class ErDiagramCanvas : Grid, IDisposable
 {
     private const float ColumnFontSize = 12;
     private const float HeaderFontSize = 13;
@@ -40,7 +41,9 @@ public sealed partial class ErDiagramCanvas : Grid
     private static readonly ErLayoutOptions Metrics = new(MeasureText);
 
     private readonly CanvasControl _canvas = new();
-    private readonly LruCache<string, CanvasTextLayout> _text = new(1024, layout => layout.Dispose());
+    private readonly LruCache<string, CanvasTextLayout> _text = new(4096, layout => layout.Dispose());
+    private CanvasRenderTarget? _dotTile;
+    private CanvasImageBrush? _dotBrush;
     private DiagramTabViewModel? _diagram;
     private Palette? _palette;
     private ErPoint _pressed;
@@ -48,13 +51,18 @@ public sealed partial class ErDiagramCanvas : Grid
     private bool _panning;
     private bool _dragging;
     private bool _moved;
+    private bool _minimap;
 
     /// <summary>Creates the canvas.</summary>
     public ErDiagramCanvas()
     {
         Children.Add(_canvas);
         _canvas.Draw += OnDraw;
-        _canvas.CreateResources += (_, _) => _text.Clear();
+        _canvas.CreateResources += (_, _) =>
+        {
+            _text.Clear();
+            ReleaseDots();
+        };
         _canvas.IsTabStop = true;
         _canvas.PointerPressed += OnPointerPressed;
         _canvas.PointerMoved += OnPointerMoved;
@@ -66,11 +74,13 @@ public sealed partial class ErDiagramCanvas : Grid
         _canvas.ActualThemeChanged += (_, _) =>
         {
             _palette = null;
+            ReleaseDots();
             _canvas.Invalidate();
         };
         _canvas.Unloaded += (_, _) =>
         {
             _text.Clear();
+            ReleaseDots();
             _canvas.RemoveFromVisualTree();
         };
     }
@@ -129,11 +139,7 @@ public sealed partial class ErDiagramCanvas : Grid
         var ds = args.DrawingSession;
         var p = _palette ??= ResolvePalette();
         ds.Clear(p.Background);
-        for (var x = 8f; x < sender.ActualWidth; x += DotPitch)
-        {
-            for (var y = 8f; y < sender.ActualHeight; y += DotPitch)
-                ds.FillRectangle(x, y, 1, 1, p.Dot);
-        }
+        ds.FillRectangle(0, 0, (float)sender.ActualWidth, (float)sender.ActualHeight, DotBrush(sender, p));
 
         var d = _diagram;
         if (d is null)
@@ -141,16 +147,62 @@ public sealed partial class ErDiagramCanvas : Grid
         var topLeft = d.ToWorld(new ErPoint(0, 0));
         var bottomRight = d.ToWorld(new ErPoint(sender.ActualWidth, sender.ActualHeight));
         ds.Transform = Matrix3x2.CreateScale((float)d.Zoom) * Matrix3x2.CreateTranslation((float)d.OffsetX, (float)d.OffsetY);
+        // Level of detail: a large schema zoomed out would otherwise draw thousands of text layouts per frame.
+        var detail = d.Zoom >= 0.45 ? 2 : d.Zoom >= 0.2 ? 1 : 0;
         foreach (var edge in d.Edges)
-            DrawEdge(ds, edge, IsHighlighted(d, edge) ? p.Accent : p.EdgeColor);
+        {
+            if (Intersects(edge, topLeft, bottomRight))
+                DrawEdge(ds, edge, IsHighlighted(d, edge) ? p.Accent : p.EdgeColor, detail > 0);
+        }
+
         foreach (var entity in d.Model.Entities)
         {
             if (d.Boxes.TryGetValue(entity.Key, out var box) && box.X <= bottomRight.X && box.Right >= topLeft.X && box.Y <= bottomRight.Y && box.Bottom >= topLeft.Y)
-                DrawEntity(ds, entity, box, string.Equals(entity.Key, d.SelectedKey, StringComparison.OrdinalIgnoreCase), p);
+                DrawEntity(ds, entity, box, string.Equals(entity.Key, d.SelectedKey, StringComparison.OrdinalIgnoreCase), p, detail);
         }
 
         ds.Transform = Matrix3x2.Identity;
         DrawMinimap(ds, d, sender, new Windows.Foundation.Rect(topLeft.X, topLeft.Y, bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y), p);
+    }
+
+    /// <summary>Releases the cached dot-grid tile; the canvas also does it when it is unloaded.</summary>
+    public void Dispose() => ReleaseDots();
+
+    private void ReleaseDots()
+    {
+        _dotBrush?.Dispose();
+        _dotTile?.Dispose();
+        _dotBrush = null;
+        _dotTile = null;
+    }
+
+    // The dot grid is one repeating 16 x 16 tile instead of a rectangle per dot.
+    private CanvasImageBrush DotBrush(CanvasControl sender, Palette p)
+    {
+        if (_dotBrush is not null)
+            return _dotBrush;
+        _dotTile = new CanvasRenderTarget(sender, DotPitch, DotPitch, 96);
+        using (var tile = _dotTile.CreateDrawingSession())
+        {
+            tile.Clear(Microsoft.UI.Colors.Transparent);
+            tile.FillRectangle(8, 8, 1, 1, p.Dot);
+        }
+
+        return _dotBrush = new CanvasImageBrush(sender, _dotTile) { ExtendX = CanvasEdgeBehavior.Wrap, ExtendY = CanvasEdgeBehavior.Wrap };
+    }
+
+    private static bool Intersects(ErEdge edge, ErPoint topLeft, ErPoint bottomRight)
+    {
+        double minX = double.MaxValue, minY = double.MaxValue, maxX = double.MinValue, maxY = double.MinValue;
+        foreach (var point in edge.Points)
+        {
+            minX = Math.Min(minX, point.X);
+            maxX = Math.Max(maxX, point.X);
+            minY = Math.Min(minY, point.Y);
+            maxY = Math.Max(maxY, point.Y);
+        }
+
+        return minX <= bottomRight.X && maxX >= topLeft.X && minY <= bottomRight.Y && maxY >= topLeft.Y;
     }
 
     private static bool IsHighlighted(DiagramTabViewModel d, ErEdge edge) =>
@@ -158,21 +210,26 @@ public sealed partial class ErDiagramCanvas : Grid
         && (string.Equals(edge.Relation.FromKey, key, StringComparison.OrdinalIgnoreCase)
             || string.Equals(edge.Relation.ToKey, key, StringComparison.OrdinalIgnoreCase));
 
-    private void DrawEntity(CanvasDrawingSession ds, ErEntity entity, ErBox box, bool selected, Palette p)
+    private void DrawEntity(CanvasDrawingSession ds, ErEntity entity, ErBox box, bool selected, Palette p, int detail)
     {
         float x = (float)box.X, y = (float)box.Y, w = (float)box.Width, h = (float)box.Height;
         var header = (float)Metrics.HeaderHeight;
         var row = (float)Metrics.RowHeight;
         var pad = (float)Metrics.Padding;
         ds.FillRoundedRectangle(x, y, w, h, p.Radius, p.Radius, p.Surface);
-        using (ds.CreateLayer(1f, new Windows.Foundation.Rect(x, y, w, header)))
-            ds.FillRoundedRectangle(x, y, w, h, p.Radius, p.Radius, p.Header);
+        // The header band: a rounded rectangle plus a square strip under its lower corners (no clipping layer, which is slow per entity).
+        ds.FillRoundedRectangle(x, y, w, header, p.Radius, p.Radius, p.Header);
+        ds.FillRectangle(x, y + header - p.Radius, w, p.Radius, p.Header);
         ds.DrawLine(x, y + header, x + w, y + header, p.Dot, 1);
         ds.DrawRoundedRectangle(x, y, w, h, p.Radius, p.Radius, selected ? p.Accent : p.Border, selected ? 1.5f : 1);
+        if (detail == 0)
+            return;
         DrawTableIcon(ds, x + pad, y + ((header - IconSize) / 2), p.Muted);
         var nameX = x + pad + TagColumn - 4;
         var title = Layout(ds, entity.Name, HeaderFontSize, bold: true);
         ds.DrawTextLayout(title, nameX, y + ((header - (float)title.LayoutBounds.Height) / 2), p.Text);
+        if (detail < 2)
+            return;
         for (var i = 0; i < entity.Columns.Count; i++)
         {
             var c = entity.Columns[i];
@@ -225,14 +282,16 @@ public sealed partial class ErDiagramCanvas : Grid
         maxX = Math.Max(maxX, view.Right);
         maxY = Math.Max(maxY, view.Bottom);
         var scale = Math.Min((MinimapWidth - (2 * MinimapPadding)) / Math.Max(1, maxX - minX), (MinimapHeight - (2 * MinimapPadding)) / Math.Max(1, maxY - minY));
-        float Mx(double wx) => panelX + MinimapPadding + (float)((wx - minX) * scale);
-        float My(double wy) => panelY + MinimapPadding + (float)((wy - minY) * scale);
+        var offsetX = (MinimapWidth - (float)(Math.Max(1, maxX - minX) * scale)) / 2;
+        var offsetY = (MinimapHeight - (float)(Math.Max(1, maxY - minY) * scale)) / 2;
+        float Mx(double wx) => panelX + offsetX + (float)((wx - minX) * scale);
+        float My(double wy) => panelY + offsetY + (float)((wy - minY) * scale);
         foreach (var box in d.Boxes.Values)
             ds.FillRectangle(Mx(box.X), My(box.Y), (float)(box.Width * scale), (float)(box.Height * scale), p.EdgeColor);
         ds.DrawRectangle(Mx(view.X), My(view.Y), (float)(view.Width * scale), (float)(view.Height * scale), p.Accent, 1.5f);
     }
 
-    private static void DrawEdge(CanvasDrawingSession ds, ErEdge edge, Color color)
+    private static void DrawEdge(CanvasDrawingSession ds, ErEdge edge, Color color, bool markers)
     {
         if (edge.Points.Count < 2)
             return;
@@ -242,6 +301,8 @@ public sealed partial class ErDiagramCanvas : Grid
             ds.DrawLine((float)a.X, (float)a.Y, (float)b.X, (float)b.Y, color, 1.5f);
         }
 
+        if (!markers)
+            return;
         DrawMarker(ds, edge.FromAnchor, edge.Points[0], edge.Points[1], edge.Relation.Cardinality == ErCardinality.ManyToOne, color);
         DrawMarker(ds, edge.ToAnchor, edge.Points[^1], edge.Points[^2], false, color);
     }
@@ -297,6 +358,14 @@ public sealed partial class ErDiagramCanvas : Grid
         var screen = new ErPoint(point.Position.X, point.Position.Y);
         _pressed = _last = screen;
         _moved = false;
+        if (d.CenterFromMinimap(screen, new ErSize(_canvas.ActualWidth, _canvas.ActualHeight)))
+        {
+            _minimap = true;
+            _canvas.CapturePointer(e.Pointer);
+            e.Handled = true;
+            return;
+        }
+
         if (d.HitTestEntity(d.ToWorld(screen)) is { } hit)
         {
             _dragging = true;
@@ -319,6 +388,12 @@ public sealed partial class ErDiagramCanvas : Grid
             return;
         var position = e.GetCurrentPoint(_canvas).Position;
         var screen = new ErPoint(position.X, position.Y);
+        if (_minimap)
+        {
+            d.CenterFromMinimap(screen, new ErSize(_canvas.ActualWidth, _canvas.ActualHeight));
+            return;
+        }
+
         if (!_panning && !_dragging)
         {
             UpdateRelationTip(d, d.ToWorld(screen));
@@ -361,6 +436,7 @@ public sealed partial class ErDiagramCanvas : Grid
             _diagram?.EndDrag();
         _dragging = false;
         _panning = false;
+        _minimap = false;
         _canvas.ReleasePointerCapture(e.Pointer);
     }
 

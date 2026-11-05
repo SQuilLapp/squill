@@ -8,10 +8,11 @@ namespace Squill.App.WinUI.Tests;
 public class ConnectionEditorFormatTests
 {
     [Fact]
-    public void Engine_tiles_cover_the_four_dialects_once()
+    public void Engine_tiles_cover_every_dialect_and_add_a_MariaDb_tile()
     {
-        Assert.Equal(Enum.GetValues<DatabaseDialect>().Order(), ConnectionEditorFormat.Engines.Order());
-        Assert.Equal(4, ConnectionEditorFormat.Engines.Distinct().Count());
+        Assert.Equal(Enum.GetValues<DatabaseDialect>().Order(), ConnectionEditorFormat.Engines.Select(e => e.Dialect).Distinct().Order());
+        Assert.Equal(Enum.GetValues<DatabaseDialect>().Length + 1, ConnectionEditorFormat.Engines.Distinct().Count());
+        Assert.Single(ConnectionEditorFormat.Engines, e => e.MariaDb);
     }
 
     [Theory]
@@ -19,6 +20,7 @@ public class ConnectionEditorFormatTests
     [InlineData(DatabaseDialect.MySql, "My", "Mysql", "MySQL")]
     [InlineData(DatabaseDialect.SqlServer, "MS", "Sqlserver", "SQL Server")]
     [InlineData(DatabaseDialect.Sqlite, "SL", "Sqlite", "SQLite")]
+    [InlineData(DatabaseDialect.Oracle, "OR", "Oracle", "Oracle")]
     public void Engine_badge_and_name(DatabaseDialect dialect, string letters, string suffix, string name)
     {
         Assert.Equal((letters, suffix), ConnectionEditorFormat.Badge(dialect));

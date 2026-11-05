@@ -58,6 +58,7 @@ public sealed partial class MessageCodesTests
             { Plain with { ForeignKeys = [Fk(columns: ["zz"])] }, null, DatabaseDialect.PostgreSql, CoreMessageCodes.DesignForeignKeyColumnMissing, "fk,zz" },
             { Plain with { ForeignKeys = [Fk(referenced: ["id", "x"])] }, null, DatabaseDialect.PostgreSql, CoreMessageCodes.DesignForeignKeyColumnCount, "fk,1,2" },
             { Plain with { ForeignKeys = [Fk(table: "")] }, null, DatabaseDialect.PostgreSql, CoreMessageCodes.DesignForeignKeyNoTable, "fk" },
+            { Plain with { Columns = [Col("id"), Col("a", type: "longtext")], Indexes = [new IndexDesign(null, "ix", false, ["a"])] }, null, DatabaseDialect.MySql, CoreMessageCodes.DesignIndexNeedsLength, "ix,a" },
             { Existing() with { Schema = "other" }, Existing(), DatabaseDialect.PostgreSql, CoreMessageCodes.DesignSchemaMove, "" },
             { Plain with { Schema = "other" }, null, DatabaseDialect.Sqlite, CoreMessageCodes.DesignSqliteSchema, "other" },
             { dropped, Existing(), DatabaseDialect.PostgreSql, CoreMessageCodes.DesignDropColumnDataLoss, "a" },

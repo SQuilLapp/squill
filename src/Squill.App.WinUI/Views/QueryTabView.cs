@@ -36,7 +36,7 @@ public sealed partial class QueryTabView : UserControl
     private readonly Border _historyTabBar = new() { BorderThickness = new Thickness(0, 0, 0, 2) };
     private readonly Border _snippetsTabBar = new() { BorderThickness = new Thickness(0, 0, 0, 2) };
     private readonly DataGridView _grid = new();
-    private readonly TextBlock _message = new() { Margin = new Thickness(12), TextWrapping = TextWrapping.Wrap, Foreground = Brush("SquillFgBrush"), Visibility = Visibility.Collapsed };
+    private readonly TextBlock _message = new() { Margin = new Thickness(12), TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true, Foreground = Brush("SquillFgBrush"), Visibility = Visibility.Collapsed };
     private readonly TextBlock _empty = new() { Margin = new Thickness(12), Text = UiText.Get("results.empty"), Foreground = Brush("SquillFg3Brush") };
     private readonly ProgressBar _progress = new() { IsIndeterminate = true, Height = 2, Visibility = Visibility.Collapsed };
     private readonly StackPanel _resultTabs = new() { Orientation = Orientation.Horizontal, Spacing = 2 };
@@ -466,7 +466,9 @@ public sealed partial class QueryTabView : UserControl
         ShowGrid();
         ShowEditBar();
         _grid.Visibility = result?.Kind == ResultKind.Grid ? Visibility.Visible : Visibility.Collapsed;
-        _message.Visibility = result?.Kind == ResultKind.Message ? Visibility.Visible : Visibility.Collapsed;
+        var isText = result?.Kind is ResultKind.Message or ResultKind.Messages;
+        _message.Visibility = isText ? Visibility.Visible : Visibility.Collapsed;
+        _message.Style = result?.Kind == ResultKind.Messages ? Res("MonoTextBlockStyle") : null;
         _message.Text = result?.Text ?? "";
         _empty.Visibility = result is null ? Visibility.Visible : Visibility.Collapsed;
         RefreshFooter();

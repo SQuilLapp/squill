@@ -26,7 +26,7 @@ public sealed partial class ConnectionEditorWindow : Window
 
     private readonly HashSet<string> _collapsed = [];
     private readonly ConnectionListViewModel _list;
-    private readonly Dictionary<DatabaseDialect, Button> _engineTiles = [];
+    private readonly Dictionary<ConnectionEditorFormat.Engine, Button> _engineTiles = [];
     private readonly Dictionary<ConnectionEnvironment, Button> _environmentTiles = [];
     private readonly Window _owner;
     private ConnectionEditorViewModel? _editor;
@@ -47,6 +47,11 @@ public sealed partial class ConnectionEditorWindow : Window
         SshAuthBox.ItemsSource = new[] { SshAuthMethod.Password.ToString(), SshAuthMethod.PrivateKey.ToString() };
         GeneralTabItem.Text = UiText.Get("connections.tabGeneral");
         SshTabItem.Text = UiText.Get("connections.tabSsh");
+        TlsBox.ItemsSource = new[]
+        {
+            UiText.Get("connections.tlsDefault"), UiText.Get("connections.tlsDisable"),
+            UiText.Get("connections.tlsRequire"), UiText.Get("connections.tlsVerifyFull"),
+        };
         BuildTiles();
         PlaceModal(owner);
 
@@ -135,24 +140,28 @@ public sealed partial class ConnectionEditorWindow : Window
         var engines = ConnectionEditorFormat.Engines;
         for (var i = 0; i < engines.Length; i++)
         {
-            var dialect = engines[i];
-            var (letters, suffix) = ConnectionEditorFormat.Badge(dialect);
+            var engine = engines[i];
+            var (letters, suffix) = ConnectionEditorFormat.Badge(engine.Dialect, engine.MariaDb);
             var badge = new ContentControl
             {
-                Style = ExplorerGlyphs.StyleOf($"EngineBadge{suffix}Style"),
+                Style = ExplorerGlyphs.StyleOf($"EngineIcon{suffix}Style"),
                 Content = letters,
                 Width = 20,
                 Height = 20,
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
-            var label = new TextBlock { Text = ConnectionEditorFormat.EngineName(dialect), HorizontalAlignment = HorizontalAlignment.Center, FontSize = 13 };
-            var tile = Tile(new StackPanel { Spacing = 1, VerticalAlignment = VerticalAlignment.Center, Children = { badge, label } }, () => _editor!.Dialect = dialect);
+            var label = new TextBlock { Text = ConnectionEditorFormat.EngineName(engine.Dialect, engine.MariaDb), HorizontalAlignment = HorizontalAlignment.Center, FontSize = 13 };
+            var tile = Tile(new StackPanel { Spacing = 1, VerticalAlignment = VerticalAlignment.Center, Children = { badge, label } }, () =>
+            {
+                _editor!.Dialect = engine.Dialect;
+                _editor.MariaDb = engine.MariaDb;
+            });
             tile.Height = 52;
             tile.MinHeight = 52;
             tile.Padding = new Thickness(6, 0, 6, 0);
             Grid.SetColumn(tile, i);
             EngineHost.Children.Add(tile);
-            _engineTiles[dialect] = tile;
+            _engineTiles[engine] = tile;
         }
 
         var environments = ConnectionEditorFormat.Environments;
@@ -218,6 +227,10 @@ public sealed partial class ConnectionEditorWindow : Window
             var folders = ConnectionEditorFormat.Folders(_list.Groups);
             if (FolderBox.ItemsSource is not string[] shown || !shown.AsSpan().SequenceEqual(folders))
                 FolderBox.ItemsSource = folders;
+            SyncText(ConnectTimeoutBox, editor.ConnectTimeoutText);
+            SyncText(CommandTimeoutBox, editor.CommandTimeoutText);
+            TlsBox.SelectedIndex = (int)editor.Tls;
+            TrustBox.IsChecked = editor.TrustServerCertificate;
             UseSshBox.IsChecked = editor.UseSsh;
             SshAuthBox.SelectedIndex = editor.SshAuthMethod == SshAuthMethod.PrivateKey ? 1 : 0;
         }
@@ -229,14 +242,17 @@ public sealed partial class ConnectionEditorWindow : Window
         var sqlite = editor.Dialect == DatabaseDialect.Sqlite;
         SqliteFields.Visibility = sqlite ? Visibility.Visible : Visibility.Collapsed;
         ServerFields.Visibility = sqlite ? Visibility.Collapsed : Visibility.Visible;
+        TlsFields.Visibility = editor.SupportsTls ? Visibility.Visible : Visibility.Collapsed;
+        TrustBox.Visibility = editor.SupportsTrustCertificate ? Visibility.Visible : Visibility.Collapsed;
+        ConnectTimeoutFields.Visibility = editor.SupportsTimeouts ? Visibility.Visible : Visibility.Collapsed;
         SshFields.Visibility = editor.UseSsh ? Visibility.Visible : Visibility.Collapsed;
         SshCard.Visibility = editor.UseSsh ? Visibility.Visible : Visibility.Collapsed;
         SshKeyFields.Visibility = editor.SshAuthMethod == SshAuthMethod.PrivateKey ? Visibility.Visible : Visibility.Collapsed;
         SshSummary.Text = ConnectionEditorFormat.SshSummary(editor.SshHost, editor.SshPort, editor.SshUserName);
         ErrorsText.Text = string.Join('\n', editor.Validate());
 
-        var (letters, suffix) = ConnectionEditorFormat.Badge(editor.Dialect);
-        HeaderEngine.Style = ExplorerGlyphs.StyleOf($"EngineBadge{suffix}Style");
+        var (letters, suffix) = ConnectionEditorFormat.Badge(editor.Dialect, editor.MariaDb);
+        HeaderEngine.Style = ExplorerGlyphs.StyleOf($"EngineIcon{suffix}Style");
         HeaderEngine.Content = letters;
         HeaderEngine.Width = 32;
         HeaderEngine.Height = 32;
@@ -253,8 +269,11 @@ public sealed partial class ConnectionEditorWindow : Window
 
         ProductionHint.Visibility = editor.Environment == ConnectionEnvironment.Production ? Visibility.Visible : Visibility.Collapsed;
 
-        foreach (var (dialect, tile) in _engineTiles)
-            ToggleTile(tile, dialect == editor.Dialect, Token(dialect == editor.Dialect ? "SquillAccentBrush" : "SquillBorderBrush"), Token(dialect == editor.Dialect ? "SquillAccentSoftBrush" : "SquillBgRaisedBrush"));
+        foreach (var (engine, tile) in _engineTiles)
+        {
+            var selected = engine.Dialect == editor.Dialect && engine.MariaDb == editor.MariaDb;
+            ToggleTile(tile, selected, Token(selected ? "SquillAccentBrush" : "SquillBorderBrush"), Token(selected ? "SquillAccentSoftBrush" : "SquillBgRaisedBrush"));
+        }
         foreach (var (environment, tile) in _environmentTiles)
         {
             var selected = environment == editor.Environment;
@@ -332,8 +351,8 @@ public sealed partial class ConnectionEditorWindow : Window
 
     private Button ProfileRow(ConnectionProfile profile, bool indented)
     {
-        var (letters, suffix) = ConnectionEditorFormat.Badge(profile.Dialect);
-        var badge = new ContentControl { Style = ExplorerGlyphs.StyleOf($"EngineBadge{suffix}Style"), Content = letters, VerticalAlignment = VerticalAlignment.Center };
+        var (letters, suffix) = ConnectionEditorFormat.Badge(profile.Dialect, profile.MariaDb);
+        var badge = new ContentControl { Style = ExplorerGlyphs.StyleOf($"EngineIcon{suffix}Style"), Content = letters, VerticalAlignment = VerticalAlignment.Center };
         var name = new TextBlock
         {
             Text = profile.Name,
@@ -400,6 +419,15 @@ public sealed partial class ConnectionEditorWindow : Window
     private void OnDatabaseChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.Database = DatabaseBox.Text);
 
     private void OnUserChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.UserName = UserBox.Text);
+
+    private void OnTlsChanged(object sender, SelectionChangedEventArgs e) =>
+        Edit(editor => editor.Tls = TlsBox.SelectedIndex is >= 0 and <= 3 ? (TlsMode)TlsBox.SelectedIndex : TlsMode.Default);
+
+    private void OnTrustClicked(object sender, RoutedEventArgs e) => Edit(editor => editor.TrustServerCertificate = TrustBox.IsChecked == true);
+
+    private void OnConnectTimeoutChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.ConnectTimeoutText = ConnectTimeoutBox.Text);
+
+    private void OnCommandTimeoutChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.CommandTimeoutText = CommandTimeoutBox.Text);
 
     private void OnPasswordChanged(object sender, RoutedEventArgs e) => Edit(editor => editor.Password = PasswordInput.Password);
 

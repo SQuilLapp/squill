@@ -14,10 +14,12 @@ To add a UI string, add the same key to `UiTextCatalogFr` and `UiTextCatalogEn` 
 |---|---|---|
 | SQLite | `Microsoft.Data.Sqlite` | compatible (publish and run); `e_sqlite3.dll` must ship next to the exe |
 | PostgreSQL | `Npgsql` (`NpgsqlSlimDataSourceBuilder`) | compatible (publish only, not run against a server) |
-| MySQL / MariaDB | `MySqlConnector` | compatible (publish only, not run against a server) |
+| MySQL | `MySqlConnector` | compatible (publish only, not run against a server) |
 | SQL Server | `Microsoft.Data.SqlClient` | compatible (publish and startup only); the package raises IL2104/IL3053 itself |
 
 SSH tunnels (`SSH.NET`) are compatible under the same conditions (publish and startup only).
+
+Phase 11 ran the four engines against real servers (Testcontainers). The feature-by-engine support matrix, what is not supported (MariaDB, Azure SQL, sequences, user-defined types, ...) and the manual window checks still pending are in [ADR 0008](docs/adr/0008-engine-parity.md). Tests and how to run them: [docs/testing.md](docs/testing.md).
 
 ## Schema designer and ER diagram
 
@@ -58,7 +60,7 @@ Tests that need Docker (PostgreSQL, MySQL, SQL Server containers through Testcon
 SQUILL_DOCKER_TESTS=1 dotnet test --solution Squill.slnx -c Release
 ```
 
-On PowerShell use `$env:SQUILL_DOCKER_TESTS = '1'` before the command.
+On PowerShell use `$env:SQUILL_DOCKER_TESTS = '1'` before the command. With Podman and no Docker, `pwsh eng/run-docker-tests.ps1` does it all; see [docs/testing.md](docs/testing.md).
 
 Native AOT publish of a head (zero IL2xxx/IL3xxx warnings expected):
 
@@ -90,19 +92,9 @@ dotnet run --project tools/Squill.TokenGen -c Release -- tokens/squill.tokens.js
 
 The `release` GitHub workflow (`.github/workflows/release.yml`) runs the same script.
 
-### Optional LoomTerminal
+### LoomTerminal
 
-The WinUI head gets its SQL editor and terminal tabs from the [`LoomEditor.WinUI`](https://www.nuget.org/packages/LoomEditor.WinUI) and [`LoomTerminal.WinUI`](https://www.nuget.org/packages/LoomTerminal.WinUI) NuGet packages (see [ADR 0002](docs/adr/0002-editor-and-terminal-components.md)); nothing to configure. The Avalonia LoomTerminal control (not published yet) is used from a local checkout. Create the git-ignored `Directory.Build.local.props` at the repository root:
-
-```xml
-<Project>
-  <PropertyGroup>
-    <LoomTerminalPath>D:\LoomTerminal</LoomTerminalPath>
-  </PropertyGroup>
-</Project>
-```
-
-`LoomTerminalPath` can be omitted: without it the Avalonia head has no terminal UI (the Avalonia head uses AvaloniaEdit as its editor). It does not affect the WinUI head. CI builds without it. The WinUI head targets `net11.0-windows10.0.26100.0`.
+Both heads get their terminal tabs from the [`LoomTerminal.WinUI`](https://www.nuget.org/packages/LoomTerminal.WinUI) and [`LoomTerminal.Avalonia`](https://www.nuget.org/packages/LoomTerminal.Avalonia) NuGet packages (see [ADR 0002](docs/adr/0002-editor-and-terminal-components.md)); nothing to configure. The WinUI head targets `net11.0-windows10.0.26100.0`.
 
 ## Project layout
 
@@ -129,7 +121,8 @@ Dependency graph: `Core` <- `Data` <- `Data.<Driver>`; `Core` <- `Sql`; `Core` <
 ## Documentation
 
 - [Architecture note and risks](docs/architecture.md)
-- ADRs: [0001 target framework](docs/adr/0001-target-framework.md), [0002 editor and terminal components](docs/adr/0002-editor-and-terminal-components.md), [0003 SQL parser](docs/adr/0003-sql-parser.md), [0004 schema designer](docs/adr/0004-schema-designer.md), [0005 grid editing](docs/adr/0005-grid-editing.md), [0006 visual conformance](docs/adr/0006-visual-conformance.md)
+- [Testing](docs/testing.md), [column types per engine](docs/column-types.md), [verification reports](docs/verification/sqlite.md)
+- ADRs: [0001 target framework](docs/adr/0001-target-framework.md), [0002 editor and terminal components](docs/adr/0002-editor-and-terminal-components.md), [0003 SQL parser](docs/adr/0003-sql-parser.md), [0004 schema designer](docs/adr/0004-schema-designer.md), [0005 grid editing](docs/adr/0005-grid-editing.md), [0006 visual conformance](docs/adr/0006-visual-conformance.md), [0007 localization](docs/adr/0007-localization.md), [0008 engine parity](docs/adr/0008-engine-parity.md)
 - Proofs of concept: [AOT drivers](docs/poc/aot-drivers.md), [grid](docs/poc/grid.md), [editor](docs/poc/editor.md)
 - [Task cards](docs/tasks/README.md)
 

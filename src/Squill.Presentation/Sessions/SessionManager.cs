@@ -36,7 +36,22 @@ public sealed class SessionManager(ProviderRegistry providers, IProfileStore sto
             }
             connection = await provider.OpenAsync(effective, password, ct);
             var schema = await connection.ReadSchemaAsync(ct);
-            var session = new ConnectionSession(profile, connection, schema, tunnel);
+            IReadOnlyList<string> databases;
+            try
+            {
+                databases = await connection.ListDatabasesAsync(ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                databases = []; // The listing is a convenience (no privilege, old server): the session still works.
+            }
+            ConnectionSession? self = null;
+            var session = new ConnectionSession(profile, connection, schema, tunnel)
+            {
+                Databases = databases,
+                DatabaseOpener = (name, token) => OpenDerivedAsync(provider, self!, effective, password, name, token),
+            };
+            self = session;
             Sessions.Add(session);
             return session;
         }
@@ -46,6 +61,22 @@ public sealed class SessionManager(ProviderRegistry providers, IProfileStore sto
                 await connection.DisposeAsync();
             if (tunnel is not null)
                 await tunnel.DisposeAsync();
+            throw;
+        }
+    }
+
+    private static async ValueTask<ConnectionSession> OpenDerivedAsync(
+        IDatabaseProvider provider, ConnectionSession parent, ConnectionProfile effective, string? password, string database, CancellationToken ct)
+    {
+        var connection = await provider.OpenAsync(effective with { Database = database }, password, ct);
+        try
+        {
+            var schema = await connection.ReadSchemaAsync(ct);
+            return new ConnectionSession(parent.Profile with { Database = database }, connection, schema, null) { Parent = parent };
+        }
+        catch
+        {
+            await connection.DisposeAsync();
             throw;
         }
     }

@@ -1,3 +1,4 @@
+using Squill.Core;
 using Squill.Sql.Lexing;
 
 namespace Squill.Sql.Syntax;
@@ -101,6 +102,16 @@ internal sealed class StatementParser(SqlParserCore core)
     private Statement ParseInsert(int start)
     {
         core.Next();
+        if (core.Match("OR"))
+        {
+            // SQLite conflict clause: INSERT OR REPLACE | IGNORE | ABORT | FAIL | ROLLBACK
+            core.Next();
+        }
+
+        while (core.Match("IGNORE") || core.Match("LOW_PRIORITY") || core.Match("DELAYED") || core.Match("HIGH_PRIORITY"))
+        {
+        }
+
         core.Match("INTO");
         var target = _select.ParseNamedTable(allowCall: false, allowAlias: false);
         var columns = new List<string>();
@@ -123,6 +134,14 @@ internal sealed class StatementParser(SqlParserCore core)
             }
 
             core.Expect(')');
+        }
+
+        if (columns.Count == 0 && core.Match("SET"))
+        {
+            // MySQL: INSERT INTO t SET a = 1, b = 2
+            var set = new List<Assignment>();
+            ParseAssignments(set);
+            return new InsertStatement(target, [.. set.Select(a => a.Column)], new ValuesStatement([[.. set.Select(a => a.Value)]], start, core.LastEnd - start), start, core.LastEnd - start);
         }
 
         // T-SQL OUTPUT sits between the column list and the source
@@ -184,7 +203,26 @@ internal sealed class StatementParser(SqlParserCore core)
     private Statement ParseUpdate(int start)
     {
         core.Next();
+        if (core.Match("OR"))
+        {
+            // SQLite conflict clause
+            core.Next();
+        }
+
+        while (core.Match("IGNORE") || core.Match("LOW_PRIORITY"))
+        {
+        }
+
+        if (core.Dialect == DatabaseDialect.SqlServer && core.Match("TOP"))
+        {
+            _expressions.ParseOperand();
+            core.Match("PERCENT");
+        }
+
         var target = _select.ParseNamedTable(allowCall: false, allowAlias: true);
+
+        // MySQL: UPDATE t JOIN u ON ... SET ...
+        var joined = _select.ContinueJoins(target);
         var set = new List<Assignment>();
         if (core.Match("SET"))
         {
@@ -196,7 +234,7 @@ internal sealed class StatementParser(SqlParserCore core)
         }
 
         SkipUntil("FROM", "WHERE");
-        var from = core.Match("FROM") ? _select.ParseFrom() : null;
+        var from = core.Match("FROM") ? _select.ParseFrom() : joined is JoinSource ? joined : null;
         var where = core.Match("WHERE") ? _expressions.ParseExpression() : null;
         return new UpdateStatement(target, set, from, where, start, core.LastEnd - start);
     }

@@ -10,4 +10,8 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <ProjectReference Include="..\..\src\Squill.Sql\Squill.Sql.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/SqlCorpus.cs" Link="SqlCorpus.cs" />
+    <Content Include="../Shared/SqlCorpus/*.sql" Link="SqlCorpus/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

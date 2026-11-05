@@ -12,6 +12,12 @@ public static class SqlDiagnosticsProvider
         "CURRENT_DATE", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURRENT_USER", "SESSION_USER", "LOCALTIME", "LOCALTIMESTAMP",
     };
 
+    // Oracle pseudo-columns exist on every table without being in the catalog.
+    private static readonly HashSet<string> OraclePseudoColumns = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "ROWNUM", "ROWID", "LEVEL", "SYSDATE", "SYSTIMESTAMP", "USER", "UID",
+    };
+
     /// <summary>Analyzes the whole text of <paramref name="request"/>; never throws.</summary>
     /// <param name="request">The script, its dialect and the optional schema; the offset is ignored.</param>
     /// <returns>The diagnostics in order of position.</returns>
@@ -32,12 +38,12 @@ public static class SqlDiagnosticsProvider
             {
                 switch (r.Node)
                 {
-                    case TableRef t when IsUnknownTable(schema, t, r.Ctes):
+                    case TableRef { IsOpaque: false } t when IsUnknownTable(schema, t, r.Ctes):
                         result.Add(new SqlDiagnostic(
                             NameRange(text, t, t.Name, t.Schema?.Length ?? 0, last: false), DiagnosticSeverity.Error,
                             $"Unknown table '{t.Name}'", "SQL1001", SqlMessageCodes.UnknownTable, [t.Name]));
                         break;
-                    case ColumnRef c when UnknownColumnOwner(script, schema, c, r.Aliases) is { } owner:
+                    case ColumnRef c when UnknownColumnOwner(script, schema, c, r.Aliases, request.Dialect) is { } owner:
                         result.Add(new SqlDiagnostic(
                             NameRange(text, c, c.Name, 0, last: true), DiagnosticSeverity.Error,
                             $"Unknown column '{c.Name}' in '{owner}'", "SQL1002", SqlMessageCodes.UnknownColumn, [c.Name, owner]));
@@ -56,14 +62,25 @@ public static class SqlDiagnosticsProvider
             return false;
         }
 
+        // T-SQL temporary tables are created by the script itself
+        if (t.Name.StartsWith('#'))
+        {
+            return false;
+        }
+
         // an ambiguous unqualified name is known (FindTable returns null for it)
         return schema.FindTable(t.Schema, t.Name) is null
             && (t.Schema is not null || !schema.Tables.Any(x => string.Equals(x.Name, t.Name, StringComparison.OrdinalIgnoreCase)));
     }
 
     /// <summary>Returns the name to report as owner of a missing column, or <see langword="null"/> when the column exists or cannot be checked.</summary>
-    private static string? UnknownColumnOwner(SqlScript script, SchemaSnapshot schema, ColumnRef c, IReadOnlySet<string> aliases)
+    private static string? UnknownColumnOwner(SqlScript script, SchemaSnapshot schema, ColumnRef c, IReadOnlySet<string> aliases, DatabaseDialect dialect)
     {
+        if (dialect == DatabaseDialect.Oracle && OraclePseudoColumns.Contains(c.Name))
+        {
+            return null;
+        }
+
         var sources = SqlScopeResolver.Resolve(script, c.Start).Sources;
         if (c.Qualifier is { } qualifier)
         {

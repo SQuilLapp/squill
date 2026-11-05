@@ -34,7 +34,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         _dialogs = dialogs;
         _dialect = session.Profile.Dialect;
         TypeSuggestions = DataTypeCatalog.For(_dialect);
-        Original = existing is null ? null : TableDesign.FromTable(existing);
+        Original = existing is null ? null : TableDesign.FromTable(existing, session.Schema.Triggers);
         Columns.CollectionChanged += OnCollectionChanged;
         Indexes.CollectionChanged += OnCollectionChanged;
         ForeignKeys.CollectionChanged += OnCollectionChanged;
@@ -332,7 +332,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         var table = _session.Schema.FindTable(Design.Schema, Design.Name);
         if (table is null)
             return;
-        Original = TableDesign.FromTable(table);
+        Original = TableDesign.FromTable(table, _session.Schema.Triggers);
         OnPropertyChanged(nameof(Title));
         Load(Original);
     }
@@ -446,7 +446,7 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
                 issues.Add(new DesignIssue(DesignIssueSeverity.Error, $"The foreign key '{fk.Name}' references the missing table '{fk.ReferencedTable}'.", fk.Name, CoreMessageCodes.DesignForeignKeyTableMissing, [fk.Name, fk.ReferencedTable]));
         }
 
-        if (_dialect == DatabaseDialect.Sqlite && Original is not null && _session.Schema.Tables.Any(t => t.Kind == TableKind.View))
+        if (_dialect == DatabaseDialect.Sqlite && Original is not null && _session.Schema.Tables.Any(t => t.Kind.IsViewLike()))
             issues.Add(new DesignIssue(DesignIssueSeverity.Warning, "Views depending on this table are not recreated.", null, CoreMessageCodes.DesignViewsNotRecreated));
 
         issues = [.. issues.Select(i => i with { Message = IssueText.Format(i.Code, i.Args, i.Message) })];

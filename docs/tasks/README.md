@@ -190,6 +190,46 @@ Depends on: <card ids, ranges allowed>
 | [P10-16](phase-10/P10-16-migrate-settings-dialogs-errors.md) | Migrate strings: settings, dialogs, errors and leftovers | P10-10 ... P10-15, P10-05, P10-06 | done |
 | [P10-17](phase-10/P10-17-enforcement-tests.md) | Tests: completeness guards for localization | P10-16 | done |
 | [P10-18](phase-10/P10-18-docs-and-adr.md) | Documentation: localization ADR 0007, README and architecture note | P10-17 | done |
+| [P11-01](phase-11/P11-01-podman-test-runner.md) | Podman runner for the Docker-gated tests | none | done |
+| [P11-02](phase-11/P11-02-postgres-container-tests.md) | PostgreSQL container tests run and pass | P11-01 | done |
+| [P11-03](phase-11/P11-03-mysql-container-tests.md) | MySQL container tests run and pass | P11-01 | done |
+| [P11-04](phase-11/P11-04-sqlserver-container-tests.md) | SQL Server container tests run and pass | P11-01 | done |
+| [P11-05](phase-11/P11-05-ci-docker-tests.md) | CI runs the Docker-gated tests on Linux | P11-02 ... P11-04 | done |
+| [P11-06](phase-11/P11-06-core-connection-options.md) | Core: connection options (TLS, timeouts) | none | done |
+| [P11-07](phase-11/P11-07-data-connection-options.md) | Data: apply the connection options in the four providers | P11-06, P11-04 | done |
+| [P11-08](phase-11/P11-08-winui-connection-options.md) | WinUI head: connection options in the connection editor | P11-06, P11-07 | done |
+| [P11-09](phase-11/P11-09-avalonia-connection-options.md) | Avalonia head: connection options in the connection manager |X|
+| [P11-10](phase-11/P11-10-cancel-and-timeout.md) | Cancel and timeout proven on every engine | P11-07 | done |
+| [P11-11](phase-11/P11-11-data-multiple-result-sets.md) | Data: multiple result sets and server messages | P11-04 | done |
+| [P11-12](phase-11/P11-12-presentation-multiple-results.md) | Presentation: several results and messages per statement | P11-11 | done |
+| [P11-13](phase-11/P11-13-winui-multiple-results.md) | WinUI head: result tabs for several sets and a Messages tab | P11-12 | done |
+| [P11-14](phase-11/P11-14-avalonia-multiple-results.md) | Avalonia head: result tabs for several sets and a Messages tab | P11-12 | done |
+| [P11-15](phase-11/P11-15-core-schema-objects-model.md) | Core: routines, triggers, view definitions and materialized views | none | done |
+| [P11-16](phase-11/P11-16-sqlite-schema-objects.md) | Data.Sqlite: triggers and view definitions, SQLite sample schema | P11-15 | done |
+| [P11-17](phase-11/P11-17-postgres-schema-objects.md) | Data.Postgres: routines, triggers, view definitions, materialized views | P11-15, P11-02 | done |
+| [P11-18](phase-11/P11-18-mysql-schema-objects.md) | Data.MySql: routines, triggers, view definitions | P11-15, P11-03 | done |
+| [P11-19](phase-11/P11-19-sqlserver-schema-objects.md) | Data.SqlServer: routines, triggers, view definitions | P11-15, P11-04 | done |
+| [P11-20](phase-11/P11-20-presentation-explorer-objects.md) | Presentation: routines, triggers and open definition in the explorer | P11-15 | done |
+| [P11-21](phase-11/P11-21-winui-explorer-objects.md) | WinUI head: explorer glyphs and menu for routines, triggers, definitions | P11-20 | done |
+| [P11-22](phase-11/P11-22-avalonia-explorer-objects.md) | Avalonia head: explorer glyphs and menu for routines, triggers, definitions | P11-20 | done |
+| [P11-23](phase-11/P11-23-data-list-databases.md) | Data: list the databases of a server | P11-02 ... P11-04 | done |
+| [P11-24](phase-11/P11-24-presentation-database-switch.md) | Presentation: browse other databases of a connection | P11-23 | done |
+| [P11-25](phase-11/P11-25-column-types-read.md) | Column types read and displayed correctly on every engine | P11-02 ... P11-04, P11-16 | done |
+| [P11-26](phase-11/P11-26-column-types-edit.md) | Column types edited and written back correctly on every engine | P11-25 | done |
+| [P11-27](phase-11/P11-27-sql-corpus-parser-diagnostics.md) | Dialect corpus: parser and diagnostics against real servers | P11-02 ... P11-04 | done |
+| [P11-28](phase-11/P11-28-sql-completion-hover-format-dialects.md) | Completion, hover, signature help and formatter per dialect | P11-27, P11-17 ... P11-19 | done |
+| [P11-29](phase-11/P11-29-designer-ddl-sqlite.md) | Table designer on SQLite: create and alter matrix | P11-16 | done |
+| [P11-30](phase-11/P11-30-designer-ddl-servers.md) | Table designer DDL on PostgreSQL, MySQL and SQL Server | P11-02 ... P11-04 | done |
+| [P11-31](phase-11/P11-31-er-diagram-engines.md) | ER diagram on real schemas of every engine | P11-02 ... P11-04, P11-16 | done |
+| [P11-32](phase-11/P11-32-export-engines.md) | Result export verified per engine | P11-25 | done |
+| [P11-33](phase-11/P11-33-grid-edit-commit-engines.md) | Grid edit and commit through the Presentation layer on every engine | P11-02 ... P11-04, P11-16, P11-26 | done |
+| [P11-34](phase-11/P11-34-terminal-engine-clients.md) | Terminal: native client launch per engine | P11-06 | done |
+| [P11-35](phase-11/P11-35-ssh-tunnel-containers.md) | SSH tunnel proven against real servers | P11-02 ... P11-04 | done |
+| [P11-36](phase-11/P11-36-verify-sqlite.md) | End-to-end verification: SQLite (WinUI first, Avalonia smoke) | P11-10, P11-13, P11-21, P11-25, P11-29, P11-33 | automated done, manual pending |
+| [P11-37](phase-11/P11-37-verify-postgres.md) | End-to-end verification: PostgreSQL | P11-36, P11-17, P11-24, P11-27 ... P11-32, P11-35 | automated done, manual pending |
+| [P11-38](phase-11/P11-38-verify-mysql.md) | End-to-end verification: MySQL | P11-37, P11-18, P11-24, P11-27 ... P11-32 | automated done, manual pending |
+| [P11-39](phase-11/P11-39-verify-sqlserver.md) | End-to-end verification: SQL Server | P11-37, P11-19, P11-24, P11-27 ... P11-32 | automated done, manual pending |
+| [P11-40](phase-11/P11-40-docs-and-adr.md) | Documentation: engine parity ADR 0008, README and architecture note | P11-36 ... P11-39 | done |
 
 ### Phase 9 - Visual conformance
 
@@ -206,3 +246,12 @@ Goal: the whole application is bilingual French / English in both heads. Decisio
 - Branch: implement phase 10 on the existing branch `phase-10-localization` (cut from the unmerged `fix-winui-connection-file-picker`, commit `e85c84b`); do not create another branch.
 - Order: P10-01 ... P10-04 are the foundation (P10-03 is independent and can come second), then the head settings cards P10-05/06, the helper cards P10-07 ... P10-09, then the migration cards P10-10 ... P10-16 (each covers BOTH heads and the Presentation strings of one area; shared procedure in [migration-recipe.md](phase-10/migration-recipe.md); work list in `phase-10/inventory.md`, generated by P10-03), then P10-17 (guards) and P10-18 (docs).
 - Cards that change what is on screen are checked by capturing both heads with `SQUILL_LANGUAGE=en` and `fr` (tools of P9-02); a screen that cannot be driven is listed in the card's report as "to check by hand".
+
+### Phase 11 - Engine parity
+
+Goal: every feature works fully and is **verified against a real server** on the four base engines (SQLite, PostgreSQL, MySQL, SQL Server); no new engine. Starting point (audit of 2026-11-03): the Testcontainers tests gated by `SQUILL_DOCKER_TESTS=1` never ran (no Docker; Podman 5.6.2 is installed); the profile has no TLS or timeout options and SQL Server trusts the certificate only for the literal host `localhost`; the drivers read the first result set only and drop server messages; the schema model has tables and views only (no routines, triggers, view definitions, materialized views) and the explorer lists the profile's database only; only a handful of column types were ever read or edited; the parser, completion and DDL generators were tested on crafted samples, never against statements a server accepts; the grid edit flow, several popups, the SSH tunnel and the terminal launch were never driven end to end; Avalonia still uses AvaloniaEdit (ADR 0002).
+
+- Branch: implement phase 11 on the existing branch `phase-11-engine-parity`; do not create another branch.
+- Order: P11-01 ... P11-05 first (containers and CI, so everything after can be tested for real), then the gaps by value: connection options P11-06 ... P11-09, cancel and timeout P11-10, result sets P11-11 ... P11-14, schema objects P11-15 ... P11-22, databases P11-23/24, then the per-feature verification cards P11-25 ... P11-35 (types, SQL corpus, designer, ER, export, grid edit, terminal, SSH), then one end-to-end card per engine P11-36 ... P11-39 (WinUI driven first, Avalonia smoke), last P11-40 (docs and support matrix). WinUI cards come before their Avalonia twins.
+- Shared procedures (containers, verification report format, sample schemas): [verification-recipe.md](phase-11/verification-recipe.md).
+- Cards that need a container use `rtk pwsh eng/run-docker-tests.ps1` (P11-01); a card must stop and report when Podman is unavailable and never mark Docker-gated tests as verified when they were skipped. Bugs found by verification cards that are too big for the card get a new card `P11-41` onwards (added to this index).

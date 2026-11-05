@@ -51,6 +51,8 @@ public sealed class SqlRunnerTests
             return ValueTask.FromResult<IResultReader>(Last = new FakeReader(Rows, Affected));
         }
 
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) => ValueTask.FromResult<IReadOnlyList<string>>([]);
+
         public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => ValueTask.FromResult(SchemaSnapshot.Empty);
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;

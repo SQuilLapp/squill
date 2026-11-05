@@ -69,6 +69,9 @@ public static class CoreMessageCodes
     /// <summary>The <c>design.foreignKeyNoTable</c> message.</summary>
     public const string DesignForeignKeyNoTable = "design.foreignKeyNoTable";
 
+    /// <summary>The <c>design.indexNeedsLength</c> message.</summary>
+    public const string DesignIndexNeedsLength = "design.indexNeedsLength";
+
     /// <summary>The <c>design.schemaMove</c> message.</summary>
     public const string DesignSchemaMove = "design.schemaMove";
 
@@ -99,6 +102,12 @@ public static class CoreMessageCodes
     /// <summary>The <c>edit.duplicateKey</c> message.</summary>
     public const string EditDuplicateKey = "edit.duplicateKey";
 
+    /// <summary>The <c>connection.connectTimeoutRange</c> message.</summary>
+    public const string ConnectionConnectTimeoutRange = "connection.connectTimeoutRange";
+
+    /// <summary>The <c>connection.commandTimeoutRange</c> message.</summary>
+    public const string ConnectionCommandTimeoutRange = "connection.commandTimeoutRange";
+
     /// <summary>Every code of this class.</summary>
     public static readonly IReadOnlyList<string> All =
     [
@@ -124,6 +133,7 @@ public static class CoreMessageCodes
         DesignForeignKeyColumnMissing,
         DesignForeignKeyColumnCount,
         DesignForeignKeyNoTable,
+        DesignIndexNeedsLength,
         DesignSchemaMove,
         DesignSqliteSchema,
         DesignDropColumnDataLoss,
@@ -134,5 +144,7 @@ public static class CoreMessageCodes
         EditColumnNull,
         EditColumnRequired,
         EditDuplicateKey,
+        ConnectionConnectTimeoutRange,
+        ConnectionCommandTimeoutRange,
     ];
 }
