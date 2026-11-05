@@ -78,21 +78,9 @@ internal sealed class MySqlResultReader : IResultReader
     public async ValueTask<object?[][]?> ReadBatchAsync(int maxRows, CancellationToken cancellationToken)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxRows);
-        var rows = new List<object?[]>();
-        while (rows.Count < maxRows)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (_finished || !await _reader.ReadAsync(cancellationToken))
-            {
-                _finished = true;
-                break;
-            }
-            var row = new object?[Columns.Count];
-            for (var i = 0; i < row.Length; i++)
-                row[i] = _reader.IsDBNull(i) ? null : ReadValue(i);
-            rows.Add(row);
-        }
-        return rows.Count == 0 ? null : [.. rows];
+        var (rows, finished) = await ResultRows.ReadAsync(_reader, Columns.Count, maxRows, _finished, (_, i) => ReadValue(i), cancellationToken);
+        _finished = finished;
+        return rows;
     }
 
     /// <inheritdoc />

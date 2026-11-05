@@ -49,21 +49,9 @@ internal sealed class SqliteResultReader : IResultReader
 
     private async ValueTask<object?[][]?> ReadRowsAsync(int maxRows, CancellationToken cancellationToken)
     {
-        var rows = new List<object?[]>();
-        while (rows.Count < maxRows)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (_finished || !await _reader.ReadAsync(cancellationToken))
-            {
-                _finished = true;
-                break;
-            }
-            var row = new object?[Columns.Count];
-            for (var i = 0; i < row.Length; i++)
-                row[i] = _reader.IsDBNull(i) ? null : _reader.GetValue(i);
-            rows.Add(row);
-        }
-        return rows.Count == 0 ? null : [.. rows];
+        var (rows, finished) = await ResultRows.ReadAsync(_reader, Columns.Count, maxRows, _finished, static (r, i) => r.GetValue(i), cancellationToken);
+        _finished = finished;
+        return rows;
     }
 
     /// <inheritdoc />

@@ -29,7 +29,7 @@ public static class GridEditScenario
         var d = profile.Dialect;
         var registry = new ProviderRegistry();
         registry.Register(provider);
-        var manager = new SessionManager(registry, new Store(password), new NoTunnel());
+        var manager = new SessionManager(registry, new ScenarioProfileStore(password), new ScenarioTunnelFactory());
         var session = await manager.OpenAsync(profile, Ct);
         try
         {
@@ -310,7 +310,7 @@ public static class GridEditScenario
             _session = session;
             _dialect = dialect;
             _schema = schema;
-            _tab = new QueryTabViewModel(session, _editor, new History(), new Settings(), new ImmediateDispatcher(), Dialogs);
+            _tab = new QueryTabViewModel(session, _editor, new History(), new ScenarioSettings(), new ImmediateDispatcher(), Dialogs);
         }
 
         public Dialogs Dialogs { get; } = new();
@@ -368,31 +368,5 @@ public static class GridEditScenario
         public ValueTask<IReadOnlyList<HistoryEntry>> ListAsync(int max, CancellationToken ct) => ValueTask.FromResult<IReadOnlyList<HistoryEntry>>([]);
 
         public ValueTask ClearAsync(CancellationToken ct) => ValueTask.CompletedTask;
-    }
-
-    private sealed class Settings : ISettingsStore
-    {
-        public ValueTask<AppSettings> LoadAsync(CancellationToken ct) => ValueTask.FromResult(AppSettings.Default);
-
-        public ValueTask SaveAsync(AppSettings settings, CancellationToken ct) => ValueTask.CompletedTask;
-    }
-
-    private sealed class Store(string? password) : IProfileStore
-    {
-        public ValueTask<IReadOnlyList<ConnectionProfile>> ListAsync(CancellationToken ct) => ValueTask.FromResult<IReadOnlyList<ConnectionProfile>>([]);
-
-        public ValueTask SaveAsync(ConnectionProfile profile, string? password, string? sshSecret, CancellationToken ct) => ValueTask.CompletedTask;
-
-        public ValueTask DeleteAsync(Guid id, CancellationToken ct) => ValueTask.CompletedTask;
-
-        public ValueTask<string?> GetPasswordAsync(Guid id, CancellationToken ct) => ValueTask.FromResult(password);
-
-        public ValueTask<string?> GetSshSecretAsync(Guid id, CancellationToken ct) => ValueTask.FromResult<string?>(null);
-    }
-
-    private sealed class NoTunnel : ISshTunnelFactory
-    {
-        public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, string remoteHost, int remotePort, CancellationToken ct) =>
-            throw new NotSupportedException();
     }
 }

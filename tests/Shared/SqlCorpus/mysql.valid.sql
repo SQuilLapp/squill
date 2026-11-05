@@ -24,27 +24,27 @@ select * from (select customer_id, sum(total) as s from orders group by customer
 -- ---
 with recent as (select * from orders where placed_on > current_date - interval 30 day) select count(*) from recent
 -- ---
-with recursive n(i) as (select 1 union all select i + 1 from n where i < 10) select sum(i) from n
--- ---
-select id, total, row_number() over (partition by customer_id order by total desc) as rn from orders
--- ---
-select id, sum(total) over (order by id rows between unbounded preceding and current row) from orders
--- ---
-select id, lag(total) over w, lead(total) over w from orders window w as (order by id)
--- ---
-select id from customers union select customer_id from orders
--- ---
-select id from customers union all select customer_id from orders
--- ---
-select id from customers intersect select customer_id from orders
--- ---
-select id from customers except select customer_id from orders
--- ---
-select customer_id, count(*), sum(total) from orders group by customer_id having sum(total) > 1 order by 2 desc limit 5 offset 1
+select distinct customer_id from orders order by customer_id
 -- ---
 select * from customers order by id limit 1, 2
 -- ---
-select distinct customer_id from orders order by customer_id
+select customer_id, count(*), sum(total) from orders group by customer_id having sum(total) > 1 order by 2 desc limit 5 offset 1
+-- ---
+select id from customers except select customer_id from orders
+-- ---
+select id from customers intersect select customer_id from orders
+-- ---
+select id from customers union all select customer_id from orders
+-- ---
+select id from customers union select customer_id from orders
+-- ---
+select id, lag(total) over w, lead(total) over w from orders window w as (order by id)
+-- ---
+select id, sum(total) over (order by id rows between unbounded preceding and current row) from orders
+-- ---
+select id, total, row_number() over (partition by customer_id order by total desc) as rn from orders
+-- ---
+with recursive n(i) as (select 1 union all select i + 1 from n where i < 10) select sum(i) from n
 -- ---
 select `id`, `name` as `n` from `customers`
 -- ---

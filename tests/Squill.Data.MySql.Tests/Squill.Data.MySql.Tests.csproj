@@ -22,6 +22,7 @@
     <Compile Include="../Shared/ColumnTypeEditScenario.cs" Link="ColumnTypeEditScenario.cs" />
     <Compile Include="../Shared/GridEditScenario.cs" Link="GridEditScenario.cs" />
     <Compile Include="../Shared/QueryFlowScenario.cs" Link="QueryFlowScenario.cs" />
+    <Compile Include="../Shared/ScenarioStubs.cs" Link="ScenarioStubs.cs" />
     <Compile Include="../Shared/CancelScenario.cs" Link="CancelScenario.cs" />
     <Compile Include="../Shared/MultiResultScenario.cs" Link="MultiResultScenario.cs" />
     <Content Include="../Shared/SampleSchema/mysql.sql" Link="SampleSchema/mysql.sql" CopyToOutputDirectory="PreserveNewest" />
