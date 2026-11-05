@@ -51,7 +51,7 @@ create view order_totals as
     group by c.id, c.name;
 
 create function add_numbers(a int, b int) returns int deterministic return a + b;
-create procedure touch_customers(in min_id int, in max_id int) update customers set name = name where id between min_id and max_id;
+create procedure touch_customers(in min_id int, in max_id int) update customers set name = concat(name, '') where id between min_id and max_id;
 create trigger orders_stamp before insert on orders for each row set new.total = coalesce(new.total, 0);
 
 create table all_types (

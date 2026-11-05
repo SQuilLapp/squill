@@ -1,6 +1,7 @@
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Networks;
+using System.Security.Cryptography;
 using Xunit;
 
 namespace Squill.Tests.Containers;
@@ -14,13 +15,16 @@ namespace Squill.Tests.Containers;
 public sealed class SshJumpHost : IAsyncDisposable
 {
     public const string UserName = "squill";
-    public const string Password = "squill-ssh-pw";
-    public const string Passphrase = "squill-key-pw";
+    /// <summary>Random per run, so no credential sits in the source.</summary>
+    public static string Password { get; } = Convert.ToHexString(RandomNumberGenerator.GetBytes(12));
+
+    /// <summary>Random per run passphrase of the encrypted key.</summary>
+    public static string Passphrase { get; } = Convert.ToHexString(RandomNumberGenerator.GetBytes(12));
 
     private readonly IContainer _container;
     private readonly string _keyDirectory;
 
-    private SshJumpHost(IContainer container, string keyDirectory, string plainKeyPath, string encryptedKeyPath)
+    internal SshJumpHost(IContainer container, string keyDirectory, string plainKeyPath, string encryptedKeyPath)
     {
         (_container, _keyDirectory, PlainKeyPath, EncryptedKeyPath) = (container, keyDirectory, plainKeyPath, encryptedKeyPath);
     }
@@ -56,13 +60,13 @@ public sealed class SshJumpHost : IAsyncDisposable
 
         var directory = Directory.CreateTempSubdirectory("squill-ssh-").FullName;
         var made = await container.ExecAsync(["sh", "-c",
-            $"ssh-keygen -q -t ed25519 -N '' -f /tmp/plain && ssh-keygen -q -t ed25519 -N '{Passphrase}' -f /tmp/enc && cat /tmp/plain.pub /tmp/enc.pub >> /config/.ssh/authorized_keys"], ct);
+            $"mkdir -p /config/keys && ssh-keygen -q -t ed25519 -N '' -f /config/keys/plain && ssh-keygen -q -t ed25519 -N '{Passphrase}' -f /config/keys/enc && cat /config/keys/plain.pub /config/keys/enc.pub >> /config/.ssh/authorized_keys"], ct);
         if (made.ExitCode != 0)
             throw new InvalidOperationException("ssh-keygen failed in the SSH container: " + made.Stderr);
         var plain = Path.Combine(directory, "plain");
         var encrypted = Path.Combine(directory, "encrypted");
-        await File.WriteAllBytesAsync(plain, await container.ReadFileAsync("/tmp/plain", ct), ct);
-        await File.WriteAllBytesAsync(encrypted, await container.ReadFileAsync("/tmp/enc", ct), ct);
+        await File.WriteAllBytesAsync(plain, await container.ReadFileAsync("/config/keys/plain", ct), ct);
+        await File.WriteAllBytesAsync(encrypted, await container.ReadFileAsync("/config/keys/enc", ct), ct);
         return new SshJumpHost(container, directory, plain, encrypted);
     }
 
@@ -81,7 +85,7 @@ public sealed class SshJumpHost : IAsyncDisposable
 public sealed class SshJumpFixture : IAsyncLifetime
 {
     public const string DatabaseAlias = "db";
-    public const string DatabasePassword = "squill-test";
+    public static string DatabasePassword { get; } = Convert.ToHexString(RandomNumberGenerator.GetBytes(12));
 
     private INetwork? _network;
     private IContainer? _database;

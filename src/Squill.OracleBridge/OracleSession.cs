@@ -1,6 +1,8 @@
 using Oracle.ManagedDataAccess.Client;
 using Squill.Data.Oracle;
 
+namespace Squill.OracleBridge;
+
 /// <summary>The state of one bridged connection: the open Oracle connection and at most one open reader.</summary>
 internal sealed class OracleSession : IAsyncDisposable
 {

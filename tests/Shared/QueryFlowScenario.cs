@@ -114,9 +114,9 @@ public static class QueryFlowScenario
         rig.Editor.Text = spec.SlowSql;
         var run = rig.Tab.RunCommand.ExecuteAsync(null);
         for (var i = 0; i < 50 && !rig.Tab.IsRunning; i++)
-            await Task.Delay(100);
+            await Task.Delay(100, TestContext.Current.CancellationToken);
         Assert.True(rig.Tab.IsRunning);
-        await Task.Delay(500);
+        await Task.Delay(500, TestContext.Current.CancellationToken);
         rig.Tab.CancelCommand.Execute(null);
         await run.WaitAsync(TimeSpan.FromSeconds(10), Ct);
         Assert.Equal(UiText.Get("query.cancelled"), rig.Tab.StatusText);

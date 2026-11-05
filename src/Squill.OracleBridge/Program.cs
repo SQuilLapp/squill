@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Squill.Data.Oracle;
+using Squill.OracleBridge;
 
 // Protocol: one JSON request per stdin line, one JSON response per stdout line (see docs/poc/oracle-bridge.md). Nothing else may write to stdout.
 var utf8 = new UTF8Encoding(false);
