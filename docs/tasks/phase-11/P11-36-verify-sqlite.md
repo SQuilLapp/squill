@@ -1,6 +1,6 @@
 # P11-36 - End-to-end verification: SQLite (WinUI first, Avalonia smoke)
 
-Status: todo
+Status: automated part done, manual part pending the owner (checklist `docs/verification/sqlite.md`)
 Depends on: P11-10, P11-13, P11-21, P11-25, P11-29, P11-33
 
 ## Goal
@@ -16,7 +16,8 @@ Drive every feature of the app by hand-equivalent automation against a SQLite fi
 - Features absent from the app (record them as findings only).
 
 ## Tasks
-- [ ] Drive, fix small bugs, write new cards for big ones, write the report.
+- [x] Automated part: `QueryFlowScenario` through the real view models on a live file; two bugs fixed (rows-affected text, SQLite UI-thread block on a slow statement).
+- [ ] Manual part: the owner ticks `docs/verification/sqlite.md` section 3 in the WinUI window (no session can drive a Windows UI); Avalonia rows are smoke.
 
 ## Acceptance criteria
 - Report complete: every row has a result; no row is empty. `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green; WinUI and Avalonia AOT publishes with zero IL2xxx/IL3xxx warnings; no process left running.

@@ -226,6 +226,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
                 List<(ResultViewModel Result, StreamingGridDataSource Grid)> sets = [];
                 if (reader.Columns.Count == 0)
                 {
+                    await reader.ReadBatchAsync(1, ct); // drivers report the count only once the command is drained
                     var affected = reader.RecordsAffected;
                     rows = affected >= 0 ? affected : null;
                     AddResult(ResultViewModel.ForMessage(title, affected >= 0 ? UiText.FormatPlural("query.rowsAffected", (int)Math.Min(affected, int.MaxValue)) : UiText.Get("query.commandCompleted"), _dialogs));

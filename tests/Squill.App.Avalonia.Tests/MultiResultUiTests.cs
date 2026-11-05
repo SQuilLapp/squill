@@ -79,7 +79,7 @@ public sealed class MultiResultUiTests
     public async Task TwoSetsAndMessages_ShowThreeTabs_AndTheLastShowsTheText()
     {
         using var _ = UiText.Override(UiLanguage.English);
-        await await Headless.Session.Dispatch(async () =>
+        await Headless.Session.Dispatch(async () =>
         {
             var profile = new ConnectionProfile(Guid.NewGuid(), "p", DatabaseDialect.PostgreSql, "h", 1, "d", "u", null, null);
             var editor = new AvaloniaSqlEditor { Text = "SELECT 1;" };

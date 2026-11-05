@@ -23,7 +23,8 @@ internal static class SqliteInterrupt
         using var registration = guard.Token.Register(static state => raw.sqlite3_interrupt(((SqliteConnection)state!).Handle), connection);
         try
         {
-            return await work();
+            // Microsoft.Data.Sqlite runs the steps synchronously inside its async methods: off the caller's thread, so a UI thread is never blocked and Cancel can fire.
+            return await Task.Run(() => work().AsTask(), CancellationToken.None);
         }
         catch (SqliteException ex) when (ex.SqliteErrorCode == raw.SQLITE_INTERRUPT && guard.IsCancellationRequested)
         {

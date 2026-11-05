@@ -37,7 +37,7 @@ public sealed class EditorToolbarTests
     private static async Task WithViewAsync(Func<QueryTabView, QueryTabViewModel, Task> body)
     {
         var file = Path.Combine(Path.GetTempPath(), $"squill-toolbar-{Guid.NewGuid():N}.db");
-        await await Headless.Session.Dispatch(async () =>
+        await Headless.Session.Dispatch(async () =>
         {
             var profile = new ConnectionProfile(Guid.NewGuid(), "p", DatabaseDialect.Sqlite, null, null, null, null, file, null);
             await using var connection = await new SqliteDatabaseProvider().OpenAsync(profile, null, CancellationToken.None);
