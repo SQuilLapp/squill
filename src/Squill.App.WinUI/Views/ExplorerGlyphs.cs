@@ -71,10 +71,11 @@ public static class ExplorerGlyphs
     /// <returns>The style.</returns>
     public static Style EngineStyle(ConnectionProfile? profile) => StyleOf(profile?.Dialect switch
     {
-        DatabaseDialect.PostgreSql => "EngineBadgePostgresStyle",
-        DatabaseDialect.MySql => "EngineBadgeMysqlStyle",
-        DatabaseDialect.SqlServer => "EngineBadgeSqlserverStyle",
-        DatabaseDialect.Sqlite => "EngineBadgeSqliteStyle",
+        DatabaseDialect.PostgreSql => "EngineIconPostgresStyle",
+        DatabaseDialect.MySql => "EngineIconMysqlStyle",
+        DatabaseDialect.SqlServer => "EngineIconSqlserverStyle",
+        DatabaseDialect.Sqlite => "EngineIconSqliteStyle",
+        DatabaseDialect.Oracle => "EngineIconOracleStyle",
         _ => "EngineBadgeStyle",
     });
 

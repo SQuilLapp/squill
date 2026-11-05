@@ -312,9 +312,6 @@
   <Style x:Key="EngineBadgeSqlserverStyle" TargetType="ContentControl" BasedOn="{StaticResource EngineBadgeStyle}">
     <Setter Property="Background" Value="{ThemeResource SquillEngineSqlserverBrush}" />
   </Style>
-  <Style x:Key="EngineBadgeOracleStyle" TargetType="ContentControl" BasedOn="{StaticResource EngineBadgeStyle}">
-    <Setter Property="Background" Value="#FFC74634" />
-  </Style>
   <Style x:Key="EngineBadgeSqliteStyle" TargetType="ContentControl" BasedOn="{StaticResource EngineBadgeStyle}">
     <Setter Property="Background" Value="{ThemeResource SquillEngineSqliteBrush}" />
   </Style>

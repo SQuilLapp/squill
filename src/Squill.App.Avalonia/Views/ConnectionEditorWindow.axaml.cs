@@ -1,3 +1,4 @@
+using Squill.App.Avalonia.Controls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -110,16 +111,7 @@ public sealed partial class ConnectionEditorWindow : Window
 
         ErrorsText.Text = string.Join('\n', editor.Validate());
 
-        var (letters, engineClass) = editor.Dialect switch
-        {
-            DatabaseDialect.PostgreSql => ("PG", "postgres"),
-            DatabaseDialect.MySql => ("My", "mysql"),
-            DatabaseDialect.SqlServer => ("MS", "sqlserver"),
-            DatabaseDialect.Oracle => ("OR", "oracle"),
-            _ => ("SL", "sqlite"),
-        };
-        HeaderLetters.Text = letters;
-        SetClasses(HeaderEngine, engineClass, "postgres", "mysql", "sqlserver", "sqlite", "oracle");
+        HeaderEngine.Dialect = editor.Dialect;
         HeaderName.Text = string.IsNullOrWhiteSpace(editor.Name) ? UiText.Get("connections.newConnection") : editor.Name;
         HeaderSubtitle.Text = UiText.Get("connections.newUnsaved");
         HeaderSubtitle.IsVisible = _list?.SelectedProfile is null;
@@ -211,15 +203,7 @@ public sealed partial class ConnectionEditorWindow : Window
 
     private Button ProfileRow(ConnectionProfile profile, bool indented)
     {
-        var (letters, engineClass) = profile.Dialect switch
-        {
-            DatabaseDialect.PostgreSql => ("PG", "postgres"),
-            DatabaseDialect.MySql => ("My", "mysql"),
-            DatabaseDialect.SqlServer => ("MS", "sqlserver"),
-            DatabaseDialect.Oracle => ("OR", "oracle"),
-            _ => ("SL", "sqlite"),
-        };
-        var badge = new Border { Classes = { "engine", engineClass }, Child = new TextBlock { Text = letters } };
+        var badge = new EngineIcon { Dialect = profile.Dialect, VerticalAlignment = VerticalAlignment.Center };
         var name = new TextBlock { Text = profile.Name, Foreground = Resource<IBrush>("SquillFgBrush"), VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(8, 0) };
         var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Height = 31 };
         Grid.SetColumn(name, 1);

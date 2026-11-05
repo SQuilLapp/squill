@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:core="using:Squill.Core"
         xmlns:cn="using:Squill.Presentation.Connections"
+        xmlns:controls="using:Squill.App.Avalonia.Controls"
         xmlns:loc="using:Squill.App.Avalonia.Localization"
         x:Class="Squill.App.Avalonia.Views.ConnectionEditorWindow"
         x:DataType="cn:ConnectionEditorViewModel"
@@ -42,9 +43,6 @@
       <Setter Property="Background" Value="{DynamicResource SquillEnvLocalSoftBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource SquillEnvLocalBrush}" />
     </Style>
-    <Style Selector="Border.engine.big"><Setter Property="Width" Value="32" /><Setter Property="Height" Value="32" /></Style>
-    <Style Selector="Border.engine.big > TextBlock"><Setter Property="FontSize" Value="13" /></Style>
-    <Style Selector="Border.engine.tile"><Setter Property="Width" Value="20" /><Setter Property="Height" Value="20" /></Style>
     <Style Selector="Border.square"><Setter Property="Width" Value="8" /><Setter Property="Height" Value="8" /><Setter Property="CornerRadius" Value="2" /></Style>
     <Style Selector="Border.square.env-prod"><Setter Property="Background" Value="{DynamicResource SquillEnvProdBrush}" /></Style>
     <Style Selector="Border.square.env-staging"><Setter Property="Background" Value="{DynamicResource SquillEnvStagingBrush}" /></Style>
@@ -73,7 +71,7 @@
       <ScrollViewer>
         <Grid Margin="32" ColumnDefinitions="*,32,339" RowDefinitions="Auto,24,Auto,Auto,Auto">
           <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="14">
-            <Border Name="HeaderEngine" Classes="engine big"><TextBlock Name="HeaderLetters" /></Border>
+            <controls:EngineIcon Name="HeaderEngine" Width="32" Height="32" />
             <StackPanel VerticalAlignment="Center">
               <TextBlock Name="HeaderName" FontSize="{DynamicResource SquillFontSizeTitle}" FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" />
               <TextBlock Name="HeaderSubtitle" Foreground="{DynamicResource SquillFg3Brush}" />
@@ -85,19 +83,19 @@
             <TextBlock Text="{loc:Text connections.engine}" Classes="caps" />
             <UniformGrid Columns="5">
               <Button Name="TilePostgres" Classes="tile" Tag="{x:Static core:DatabaseDialect.PostgreSql}" Click="OnEngineTile" Margin="0,0,7,0">
-                <StackPanel Spacing="2"><Border Classes="engine postgres tile" HorizontalAlignment="Center"><TextBlock Text="PG" /></Border><TextBlock Text="PostgreSQL" HorizontalAlignment="Center" /></StackPanel>
+                <StackPanel Spacing="2"><controls:EngineIcon Dialect="PostgreSql" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="PostgreSQL" HorizontalAlignment="Center" /></StackPanel>
               </Button>
               <Button Name="TileMySql" Classes="tile" Tag="{x:Static core:DatabaseDialect.MySql}" Click="OnEngineTile" Margin="0,0,7,0">
-                <StackPanel Spacing="2"><Border Classes="engine mysql tile" HorizontalAlignment="Center"><TextBlock Text="My" /></Border><TextBlock Text="MySQL" HorizontalAlignment="Center" /></StackPanel>
+                <StackPanel Spacing="2"><controls:EngineIcon Dialect="MySql" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="MySQL" HorizontalAlignment="Center" /></StackPanel>
               </Button>
               <Button Name="TileSqlServer" Classes="tile" Tag="{x:Static core:DatabaseDialect.SqlServer}" Click="OnEngineTile" Margin="0,0,7,0">
-                <StackPanel Spacing="2"><Border Classes="engine sqlserver tile" HorizontalAlignment="Center"><TextBlock Text="MS" /></Border><TextBlock Text="SQL Server" HorizontalAlignment="Center" /></StackPanel>
+                <StackPanel Spacing="2"><controls:EngineIcon Dialect="SqlServer" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="SQL Server" HorizontalAlignment="Center" /></StackPanel>
               </Button>
               <Button Name="TileSqlite" Classes="tile" Tag="{x:Static core:DatabaseDialect.Sqlite}" Click="OnEngineTile" Margin="0,0,7,0">
-                <StackPanel Spacing="2"><Border Classes="engine sqlite tile" HorizontalAlignment="Center"><TextBlock Text="SL" /></Border><TextBlock Text="SQLite" HorizontalAlignment="Center" /></StackPanel>
+                <StackPanel Spacing="2"><controls:EngineIcon Dialect="Sqlite" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="SQLite" HorizontalAlignment="Center" /></StackPanel>
               </Button>
               <Button Name="TileOracle" Classes="tile" Tag="{x:Static core:DatabaseDialect.Oracle}" Click="OnEngineTile">
-                <StackPanel Spacing="2"><Border Classes="engine oracle tile" HorizontalAlignment="Center"><TextBlock Text="OR" /></Border><TextBlock Text="Oracle" HorizontalAlignment="Center" /></StackPanel>
+                <StackPanel Spacing="2"><controls:EngineIcon Dialect="Oracle" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="Oracle" HorizontalAlignment="Center" /></StackPanel>
               </Button>
             </UniformGrid>
           </StackPanel>

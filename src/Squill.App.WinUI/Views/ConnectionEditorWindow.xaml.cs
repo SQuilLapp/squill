@@ -144,7 +144,7 @@ public sealed partial class ConnectionEditorWindow : Window
             var (letters, suffix) = ConnectionEditorFormat.Badge(dialect);
             var badge = new ContentControl
             {
-                Style = ExplorerGlyphs.StyleOf($"EngineBadge{suffix}Style"),
+                Style = ExplorerGlyphs.StyleOf($"EngineIcon{suffix}Style"),
                 Content = letters,
                 Width = 20,
                 Height = 20,
@@ -248,7 +248,7 @@ public sealed partial class ConnectionEditorWindow : Window
         ErrorsText.Text = string.Join('\n', editor.Validate());
 
         var (letters, suffix) = ConnectionEditorFormat.Badge(editor.Dialect);
-        HeaderEngine.Style = ExplorerGlyphs.StyleOf($"EngineBadge{suffix}Style");
+        HeaderEngine.Style = ExplorerGlyphs.StyleOf($"EngineIcon{suffix}Style");
         HeaderEngine.Content = letters;
         HeaderEngine.Width = 32;
         HeaderEngine.Height = 32;
@@ -345,7 +345,7 @@ public sealed partial class ConnectionEditorWindow : Window
     private Button ProfileRow(ConnectionProfile profile, bool indented)
     {
         var (letters, suffix) = ConnectionEditorFormat.Badge(profile.Dialect);
-        var badge = new ContentControl { Style = ExplorerGlyphs.StyleOf($"EngineBadge{suffix}Style"), Content = letters, VerticalAlignment = VerticalAlignment.Center };
+        var badge = new ContentControl { Style = ExplorerGlyphs.StyleOf($"EngineIcon{suffix}Style"), Content = letters, VerticalAlignment = VerticalAlignment.Center };
         var name = new TextBlock
         {
             Text = profile.Name,

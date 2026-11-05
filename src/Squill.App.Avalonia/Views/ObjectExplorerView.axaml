@@ -2,11 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ex="using:Squill.Presentation.Explorer"
              xmlns:v="using:Squill.App.Avalonia.Views"
+             xmlns:controls="using:Squill.App.Avalonia.Controls"
              xmlns:loc="using:Squill.App.Avalonia.Localization"
              x:Class="Squill.App.Avalonia.Views.ObjectExplorerView"
              x:DataType="ex:ExplorerTreeViewModel">
   <UserControl.Styles>
-    <Style Selector="Border.engine.mini"><Setter Property="Margin" Value="0,0,8,0" /></Style>
   </UserControl.Styles>
   <Grid RowDefinitions="Auto,*">
     <TextBox Name="FilterBox" Classes="search" Text="{Binding FilterText, Mode=TwoWay}" PlaceholderText="{loc:Text explorer.filter}"
@@ -37,11 +37,8 @@
               </ContextMenu>
             </Grid.ContextMenu>
             <StackPanel Orientation="Horizontal">
-              <Border Classes="engine mini" Classes.postgres="{Binding IsPostgres}" Classes.mysql="{Binding IsMySql}"
-                      Classes.sqlserver="{Binding IsSqlServer}" Classes.sqlite="{Binding IsSqlite}"
-                      IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsConnection}}">
-                <TextBlock Text="{Binding EngineLetters}" />
-              </Border>
+              <controls:EngineIcon Width="18" Height="18" Margin="0,0,8,0" Dialect="{Binding Profile.Dialect}"
+                                   IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsConnection}}" />
               <Path Classes="icon" Width="14" Height="14" Margin="0,0,6,0" Data="{StaticResource SquillIconTable}"
                     Stroke="{DynamicResource SquillAccentTextBrush}" IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsTable}}" />
               <Path Classes="icon" Width="14" Height="14" Margin="0,0,6,0" Data="{StaticResource SquillIconView}"
