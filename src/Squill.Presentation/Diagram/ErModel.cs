@@ -59,8 +59,17 @@ public sealed record ErModel(IReadOnlyList<ErEntity> Entities, IReadOnlyList<ErR
     /// <summary>Finds an entity by key, case-insensitively.</summary>
     /// <param name="key">Entity key.</param>
     /// <returns>The entity, or null.</returns>
-    public ErEntity? Find(string key) =>
-        Entities.FirstOrDefault(e => string.Equals(e.Key, key, StringComparison.OrdinalIgnoreCase));
+    public ErEntity? Find(string key) => Indexes.GetValue(this, static model =>
+    {
+        // A diagram of hundreds of tables calls this for every relation on every drag step and every pointer move: index once per model.
+        var map = new Dictionary<string, ErEntity>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entity in model.Entities)
+            map.TryAdd(entity.Key, entity);
+        return map;
+    }).GetValueOrDefault(key);
+
+    // Outside the record so that the cache does not take part in its equality.
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ErModel, Dictionary<string, ErEntity>> Indexes = [];
 
     /// <summary>Builds the model of a snapshot.</summary>
     /// <param name="snapshot">The schema snapshot.</param>
