@@ -112,7 +112,7 @@ public sealed class DesignerMatrixTests
         var edited = Cases[name].Edit(original);
         var before = await ChecksumAsync(connection, "t", checksumColumn);
 
-        foreach (var sql in DdlGenerators.For(DatabaseDialect.Sqlite).Alter(original, edited).Select(s => { File.AppendAllText("D:/squill/sql.log", s + "\n---\n"); return s; }))
+        foreach (var sql in DdlGenerators.For(DatabaseDialect.Sqlite).Alter(original, edited))
         {
             var rows = await RunAsync(connection, sql);
             if (sql == "PRAGMA foreign_key_check")
