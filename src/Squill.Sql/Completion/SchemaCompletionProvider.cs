@@ -24,6 +24,13 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
             start--;
         }
 
+        // A prefix typed after an opening quote ("Mix, `Mix, [Mix) is replaced together with the quote, since the items insert their own.
+        var quote = request.Dialect switch { DatabaseDialect.MySql => '`', DatabaseDialect.SqlServer => '[', _ => '"' };
+        if (start > 0 && text[start - 1] == quote && (quote == '[' || text.AsSpan(0, start).Count(quote) % 2 == 1))
+        {
+            start--;
+        }
+
         var range = new TextRange(start, offset - start);
         var before = text[..start];
         var tokens = SqlTokenizers.For(request.Dialect).Tokenize(before)

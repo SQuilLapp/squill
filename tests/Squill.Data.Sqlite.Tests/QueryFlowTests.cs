@@ -19,6 +19,8 @@ public sealed class QueryFlowTests
                 new QueryFlowSpec(
                     "with recursive s(n) as (select 1 union all select n + 1 from s where n < 100000) select n from s",
                     "with recursive s(n) as (select 1 union all select n + 1 from s where n < 100000000000) select count(*) from s",
+                    ":",
+                    "?",
                     "select * from qf_",
                     "qf_t"));
         }

@@ -4,12 +4,15 @@
 Runs the Docker-gated driver tests (Testcontainers) on Podman.
 .PARAMETER Engine
 postgres, mysql, sqlserver, ssh (the SSH tunnel tests of the Platform and Presentation projects, on PostgreSQL), oracle (a large image, so not part of all) or all (default).
+.PARAMETER Keep
+Instead of running tests, starts the container of one engine (postgres, mysql or sqlserver), loads tests/Shared/SampleSchema/<engine>.sql, prints host, port, user and password, and waits for Enter before removing it. For driving the app by hand.
 .PARAMETER Filter
 Extra arguments passed to the test application, split on spaces, for example '--filter-method *ConnectionString*'.
 #>
 param(
     [ValidateSet('postgres', 'mysql', 'sqlserver', 'ssh', 'oracle', 'all')][string]$Engine = 'all',
-    [string]$Filter = ''
+    [string]$Filter = '',
+    [switch]$Keep
 )
 
 $ErrorActionPreference = 'Stop'
@@ -44,6 +47,38 @@ if (-not $env:DOCKER_HOST) {
 }
 $env:TESTCONTAINERS_RYUK_DISABLED = 'true'
 $env:SQUILL_DOCKER_TESTS = '1'
+
+if ($Keep) {
+    # Fixed throw-away credentials, same as the test fixtures; the port is published on 127.0.0.1 only.
+    $specs = @{
+        postgres  = @{ Image = 'postgres:17-alpine'; Port = 5432; Env = @('POSTGRES_PASSWORD=squill-test'); User = 'postgres'; Password = 'squill-test'; Db = 'postgres'
+            Load = { param($n) Get-Content -Raw (Join-Path $root 'tests/Shared/SampleSchema/postgres.sql') | podman exec -i $n psql -U postgres -v ON_ERROR_STOP=1 } }
+        mysql     = @{ Image = 'mysql:8.4'; Port = 3306; Env = @('MYSQL_ROOT_PASSWORD=squill-test', 'MYSQL_DATABASE=squill'); User = 'root'; Password = 'squill-test'; Db = 'squill'
+            Load = { param($n) Get-Content -Raw (Join-Path $root 'tests/Shared/SampleSchema/mysql.sql') | podman exec -i $n mysql -uroot -psquill-test squill } }
+        sqlserver = @{ Image = 'mcr.microsoft.com/mssql/server:2022-latest'; Port = 1433; Env = @('ACCEPT_EULA=Y', 'MSSQL_SA_PASSWORD=Squill-test1'); User = 'sa'; Password = 'Squill-test1'; Db = 'master'
+            Load = { param($n) Get-Content -Raw (Join-Path $root 'tests/Shared/SampleSchema/sqlserver.sql') | podman exec -i $n /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Squill-test1 -b } }
+    }
+    if (-not $specs.ContainsKey($Engine)) { [Console]::Error.WriteLine('-Keep needs -Engine postgres, mysql or sqlserver.'); exit 1 }
+    $spec = $specs[$Engine]
+    $name = "squill-keep-$Engine"
+    podman rm -f $name 2>$null | Out-Null
+    try {
+        $envArgs = $spec.Env | ForEach-Object { '-e'; $_ }
+        podman run -d --name $name --label org.testcontainers=true -p "127.0.0.1::$($spec.Port)" @envArgs $spec.Image | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw "podman run failed for $($spec.Image)" }
+        $hostPort = (podman port $name "$($spec.Port)/tcp" | Select-Object -First 1).Split(':')[-1]
+        for ($i = 0; $i -lt 90; $i++) {
+            Start-Sleep -Seconds 2
+            & $spec.Load $name *> $null
+            if ($LASTEXITCODE -eq 0) { break }
+        }
+        if ($LASTEXITCODE -ne 0) { throw 'the server did not accept the sample schema within 3 minutes' }
+        Write-Host "$Engine ready: host 127.0.0.1  port $hostPort  user $($spec.User)  password $($spec.Password)  database $($spec.Db)"
+        Read-Host 'Press Enter to stop and remove the container' | Out-Null
+    }
+    finally { podman rm -f $name 2>$null | Out-Null }
+    exit 0
+}
 
 $extra = $Filter ? ($Filter -split '\s+' | Where-Object { $_ }) : @()
 $exit = 0

@@ -226,7 +226,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-34](phase-11/P11-34-terminal-engine-clients.md) | Terminal: native client launch per engine | P11-06 | done |
 | [P11-35](phase-11/P11-35-ssh-tunnel-containers.md) | SSH tunnel proven against real servers | P11-02 ... P11-04 | done |
 | [P11-36](phase-11/P11-36-verify-sqlite.md) | End-to-end verification: SQLite (WinUI first, Avalonia smoke) | P11-10, P11-13, P11-21, P11-25, P11-29, P11-33 | automated done, manual pending |
-| [P11-37](phase-11/P11-37-verify-postgres.md) | End-to-end verification: PostgreSQL | P11-36, P11-17, P11-24, P11-27 ... P11-32, P11-35 | todo |
+| [P11-37](phase-11/P11-37-verify-postgres.md) | End-to-end verification: PostgreSQL | P11-36, P11-17, P11-24, P11-27 ... P11-32, P11-35 | automated done, manual pending |
 | [P11-38](phase-11/P11-38-verify-mysql.md) | End-to-end verification: MySQL | P11-37, P11-18, P11-24, P11-27 ... P11-32 | todo |
 | [P11-39](phase-11/P11-39-verify-sqlserver.md) | End-to-end verification: SQL Server | P11-37, P11-19, P11-24, P11-27 ... P11-32 | todo |
 | [P11-40](phase-11/P11-40-docs-and-adr.md) | Documentation: engine parity ADR 0008, README and architecture note | P11-36 ... P11-39 | todo |

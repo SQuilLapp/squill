@@ -10,6 +10,7 @@ public sealed class ParameterScannerTests
     [InlineData(DatabaseDialect.Sqlite, "SELECT :a, @b, $c, :a")]
     [InlineData(DatabaseDialect.SqlServer, "SELECT @a, @b, @c, @a")]
     [InlineData(DatabaseDialect.MySql, "SELECT @a, @b, @c, @a")]
+    [InlineData(DatabaseDialect.PostgreSql, "SELECT @a, @b, @c, @a")]
     public void Scan_NamedParameters_ReturnsDistinctInOrder(DatabaseDialect dialect, string sql)
     {
         var names = ParameterScanner.Scan(sql, dialect);
@@ -25,6 +26,12 @@ public sealed class ParameterScannerTests
     {
         Assert.Empty(ParameterScanner.Scan(sql, dialect));
         Assert.Equal(sql, ParameterScanner.Rewrite(sql, dialect));
+    }
+
+    [Fact]
+    public void Scan_PostgresOperators_AreNotParameters()
+    {
+        Assert.Empty(ParameterScanner.Scan("SELECT a <@b, @-5, c @> d, @ x", DatabaseDialect.PostgreSql));
     }
 
     [Fact]

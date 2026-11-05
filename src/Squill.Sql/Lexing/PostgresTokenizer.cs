@@ -40,6 +40,17 @@ public sealed class PostgresTokenizer : SqlTokenizerBase
         {
             token = ReadDollar(text, pos, next);
         }
+        else if (c == '@' && IsIdentifierStart(next) && (pos == 0 || !"<>=!~#&|-*/%^+@".Contains(text[pos - 1], StringComparison.Ordinal)))
+        {
+            // A named parameter (the form every provider binds); an operator such as "a <@b" or "@-5" is not one.
+            var end = pos + 2;
+            while (end < text.Length && IsIdentifierPart(text[end]))
+            {
+                end++;
+            }
+
+            token = new Token(TokenKind.Parameter, pos, end - pos);
+        }
 
         return token.Length > 0;
     }

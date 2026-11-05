@@ -152,4 +152,17 @@ public sealed class SchemaCompletionTests
         Assert.True(kinds.LastIndexOf(CompletionKind.Field) < kinds.IndexOf(CompletionKind.Class));
         Assert.True(kinds.LastIndexOf(CompletionKind.Class) < kinds.IndexOf(CompletionKind.Keyword));
     }
+
+    [Theory]
+    [InlineData(DatabaseDialect.PostgreSql, "select * from \"Mix|", "\"MixedCase\"", 14)]
+    [InlineData(DatabaseDialect.PostgreSql, "select * from public.|", "\"MixedCase\"", 21)]
+    [InlineData(DatabaseDialect.MySql, "select * from `Mix|", "MixedCase", 14)]
+    [InlineData(DatabaseDialect.SqlServer, "select * from [Mix|", "MixedCase", 14)]
+    public void MixedCaseTable_IsInsertedQuotedWhereTheEngineFoldsCase_AndAQuotePrefixIsReplaced(DatabaseDialect dialect, string marked, string insert, int rangeStart)
+    {
+        var schema = new SchemaSnapshot("public", [Table("public", "MixedCase", TableKind.Table, ("Id", "int"))]);
+        var item = Assert.Single(At(marked, dialect, schema), i => i.Label == "MixedCase");
+        Assert.Equal(insert, item.InsertText);
+        Assert.Equal(rangeStart, item.ReplaceRange.Start);
+    }
 }

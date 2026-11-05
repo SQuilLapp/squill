@@ -20,9 +20,11 @@ namespace Squill.Data.Tests.Scenarios;
 /// <summary>Engine-specific statements of <see cref="QueryFlowScenario"/>.</summary>
 /// <param name="HugeSql">A statement returning exactly 100,000 rows of one integer column.</param>
 /// <param name="SlowSql">A statement that runs for at least 20 s unless cancelled.</param>
+/// <param name="Sigil">Prefix of a named parameter in the engine: <c>:</c> for SQLite, <c>@</c> for the others.</param>
+/// <param name="Positional">The positional placeholder of the engine (<c>?</c>, <c>$1</c>), or <c>null</c> when it has none.</param>
 /// <param name="CompletionText">Text whose end asks for the completion of <c>qf_t</c> in the engine's identifier style.</param>
 /// <param name="CompletionLabel">Label the completion must offer for <paramref name="CompletionText"/>.</param>
-public sealed record QueryFlowSpec(string HugeSql, string SlowSql, string CompletionText, string CompletionLabel);
+public sealed record QueryFlowSpec(string HugeSql, string SlowSql, string Sigil, string? Positional, string CompletionText, string CompletionLabel);
 
 /// <summary>Drives what a user does in a query tab (several statements, run under the cursor, a failure, parameters, cancel, 100k rows, export, completion) through the real view models on a live connection.</summary>
 public static class QueryFlowScenario
@@ -49,7 +51,7 @@ public static class QueryFlowScenario
 
             await SeveralStatementsAndCursor(rig, t);
             await FailureStopsTheScript(rig, t);
-            await NamedAndPositionalParameters(rig, t);
+            await NamedAndPositionalParameters(rig, t, spec);
             await CancelStopsTheRun(rig, spec);
             await HugeResultAndExport(rig, spec);
             await CompletionSeesTheNewTable(session, spec);
@@ -89,16 +91,18 @@ public static class QueryFlowScenario
         Assert.False(rig.Tab.IsRunning);
     }
 
-    private static async Task NamedAndPositionalParameters(Rig rig, string t)
+    private static async Task NamedAndPositionalParameters(Rig rig, string t, QueryFlowSpec spec)
     {
         rig.Dialogs.Answer = names => [.. names.Select(n => new ParameterValue(n, "c", false))];
-        rig.Editor.Text = $"select id from {t} where name = :who";
+        rig.Editor.Text = $"select id from {t} where name = {spec.Sigil}who";
         await rig.Tab.RunCommand.ExecuteAsync(null);
         Assert.Equal(["who"], rig.Dialogs.AskedNames);
         Assert.Equal(3, Convert.ToInt32(Assert.Single(rig.Tab.Results).Grid!.GetCell(0, 0), CultureInfo.InvariantCulture));
 
+        if (spec.Positional is null)
+            return;
         rig.Dialogs.AskedNames = [];
-        rig.Editor.Text = $"select id from {t} where name = ?";
+        rig.Editor.Text = $"select id from {t} where name = {spec.Positional}";
         await rig.Tab.RunCommand.ExecuteAsync(null);
         var message = Assert.Single(rig.Tab.Results);
         Assert.Equal(ResultKind.Message, message.Kind);

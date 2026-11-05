@@ -27,6 +27,14 @@ pwsh eng/run-docker-tests.ps1 -Engine postgres -Filter '--filter-class *Postgres
 
 `DOCKER_HOST` value that works with Podman 5.6.2 on WSL (machine `podman-machine-default`): `npipe://./pipe/podman-machine-default`. This is the pipe printed by `podman machine inspect` (`\.\pipe\podman-machine-default`) in the form Docker.DotNet accepts; the four-slash form `npipe:////./pipe/...` that `podman machine start` prints is rejected ("The endpoint is not a npipe URI").
 
+## Keeping a container for hand checks
+
+```bash
+pwsh eng/run-docker-tests.ps1 -Engine postgres -Keep    # or mysql, sqlserver
+```
+
+No test runs. The script starts the engine's container (`postgres:17-alpine`, `mysql:8.4`, SQL Server 2022) with a published loopback port, loads `tests/Shared/SampleSchema/<engine>.sql`, prints host, port, user, password and database, and waits for Enter; it then removes the container (also when interrupted). Use the printed values in a SQuilL connection. The hand checklists are in `docs/verification/`.
+
 ## SSH tunnel tests
 
 `-Engine ssh` runs `SshJumpHostTests` (`tests/Squill.Platform.Tests`, the tunnel alone) and `SshSessionTests` (`tests/Squill.Presentation.Tests`, `SessionManager` with the real tunnel and the PostgreSQL provider). Both share `tests/Shared/SshJumpFixture.cs`: a Testcontainers network, a `postgres:17-alpine` container on it with no published port (alias `db`) and a `lscr.io/linuxserver/openssh-server` container (alias `jump`) whose port 2222 is published to the host as for any other container. The tunnel connects to the published port and forwards to `db:5432`, which only the jump host can resolve.

@@ -1,6 +1,6 @@
 # P11-37 - End-to-end verification: PostgreSQL
 
-Status: todo
+Status: automated part done, manual part pending the owner (checklist `docs/verification/postgres.md`)
 Depends on: P11-36, P11-17, P11-24, P11-27, P11-28, P11-30, P11-31, P11-32, P11-35
 
 ## Goal
@@ -15,7 +15,9 @@ Same as P11-36 against a PostgreSQL 17 container, plus what only a server has.
 - Features absent from the app.
 
 ## Tasks
-- [ ] Add `-Keep`, drive, fix, report.
+- [x] `-Keep` added to `eng/run-docker-tests.ps1` (postgres, mysql, sqlserver; documented in `docs/testing.md`).
+- [x] Automated part: query-flow scenario, RETURNING, wrong password, quoted completion; three bugs fixed (PostgreSQL `@name` parameters, quoting of mixed-case names in completion, completion after an opening quote).
+- [ ] Manual part: the owner ticks `docs/verification/postgres.md` section 3.
 
 ## Acceptance criteria
 - Report complete (no empty row). `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green; AOT publishes clean; no container or process left.
