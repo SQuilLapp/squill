@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Numerics;
 using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
@@ -17,7 +18,7 @@ using Windows.UI;
 namespace Squill.App.WinUI.Controls;
 
 /// <summary>Custom-drawn ER diagram on Win2D: entity boxes and relation edges under the pan and zoom of a <see cref="DiagramTabViewModel"/>; it holds no layout logic.</summary>
-public sealed partial class ErDiagramCanvas : Grid
+public sealed partial class ErDiagramCanvas : Grid, IDisposable
 {
     private const float ColumnFontSize = 12;
     private const float HeaderFontSize = 13;
@@ -163,6 +164,9 @@ public sealed partial class ErDiagramCanvas : Grid
         DrawMinimap(ds, d, sender, new Windows.Foundation.Rect(topLeft.X, topLeft.Y, bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y), p);
     }
 
+    /// <summary>Releases the cached dot-grid tile; the canvas also does it when it is unloaded.</summary>
+    public void Dispose() => ReleaseDots();
+
     private void ReleaseDots()
     {
         _dotBrush?.Dispose();
@@ -179,7 +183,7 @@ public sealed partial class ErDiagramCanvas : Grid
         _dotTile = new CanvasRenderTarget(sender, DotPitch, DotPitch, 96);
         using (var tile = _dotTile.CreateDrawingSession())
         {
-            tile.Clear(Colors.Transparent);
+            tile.Clear(Microsoft.UI.Colors.Transparent);
             tile.FillRectangle(8, 8, 1, 1, p.Dot);
         }
 
