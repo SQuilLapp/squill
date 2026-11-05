@@ -1,6 +1,6 @@
 # P11-38 - End-to-end verification: MySQL
 
-Status: todo
+Status: automated part done, manual part pending the owner (checklist `docs/verification/mysql.md`)
 Depends on: P11-37, P11-18, P11-24, P11-27, P11-28, P11-30, P11-31, P11-32
 
 ## Goal
@@ -14,7 +14,8 @@ Same as P11-37 against a MySQL 8.4 container.
 - MariaDB, features absent from the app.
 
 ## Tasks
-- [ ] Drive, fix, report.
+- [x] Automated part: query-flow scenario and MySQL-specific tests against the container (all green, no new bug).
+- [ ] Manual part: the owner ticks `docs/verification/mysql.md` section 3.
 
 ## Acceptance criteria
 - Report complete. `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green; AOT publishes clean; no container or process left.
