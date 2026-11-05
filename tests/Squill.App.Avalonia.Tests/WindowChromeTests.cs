@@ -42,6 +42,25 @@ public sealed class WindowChromeTests
         }
     }
 
+    [Fact]
+    public async Task NarrowTitleBar_FoldsTheMenuIntoTheHamburgerAndBack() => await WithWindow((window, _, _) =>
+    {
+        var count = window.MainMenu.Items.Count;
+        Assert.True(count > 3);
+
+        window.SetMenuCollapsed(true);
+        Assert.Empty(window.MainMenu.Items);
+        Assert.True(window.HamburgerButton.IsVisible);
+        Assert.False(window.MainMenu.IsVisible);
+        Assert.Equal(count, ((MenuFlyout)window.HamburgerButton.Flyout!).Items.Count);
+
+        window.SetMenuCollapsed(false);
+        Assert.Equal(count, window.MainMenu.Items.Count);
+        Assert.False(window.HamburgerButton.IsVisible);
+        Assert.True(window.MainMenu.IsVisible);
+        return Task.CompletedTask;
+    });
+
     private static ConnectionProfile Profile(string dir, ConnectionEnvironment environment) =>
         new(Guid.NewGuid(), "test", DatabaseDialect.Sqlite, null, null, null, null, Path.Combine(dir, "t.db"), null, environment);
 

@@ -9,7 +9,7 @@
         xmlns:loc="using:Squill.App.Avalonia.Localization"
         x:Class="Squill.App.Avalonia.MainWindow"
         x:DataType="ws:WorkspaceViewModel"
-        Title="" Width="1440" Height="900" MinWidth="960" MinHeight="600"
+        Title="" Width="1440" Height="900" MinWidth="720" MinHeight="600"
         ExtendClientAreaToDecorationsHint="True" ExtendClientAreaTitleBarHeightHint="41"
         Icon="avares://Squill.App.Avalonia/Assets/squill.ico"
         Background="{DynamicResource SquillBgBaseBrush}">
@@ -102,9 +102,14 @@
   <Grid RowDefinitions="41,*,Auto" ColumnDefinitions="45,270,Auto,*,Auto">
     <Border Name="TitleBar" Grid.ColumnSpan="5" Background="{DynamicResource SquillBgBaseBrush}"
             BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
-      <Grid>
+      <Grid Name="TitleGrid" ColumnDefinitions="Auto,*,0">
         <StackPanel Orientation="Horizontal" Margin="14,0,0,0">
           <Image Source="avares://Squill.App.Avalonia/Assets/squill-32.png" Width="16" Height="16" Margin="0,0,8,0" />
+          <Button Name="HamburgerButton" IsVisible="False" Width="32" Height="28" Padding="0" Background="Transparent" BorderThickness="0"
+                  VerticalAlignment="Center" ToolTip.Tip="{loc:Text menu.main}">
+            <Path Data="M3,6 H21 M3,12 H21 M3,18 H21" Width="14" Height="14" Stretch="Uniform" StrokeThickness="2" StrokeLineCap="Round"
+                  Stroke="{DynamicResource SquillFgBrush}" />
+          </Button>
           <Menu Name="MainMenu" VerticalAlignment="Center" FontSize="13">
             <MenuItem Header="{loc:Text menu.file}">
               <MenuItem Header="{loc:Text menu.newTab}" InputGesture="Ctrl+T" Command="{Binding NewTabCommand}" />
@@ -140,8 +145,8 @@
           </Menu>
         </StackPanel>
         <!-- Placeholder for the command palette, which does not exist yet. -->
-        <Border Name="CommandSearch" Width="438" Height="27" CornerRadius="6" IsEnabled="False" IsHitTestVisible="False"
-                HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource SquillBgRaisedBrush}"
+        <Border Name="CommandSearch" Grid.Column="1" MaxWidth="438" MinWidth="80" Height="27" CornerRadius="6" IsEnabled="False" IsHitTestVisible="False"
+                Margin="12,0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="{DynamicResource SquillBgRaisedBrush}"
                 BorderBrush="{DynamicResource SquillBorderBrush}" BorderThickness="1" Padding="8,0">
           <DockPanel>
             <Border DockPanel.Dock="Right" Classes="kbd"><TextBlock Text="Ctrl+K" /></Border>
