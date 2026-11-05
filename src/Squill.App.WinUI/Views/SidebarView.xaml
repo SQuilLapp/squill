@@ -49,7 +49,7 @@
             <DataTemplate x:DataType="ex:ExplorerNode">
               <TreeViewItem ItemsSource="{x:Bind Children}" IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
                             Visibility="{x:Bind v:ExplorerGlyphs.Show(IsVisible), Mode=OneWay}">
-                <Grid ColumnDefinitions="Auto,*,Auto,Auto" VerticalAlignment="Center" ContextRequested="OnNodeContextRequested">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,14,0" VerticalAlignment="Center" ContextRequested="OnNodeContextRequested">
                   <StackPanel Orientation="Horizontal">
                     <ContentControl Style="{x:Bind v:ExplorerGlyphs.EngineStyle(Profile)}" Content="{x:Bind EngineLetters}" Margin="0,0,8,0" VerticalAlignment="Center"
                                     Visibility="{x:Bind v:ExplorerGlyphs.ShowConnection(Kind)}" />
