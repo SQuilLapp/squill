@@ -1,6 +1,6 @@
 # P11-33 - Grid edit and commit through the Presentation layer on every engine
 
-Status: todo
+Status: done
 Depends on: P11-02, P11-03, P11-04, P11-16, P11-26
 
 ## Goal
@@ -15,7 +15,7 @@ Depends on: P11-02, P11-03, P11-04, P11-16, P11-26
 - Heads (P11-36 ... P11-39), new edit features.
 
 ## Tasks
-- [ ] Test classes, concurrency detection, read-back fix, any bug found.
+- [x] Test classes, concurrency detection, read-back fix, any bug found.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; default test run green; `rtk pwsh eng/run-docker-tests.ps1 -Engine all` green; no container left.

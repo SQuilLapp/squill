@@ -74,7 +74,7 @@ public static class DmlGenerator
             if (!key.Select(k => k.Column).SequenceEqual(target.KeyColumns, StringComparer.Ordinal))
                 throw new ArgumentException("The key must hold exactly the key columns of the target, in order.", nameof(edit));
             CheckColumns(key, target);
-            return string.Join(" AND ", key.Select(k => k.Value is null ? $"{Col(k.Column)} IS NULL" : $"{Col(k.Column)} = {Bind(k.Value)}"));
+            return string.Join(" AND ", key.Select(k => k.Value is null ? $"{Col(k.Column)} IS NULL" : $"{Col(k.Column)} = {BindFor(k.Column, k.Value)}"));
         }
 
         string sql;
@@ -82,12 +82,12 @@ public static class DmlGenerator
         {
             case InsertRow ins:
                 CheckColumns(ins.Values, target);
-                var output = returnedKey is not null && dialect == DatabaseDialect.SqlServer ? $" OUTPUT INSERTED.{returnedKey}" : "";
                 sql = ins.Values.Count == 0
-                    ? dialect == DatabaseDialect.MySql ? $"INSERT INTO {table} () VALUES ()" : $"INSERT INTO {table}{output} DEFAULT VALUES"
-                    : $"INSERT INTO {table} ({string.Join(", ", ins.Values.Select(v => Col(v.Column)))}){output} VALUES ({string.Join(", ", ins.Values.Select(v => BindFor(v.Column, v.Value)))})";
-                if (returnedKey is not null && dialect != DatabaseDialect.SqlServer)
-                    sql += $" RETURNING {returnedKey}";
+                    ? dialect == DatabaseDialect.MySql ? $"INSERT INTO {table} () VALUES ()" : $"INSERT INTO {table} DEFAULT VALUES"
+                    : $"INSERT INTO {table} ({string.Join(", ", ins.Values.Select(v => Col(v.Column)))}) VALUES ({string.Join(", ", ins.Values.Select(v => BindFor(v.Column, v.Value)))})";
+                // SQL Server refuses OUTPUT without INTO on a table with a trigger (error 334): SCOPE_IDENTITY() ignores the trigger's own inserts.
+                if (returnedKey is not null)
+                    sql += dialect == DatabaseDialect.SqlServer ? "; SELECT SCOPE_IDENTITY()" : $" RETURNING {returnedKey}";
                 break;
             case UpdateRow upd:
                 if (upd.Changes.Count == 0)
@@ -106,11 +106,18 @@ public static class DmlGenerator
         return new DmlStatement(sql, ps);
     }
 
-    // Suffix appended to a bound parameter so the engine converts the text to the column type.
-    private static string? ParameterCast(DatabaseDialect dialect, string? dataType) =>
-        dialect == DatabaseDialect.PostgreSql && dataType is { } t && (t.Equals("json", StringComparison.OrdinalIgnoreCase) || t.Equals("jsonb", StringComparison.OrdinalIgnoreCase))
-            ? "::" + t.ToLowerInvariant()
+    // Suffix appended to a bound parameter so the engine converts the text to the column type. A text parameter against a PostgreSQL char(n) column
+    // would compare as text, which drops the padding of the stored value and never matches it.
+    private static string? ParameterCast(DatabaseDialect dialect, string? dataType)
+    {
+        if (dialect != DatabaseDialect.PostgreSql || dataType is not { } t)
+            return null;
+        if (t.Equals("json", StringComparison.OrdinalIgnoreCase) || t.Equals("jsonb", StringComparison.OrdinalIgnoreCase))
+            return "::" + t.ToLowerInvariant();
+        return t.StartsWith("char(", StringComparison.OrdinalIgnoreCase) || t.StartsWith("character(", StringComparison.OrdinalIgnoreCase) || t.Equals("bpchar", StringComparison.OrdinalIgnoreCase)
+            ? "::bpchar"
             : null;
+    }
 
     private static void CheckColumns(IReadOnlyList<ColumnValue> values, EditTarget target)
     {

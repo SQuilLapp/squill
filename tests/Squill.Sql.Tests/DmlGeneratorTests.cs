@@ -138,4 +138,17 @@ public sealed class DmlGeneratorTests
         Assert.Throws<ArgumentException>(() => DmlGenerator.Generate(new UpdateRow([V("Id", 1)], [V("Nope", 1)]), Users, d));
         Assert.Throws<ArgumentException>(() => DmlGenerator.Generate(new InsertRow([V("Nope", 1)]), Users, d));
     }
+
+    [Theory]
+    [InlineData(DatabaseDialect.PostgreSql, "character(5)", "WHERE \"K\" = @p1::bpchar")]
+    [InlineData(DatabaseDialect.PostgreSql, "character varying(5)", "WHERE \"K\" = @p1")]
+    [InlineData(DatabaseDialect.SqlServer, "char(5)", "WHERE [K] = @p1")]
+    public void KeyOfPaddedCharType_PostgresComparesAsBpchar(DatabaseDialect d, string dataType, string expected)
+    {
+        var key = new ColumnDefinition("K", dataType, false, true, null);
+        var v = new ColumnDefinition("V", "int", true, false, null);
+        var target = new EditTarget(null, "t", [new EditColumn(0, key), new EditColumn(1, v)], ["K"], new TableInfo("", "t", TableKind.Table, [key, v], [], []));
+        var sql = DmlGenerator.Generate(new UpdateRow([V("K", "ab   ")], [V("V", 1)]), target, d).Sql;
+        Assert.Contains(expected, sql.Replace("\"K\"", d == DatabaseDialect.PostgreSql ? "\"K\"" : "[K]"));
+    }
 }

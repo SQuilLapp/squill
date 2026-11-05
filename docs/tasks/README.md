@@ -222,7 +222,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-30](phase-11/P11-30-designer-ddl-servers.md) | Table designer DDL on PostgreSQL, MySQL and SQL Server | P11-02 ... P11-04 | done |
 | [P11-31](phase-11/P11-31-er-diagram-engines.md) | ER diagram on real schemas of every engine | P11-02 ... P11-04, P11-16 | done |
 | [P11-32](phase-11/P11-32-export-engines.md) | Result export verified per engine | P11-25 | done |
-| [P11-33](phase-11/P11-33-grid-edit-commit-engines.md) | Grid edit and commit through the Presentation layer on every engine | P11-02 ... P11-04, P11-16, P11-26 | todo |
+| [P11-33](phase-11/P11-33-grid-edit-commit-engines.md) | Grid edit and commit through the Presentation layer on every engine | P11-02 ... P11-04, P11-16, P11-26 | done |
 | [P11-34](phase-11/P11-34-terminal-engine-clients.md) | Terminal: native client launch per engine | P11-06 | todo |
 | [P11-35](phase-11/P11-35-ssh-tunnel-containers.md) | SSH tunnel proven against real servers | P11-02 ... P11-04 | todo |
 | [P11-36](phase-11/P11-36-verify-sqlite.md) | End-to-end verification: SQLite (WinUI first, Avalonia smoke) | P11-10, P11-13, P11-21, P11-25, P11-29, P11-33 | todo |
