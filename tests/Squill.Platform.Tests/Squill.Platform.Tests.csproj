@@ -8,6 +8,8 @@
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Testcontainers" />
+    <Compile Include="../Shared/SshJumpFixture.cs" Link="SshJumpFixture.cs" />
     <ProjectReference Include="..\..\src\Squill.Platform\Squill.Platform.csproj" />
   </ItemGroup>
 </Project>

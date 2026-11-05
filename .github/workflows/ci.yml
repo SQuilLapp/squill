@@ -31,6 +31,7 @@ jobs:
           docker pull postgres:17-alpine
           docker pull mysql:8.4
           docker pull mcr.microsoft.com/mssql/server:2022-latest
+          docker pull lscr.io/linuxserver/openssh-server:latest
       - name: Docker-gated driver tests
         env:
           SQUILL_DOCKER_TESTS: 1
@@ -38,4 +39,6 @@ jobs:
           dotnet test --project tests/Squill.Data.Postgres.Tests -c Release
           dotnet test --project tests/Squill.Data.MySql.Tests -c Release
           dotnet test --project tests/Squill.Data.SqlServer.Tests -c Release
+          dotnet test --project tests/Squill.Platform.Tests -c Release --filter-class '*SshJumpHostTests'
+          dotnet test --project tests/Squill.Presentation.Tests -c Release --filter-class '*SshSessionTests'
       - run: dotnet publish tools/Squill.TokenGen -c Release -r linux-x64

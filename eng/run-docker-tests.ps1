@@ -3,19 +3,19 @@
 .SYNOPSIS
 Runs the Docker-gated driver tests (Testcontainers) on Podman.
 .PARAMETER Engine
-postgres, mysql, sqlserver, oracle (a large image, so not part of all) or all (default).
+postgres, mysql, sqlserver, ssh (the SSH tunnel tests of the Platform and Presentation projects, on PostgreSQL), oracle (a large image, so not part of all) or all (default).
 .PARAMETER Filter
 Extra arguments passed to the test application, split on spaces, for example '--filter-method *ConnectionString*'.
 #>
 param(
-    [ValidateSet('postgres', 'mysql', 'sqlserver', 'oracle', 'all')][string]$Engine = 'all',
+    [ValidateSet('postgres', 'mysql', 'sqlserver', 'ssh', 'oracle', 'all')][string]$Engine = 'all',
     [string]$Filter = ''
 )
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $projects = @{ postgres = 'Postgres'; mysql = 'MySql'; sqlserver = 'SqlServer'; oracle = 'Oracle' }
-$engines = $Engine -eq 'all' ? @('postgres', 'mysql', 'sqlserver') : @($Engine)
+$engines = $Engine -eq 'all' ? @('postgres', 'mysql', 'sqlserver', 'ssh') : @($Engine)
 
 if (-not (Get-Command podman -ErrorAction SilentlyContinue)) {
     [Console]::Error.WriteLine('podman was not found on PATH. Install Podman 5.x (https://podman.io) and retry.')
@@ -49,8 +49,11 @@ $extra = $Filter ? ($Filter -split '\s+' | Where-Object { $_ }) : @()
 $exit = 0
 try {
     foreach ($e in $engines) {
-        dotnet test --project (Join-Path $root "tests/Squill.Data.$($projects[$e]).Tests") -c Release @extra
-        if ($LASTEXITCODE -ne 0) { $exit = $LASTEXITCODE }
+        $runs = $e -eq 'ssh' ? @(@('Squill.Platform.Tests', '--filter-class', '*SshJumpHostTests'), @('Squill.Presentation.Tests', '--filter-class', '*SshSessionTests')) : @(, @("Squill.Data.$($projects[$e]).Tests"))
+        foreach ($run in $runs) {
+            dotnet test --project (Join-Path $root "tests/$($run[0])") -c Release @($run | Select-Object -Skip 1) @extra
+            if ($LASTEXITCODE -ne 0) { $exit = $LASTEXITCODE }
+        }
     }
 }
 finally {

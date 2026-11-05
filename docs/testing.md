@@ -18,7 +18,8 @@ podman machine stop; podman machine set --memory 4096; podman machine start
 pwsh eng/run-docker-tests.ps1 -Engine postgres
 pwsh eng/run-docker-tests.ps1 -Engine mysql
 pwsh eng/run-docker-tests.ps1 -Engine sqlserver
-pwsh eng/run-docker-tests.ps1                      # all three
+pwsh eng/run-docker-tests.ps1 -Engine ssh           # SSH tunnel and SessionManager against an OpenSSH container (PostgreSQL behind it)
+pwsh eng/run-docker-tests.ps1                      # postgres, mysql, sqlserver and ssh
 pwsh eng/run-docker-tests.ps1 -Engine postgres -Filter '--filter-class *PostgresConnectionStringTests'
 ```
 
@@ -26,12 +27,21 @@ pwsh eng/run-docker-tests.ps1 -Engine postgres -Filter '--filter-class *Postgres
 
 `DOCKER_HOST` value that works with Podman 5.6.2 on WSL (machine `podman-machine-default`): `npipe://./pipe/podman-machine-default`. This is the pipe printed by `podman machine inspect` (`\.\pipe\podman-machine-default`) in the form Docker.DotNet accepts; the four-slash form `npipe:////./pipe/...` that `podman machine start` prints is rejected ("The endpoint is not a npipe URI").
 
+## SSH tunnel tests
+
+`-Engine ssh` runs `SshJumpHostTests` (`tests/Squill.Platform.Tests`, the tunnel alone) and `SshSessionTests` (`tests/Squill.Presentation.Tests`, `SessionManager` with the real tunnel and the PostgreSQL provider). Both share `tests/Shared/SshJumpFixture.cs`: a Testcontainers network, a `postgres:17-alpine` container on it with no published port (alias `db`) and a `lscr.io/linuxserver/openssh-server` container (alias `jump`) whose port 2222 is published to the host as for any other container. The tunnel connects to the published port and forwards to `db:5432`, which only the jump host can resolve.
+
+- The image forbids TCP forwarding (`AllowTcpForwarding no`) and has no variable for it, so the fixture copies a `sshd_config.d/forward.conf` into the container, which the image includes when that folder exists. No Docker mod is used.
+- Password login uses `USER_NAME`, `USER_PASSWORD`, `PASSWORD_ACCESS=true`; the two ed25519 keys (with and without passphrase) are made by `ssh-keygen` inside the container and appended to `authorized_keys`.
+- Podman on Windows: the host reaches the published port as usual; no extra networking is needed. Stopping and starting the jump host container may change its published port, so the tests read it again after a restart.
+- Only PostgreSQL runs behind the jump host: the tunnel code is engine independent (a loopback port), and one engine keeps the run near 20 s.
+
 ## Troubleshooting
 
 - **Pipe not found / endpoint is not a npipe URI**: the machine is stopped (`podman machine start`) or `DOCKER_HOST` is set to a wrong value in your shell; unset it so the script computes it.
-- **Image pull timeouts**: the first run pulls `postgres:17-alpine`, `mysql:8.4` or `mcr.microsoft.com/mssql/server:2022-latest`; pull it once by hand (`podman pull <image>`) and retry.
+- **Image pull timeouts**: the first run pulls `postgres:17-alpine`, `mysql:8.4`, `mcr.microsoft.com/mssql/server:2022-latest` or `lscr.io/linuxserver/openssh-server:latest`; pull it once by hand (`podman pull <image>`) and retry.
 - **Ryuk is disabled** because its container needs the Docker socket mounted, which does not work through the Podman pipe. The script's `finally` block does the cleanup instead; if a run is killed, remove leftovers with `podman rm -f $(podman ps -aq --filter label=org.testcontainers=true)`.
 
 ## CI
 
-CI runs on Linux with real Docker and keeps Ryuk enabled. In the `linux` job of `.github/workflows/ci.yml`, the full-solution test step runs with the gate off; a later step pulls the three images, then runs the PostgreSQL, MySQL and SQL Server test projects with `SQUILL_DOCKER_TESTS=1`. This script is only for Podman workstations.
+CI runs on Linux with real Docker and keeps Ryuk enabled. In the `linux` job of `.github/workflows/ci.yml`, the full-solution test step runs with the gate off; a later step pulls the three images, then runs the PostgreSQL, MySQL and SQL Server test projects and the SSH tunnel test classes with `SQUILL_DOCKER_TESTS=1`. This script is only for Podman workstations.
