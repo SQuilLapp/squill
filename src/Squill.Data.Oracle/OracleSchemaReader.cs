@@ -6,7 +6,10 @@ namespace Squill.Data.Oracle;
 /// <summary>Reads tables, views, columns and primary keys of the non-system schemas into a <see cref="SchemaSnapshot"/> (indexes, foreign keys, routines and triggers are not read yet).</summary>
 internal static class OracleSchemaReader
 {
-    private const string UserSchemas = "owner in (select username from all_users where oracle_maintained = 'N')";
+    /// <summary>Predicate on a user-name column that drops Oracle's own schemas; a fixed list because <c>oracle_maintained</c> only exists from Oracle 12c.</summary>
+    internal const string SystemUsers = "('SYS', 'SYSTEM', 'SYSMAN', 'DBSNMP', 'OUTLN', 'XDB', 'CTXSYS', 'MDSYS', 'ORDSYS', 'ORDDATA', 'ORDPLUGINS', 'SI_INFORMTN_SCHEMA', 'WMSYS', 'EXFSYS', 'LBACSYS', 'DVSYS', 'OLAPSYS', 'APPQOSSYS', 'AUDSYS', 'GSMADMIN_INTERNAL', 'OJVMSYS', 'DIP', 'ANONYMOUS', 'XS$NULL', 'MDDATA', 'SPATIAL_CSW_ADMIN_USR', 'SPATIAL_WFS_ADMIN_USR', 'FLOWS_FILES', 'DBSFWUSER', 'REMOTE_SCHEDULER_AGENT', 'SYS$UMF', 'GGSYS', 'GSMCATUSER', 'GSMUSER', 'PUBLIC')";
+
+    private const string UserSchemas = $"owner not in {SystemUsers} and owner not like 'APEX%' and owner not like 'FLOWS%'";
 
     private const string RelationsSql = $"""
         select owner, object_name, object_type from all_objects
@@ -24,7 +27,7 @@ internal static class OracleSchemaReader
         select c.owner, c.table_name, c.constraint_name, cc.column_name
         from all_constraints c
         join all_cons_columns cc on cc.owner = c.owner and cc.constraint_name = c.constraint_name
-        where c.constraint_type = 'P' and c.{UserSchemas}
+        where c.constraint_type = 'P' and c.owner not in {SystemUsers} and c.owner not like 'APEX%' and c.owner not like 'FLOWS%'
         """;
 
     /// <summary>Reads the snapshot over an open connection.</summary>
