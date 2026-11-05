@@ -229,7 +229,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-37](phase-11/P11-37-verify-postgres.md) | End-to-end verification: PostgreSQL | P11-36, P11-17, P11-24, P11-27 ... P11-32, P11-35 | automated done, manual pending |
 | [P11-38](phase-11/P11-38-verify-mysql.md) | End-to-end verification: MySQL | P11-37, P11-18, P11-24, P11-27 ... P11-32 | automated done, manual pending |
 | [P11-39](phase-11/P11-39-verify-sqlserver.md) | End-to-end verification: SQL Server | P11-37, P11-19, P11-24, P11-27 ... P11-32 | automated done, manual pending |
-| [P11-40](phase-11/P11-40-docs-and-adr.md) | Documentation: engine parity ADR 0008, README and architecture note | P11-36 ... P11-39 | todo |
+| [P11-40](phase-11/P11-40-docs-and-adr.md) | Documentation: engine parity ADR 0008, README and architecture note | P11-36 ... P11-39 | done |
 
 ### Phase 9 - Visual conformance
 

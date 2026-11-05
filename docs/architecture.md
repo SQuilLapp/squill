@@ -38,7 +38,12 @@
 
 ## Order of work
 
-Done through phase 10 (localization, see [ADR 0007](adr/0007-localization.md)); phase 9: (visual conformance, see [ADR 0006](adr/0006-visual-conformance.md)); phase 8 and 7 added (schema designer and ER diagram, see [ADR 0004](adr/0004-schema-designer.md); editable data grid, see [ADR 0005](adr/0005-grid-editing.md)); the card list and statuses are in [docs/tasks/README.md](tasks/README.md).
+Done through phase 11 (engine parity, see [ADR 0008](adr/0008-engine-parity.md); the manual window checks of P11-36 to P11-39 are still pending); phase 10 (localization, see [ADR 0007](adr/0007-localization.md)); phase 9: (visual conformance, see [ADR 0006](adr/0006-visual-conformance.md)); phase 8 and 7 added (schema designer and ER diagram, see [ADR 0004](adr/0004-schema-designer.md); editable data grid, see [ADR 0005](adr/0005-grid-editing.md)); the card list and statuses are in [docs/tasks/README.md](tasks/README.md).
+
+## Engine parity (phase 11)
+
+- **Real servers.** PostgreSQL, MySQL and SQL Server tests run against Testcontainers (`eng/run-docker-tests.ps1` with Podman, real Docker in CI), see [testing](testing.md). Each engine has a report in [docs/verification/](verification/sqlite.md) whose manual checklist is still to be done by the owner.
+- **Shared contracts grew.** `IResultReader` (`NextResultAsync`, `Messages`), `IDatabaseConnection.ListDatabasesAsync`, `SchemaSnapshot` (routines, triggers, definitions) and the connection options of `ConnectionProfile`. The support matrix and the unsupported list are in [ADR 0008](adr/0008-engine-parity.md).
 
 ## UI text, fonts and profile fields (phases 9 and 10)
 

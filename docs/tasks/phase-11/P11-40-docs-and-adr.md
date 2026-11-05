@@ -1,6 +1,6 @@
 # P11-40 - Documentation: engine parity ADR 0008, README and architecture note
 
-Status: todo
+Status: done
 Depends on: P11-39, P11-38, P11-37, P11-36
 
 ## Goal
@@ -15,7 +15,7 @@ Record what phase 11 decided and what each engine supports, so the next phase (n
 - New code.
 
 ## Tasks
-- [ ] Write the three documents, check every link with a grep for the file names.
+- [x] Write the three documents, check every link with a grep for the file names.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings (docs only, sanity); all relative links resolve.
