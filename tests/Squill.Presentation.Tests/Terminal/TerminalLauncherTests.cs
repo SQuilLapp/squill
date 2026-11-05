@@ -183,7 +183,7 @@ public sealed class TerminalLauncherTests
             var sqlcmd = Path.Combine(root, "Microsoft SQL Server", "Client SDK", "ODBC", "170", "Tools", "Binn");
             Directory.CreateDirectory(sqlcmd);
             File.WriteAllText(Path.Combine(sqlcmd, "sqlcmd.exe"), "");
-            Environment.SetEnvironmentVariable("PATHEXT", ".EXE");
+            Environment.SetEnvironmentVariable("PATHEXT", ".exe");
 
             Assert.Equal(Path.Combine(bin, "psql.exe"), TerminalLauncher.FindOnPath("psql", "", true, root), ignoreCase: true);
             Assert.Equal(Path.Combine(sqlcmd, "sqlcmd.exe"), TerminalLauncher.FindOnPath("sqlcmd", "", true, root), ignoreCase: true);
