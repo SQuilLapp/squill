@@ -51,6 +51,7 @@ public sealed partial class ErDiagramCanvas : Grid, IDisposable
     private bool _panning;
     private bool _dragging;
     private bool _moved;
+    private bool _minimap;
 
     /// <summary>Creates the canvas.</summary>
     public ErDiagramCanvas()
@@ -281,8 +282,10 @@ public sealed partial class ErDiagramCanvas : Grid, IDisposable
         maxX = Math.Max(maxX, view.Right);
         maxY = Math.Max(maxY, view.Bottom);
         var scale = Math.Min((MinimapWidth - (2 * MinimapPadding)) / Math.Max(1, maxX - minX), (MinimapHeight - (2 * MinimapPadding)) / Math.Max(1, maxY - minY));
-        float Mx(double wx) => panelX + MinimapPadding + (float)((wx - minX) * scale);
-        float My(double wy) => panelY + MinimapPadding + (float)((wy - minY) * scale);
+        var offsetX = (MinimapWidth - (float)(Math.Max(1, maxX - minX) * scale)) / 2;
+        var offsetY = (MinimapHeight - (float)(Math.Max(1, maxY - minY) * scale)) / 2;
+        float Mx(double wx) => panelX + offsetX + (float)((wx - minX) * scale);
+        float My(double wy) => panelY + offsetY + (float)((wy - minY) * scale);
         foreach (var box in d.Boxes.Values)
             ds.FillRectangle(Mx(box.X), My(box.Y), (float)(box.Width * scale), (float)(box.Height * scale), p.EdgeColor);
         ds.DrawRectangle(Mx(view.X), My(view.Y), (float)(view.Width * scale), (float)(view.Height * scale), p.Accent, 1.5f);
@@ -355,6 +358,14 @@ public sealed partial class ErDiagramCanvas : Grid, IDisposable
         var screen = new ErPoint(point.Position.X, point.Position.Y);
         _pressed = _last = screen;
         _moved = false;
+        if (d.CenterFromMinimap(screen, new ErSize(_canvas.ActualWidth, _canvas.ActualHeight)))
+        {
+            _minimap = true;
+            _canvas.CapturePointer(e.Pointer);
+            e.Handled = true;
+            return;
+        }
+
         if (d.HitTestEntity(d.ToWorld(screen)) is { } hit)
         {
             _dragging = true;
@@ -377,6 +388,12 @@ public sealed partial class ErDiagramCanvas : Grid, IDisposable
             return;
         var position = e.GetCurrentPoint(_canvas).Position;
         var screen = new ErPoint(position.X, position.Y);
+        if (_minimap)
+        {
+            d.CenterFromMinimap(screen, new ErSize(_canvas.ActualWidth, _canvas.ActualHeight));
+            return;
+        }
+
         if (!_panning && !_dragging)
         {
             UpdateRelationTip(d, d.ToWorld(screen));
@@ -419,6 +436,7 @@ public sealed partial class ErDiagramCanvas : Grid, IDisposable
             _diagram?.EndDrag();
         _dragging = false;
         _panning = false;
+        _minimap = false;
         _canvas.ReleasePointerCapture(e.Pointer);
     }
 
