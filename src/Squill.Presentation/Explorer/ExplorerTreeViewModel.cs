@@ -272,8 +272,9 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
         try
         {
             var opened = await parent.OpenDatabaseAsync(node.Title, CancellationToken.None);
-            node.Session = opened;
+            // Populate before publishing the session: a session set means the children are there.
             PopulateDatabase(node, opened);
+            node.Session = opened;
             ApplyFilter();
         }
         catch (Exception ex)

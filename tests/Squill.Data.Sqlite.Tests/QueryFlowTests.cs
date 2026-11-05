@@ -12,7 +12,7 @@ public sealed class QueryFlowTests
         var file = Path.Combine(Path.GetTempPath(), $"squill-qf-{Guid.NewGuid():N}.db");
         try
         {
-            await QueryFlowScenario.RunAsync(
+            Assert.Null(await Record.ExceptionAsync(async () => await QueryFlowScenario.RunAsync(
                 new SqliteDatabaseProvider(),
                 new ConnectionProfile(Guid.NewGuid(), "t", DatabaseDialect.Sqlite, null, null, null, null, file, null),
                 null,
@@ -22,7 +22,7 @@ public sealed class QueryFlowTests
                     ":",
                     "?",
                     "select * from qf_",
-                    "qf_t"));
+                    "qf_t"))));
         }
         finally
         {

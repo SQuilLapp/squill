@@ -17,20 +17,20 @@ public sealed class CancelAndTimeoutTests
     public async Task CancelSlowStatement_ThrowsAndConnectionStaysUsable()
     {
         await using var connection = await OpenAsync();
-        await CancelScenario.CancelSlowStatementAsync(connection, Slow);
+        Assert.Null(await Record.ExceptionAsync(async () => await CancelScenario.CancelSlowStatementAsync(connection, Slow)));
     }
 
     [Fact]
     public async Task CommandTimeout_SlowStatement_FailsAndConnectionStaysUsable()
     {
         await using var connection = await OpenAsync(1);
-        await CancelScenario.TimeoutSlowStatementAsync(connection, Slow);
+        Assert.Null(await Record.ExceptionAsync(async () => await CancelScenario.TimeoutSlowStatementAsync(connection, Slow)));
     }
 
     [Fact]
     public async Task CancelWhileReading_DisposesQuickly()
     {
         await using var connection = await OpenAsync();
-        await CancelScenario.CancelWhileReadingAsync(connection, Huge);
+        Assert.Null(await Record.ExceptionAsync(async () => await CancelScenario.CancelWhileReadingAsync(connection, Huge)));
     }
 }

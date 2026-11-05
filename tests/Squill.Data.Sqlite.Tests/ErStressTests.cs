@@ -12,6 +12,6 @@ public sealed class ErStressTests
     {
         await using var connection = await new SqliteDatabaseProvider().OpenAsync(
             new ConnectionProfile(Guid.NewGuid(), "er", DatabaseDialect.Sqlite, null, null, null, null, ":memory:", null), null, CancellationToken.None);
-        await ErStressScenario.RunAsync(connection, DatabaseDialect.Sqlite);
+        Assert.Null(await Record.ExceptionAsync(async () => await ErStressScenario.RunAsync(connection, DatabaseDialect.Sqlite)));
     }
 }

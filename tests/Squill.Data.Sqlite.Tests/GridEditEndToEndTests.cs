@@ -8,5 +8,5 @@ public sealed class GridEditEndToEndTests
 {
     [Fact]
     public async Task GridEditsReachTheDatabase() =>
-        await GridEditScenario.RunAsync(new SqliteDatabaseProvider(), new ConnectionProfile(Guid.NewGuid(), "t", DatabaseDialect.Sqlite, null, null, null, null, ":memory:", null), null);
+        Assert.Null(await Record.ExceptionAsync(async () => await GridEditScenario.RunAsync(new SqliteDatabaseProvider(), new ConnectionProfile(Guid.NewGuid(), "t", DatabaseDialect.Sqlite, null, null, null, null, ":memory:", null), null)));
 }
