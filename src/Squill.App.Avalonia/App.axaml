@@ -1,11 +1,12 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loom="using:LoomEditor.Avalonia"
              x:Class="Squill.App.Avalonia.App"
              RequestedThemeVariant="Default">
   <Application.Styles>
     <FluentTheme />
     <StyleInclude Source="avares://Squill.App.Avalonia/Styles/Controls.axaml" />
-    <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+    <loom:LoomEditorStyles />
   </Application.Styles>
   <Application.Resources>
     <ResourceDictionary>

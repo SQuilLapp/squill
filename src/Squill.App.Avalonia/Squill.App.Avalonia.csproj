@@ -14,7 +14,7 @@
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
-    <PackageReference Include="Avalonia.AvaloniaEdit" />
+    <PackageReference Include="LoomEditor.Avalonia" />
     <ProjectReference Include="..\Squill.Presentation\Squill.Presentation.csproj" />
     <ProjectReference Include="..\Squill.Data.MySql\Squill.Data.MySql.csproj" />
     <ProjectReference Include="..\Squill.Data.Oracle\Squill.Data.Oracle.csproj" />
@@ -34,6 +34,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Squill.App.Shared\LoomTerminalHost.cs" Link="Terminal\LoomTerminalHost.cs" />
+    <Compile Include="..\Squill.App.Shared\LoomSqlProviders.cs" Link="Editors\LoomSqlProviders.cs" />
   </ItemGroup>
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);SQUILL_LOOMEDITOR</DefineConstants>
+  </PropertyGroup>
   <Import Project="..\..\eng\OracleBridge.targets" />
 </Project>

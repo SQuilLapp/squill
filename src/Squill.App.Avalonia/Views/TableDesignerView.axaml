@@ -4,7 +4,6 @@
              xmlns:dc="using:Squill.Core.Design"
              xmlns:v="using:Squill.App.Avalonia.Views"
              xmlns:loc="using:Squill.App.Avalonia.Localization"
-             xmlns:ae="using:AvaloniaEdit"
              x:Class="Squill.App.Avalonia.Views.TableDesignerView"
              x:DataType="dz:TableDesignerViewModel">
   <UserControl.KeyBindings>
@@ -307,8 +306,7 @@
             <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconOpen}" />
           </Button>
         </Grid>
-        <ae:TextEditor Name="ScriptEditor" IsReadOnly="True" WordWrap="True" ShowLineNumbers="False" Background="Transparent" Margin="6,0,0,0"
-                       HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" FontSize="12" />
+        <Border Name="ScriptHost" Margin="6,0,0,0" />
       </DockPanel>
     </Border>
   </Grid>

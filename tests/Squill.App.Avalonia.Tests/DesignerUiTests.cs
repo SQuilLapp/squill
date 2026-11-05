@@ -68,10 +68,10 @@ public sealed class DesignerUiTests
             var view = window.GetLogicalDescendants().OfType<TableDesignerView>().Single();
             Assert.True(view.IsVisible);
             Assert.Same(designer, view.DataContext);
-            var editor = view.GetVisualDescendants().OfType<AvaloniaEdit.TextEditor>().Single(t => t.Name == "ScriptEditor");
-            Assert.DoesNotContain("new_column", editor.Text);
+            var editor = view.GetVisualDescendants().OfType<LoomEditor.Avalonia.Controls.LoomEditor>().Single();
+            Assert.DoesNotContain("new_column", editor.Model.GetValue(LoomEditor.Core.Model.EndOfLinePreference.LF));
             designer.AddColumnCommand.Execute(null);
-            Assert.Contains("new_column", editor.Text);
+            Assert.Contains("new_column", editor.Model.GetValue(LoomEditor.Core.Model.EndOfLinePreference.LF));
             return Task.CompletedTask;
         });
     }

@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Squill.App.Shared\LoomTerminalHost.cs" Link="Terminal\LoomTerminalHost.cs" />
+    <Compile Include="..\Squill.App.Shared\LoomSqlProviders.cs" Link="Editors\LoomSqlProviders.cs" />
   </ItemGroup>
   <!-- LoomEditor and LoomTerminal target the 26100 Windows SDK; a project cannot reference a higher Windows TFM. -->
   <PropertyGroup>

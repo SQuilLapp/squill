@@ -51,20 +51,20 @@ public sealed class AvaloniaSqlEditorTests
     }
 
     [Fact]
-    public async Task RequestCompletions_AfterFrom_AsksProviderAtCaret()
+    public async Task RequestCompletion_AfterFrom_AsksProviderAtCaret()
     {
-        await Headless.Session.Dispatch(() =>
+        await Headless.Session.Dispatch(async () =>
         {
             var editor = new AvaloniaSqlEditor { Text = "select * from " };
             var provider = new FakeProvider();
             editor.SetCompletionProvider(provider);
             editor.CaretOffset = editor.Text.Length;
 
-            var items = editor.RequestCompletions();
+            var count = await editor.RequestCompletionAsync();
 
             Assert.Equal("select * from ", provider.Request!.Text);
             Assert.Equal(14, provider.Request.Offset);
-            Assert.Single(items);
+            Assert.Equal(1, count);
         }, TestContext.Current.CancellationToken);
     }
 }

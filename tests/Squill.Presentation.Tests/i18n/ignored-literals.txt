@@ -1,6 +1,5 @@
 # relative/path|exact text|reason   (kept sorted; the text is the literal as written in the source)
 src/Squill.App.Avalonia/Controls/ErDiagramCanvas.cs|avares://Squill.App.Avalonia/Assets/Fonts#JetBrains Mono, Cascadia Code, monospace|font family resource uri
-src/Squill.App.Avalonia/Editors/AvaloniaSqlEditor.cs|Cascadia Code, Consolas, Menlo, monospace|font family list
 src/Squill.App.Avalonia/MainWindow.axaml|Ctrl+K|keyboard accelerator text, not translated
 src/Squill.App.Avalonia/Services/AvaloniaDialogService.cs|mono|style class name, not text
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFg3Brush|resource key
