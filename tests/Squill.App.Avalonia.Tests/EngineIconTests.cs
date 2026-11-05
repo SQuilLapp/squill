@@ -9,13 +9,17 @@ namespace Squill.App.Avalonia.Tests;
 [Collection("Headless")]
 public sealed class EngineIconTests
 {
-    public static TheoryData<DatabaseDialect> Engines => new() { DatabaseDialect.PostgreSql, DatabaseDialect.MySql, DatabaseDialect.SqlServer, DatabaseDialect.Sqlite, DatabaseDialect.Oracle };
+    public static TheoryData<DatabaseDialect, bool> Engines => new()
+    {
+        { DatabaseDialect.PostgreSql, false }, { DatabaseDialect.MySql, false }, { DatabaseDialect.MySql, true },
+        { DatabaseDialect.SqlServer, false }, { DatabaseDialect.Sqlite, false }, { DatabaseDialect.Oracle, false },
+    };
 
     [Theory]
     [MemberData(nameof(Engines))]
-    public async Task Render_Engine_DrawsItsLogo(DatabaseDialect dialect) => await Headless.Session.Dispatch(() =>
+    public async Task Render_Engine_DrawsItsLogo(DatabaseDialect dialect, bool mariaDb) => await Headless.Session.Dispatch(() =>
     {
-        var icon = new EngineIcon { Dialect = dialect, Width = 40, Height = 40 };
+        var icon = new EngineIcon { Dialect = dialect, MariaDb = mariaDb, Width = 40, Height = 40 };
         icon.Measure(new Size(40, 40));
         icon.Arrange(new Rect(0, 0, 40, 40));
         var bitmap = new RenderTargetBitmap(new PixelSize(40, 40));

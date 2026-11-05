@@ -38,6 +38,7 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
 
         Name = existing.Name;
         Dialect = existing.Dialect;
+        MariaDb = existing.MariaDb;
         Host = existing.Host ?? "";
         Port = existing.Port;
         Database = existing.Database ?? "";
@@ -71,6 +72,10 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     /// <summary>Gets or sets the database engine; changing it switches the default port.</summary>
     [ObservableProperty]
     public partial DatabaseDialect Dialect { get; set; } = DatabaseDialect.PostgreSql;
+
+    /// <summary>Gets or sets whether a <see cref="DatabaseDialect.MySql"/> profile targets MariaDB: same driver and SQL, a separate logo and a hook for later differences. Cleared when the engine changes.</summary>
+    [ObservableProperty]
+    public partial bool MariaDb { get; set; }
 
     /// <summary>Gets or sets the server host name (unused for SQLite).</summary>
     [ObservableProperty]
@@ -249,6 +254,7 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         OnPropertyChanged(nameof(SupportsTls));
         OnPropertyChanged(nameof(SupportsTrustCertificate));
         OnPropertyChanged(nameof(SupportsTimeouts));
+        MariaDb = false;
         if (Port is null || Port == DefaultPort(oldValue))
             Port = DefaultPort(newValue);
     }
@@ -297,7 +303,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             sqlite ? TlsMode.Default : Tls,
             Dialect == DatabaseDialect.SqlServer && TrustServerCertificate,
             sqlite || !TryParseTimeout(ConnectTimeoutText, out var connect) ? _existing?.ConnectTimeoutSeconds ?? 15 : connect,
-            TryParseTimeout(CommandTimeoutText, out var command) ? command : 0);
+            TryParseTimeout(CommandTimeoutText, out var command) ? command : 0,
+            Dialect == DatabaseDialect.MySql && MariaDb);
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]

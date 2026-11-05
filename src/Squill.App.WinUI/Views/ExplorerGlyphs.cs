@@ -71,6 +71,7 @@ public static class ExplorerGlyphs
     /// <returns>The style.</returns>
     public static Style EngineStyle(ConnectionProfile? profile) => StyleOf(profile?.Dialect switch
     {
+        DatabaseDialect.MySql when profile.MariaDb => "EngineIconMariadbStyle",
         DatabaseDialect.PostgreSql => "EngineIconPostgresStyle",
         DatabaseDialect.MySql => "EngineIconMysqlStyle",
         DatabaseDialect.SqlServer => "EngineIconSqlserverStyle",

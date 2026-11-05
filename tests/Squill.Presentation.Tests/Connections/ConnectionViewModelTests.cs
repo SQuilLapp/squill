@@ -96,6 +96,24 @@ public sealed class ConnectionViewModelTests
     }
 
     [Fact]
+    public async Task Save_MariaDb_RoundTripsAndIsClearedWhenTheEngineChanges()
+    {
+        var editor = NewEditor();
+        editor.Name = "x";
+        editor.Dialect = DatabaseDialect.MySql;
+        editor.MariaDb = true;
+        editor.Host = "h";
+        await editor.SaveCommand.ExecuteAsync(null);
+
+        var saved = Assert.Single(_store.Saved).Profile;
+        Assert.True(saved.MariaDb);
+        var reopened = NewEditor(saved);
+        Assert.True(reopened.MariaDb);
+        reopened.Dialect = DatabaseDialect.PostgreSql;
+        Assert.False(reopened.MariaDb);
+    }
+
+    [Fact]
     public async Task Save_Sqlite_DropsServerOnlyOptions()
     {
         var editor = NewEditor();

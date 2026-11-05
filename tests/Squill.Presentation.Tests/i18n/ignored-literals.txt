@@ -6,6 +6,7 @@ src/Squill.App.Avalonia/Services/AvaloniaDialogService.cs|mono|style class name,
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFg3Brush|resource key
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFgBrush|resource key
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|group|style class name
+src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|MariaDB|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|MySQL|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|Oracle|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|PostgreSQL|product name, not translated

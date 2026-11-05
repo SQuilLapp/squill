@@ -81,12 +81,15 @@
 
           <StackPanel Grid.Row="2" Spacing="8">
             <TextBlock Text="{loc:Text connections.engine}" Classes="caps" />
-            <UniformGrid Columns="5">
+            <UniformGrid Columns="6">
               <Button Name="TilePostgres" Classes="tile" Tag="{x:Static core:DatabaseDialect.PostgreSql}" Click="OnEngineTile" Margin="0,0,7,0">
                 <StackPanel Spacing="2"><controls:EngineIcon Dialect="PostgreSql" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="PostgreSQL" HorizontalAlignment="Center" /></StackPanel>
               </Button>
               <Button Name="TileMySql" Classes="tile" Tag="{x:Static core:DatabaseDialect.MySql}" Click="OnEngineTile" Margin="0,0,7,0">
                 <StackPanel Spacing="2"><controls:EngineIcon Dialect="MySql" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="MySQL" HorizontalAlignment="Center" /></StackPanel>
+              </Button>
+              <Button Name="TileMariaDb" Classes="tile" Tag="{x:Static core:DatabaseDialect.MySql}" Click="OnEngineTile" Margin="0,0,7,0">
+                <StackPanel Spacing="2"><controls:EngineIcon Dialect="MySql" MariaDb="True" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="MariaDB" HorizontalAlignment="Center" /></StackPanel>
               </Button>
               <Button Name="TileSqlServer" Classes="tile" Tag="{x:Static core:DatabaseDialect.SqlServer}" Click="OnEngineTile" Margin="0,0,7,0">
                 <StackPanel Spacing="2"><controls:EngineIcon Dialect="SqlServer" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="SQL Server" HorizontalAlignment="Center" /></StackPanel>

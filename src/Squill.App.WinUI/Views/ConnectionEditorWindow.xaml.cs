@@ -26,7 +26,7 @@ public sealed partial class ConnectionEditorWindow : Window
 
     private readonly HashSet<string> _collapsed = [];
     private readonly ConnectionListViewModel _list;
-    private readonly Dictionary<DatabaseDialect, Button> _engineTiles = [];
+    private readonly Dictionary<ConnectionEditorFormat.Engine, Button> _engineTiles = [];
     private readonly Dictionary<ConnectionEnvironment, Button> _environmentTiles = [];
     private readonly Window _owner;
     private ConnectionEditorViewModel? _editor;
@@ -140,8 +140,8 @@ public sealed partial class ConnectionEditorWindow : Window
         var engines = ConnectionEditorFormat.Engines;
         for (var i = 0; i < engines.Length; i++)
         {
-            var dialect = engines[i];
-            var (letters, suffix) = ConnectionEditorFormat.Badge(dialect);
+            var engine = engines[i];
+            var (letters, suffix) = ConnectionEditorFormat.Badge(engine.Dialect, engine.MariaDb);
             var badge = new ContentControl
             {
                 Style = ExplorerGlyphs.StyleOf($"EngineIcon{suffix}Style"),
@@ -150,14 +150,18 @@ public sealed partial class ConnectionEditorWindow : Window
                 Height = 20,
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
-            var label = new TextBlock { Text = ConnectionEditorFormat.EngineName(dialect), HorizontalAlignment = HorizontalAlignment.Center, FontSize = 13 };
-            var tile = Tile(new StackPanel { Spacing = 1, VerticalAlignment = VerticalAlignment.Center, Children = { badge, label } }, () => _editor!.Dialect = dialect);
+            var label = new TextBlock { Text = ConnectionEditorFormat.EngineName(engine.Dialect, engine.MariaDb), HorizontalAlignment = HorizontalAlignment.Center, FontSize = 13 };
+            var tile = Tile(new StackPanel { Spacing = 1, VerticalAlignment = VerticalAlignment.Center, Children = { badge, label } }, () =>
+            {
+                _editor!.Dialect = engine.Dialect;
+                _editor.MariaDb = engine.MariaDb;
+            });
             tile.Height = 52;
             tile.MinHeight = 52;
             tile.Padding = new Thickness(6, 0, 6, 0);
             Grid.SetColumn(tile, i);
             EngineHost.Children.Add(tile);
-            _engineTiles[dialect] = tile;
+            _engineTiles[engine] = tile;
         }
 
         var environments = ConnectionEditorFormat.Environments;
@@ -247,7 +251,7 @@ public sealed partial class ConnectionEditorWindow : Window
         SshSummary.Text = ConnectionEditorFormat.SshSummary(editor.SshHost, editor.SshPort, editor.SshUserName);
         ErrorsText.Text = string.Join('\n', editor.Validate());
 
-        var (letters, suffix) = ConnectionEditorFormat.Badge(editor.Dialect);
+        var (letters, suffix) = ConnectionEditorFormat.Badge(editor.Dialect, editor.MariaDb);
         HeaderEngine.Style = ExplorerGlyphs.StyleOf($"EngineIcon{suffix}Style");
         HeaderEngine.Content = letters;
         HeaderEngine.Width = 32;
@@ -265,8 +269,11 @@ public sealed partial class ConnectionEditorWindow : Window
 
         ProductionHint.Visibility = editor.Environment == ConnectionEnvironment.Production ? Visibility.Visible : Visibility.Collapsed;
 
-        foreach (var (dialect, tile) in _engineTiles)
-            ToggleTile(tile, dialect == editor.Dialect, Token(dialect == editor.Dialect ? "SquillAccentBrush" : "SquillBorderBrush"), Token(dialect == editor.Dialect ? "SquillAccentSoftBrush" : "SquillBgRaisedBrush"));
+        foreach (var (engine, tile) in _engineTiles)
+        {
+            var selected = engine.Dialect == editor.Dialect && engine.MariaDb == editor.MariaDb;
+            ToggleTile(tile, selected, Token(selected ? "SquillAccentBrush" : "SquillBorderBrush"), Token(selected ? "SquillAccentSoftBrush" : "SquillBgRaisedBrush"));
+        }
         foreach (var (environment, tile) in _environmentTiles)
         {
             var selected = environment == editor.Environment;
@@ -344,7 +351,7 @@ public sealed partial class ConnectionEditorWindow : Window
 
     private Button ProfileRow(ConnectionProfile profile, bool indented)
     {
-        var (letters, suffix) = ConnectionEditorFormat.Badge(profile.Dialect);
+        var (letters, suffix) = ConnectionEditorFormat.Badge(profile.Dialect, profile.MariaDb);
         var badge = new ContentControl { Style = ExplorerGlyphs.StyleOf($"EngineIcon{suffix}Style"), Content = letters, VerticalAlignment = VerticalAlignment.Center };
         var name = new TextBlock
         {

@@ -85,7 +85,10 @@ public sealed partial class ConnectionEditorWindow : Window
     private void OnEngineTile(object? sender, RoutedEventArgs e)
     {
         if (_editor is not null && sender is Button { Tag: DatabaseDialect dialect })
+        {
             _editor.Dialect = dialect;
+            _editor.MariaDb = ReferenceEquals(sender, TileMariaDb);
+        }
     }
 
     private void OnEnvironmentTile(object? sender, RoutedEventArgs e)
@@ -112,6 +115,7 @@ public sealed partial class ConnectionEditorWindow : Window
         ErrorsText.Text = string.Join('\n', editor.Validate());
 
         HeaderEngine.Dialect = editor.Dialect;
+        HeaderEngine.MariaDb = editor.MariaDb;
         HeaderName.Text = string.IsNullOrWhiteSpace(editor.Name) ? UiText.Get("connections.newConnection") : editor.Name;
         HeaderSubtitle.Text = UiText.Get("connections.newUnsaved");
         HeaderSubtitle.IsVisible = _list?.SelectedProfile is null;
@@ -129,8 +133,8 @@ public sealed partial class ConnectionEditorWindow : Window
         SetClasses(HeaderEnv, envClass, "env-prod", "env-staging", "env-dev", "env-local");
         ProductionHint.IsVisible = editor.Environment == ConnectionEnvironment.Production;
 
-        foreach (var tile in new[] { TilePostgres, TileMySql, TileSqlServer, TileSqlite, TileOracle })
-            tile.Classes.Set("selected", tile.Tag is DatabaseDialect d && d == editor.Dialect);
+        foreach (var tile in new[] { TilePostgres, TileMySql, TileMariaDb, TileSqlServer, TileSqlite, TileOracle })
+            tile.Classes.Set("selected", tile.Tag is DatabaseDialect d && d == editor.Dialect && (d != DatabaseDialect.MySql || ReferenceEquals(tile, TileMariaDb) == editor.MariaDb));
         foreach (var tile in new[] { EnvProduction, EnvStaging, EnvDevelopment, EnvLocal })
             tile.Classes.Set("selected", tile.Tag is ConnectionEnvironment env && env == editor.Environment);
 
@@ -203,7 +207,7 @@ public sealed partial class ConnectionEditorWindow : Window
 
     private Button ProfileRow(ConnectionProfile profile, bool indented)
     {
-        var badge = new EngineIcon { Dialect = profile.Dialect, VerticalAlignment = VerticalAlignment.Center };
+        var badge = new EngineIcon { Dialect = profile.Dialect, MariaDb = profile.MariaDb, VerticalAlignment = VerticalAlignment.Center };
         var name = new TextBlock { Text = profile.Name, Foreground = Resource<IBrush>("SquillFgBrush"), VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(8, 0) };
         var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Height = 31 };
         Grid.SetColumn(name, 1);

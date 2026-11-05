@@ -16,7 +16,8 @@ public sealed record ConnectionProfile(
     TlsMode Tls = TlsMode.Default,
     bool TrustServerCertificate = false,
     int ConnectTimeoutSeconds = 15,
-    int CommandTimeoutSeconds = 0)
+    int CommandTimeoutSeconds = 0,
+    bool MariaDb = false)
 {
     /// <summary>Largest accepted timeout, in seconds (one day).</summary>
     public const int MaxTimeoutSeconds = 86400;

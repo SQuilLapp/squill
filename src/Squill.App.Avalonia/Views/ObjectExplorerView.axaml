@@ -37,7 +37,7 @@
               </ContextMenu>
             </Grid.ContextMenu>
             <StackPanel Orientation="Horizontal">
-              <controls:EngineIcon Width="18" Height="18" Margin="0,0,8,0" Dialect="{Binding Profile.Dialect}"
+              <controls:EngineIcon Width="18" Height="18" Margin="0,0,8,0" Dialect="{Binding Profile.Dialect}" MariaDb="{Binding Profile.MariaDb}"
                                    IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsConnection}}" />
               <Path Classes="icon" Width="14" Height="14" Margin="0,0,6,0" Data="{StaticResource SquillIconTable}"
                     Stroke="{DynamicResource SquillAccentTextBrush}" IsVisible="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.IsTable}}" />
