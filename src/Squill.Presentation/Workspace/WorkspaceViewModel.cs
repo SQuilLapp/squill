@@ -155,6 +155,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     {
         if (profile is null)
             return;
+        Explorer.SetConnecting(profile.Id, true);
         try
         {
             ActiveSession = await _manager.OpenAsync(profile, ct);
@@ -166,6 +167,10 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         catch (Exception ex)
         {
             await _dialogs.ShowErrorAsync(UiText.Get("workspace.connectionFailed"), ex.Message);
+        }
+        finally
+        {
+            Explorer.SetConnecting(profile.Id, false);
         }
     }
 

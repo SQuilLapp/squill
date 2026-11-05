@@ -79,6 +79,15 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
             _list.SelectedProfile = profile;
     }
 
+    /// <summary>Marks a connection node as being opened or not, which shows or hides its progress indicator.</summary>
+    /// <param name="profileId">The id of the profile being opened.</param>
+    /// <param name="connecting">Whether the open is in progress.</param>
+    public void SetConnecting(Guid profileId, bool connecting)
+    {
+        if (FindConnection(profileId) is { } node)
+            node.IsConnecting = connecting;
+    }
+
     /// <summary>Rebuilds the objects of one session from its current schema, for example after a DDL statement.</summary>
     /// <param name="session">The session whose schema changed.</param>
     public void Reload(ConnectionSession session)

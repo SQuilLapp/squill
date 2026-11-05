@@ -58,6 +58,34 @@ public sealed class WorkspaceViewModelTests
     }
 
     [Fact]
+    public async Task Connect_WhileOpening_MarksTheNodeAsConnectingUntilDone()
+    {
+        _provider.Gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var profile = Profile();
+        _workspace.ConnectionList.Profiles.Add(profile);
+
+        var connecting = _workspace.ConnectCommand.ExecuteAsync(profile);
+        var node = Assert.Single(_workspace.Explorer.Roots);
+        Assert.True(node.IsConnecting);
+
+        _provider.Gate.SetResult();
+        await connecting;
+        Assert.False(node.IsConnecting);
+    }
+
+    [Fact]
+    public async Task Connect_Fails_ClearsTheConnectingFlag()
+    {
+        _provider.Failure = new InvalidOperationException("down");
+        var profile = Profile();
+        _workspace.ConnectionList.Profiles.Add(profile);
+
+        await _workspace.ConnectCommand.ExecuteAsync(profile);
+
+        Assert.False(Assert.Single(_workspace.Explorer.Roots).IsConnecting);
+    }
+
+    [Fact]
     public async Task Connect_Succeeds_CreatesExplorerAndFirstTab()
     {
         await ConnectAsync();
@@ -231,8 +259,14 @@ public sealed class WorkspaceViewModelTests
         public List<string> Executed { get; } = [];
         public bool ReturnGrid { get; set; }
 
-        public ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken) =>
-            Failure is { } failure ? throw failure : ValueTask.FromResult<IDatabaseConnection>(new FakeConnection(this));
+        public TaskCompletionSource? Gate { get; set; }
+
+        public async ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken)
+        {
+            if (Gate is { } gate)
+                await gate.Task;
+            return Failure is { } failure ? throw failure : new FakeConnection(this);
+        }
     }
 
     private sealed class FakeConnection(FakeProvider owner) : IDatabaseConnection

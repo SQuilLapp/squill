@@ -59,6 +59,8 @@
             </Border>
             <TextBlock Grid.Column="3" Classes="mono" Text="{Binding Trailing}" Foreground="{DynamicResource SquillFg3Brush}"
                        Margin="8,0,0,0" VerticalAlignment="Center" />
+            <ProgressBar Grid.Column="3" Width="40" Height="3" Margin="8,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right"
+                         IsIndeterminate="True" IsVisible="{Binding IsConnecting}" />
             <Ellipse Grid.Column="3" Width="7" Height="7" Margin="8,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right"
                      Fill="{DynamicResource SquillSuccessBrush}" IsVisible="{Binding IsConnected}" />
           </Grid>

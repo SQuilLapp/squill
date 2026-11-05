@@ -85,6 +85,10 @@ public sealed partial class ExplorerNode(string title, ExplorerNodeKind kind, st
     /// <summary>Gets the table or view behind a table or view node; <see langword="null"/> otherwise.</summary>
     public TableInfo? Table { get; } = table;
 
+    /// <summary>Gets or sets whether the connection behind this node is being opened, so the explorer can show a progress indicator.</summary>
+    [ObservableProperty]
+    public partial bool IsConnecting { get; set; }
+
     /// <summary>Gets the function or procedure behind a routine node; <see langword="null"/> otherwise.</summary>
     public RoutineInfo? Routine { get; init; }
 
