@@ -13,6 +13,7 @@ public sealed class SqlSnippetsTests
     [InlineData(DatabaseDialect.PostgreSql, "SELECT * FROM \"dbo\".\"t\" LIMIT 100")]
     [InlineData(DatabaseDialect.Sqlite, "SELECT * FROM \"dbo\".\"t\" LIMIT 100")]
     [InlineData(DatabaseDialect.MySql, "SELECT * FROM `dbo`.`t` LIMIT 100")]
+    [InlineData(DatabaseDialect.Oracle, "SELECT * FROM \"dbo\".\"t\" WHERE ROWNUM <= 100")]
     public void SelectTop_PerDialect_UsesDialectSyntax(DatabaseDialect d, string expected) =>
         Assert.Equal(expected, SqlSnippets.SelectTop(Table("dbo", "t"), d));
 
