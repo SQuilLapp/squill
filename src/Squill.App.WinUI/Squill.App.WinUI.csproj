@@ -60,4 +60,5 @@
     </ItemGroup>
     <Copy SourceFiles="@(AppXamlResource)" DestinationFiles="@(AppXamlResource->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
+  <Import Project="..\..\eng\OracleBridge.targets" />
 </Project>

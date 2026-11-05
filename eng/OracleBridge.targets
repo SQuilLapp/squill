@@ -1,0 +1,12 @@
+<Project>
+  <!--
+    Imported by both heads: every publish of the app also publishes the (non-AOT, framework-dependent) Oracle bridge into
+    oracle-bridge/ next to the executable, where OracleDatabaseProvider looks for it (docs/poc/oracle-bridge.md).
+    The empty RuntimeIdentifier keeps the bridge portable; the .NET runtime must be installed on the machine.
+  -->
+  <Target Name="PublishOracleBridge" AfterTargets="Publish">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\src\Squill.OracleBridge\Squill.OracleBridge.csproj"
+             Targets="Restore;Publish"
+             Properties="Configuration=$(Configuration);RuntimeIdentifier=;SelfContained=false;PublishAot=false;PublishDir=$([MSBuild]::EnsureTrailingSlash('$(PublishDir)'))oracle-bridge/" />
+  </Target>
+</Project>

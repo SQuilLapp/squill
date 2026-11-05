@@ -38,11 +38,11 @@ Request `{id, op, ...}`, response `{id, ok, error?, ...}`; `id` is echoed and ch
 
 Values are typed cells `{k, v}` (kinds `s` string, `i` int64, `d` decimal, `f` double, `b` bool, `t` DateTime, `o` DateTimeOffset, `x` bytes as base64); SQL NULL is JSON `null`. Decimals travel as invariant text, so `NUMBER` keeps its precision. A value the driver cannot convert (a `NUMBER` beyond `decimal`) falls back to a string cell. The same codec encodes statement parameters. The password only travels in the `open` line, never on the command line.
 
-The bridge keeps at most one open reader: `execute` closes the previous one; the schema is read by the provider with ordinary `execute`/`fetch` calls over `all_objects`, `all_tab_columns`, `all_constraints` (bridge stays a generic executor). A trailing `;` is stripped from plain statements (Oracle rejects it), but kept after `END`.
+The bridge keeps at most one open reader: `execute` closes the previous one; the schema is read by the provider with ordinary `execute`/`fetch` calls over `all_objects`, `all_tab_columns`, `all_constraints` (bridge stays a generic executor). The provider reads the major version from `serverVersion` and adapts the catalog queries: from 12c the system schemas are filtered with `all_users.oracle_maintained`, before (11g, XE) with a fixed list of system users. A trailing `;` is stripped from plain statements (Oracle rejects it), but kept after `END`.
 
 ## Lifecycle
 
-1. `OracleDatabaseProvider.OpenAsync` starts the bridge (`BridgeClient.StartProcess`) and sends `open`. Location: `SQUILL_ORACLE_BRIDGE` (an exe, or a `.dll` run with `dotnet`), else `oracle-bridge/Squill.OracleBridge(.exe)` next to the app. Missing bridge: `FileNotFoundException` naming the variable. Publish it with `dotnet publish src/Squill.OracleBridge -c Release -o <app>/oracle-bridge`.
+1. `OracleDatabaseProvider.OpenAsync` starts the bridge (`BridgeClient.StartProcess`) and sends `open`. Location: `SQUILL_ORACLE_BRIDGE` (an exe, or a `.dll` run with `dotnet`), else `oracle-bridge/Squill.OracleBridge(.exe)` next to the app. Missing bridge: `FileNotFoundException` naming the variable. Publishing either head (`eng/OracleBridge.targets`, imported by both) publishes the bridge into `oracle-bridge/` automatically; it is framework-dependent, so the .NET runtime must be installed.
 2. One bridge process per connection (a connection = one Oracle session, same as the other engines).
 3. Disposing the connection sends `close`, waits up to 2 s for the exit, then kills the process. A failed `open` stops the process too.
 4. If the bridge dies or answers out of turn, the client is marked broken: later calls throw `OracleBridgeException`.
@@ -54,7 +54,7 @@ Connect (host, port, service name, user, password, connect and command timeout),
 
 ## Not supported (follow-ups)
 
-TLS/TCPS and wallets, SSH tunnel (untested), several result sets and `DBMS_OUTPUT` messages, cancel without killing, transactions control, indexes, foreign keys, column defaults, routines, triggers, view definitions, Oracle dialect for the SQL layer (tokenizer, completion, formatter, DDL generators fall back to the generic ANSI behaviour), terminal (`sqlplus`) launch, a connection-editor tile (the dialect is not in the engine pickers yet; profile files work), automatic copy of the bridge next to the heads, CI job, bridge as a pool shared by several connections, Windows-only path of `ResolvePath` untested on Linux and macOS.
+TLS/TCPS and wallets, SSH tunnel (untested), several result sets and `DBMS_OUTPUT` messages, cancel without killing, transactions control, indexes, foreign keys, column defaults, routines, triggers, view definitions, Oracle dialect for the SQL layer (tokenizer, completion, formatter, DDL generators fall back to the generic ANSI behaviour), terminal (`sqlplus`) launch, CI job, bridge as a pool shared by several connections, Windows-only path of `ResolvePath` untested on Linux and macOS.
 
 ## Verification
 

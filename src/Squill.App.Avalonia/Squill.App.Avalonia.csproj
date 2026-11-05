@@ -35,4 +35,5 @@
   <ItemGroup>
     <Compile Include="..\Squill.App.Shared\LoomTerminalHost.cs" Link="Terminal\LoomTerminalHost.cs" />
   </ItemGroup>
+  <Import Project="..\..\eng\OracleBridge.targets" />
 </Project>
