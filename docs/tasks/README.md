@@ -230,6 +230,27 @@ Depends on: <card ids, ranges allowed>
 | [P11-38](phase-11/P11-38-verify-mysql.md) | End-to-end verification: MySQL | P11-37, P11-18, P11-24, P11-27 ... P11-32 | automated done, manual pending |
 | [P11-39](phase-11/P11-39-verify-sqlserver.md) | End-to-end verification: SQL Server | P11-37, P11-19, P11-24, P11-27 ... P11-32 | automated done, manual pending |
 | [P11-40](phase-11/P11-40-docs-and-adr.md) | Documentation: engine parity ADR 0008, README and architecture note | P11-36 ... P11-39 | done |
+| [P12-01](phase-12/P12-01-velopack-aot-poc.md) | Velopack under Native AOT: proof of concept and report | none | todo |
+| [P12-02](phase-12/P12-02-version-source-of-truth.md) | Version: single source of truth, assembly version and AppVersion | none | todo |
+| [P12-03](phase-12/P12-03-core-semantic-version.md) | Core: semantic version parsing and comparison | P12-02 | todo |
+| [P12-04](phase-12/P12-04-changelog-and-release-notes.md) | Changelog and release notes extraction | P12-02 | todo |
+| [P12-05](phase-12/P12-05-pack-script.md) | Pack script: AOT publish and `vpk pack` for a channel | P12-01, P12-02, P12-04 | todo |
+| [P12-06](phase-12/P12-06-install-lifecycle-and-data-dir.md) | Install lifecycle: first run, update hooks, uninstall, data directory kept | P12-01, P12-02 | todo |
+| [P12-07](phase-12/P12-07-platform-update-settings.md) | Platform: update settings and persisted update state | P12-03 | todo |
+| [P12-08](phase-12/P12-08-platform-update-service.md) | Platform: update service (state machine over an engine contract) | P12-03, P12-07 | todo |
+| [P12-09](phase-12/P12-09-velopack-update-engine.md) | Platform: Velopack update engine (GitHub Releases or local feed) | P12-01, P12-08 | todo |
+| [P12-10](phase-12/P12-10-presentation-release-notes.md) | Presentation: release notes model (markdown subset) | P12-04 | todo |
+| [P12-11](phase-12/P12-11-presentation-update-view-model.md) | Presentation: update view-model and composition | P12-06, P12-08, P12-09, P12-10 | todo |
+| [P12-12](phase-12/P12-12-presentation-settings-about.md) | Presentation: update settings and About view-models | P12-11 | todo |
+| [P12-13](phase-12/P12-13-winui-settings-about.md) | WinUI head: update rows in the settings window and the About dialog | P12-12, P9-24 | todo |
+| [P12-14](phase-12/P12-14-winui-update-banner-and-dialog.md) | WinUI head: update notice, release notes and restart to update | P12-13 | todo |
+| [P12-15](phase-12/P12-15-avalonia-update-ui.md) | Avalonia head: update settings, About, notice and dialog | P12-14, P9-23 | todo |
+| [P12-16](phase-12/P12-16-release-workflow.md) | Release workflow: tag to GitHub Release | P12-05, P12-01 | todo |
+| [P12-17](phase-12/P12-17-optional-code-signing.md) | Optional code signing in the pack script and the release workflow | P12-16 | todo |
+| [P12-18](phase-12/P12-18-windows-arm64.md) | Windows arm64 build and package (conditional) | P12-16, P12-01 | todo |
+| [P12-19](phase-12/P12-19-verify-install-and-update.md) | End-to-end verification: install, update from N to N+1, uninstall | P12-05, P12-06, P12-09, P12-14, P12-15, P12-16 | todo |
+| [P12-20](phase-12/P12-20-docs-and-adr.md) | Documentation: release guide, ADR 0009, README and architecture note | P12-17 ... P12-19 | todo |
+| [P12-21](phase-12/P12-21-avalonia-linux-macos-packaging.md) | Avalonia head: Linux and macOS packaging with Velopack (optional) | P12-15, P12-16, P12-20 | todo |
 
 ### Phase 9 - Visual conformance
 
@@ -255,3 +276,11 @@ Goal: every feature works fully and is **verified against a real server** on the
 - Order: P11-01 ... P11-05 first (containers and CI, so everything after can be tested for real), then the gaps by value: connection options P11-06 ... P11-09, cancel and timeout P11-10, result sets P11-11 ... P11-14, schema objects P11-15 ... P11-22, databases P11-23/24, then the per-feature verification cards P11-25 ... P11-35 (types, SQL corpus, designer, ER, export, grid edit, terminal, SSH), then one end-to-end card per engine P11-36 ... P11-39 (WinUI driven first, Avalonia smoke), last P11-40 (docs and support matrix). WinUI cards come before their Avalonia twins.
 - Shared procedures (containers, verification report format, sample schemas): [verification-recipe.md](phase-11/verification-recipe.md).
 - Cards that need a container use `rtk pwsh eng/run-docker-tests.ps1` (P11-01); a card must stop and report when Podman is unavailable and never mark Docker-gated tests as verified when they were skipped. Bugs found by verification cards that are too big for the card get a new card `P11-41` onwards (added to this index).
+
+### Phase 12 - Release, installer and automatic updates
+
+Goal: a user installs SQuilL with one `Setup.exe`, is told when a newer version exists, updates in two clicks without losing data, and a maintainer cuts a release by pushing a tag. Decisions (final, details in [release-recipe.md](phase-12/release-recipe.md) and in ADR 0009 written by P12-20): Velopack (installer, delta packages, feed on GitHub Releases of `squillapp/squill`), Windows WinUI head first (x64; arm64 only if Native AOT allows, P12-18), Avalonia Linux/macOS packaging last and optional (P12-21), channels `stable` and `beta` (Velopack channel `<channel>-<arch>`), one version file `eng/Version.props` with tag `v<version>`, no network call until the user chose a check frequency (one-time question, default `NotAsked`), nothing applied without a click, user data in `%APPDATA%\SQuilL` never touched by install, update or uninstall.
+
+- Branch: implement phase 12 on the existing branch `phase-12-release`; do not create another branch. Never push a `v*` tag from a card (it would publish a real Release).
+- Order: P12-01 first (Velopack under Native AOT: if its stop rule triggers, the Platform/engine cards are rewritten before anything else), then versioning and build P12-02 ... P12-06, then update logic P12-07 ... P12-09 (Platform), P12-10 ... P12-12 (Presentation), the heads P12-13 / P12-14 (WinUI) before P12-15 (Avalonia), the CI release P12-16 / P12-17 / P12-18, then verification P12-19 and docs P12-20, optional P12-21 last.
+- Cards that package run in the background (an AOT publish takes minutes), never run an installer except P12-01 (throwaway id `SQuilLPoc`) and P12-19 (`SQuilLVerify`), and clean `artifacts/` afterwards. Bugs found by P12-19 too big for the card get `P12-22` onwards (added to this index).
