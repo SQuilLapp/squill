@@ -1,6 +1,6 @@
 # P12-08 - Platform: update service (state machine over an engine contract)
 
-Status: todo
+Status: done
 Depends on: P12-03, P12-07
 
 ## Goal
@@ -18,8 +18,8 @@ All update logic (when to check, state transitions, skip, errors, cancellation) 
 - Velopack, UI, any real network.
 
 ## Tasks
-- [ ] Types above with XML docs; `FakeUpdateEngine` in `tests/Squill.Platform.Tests/Updates/` (scriptable results, call counters).
-- [ ] Tests: no engine call when not installed / `NotAsked` / `Never`; `Startup` checks once; `Daily`/`Weekly` due and not due with a fake `TimeProvider`; check failure still records `LastCheckUtc`; downgrade offer ignored; skipped version silent for `CheckIfDueAsync` but shown by `CheckNowAsync` and the skip cleared; cancel; reentrancy; full path Available -> Downloading (progress values) -> Ready; download failure -> Failed -> retry works; `RestartToUpdate` outside `Ready` throws; channel from settings reaches the engine; `Changed` fires once per transition and never under the lock (a handler that calls back into the service does not deadlock).
+- [x] Types above with XML docs; `FakeUpdateEngine` in `tests/Squill.Platform.Tests/Updates/` (scriptable results, call counters).
+- [x] Tests: no engine call when not installed / `NotAsked` / `Never`; `Startup` checks once; `Daily`/`Weekly` due and not due with a fake `TimeProvider`; check failure still records `LastCheckUtc`; downgrade offer ignored; skipped version silent for `CheckIfDueAsync` but shown by `CheckNowAsync` and the skip cleared; cancel; reentrancy; full path Available -> Downloading (progress values) -> Ready; download failure -> Failed -> retry works; `RestartToUpdate` outside `Ready` throws; channel from settings reaches the engine; `Changed` fires once per transition and never under the lock (a handler that calls back into the service does not deadlock).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green.
