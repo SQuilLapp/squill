@@ -1,6 +1,6 @@
 # P12-04 - Changelog and release notes extraction
 
-Status: todo
+Status: done
 Depends on: P12-02
 
 ## Goal
@@ -16,8 +16,8 @@ Release notes are written once, in the repository, and reach both the GitHub Rel
 - The pack script and workflow calling it (P12-05, P12-16), the notes renderer (P12-10).
 
 ## Tasks
-- [ ] `CHANGELOG.md`, `eng/release-notes.ps1`.
-- [ ] A Pester-free self-test: `eng/release-notes.ps1 -SelfTest` runs the script's parser over an in-script sample (good section, missing section, placeholder, table row, HTML tag) and throws on any mismatch; the script exits 0 when all pass. (No new test project; keeps the change small.)
+- [x] `CHANGELOG.md`, `eng/release-notes.ps1`.
+- [x] A Pester-free self-test: `eng/release-notes.ps1 -SelfTest` runs the script's parser over an in-script sample (good section, missing section, placeholder, table row, HTML tag) and throws on any mismatch; the script exits 0 when all pass. (No new test project; keeps the change small.)
 
 ## Acceptance criteria
 - `rtk pwsh eng/release-notes.ps1 -SelfTest` exits 0.
