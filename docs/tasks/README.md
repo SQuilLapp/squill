@@ -23,6 +23,7 @@ Depends on: <card ids, ranges allowed>
 - Everything in the repository is English. Shell commands go through `rtk` (`rtk bypass <cmd>` only when the output is unusable).
 - Verification: `rtk dotnet build Squill.slnx -c Release -warnaserror` (0 warnings) and `rtk bypass dotnet test --solution Squill.slnx -c Release`. Cards touching the WinUI head use `Squill.Windows.slnx` (created by P5-08) instead. Native AOT cards add `rtk dotnet publish <project> -c Release -r win-x64` with zero IL2xxx/IL3xxx warnings. Never weaken a test or add `NoWarn`/`#pragma warning disable` to get green.
 - One card = one commit, signed, followed by a push (see `.claude/skills/next-task/SKILL.md`).
+- Never type a version outside `eng/Version.props` (read it through `AppVersion.Current` or `eng/get-version.ps1`).
 - Dependency graph (no cycles): `Squill.Core` <- `Squill.Data` <- `Squill.Data.<Driver>`; `Squill.Core` <- `Squill.Sql`; `Squill.Core` <- `Squill.Platform`; `Squill.Presentation` -> Core, Data, Sql, Platform (never a UI framework or a driver package); `Squill.App.*` heads -> Presentation + providers. `Squill.DesignSystem` and `tools/*` stay independent.
 - New projects: minimal csproj (target framework, nullable, implicit usings, warnings-as-errors and AOT analyzers come from `Directory.Build.props`; only `OutputType`, `PackageReference` without version after P1-01, `ProjectReference`). Add them to `Squill.slnx` under `/src/`, `/tests/` or `/tools/`.
 - Tests: one project per source project, `tests/<Project>.Tests`, copied from `tests/Squill.DesignSystem.Tests/Squill.DesignSystem.Tests.csproj` (xunit.v3, Microsoft.Testing.Platform). Test names `Method_Scenario_Expected`. Tests needing Docker run only when `SQUILL_DOCKER_TESTS=1` (xunit.v3 `[Fact(SkipUnless = ..., SkipType = ...)]`); others must run anywhere.
@@ -231,7 +232,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-39](phase-11/P11-39-verify-sqlserver.md) | End-to-end verification: SQL Server | P11-37, P11-19, P11-24, P11-27 ... P11-32 | automated done, manual pending |
 | [P11-40](phase-11/P11-40-docs-and-adr.md) | Documentation: engine parity ADR 0008, README and architecture note | P11-36 ... P11-39 | done |
 | [P12-01](phase-12/P12-01-velopack-aot-poc.md) | Velopack under Native AOT: proof of concept and report | none | done |
-| [P12-02](phase-12/P12-02-version-source-of-truth.md) | Version: single source of truth, assembly version and AppVersion | none | todo |
+| [P12-02](phase-12/P12-02-version-source-of-truth.md) | Version: single source of truth, assembly version and AppVersion | none | done |
 | [P12-03](phase-12/P12-03-core-semantic-version.md) | Core: semantic version parsing and comparison | P12-02 | todo |
 | [P12-04](phase-12/P12-04-changelog-and-release-notes.md) | Changelog and release notes extraction | P12-02 | todo |
 | [P12-05](phase-12/P12-05-pack-script.md) | Pack script: AOT publish and `vpk pack` for a channel | P12-01, P12-02, P12-04 | todo |

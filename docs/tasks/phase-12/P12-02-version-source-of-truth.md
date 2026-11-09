@@ -1,6 +1,6 @@
 # P12-02 - Version: single source of truth, assembly version and AppVersion
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -17,10 +17,10 @@ One file defines the version; every assembly, the exe's file/product version, th
 - SemVer comparison (P12-03), pack script changes (P12-05), workflow (P12-16).
 
 ## Tasks
-- [ ] `eng/Version.props`, imports in `Directory.Build.props`, generator target, `AppVersion`.
-- [ ] `eng/get-version.ps1` with `-Tag` check.
-- [ ] Test in `tests/Squill.Core.Tests`: `AppVersion_Current_MatchesVersionProps` (reads `eng/Version.props` from the repository root found by walking up from `AppContext.BaseDirectory`, compares with the constant); `AppVersion_Current_IsValidSemVer` (regex above).
-- [ ] Document the rule in `README.md` build section (two lines) and `docs/tasks/README.md` conventions (one bullet: "never type a version outside `eng/Version.props`").
+- [x] `eng/Version.props`, imports in `Directory.Build.props`, generator target, `AppVersion`.
+- [x] `eng/get-version.ps1` with `-Tag` check.
+- [x] Test in `tests/Squill.Core.Tests`: `AppVersion_Current_MatchesVersionProps` (reads `eng/Version.props` from the repository root found by walking up from `AppContext.BaseDirectory`, compares with the constant); `AppVersion_Current_IsValidSemVer` (regex above).
+- [x] Document the rule in `README.md` build section (two lines) and `docs/tasks/README.md` conventions (one bullet: "never type a version outside `eng/Version.props`").
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green.

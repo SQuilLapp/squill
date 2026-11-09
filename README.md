@@ -41,6 +41,9 @@ See [ADR 0005](docs/adr/0005-grid-editing.md) for the design and what is not cov
 
 ## Build and test
 
+The version is written once, in [eng/Version.props](eng/Version.props) (`SquillVersion`); the release tag is `v` + that value.
+`pwsh eng/get-version.ps1 [-Tag v0.1.0]` prints it and checks a tag against it.
+
 Prerequisite: the .NET SDK pinned in [global.json](global.json) (11.0.100-rc.3).
 
 ```bash
