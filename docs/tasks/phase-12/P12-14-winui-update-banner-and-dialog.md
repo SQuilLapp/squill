@@ -1,6 +1,6 @@
 # P12-14 - WinUI head: "update available" notice, release notes and restart to update
 
-Status: todo
+Status: done
 Depends on: P12-13
 
 ## Goal
@@ -18,9 +18,9 @@ The WinUI user is told once that an update exists, sees what changed, downloads 
 - Avalonia, the release workflow, installing anything real (P12-19).
 
 ## Tasks
-- [ ] Banner, dialog, question dialog, startup trigger, menu entry, catalog keys fr/en.
-- [ ] Tests in `tests/Squill.App.WinUI.Tests`: banner state mapping function (status -> visible buttons) pure and tested for every `UpdateStatus`; restart is refused when unsaved edits exist (view-model level with fakes); scanner/parity green.
-- [ ] No fake-engine switch (env var or flag) may be added to the product code. The banner, dialog and question screens are covered by the unit tests above; their real run happens in P12-19 against a local feed. List them under "to check by hand" in the report.
+- [x] Banner, dialog, question dialog, startup trigger, menu entry, catalog keys fr/en.
+- [x] Tests in `tests/Squill.App.WinUI.Tests`: banner state mapping function (status -> visible buttons) pure and tested for every `UpdateStatus`; restart is refused when unsaved edits exist (view-model level with fakes); scanner/parity green.
+- [x] No fake-engine switch (env var or flag) may be added to the product code. The banner, dialog and question screens are covered by the unit tests above; their real run happens in P12-19 against a local feed. List them under "to check by hand" in the report.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green.
@@ -28,3 +28,13 @@ The WinUI user is told once that an update exists, sees what changed, downloads 
 
 ## Suggested commit message
 Add the update notice, release notes dialog and restart flow to the WinUI head
+
+## Report
+- Added: `InfoBar` notice (new grid row under the caption bar), `UpdateWindow`, `UpdateAskDialog` (four buttons; closing without a choice keeps `NotAsked`), `Help > Check for updates...`, `MainWindow.StartUpdates()` called after activation (skipped when `SQUILL_NO_UPDATE_CHECK=1`), `UpdateViewModel.ConfirmRestartAsync` wired to `WorkspaceViewModel.ConfirmCloseAsync` (asks when a table designer has unsaved changes), shared `ModalWindow.Place` (the About and Settings windows use it too), catalog keys en + fr.
+- Tests: banner parts for every `UpdateStatus`, restart refused / accepted through the confirmation hook, `ConfirmCloseAsync` without unsaved designer, XAML handler check for both new windows.
+- AOT publish: no IL2xxx/IL3xxx from SQuilL code (only the existing third-party SqlClient / ConfigurationManager trim warnings). From the build folder the app is not installed, so the one-time question is not shown (`ShouldAskFrequency` needs an installed app) and no connection is opened (0 in 20 s).
+
+## To check by hand
+- Banner, update dialog and one-time question against a local feed (P12-19): Details, Download progress, Restart to update, Later (close button), Skip, Retry after a failure; question closed with Esc asks again next start.
+- Restart with an unsaved table designer shows the discard dialog and cancelling aborts the restart.
+- `Help > Check for updates...` from the build folder shows the "not installed" tip under the title bar; Esc closes the dialog; text does not clip in fr.

@@ -1,16 +1,12 @@
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Updates;
-using Windows.Graphics;
 using Windows.System;
-using WinRT.Interop;
 
 namespace Squill.App.WinUI.Views;
 
@@ -19,7 +15,6 @@ public sealed partial class AboutWindow : Window
 {
     private const int LogicalWidth = 420;
     private const int LogicalHeight = 360;
-    private const int OwnerIndex = -8; // GWLP_HWNDPARENT
 
     private readonly Window _owner;
     private readonly AboutViewModel _about;
@@ -61,7 +56,7 @@ public sealed partial class AboutWindow : Window
         Root.KeyboardAccelerators.Add(escape);
         about.Updates.PropertyChanged += OnUpdatesChanged;
         RefreshStatus();
-        PlaceModal(owner);
+        ModalWindow.Place(this, owner, LogicalWidth, LogicalHeight, false);
         Closed += (_, _) =>
         {
             about.Updates.PropertyChanged -= OnUpdatesChanged;
@@ -98,34 +93,5 @@ public sealed partial class AboutWindow : Window
     {
         if (Directory.Exists(_about.DataFolder))
             Process.Start(new ProcessStartInfo("explorer.exe", $"\"{_about.DataFolder}\"") { UseShellExecute = true })?.Dispose();
-    }
-
-    private void PlaceModal(Window owner)
-    {
-        var ownerHandle = WindowNative.GetWindowHandle(owner);
-        var handle = WindowNative.GetWindowHandle(this);
-        Win32.SetWindowLongPtr(handle, OwnerIndex, ownerHandle);
-        var scale = Win32.GetDpiForWindow(handle) / 96.0;
-        var size = new SizeInt32((int)(LogicalWidth * scale), (int)(LogicalHeight * scale));
-        AppWindow.Resize(size);
-        var at = owner.AppWindow.Position;
-        var around = owner.AppWindow.Size;
-        AppWindow.Move(new PointInt32(at.X + Math.Max(0, (around.Width - size.Width) / 2), at.Y + Math.Max(0, (around.Height - size.Height) / 2)));
-        if (AppWindow.Presenter is OverlappedPresenter presenter)
-        {
-            presenter.IsMinimizable = false;
-            presenter.IsMaximizable = false;
-            presenter.IsResizable = false;
-            presenter.IsModal = true;
-        }
-    }
-
-    private static partial class Win32
-    {
-        [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
-        internal static partial nint SetWindowLongPtr(nint window, int index, nint value);
-
-        [LibraryImport("user32.dll")]
-        internal static partial uint GetDpiForWindow(nint window);
     }
 }

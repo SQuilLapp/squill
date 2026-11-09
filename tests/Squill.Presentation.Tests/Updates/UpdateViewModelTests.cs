@@ -197,6 +197,27 @@ public sealed class UpdateViewModelTests : IDisposable
         Assert.Equal("12,4 Mo", _vm.DownloadSizeText.Replace(' ', ' '));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Restart_AsksFirstAndIsRefusedWhenTheAnswerIsNo(bool agree)
+    {
+        var offer = Offer("2.0.0");
+        await CheckAsync(offer);
+        await _vm.DownloadCommand.ExecuteAsync(null);
+        var asked = 0;
+        _vm.ConfirmRestartAsync = () =>
+        {
+            asked++;
+            return Task.FromResult(agree);
+        };
+
+        await _vm.RestartToUpdateCommand.ExecuteAsync(null);
+
+        Assert.Equal(1, asked);
+        Assert.Equal(agree ? offer : null, _engine.Applied);
+    }
+
     [Fact]
     public async Task Skip_PersistsAndSilencesTheNextScheduledCheck()
     {

@@ -274,6 +274,12 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         RemoveDesigner(designer);
     }
 
+    /// <summary>Asks the user to confirm leaving when a table designer holds unsaved changes (before the app restarts to update).</summary>
+    /// <returns><see langword="true"/> when nothing is unsaved or the user agreed to discard it.</returns>
+    public async Task<bool> ConfirmCloseAsync() =>
+        !Designers.Any(d => d.HasChanges)
+        || await _dialogs.ConfirmAsync(UiText.Get("workspace.closeDesigner"), UiText.Get("workspace.discardUnsaved"));
+
     private void RemoveDesigner(TableDesignerViewModel designer)
     {
         var index = Designers.IndexOf(designer);

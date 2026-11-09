@@ -31,6 +31,9 @@ public sealed partial class UpdateViewModel : ViewModelBase, IDisposable
         _service.Changed += OnServiceChanged;
     }
 
+    /// <summary>Gets or sets the question asked before restarting; the restart is abandoned when it answers <see langword="false"/> (for example the user keeps unsaved edits).</summary>
+    public Func<Task<bool>>? ConfirmRestartAsync { get; set; }
+
     /// <summary>Gets the current status of the update flow.</summary>
     public UpdateStatus Status => _service.Status;
 
@@ -208,7 +211,15 @@ public sealed partial class UpdateViewModel : ViewModelBase, IDisposable
     private async Task DownloadAsync() => await _service.DownloadAsync(_cts.Token);
 
     [RelayCommand(CanExecute = nameof(CanRestart))]
-    private void RestartToUpdate() => _service.RestartToUpdate();
+    private async Task RestartToUpdateAsync()
+    {
+        if (ConfirmRestartAsync is { } confirm && !await confirm())
+        {
+            return;
+        }
+
+        _service.RestartToUpdate();
+    }
 
     [RelayCommand(CanExecute = nameof(CanSkip))]
     private async Task SkipVersionAsync() => await _service.SkipVersionAsync();

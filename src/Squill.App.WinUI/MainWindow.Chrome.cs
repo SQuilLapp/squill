@@ -113,7 +113,7 @@ public sealed partial class MainWindow
         MainMenu.Items.Add(Menu("menu.database", Item("menu.newTable", () => Workspace.NewTableCommand, null, OnNewTableClicked)));
         ToolsMenu = Menu("menu.tools", Plain("menu.settings", OnSettingsClicked));
         MainMenu.Items.Add(ToolsMenu);
-        MainMenu.Items.Add(Menu("menu.help", Plain("menu.about", OnAboutClicked)));
+        MainMenu.Items.Add(Menu("menu.help", Plain("menu.checkForUpdates", OnCheckForUpdatesClicked), Plain("menu.about", OnAboutClicked)));
     }
 
     private MenuBarItem ToolsMenu { get; set; } = null!;

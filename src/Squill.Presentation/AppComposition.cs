@@ -99,6 +99,7 @@ public static class AppComposition
                 SemanticVersion.Parse(currentVersion, CultureInfo.InvariantCulture)),
             platform.Dispatcher,
             settings);
+        updates.ConfirmRestartAsync = workspace.ConfirmCloseAsync;
         return new AppServices(
             workspace,
             new HistoryViewModel(history, workspace, platform.Dialogs),

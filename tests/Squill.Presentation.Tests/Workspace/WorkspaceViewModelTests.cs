@@ -47,6 +47,13 @@ public sealed class WorkspaceViewModelTests
             store);
     }
 
+    [Fact]
+    public async Task ConfirmClose_WithoutUnsavedDesigner_DoesNotAsk()
+    {
+        Assert.True(await _workspace.ConfirmCloseAsync());
+        Assert.Empty(_dialogs.Confirms);
+    }
+
     private static ConnectionProfile Profile() =>
         new(Guid.NewGuid(), "p", DatabaseDialect.PostgreSql, "h", 1, "d", "u", null, null);
 

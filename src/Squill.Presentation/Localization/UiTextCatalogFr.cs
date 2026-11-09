@@ -502,5 +502,14 @@ internal static class UiTextCatalogFr
         ("about.openDataFolder", "Ouvrir le dossier de données"),
         ("about.repository", "Dépôt sur GitHub"),
         ("about.close", "Fermer"),
+        ("update.button.details", "Détails"),
+        ("update.dialog.title", "SQuilL {0} est disponible"),
+        ("update.dialog.current", "Version actuelle : {0}"),
+        ("update.dialog.new", "Nouvelle version : {0}"),
+        ("update.dialog.size", "Taille du téléchargement : {0}"),
+        ("update.dialog.delta", "(seules les différences sont téléchargées)"),
+        ("update.dialog.details", "Afficher les détails"),
+        ("update.dialog.notes", "Nouveautés"),
+        ("menu.checkForUpdates", "Rechercher les mises à jour..."),
     ];
 }

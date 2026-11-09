@@ -37,7 +37,7 @@ public sealed partial class MainWindow : Window
         InitializeChrome();
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "squill.ico"));
         var splitter = new Splitter(true);
-        Grid.SetRow(splitter, 1);
+        Grid.SetRow(splitter, 2);
         Grid.SetColumn(splitter, 2);
         Root.Children.Add(splitter);
     }
@@ -68,6 +68,7 @@ public sealed partial class MainWindow : Window
         Sidebar.SelectedNodeChanged += (_, node) => Properties.Show(node, services.Workspace);
         Status.Attach(services.Workspace);
         AttachMenu(services.Workspace);
+        AttachUpdates();
     }
 
     private WorkspaceViewModel Workspace => _workspace!;
