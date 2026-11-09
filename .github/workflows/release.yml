@@ -3,19 +3,66 @@ name: Release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and pack only; upload workflow artifacts and create no Release
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   windows:
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
+      - name: Resolve the version
+        id: version
+        shell: pwsh
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          $version = if ($env:EVENT -eq 'push') { ./eng/get-version.ps1 -Tag $env:REF_NAME } else { ./eng/get-version.ps1 }
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          "version=$version" >> $env:GITHUB_OUTPUT
+      - run: dotnet build Squill.Windows.slnx -c Release -warnaserror
+      - run: dotnet test --solution Squill.Windows.slnx -c Release
       - name: Pack
         shell: pwsh
-        run: ./eng/pack-windows.ps1 -Version "${env:GITHUB_REF_NAME}".TrimStart('v')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./eng/pack-windows.ps1 -FromGithub -AlsoBeta
+      - name: Release notes
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: ./eng/release-notes.ps1 -Version $env:VERSION -OutFile artifacts/release-notes.md
       - uses: actions/upload-artifact@v7
         with:
           name: squill-windows
-          path: artifacts/releases
+          path: |
+            artifacts/releases
+            artifacts/release-notes.md
+          retention-days: 14
+      - name: Publish the GitHub Release
+        if: github.event_name == 'push' || inputs.dry_run == false
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TARGET: ${{ github.sha }}
+        run: ./eng/publish-release.ps1 -Tag "v$env:VERSION" -Prerelease:($env:VERSION -match '-') -Target $env:TARGET

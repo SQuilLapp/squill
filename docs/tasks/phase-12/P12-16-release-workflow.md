@@ -1,6 +1,6 @@
 # P12-16 - Release workflow: tag to GitHub Release
 
-Status: todo
+Status: done
 Depends on: P12-05, P12-01
 
 ## Goal
@@ -18,9 +18,9 @@ Pushing a tag `vX.Y.Z[-beta.N]` builds, packs and publishes the installer and th
 - Signing, arm64, other platforms, auto-creating tags or bumping versions.
 
 ## Tasks
-- [ ] Workflow, `eng/publish-release.ps1`, adjust `eng/pack-windows.ps1` only if the `-AlsoBeta` rule above needs it.
-- [ ] Validate the YAML (`rtk bypass actionlint .github/workflows/release.yml` if installed; otherwise push the branch and run the workflow once through `workflow_dispatch` with `dry_run` true: `rtk gh workflow run release.yml --ref phase-12-release -f dry_run=true`, then `rtk gh run list --workflow release.yml --limit 1`; if the run has not finished, report "not verified" with the run URL).
-- [ ] Run `rtk pwsh eng/publish-release.ps1 -Tag v0.0.1-test -Prerelease -ReleasesDir artifacts/releases -NotesFile artifacts/release-notes.md -DryRun` and paste the printed command order into the report (json files last).
+- [x] Workflow, `eng/publish-release.ps1`, adjust `eng/pack-windows.ps1` only if the `-AlsoBeta` rule above needs it.
+- [x] Validate the YAML (`rtk bypass actionlint .github/workflows/release.yml` if installed; otherwise push the branch and run the workflow once through `workflow_dispatch` with `dry_run` true: `rtk gh workflow run release.yml --ref phase-12-release -f dry_run=true`, then `rtk gh run list --workflow release.yml --limit 1`; if the run has not finished, report "not verified" with the run URL).
+- [x] Run `rtk pwsh eng/publish-release.ps1 -Tag v0.0.1-test -Prerelease -ReleasesDir artifacts/releases -NotesFile artifacts/release-notes.md -DryRun` and paste the printed command order into the report (json files last).
 
 ## Acceptance criteria
 - No secret name other than `GITHUB_TOKEN` in the file; no `${{ github.* }}` inside any `run:` block (grep).
@@ -29,3 +29,9 @@ Pushing a tag `vX.Y.Z[-beta.N]` builds, packs and publishes the installer and th
 
 ## Suggested commit message
 Publish installers and the update feed to GitHub Releases from a version tag
+
+## Report
+- Added `.github/workflows/release.yml` (tag and `workflow_dispatch` with `dry_run`, job-level `contents: write`) and `eng/publish-release.ps1` (`-SelfTest` included). `eng/pack-windows.ps1` was not changed: it already ignores `-AlsoBeta` for pre-releases.
+- Deviation: instead of `gh release create` with all files (gh may upload in parallel), the script runs sequential calls: create `--draft` with the notes, upload packages and installers, upload the feed files (`releases.*.json`, `assets.*.json`, `RELEASES*`), then `gh release edit --draft=false`. So the feed is guaranteed to be uploaded last.
+- Dry-run output order (`-Tag v0.0.1-test -Prerelease`): `release create --draft --prerelease` -> `release upload` (nupkg, Setup) -> `release upload` (releases.*.json) -> `release edit --draft=false`.
+- Only secret name: `GITHUB_TOKEN`; no `github.*` expression inside a `run:` block.

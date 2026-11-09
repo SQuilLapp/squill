@@ -246,7 +246,7 @@ Depends on: <card ids, ranges allowed>
 | [P12-13](phase-12/P12-13-winui-settings-about.md) | WinUI head: update rows in the settings window and the About dialog | P12-12, P9-24 | done |
 | [P12-14](phase-12/P12-14-winui-update-banner-and-dialog.md) | WinUI head: update notice, release notes and restart to update | P12-13 | done |
 | [P12-15](phase-12/P12-15-avalonia-update-ui.md) | Avalonia head: update settings, About, notice and dialog | P12-14, P9-23 | done |
-| [P12-16](phase-12/P12-16-release-workflow.md) | Release workflow: tag to GitHub Release | P12-05, P12-01 | todo |
+| [P12-16](phase-12/P12-16-release-workflow.md) | Release workflow: tag to GitHub Release | P12-05, P12-01 | done |
 | [P12-17](phase-12/P12-17-optional-code-signing.md) | Optional code signing in the pack script and the release workflow | P12-16 | todo |
 | [P12-18](phase-12/P12-18-windows-arm64.md) | Windows arm64 build and package (conditional) | P12-16, P12-01 | todo |
 | [P12-19](phase-12/P12-19-verify-install-and-update.md) | End-to-end verification: install, update from N to N+1, uninstall | P12-05, P12-06, P12-09, P12-14, P12-15, P12-16 | todo |
