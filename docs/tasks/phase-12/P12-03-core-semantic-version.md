@@ -1,6 +1,6 @@
 # P12-03 - Core: semantic version parsing and comparison
 
-Status: todo
+Status: done
 Depends on: P12-02
 
 ## Goal
@@ -18,8 +18,8 @@ The app needs to know whether a version is newer, whether it is a pre-release, a
 - Anything Velopack, settings, UI.
 
 ## Tasks
-- [ ] `SemanticVersion`, `UpdateChannel`, extension methods with full XML docs.
-- [ ] Tests in `tests/Squill.Core.Tests`: the SemVer 2 precedence example chain (`1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-alpha.beta < 1.0.0-beta < 1.0.0-beta.2 < 1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0`), numeric order (`1.2.10 > 1.2.9`), parse table (valid, `v1.0.0`, `1.0`, `01.0.0`, `1.0.0-`, `1.0.0-01`, empty, `1.0.0+abc`), round trip `ToString`, `ChannelOf`, `ChannelId`, `TryParse` on garbage returns false.
+- [x] `SemanticVersion`, `UpdateChannel`, extension methods with full XML docs.
+- [x] Tests in `tests/Squill.Core.Tests`: the SemVer 2 precedence example chain (`1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-alpha.beta < 1.0.0-beta < 1.0.0-beta.2 < 1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0`), numeric order (`1.2.10 > 1.2.9`), parse table (valid, `v1.0.0`, `1.0`, `01.0.0`, `1.0.0-`, `1.0.0-01`, empty, `1.0.0+abc`), round trip `ToString`, `ChannelOf`, `ChannelId`, `TryParse` on garbage returns false.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green.
