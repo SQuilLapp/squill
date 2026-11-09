@@ -6,4 +6,25 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- Reflection-free version constant generated from $(Version). -->
+  <Target Name="GenerateAppVersion" BeforeTargets="CoreCompile;GenerateMSBuildEditorConfigFileShouldRun">
+    <PropertyGroup>
+      <AppVersionFile>$(IntermediateOutputPath)AppVersion.g.cs</AppVersionFile>
+    </PropertyGroup>
+    <ItemGroup>
+      <AppVersionLine Include="namespace Squill.Core%3B" />
+      <AppVersionLine Include="/// &lt;summary&gt;The version of the running application, generated from eng/Version.props.&lt;/summary&gt;" />
+      <AppVersionLine Include="public static class AppVersion" />
+      <AppVersionLine Include="{" />
+      <AppVersionLine Include="    /// &lt;summary&gt;The SemVer 2 version string, identical to the release tag without its leading v.&lt;/summary&gt;" />
+      <AppVersionLine Include="    public const string Current = &quot;$(Version)&quot;%3B" />
+      <AppVersionLine Include="}" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(AppVersionFile)" Lines="@(AppVersionLine)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(AppVersionFile)" />
+      <FileWrites Include="$(AppVersionFile)" />
+    </ItemGroup>
+  </Target>
+
 </Project>

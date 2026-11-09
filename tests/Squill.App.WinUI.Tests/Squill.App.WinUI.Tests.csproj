@@ -40,6 +40,10 @@
     <Content Include="..\..\src\Squill.App.WinUI\Views\ConnectionEditorWindow.xaml.cs" Link="Xaml\ConnectionEditorWindow.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\SettingsWindow.xaml" Link="Xaml\SettingsWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\SettingsWindow.xaml.cs" Link="Xaml\SettingsWindow.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\UpdateWindow.xaml" Link="Xaml\UpdateWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\UpdateWindow.xaml.cs" Link="Xaml\UpdateWindow.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\AboutWindow.xaml" Link="Xaml\AboutWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\AboutWindow.xaml.cs" Link="Xaml\AboutWindow.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Styles\SquillTokens.xaml" Link="SquillTokens.xaml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Styles\Controls.xaml" Link="Styles\Controls.xaml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Styles\ControlResources.xaml" Link="Styles\ControlResources.xaml" CopyToOutputDirectory="PreserveNewest" />

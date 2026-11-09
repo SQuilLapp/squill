@@ -23,6 +23,9 @@
     <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseTabCommand}" CommandParameter="{Binding ActiveTab}" />
   </Window.KeyBindings>
   <Window.Styles>
+    <Style Selector="Border#UpdateBar.warning">
+      <Setter Property="Background" Value="{DynamicResource SquillWarningSoftBrush}" />
+    </Style>
     <Style Selector="Menu > MenuItem">
       <Setter Property="Padding" Value="7,0" />
       <Setter Property="MinHeight" Value="28" />
@@ -99,7 +102,7 @@
       <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
   </Window.Styles>
-  <Grid RowDefinitions="41,*,Auto" ColumnDefinitions="45,270,Auto,*,Auto">
+  <Grid RowDefinitions="41,Auto,*,Auto" ColumnDefinitions="45,270,Auto,*,Auto">
     <Border Name="TitleBar" Grid.ColumnSpan="5" Background="{DynamicResource SquillBgBaseBrush}"
             BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
       <Grid Name="TitleGrid" ColumnDefinitions="Auto,*,0">
@@ -140,7 +143,9 @@
               <MenuItem Header="{loc:Text menu.settings}" Click="OnSettingsClicked" />
             </MenuItem>
             <MenuItem Header="{loc:Text menu.help}">
-              <MenuItem Header="{loc:Text menu.about}" IsEnabled="False" />
+              <MenuItem Header="{loc:Text menu.checkForUpdates}" Click="OnCheckForUpdatesClicked" />
+              <Separator />
+              <MenuItem Name="AboutMenuItem" Header="{loc:Text menu.about}" Click="OnAboutClicked" />
             </MenuItem>
           </Menu>
         </StackPanel>
@@ -158,7 +163,24 @@
         </Border>
       </Grid>
     </Border>
-    <Border Name="ActivityRail" Grid.Row="1" Background="{DynamicResource SquillBgSurfaceBrush}"
+    <Border Name="UpdateBar" Grid.Row="1" Grid.ColumnSpan="5" IsVisible="False" Padding="14,8,8,8" Background="{DynamicResource SquillAccentSoftBrush}"
+            BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
+      <DockPanel>
+        <Button DockPanel.Dock="Right" Name="BannerClose" Classes="ghost" Width="28" Height="28" MinHeight="28" Padding="0" VerticalAlignment="Center"
+                Click="OnBannerClose" AutomationProperties.Name="{loc:Text update.button.later}" ToolTip.Tip="{loc:Text update.button.later}">
+          <Path Classes="icon" Width="10" Height="10" Data="{StaticResource SquillIconClose}" />
+        </Button>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0">
+          <Button Name="BannerDetails" Content="{loc:Text update.button.details}" Click="OnBannerDetails" AutomationProperties.Name="{loc:Text update.button.details}" />
+          <Button Name="BannerDownload" Classes="primary" Content="{loc:Text update.button.download}" Click="OnBannerDownload" AutomationProperties.Name="{loc:Text update.button.download}" />
+          <ProgressBar Name="BannerProgress" Width="160" Minimum="0" Maximum="100" VerticalAlignment="Center" />
+          <Button Name="BannerRestart" Classes="primary" Content="{loc:Text update.button.restart}" Click="OnBannerRestart" AutomationProperties.Name="{loc:Text update.button.restart}" />
+          <Button Name="BannerRetry" Content="{loc:Text update.button.retry}" Click="OnBannerRetry" AutomationProperties.Name="{loc:Text update.button.retry}" />
+        </StackPanel>
+        <TextBlock Name="BannerText" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SquillFgBrush}" />
+      </DockPanel>
+    </Border>
+    <Border Name="ActivityRail" Grid.Row="2" Background="{DynamicResource SquillBgSurfaceBrush}"
             BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,1,0">
       <DockPanel>
         <Button DockPanel.Dock="Bottom" Name="RailSettings" Classes="rail ghost" Margin="0,0,0,8" HorizontalAlignment="Center"
@@ -197,9 +219,9 @@
         </StackPanel>
       </DockPanel>
     </Border>
-    <v:SidebarView Grid.Row="1" Grid.Column="1" Name="Sidebar" />
-    <GridSplitter Grid.Row="1" Grid.Column="2" Width="4" Background="{DynamicResource SquillBorderBrush}" />
-    <Grid Grid.Row="1" Grid.Column="3" RowDefinitions="Auto,*">
+    <v:SidebarView Grid.Row="2" Grid.Column="1" Name="Sidebar" />
+    <GridSplitter Grid.Row="2" Grid.Column="2" Width="4" Background="{DynamicResource SquillBorderBrush}" />
+    <Grid Grid.Row="2" Grid.Column="3" RowDefinitions="Auto,*">
       <Border Name="TabStripBar" Background="{DynamicResource SquillBgSurfaceBrush}" Height="36"
               BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
         <DockPanel>
@@ -240,7 +262,7 @@
       <v:TableDesignerView Grid.Row="1" Name="DesignerArea" IsVisible="False" />
       <Grid Name="TerminalArea" Grid.Row="1" IsVisible="False" Background="{DynamicResource SquillBgBaseBrush}" />
     </Grid>
-    <v:PropertiesPanel Grid.Row="1" Grid.Column="4" Name="Properties" />
-    <v:StatusBar Grid.Row="2" Name="Status" Grid.ColumnSpan="5" />
+    <v:PropertiesPanel Grid.Row="2" Grid.Column="4" Name="Properties" />
+    <v:StatusBar Grid.Row="3" Name="Status" Grid.ColumnSpan="5" />
   </Grid>
 </Window>

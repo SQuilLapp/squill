@@ -1,9 +1,11 @@
+using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using Avalonia.Interactivity;
 using Squill.Core;
 using Squill.Platform.Settings;
 using Squill.Presentation.Settings;
+using Squill.Presentation.Updates;
 
 namespace Squill.App.Avalonia.Views;
 
@@ -11,6 +13,7 @@ namespace Squill.App.Avalonia.Views;
 public sealed partial class SettingsWindow : Window
 {
     private string? _dataDirectory;
+    private UpdateViewModel? _updates;
 
     /// <summary>Creates the window.</summary>
     public SettingsWindow()
@@ -30,6 +33,38 @@ public sealed partial class SettingsWindow : Window
             OpenDataFolderButton.IsEnabled = value is not null;
         }
     }
+
+    /// <summary>Gets or sets the update flow behind the status line and the check button.</summary>
+    public UpdateViewModel? Updates
+    {
+        get => _updates;
+        set
+        {
+            if (_updates is { } old)
+                old.PropertyChanged -= OnUpdatesChanged;
+            _updates = value;
+            if (value is not null)
+                value.PropertyChanged += OnUpdatesChanged;
+            RefreshUpdateStatus();
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnClosed(EventArgs e)
+    {
+        Updates = null;
+        base.OnClosed(e);
+    }
+
+    private void OnUpdatesChanged(object? sender, PropertyChangedEventArgs e) => RefreshUpdateStatus();
+
+    private void RefreshUpdateStatus()
+    {
+        UpdateStatusText.Text = _updates?.StatusText;
+        CheckNowButton.IsEnabled = _updates?.CanCheck ?? false;
+    }
+
+    private void OnCheckNow(object? sender, RoutedEventArgs e) => _updates?.CheckNowCommand.Execute(null);
 
     private void OnBack(object? sender, RoutedEventArgs e) => Close();
 

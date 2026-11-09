@@ -8,10 +8,19 @@ namespace Squill.Platform.Settings;
 /// <param name="MaxGridRows">Maximum number of rows kept in a result grid, between 1,000 and 10,000,000.</param>
 /// <param name="FormatterKeywordCase">Keyword casing applied by the SQL formatter.</param>
 /// <param name="Language">Requested display language; applied after a restart.</param>
-public sealed record AppSettings(ThemeMode Theme, double EditorFontSize, int MaxGridRows, KeywordCase FormatterKeywordCase, AppLanguage Language = AppLanguage.System)
+/// <param name="UpdateFrequency">How often the application may check for updates on its own; nothing is checked until the user chose.</param>
+/// <param name="UpdateChannel">Release channel followed for updates.</param>
+public sealed record AppSettings(
+    ThemeMode Theme,
+    double EditorFontSize,
+    int MaxGridRows,
+    KeywordCase FormatterKeywordCase,
+    AppLanguage Language = AppLanguage.System,
+    UpdateCheckFrequency UpdateFrequency = UpdateCheckFrequency.NotAsked,
+    UpdateChannel UpdateChannel = UpdateChannel.Stable)
 {
     /// <summary>Gets the settings used when nothing has been saved.</summary>
-    public static AppSettings Default { get; } = new(ThemeMode.System, 13, 1_000_000, KeywordCase.Upper, AppLanguage.System);
+    public static AppSettings Default { get; } = new(ThemeMode.System, 13, 1_000_000, KeywordCase.Upper);
 
     /// <summary>Returns a copy whose numeric values are forced into their allowed range.</summary>
     /// <returns>The clamped settings.</returns>

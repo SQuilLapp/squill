@@ -15,6 +15,7 @@
     </Grid.KeyboardAccelerators>
     <Grid.RowDefinitions>
       <RowDefinition Height="41" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
@@ -54,7 +55,8 @@
         </Border>
       </Grid>
     </Border>
-    <Border x:Name="ActivityRail" Grid.Row="1" BorderThickness="0,0,1,0">
+    <InfoBar x:Name="UpdateBar" Grid.Row="1" Grid.ColumnSpan="5" IsOpen="False" IsClosable="True" Severity="Informational" CornerRadius="0" Closed="OnUpdateBarClosed" />
+    <Border x:Name="ActivityRail" Grid.Row="2" BorderThickness="0,0,1,0">
       <Grid>
         <StackPanel Spacing="4" Margin="0,4,0,0" VerticalAlignment="Top">
           <Grid>
@@ -75,8 +77,8 @@
                 Margin="0,0,0,8" Click="OnSettingsClicked" />
       </Grid>
     </Border>
-    <v:SidebarView x:Name="Sidebar" Grid.Row="1" Grid.Column="1" />
-    <Grid Grid.Row="1" Grid.Column="3">
+    <v:SidebarView x:Name="Sidebar" Grid.Row="2" Grid.Column="1" />
+    <Grid Grid.Row="2" Grid.Column="3">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="*" />
@@ -101,7 +103,7 @@
       <v:TableDesignerView x:Name="DesignerArea" Grid.Row="1" Visibility="Collapsed" />
       <Grid x:Name="TerminalArea" Grid.Row="1" Visibility="Collapsed" />
     </Grid>
-    <v:PropertiesPanel x:Name="Properties" Grid.Row="1" Grid.Column="4" />
-    <v:StatusBar x:Name="Status" Grid.Row="2" Grid.ColumnSpan="5" />
+    <v:PropertiesPanel x:Name="Properties" Grid.Row="2" Grid.Column="4" />
+    <v:StatusBar x:Name="Status" Grid.Row="3" Grid.ColumnSpan="5" />
   </Grid>
 </Window>

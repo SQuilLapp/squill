@@ -1,0 +1,48 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:Squill.App.Avalonia.Localization"
+        x:Class="Squill.App.Avalonia.Views.AboutWindow"
+        Title="{loc:Text about.title}" Width="440" Height="460" CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Icon="avares://Squill.App.Avalonia/Assets/squill.ico"
+        Background="{DynamicResource SquillBgBaseBrush}">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="28,0,28,20">
+      <Button Name="CloseButton" Content="{loc:Text about.close}" Click="OnClose" AutomationProperties.Name="{loc:Text about.close}" />
+    </StackPanel>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="28,24,28,12" Spacing="14">
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <Image Source="avares://Squill.App.Avalonia/Assets/squill-32.png" Width="32" Height="32" />
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock Name="ProductName" FontSize="{DynamicResource SquillFontSizeTitle}" FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" />
+            <TextBlock Name="VersionText" Foreground="{DynamicResource SquillFg2Brush}" />
+          </StackPanel>
+        </StackPanel>
+        <StackPanel Spacing="2">
+          <TextBlock Name="ChannelText" Foreground="{DynamicResource SquillFg2Brush}" />
+          <TextBlock Name="InstallKindText" Foreground="{DynamicResource SquillFg2Brush}" TextWrapping="Wrap" />
+          <TextBlock Name="RuntimeText" Foreground="{DynamicResource SquillFg2Brush}" />
+          <TextBlock Name="LicenseText" Foreground="{DynamicResource SquillFg2Brush}" />
+        </StackPanel>
+        <StackPanel Spacing="4">
+          <SelectableTextBlock Name="DataFolderPath" FontFamily="{DynamicResource SquillFontMono}" FontSize="{DynamicResource SquillFontSizeBodySm}"
+                               Foreground="{DynamicResource SquillFg2Brush}" TextWrapping="Wrap" />
+          <Button Name="OpenFolderLink" Classes="ghost" Padding="0" HorizontalAlignment="Left" Foreground="{DynamicResource SquillAccentBrush}"
+                  Content="{loc:Text about.openDataFolder}" Click="OnOpenDataFolder" AutomationProperties.Name="{loc:Text about.openDataFolder}" />
+          <Button Name="RepositoryLink" Classes="ghost" Padding="0" HorizontalAlignment="Left" Foreground="{DynamicResource SquillAccentBrush}"
+                  Content="{loc:Text about.repository}" Click="OnOpenRepository" AutomationProperties.Name="{loc:Text about.repository}" />
+        </StackPanel>
+        <TextBlock Name="StatusText" Foreground="{DynamicResource SquillFgBrush}" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button Name="CheckButton" Content="{loc:Text update.button.checkNow}" Click="OnCheckNow" AutomationProperties.Name="{loc:Text update.button.checkNow}" />
+          <Button Name="RestartButton" Content="{loc:Text update.button.restart}" Click="OnRestart" AutomationProperties.Name="{loc:Text update.button.restart}" />
+        </StackPanel>
+        <StackPanel Name="WhatsNew" Spacing="6" IsVisible="False">
+          <TextBlock Name="WhatsNewText" FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" />
+          <ContentControl Name="NotesHost" HorizontalContentAlignment="Stretch" />
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

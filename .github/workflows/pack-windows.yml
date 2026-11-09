@@ -1,0 +1,101 @@
+name: Pack Windows
+
+# Reusable job body of the release workflow: builds, (optionally) tests and packs one Windows runtime with Velopack.
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: Runner label (windows-latest for win-x64, windows-11-arm for win-arm64)
+        type: string
+        required: true
+      runtime:
+        description: win-x64 or win-arm64
+        type: string
+        required: true
+      run-tests:
+        description: Build the Windows solution and run its tests before packing
+        type: boolean
+        default: false
+    outputs:
+      version:
+        description: The version being released (from eng/Version.props, checked against the tag)
+        value: ${{ jobs.pack.outputs.version }}
+
+jobs:
+  pack:
+    runs-on: ${{ inputs.runner }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Resolve the version
+        id: version
+        shell: pwsh
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          $version = if ($env:EVENT -eq 'push') { ./eng/get-version.ps1 -Tag $env:REF_NAME } else { ./eng/get-version.ps1 }
+          if ($LASTEXITCODE) { exit 1 }
+          "version=$version" >> $env:GITHUB_OUTPUT
+      - name: Build
+        if: inputs.run-tests
+        run: dotnet build Squill.Windows.slnx -c Release -warnaserror
+      - name: Test
+        if: inputs.run-tests
+        run: dotnet test --solution Squill.Windows.slnx -c Release
+      # Signing is optional: without any signing secret the release is unsigned exactly as before. Secrets are never
+      # available to pull requests (the release workflow is not triggered by them) or to forks.
+      # Secrets: SQUILL_SIGN_PFX_BASE64 + SQUILL_SIGN_PFX_PASSWORD (certificate), or AZURE_TRUSTED_SIGNING_ENDPOINT,
+      # AZURE_TRUSTED_SIGNING_ACCOUNT, AZURE_TRUSTED_SIGNING_PROFILE, AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+      # (OIDC federated identity; no client secret stored).
+      - name: Detect signing
+        id: sign
+        if: github.event_name != 'pull_request'
+        shell: pwsh
+        env:
+          HAS_PFX: ${{ secrets.SQUILL_SIGN_PFX_BASE64 != '' && secrets.SQUILL_SIGN_PFX_PASSWORD != '' }}
+          HAS_AZURE: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT != '' && secrets.AZURE_TRUSTED_SIGNING_ACCOUNT != '' && secrets.AZURE_TRUSTED_SIGNING_PROFILE != '' && secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
+        run: |
+          $azure = $env:HAS_AZURE -eq 'true'
+          "azure=$($azure.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "sign=$(($azure -or $env:HAS_PFX -eq 'true').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+      - name: Azure login
+        if: steps.sign.outputs.azure == 'true'
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Azure Trusted Signing metadata
+        id: azure_meta
+        if: steps.sign.outputs.azure == 'true'
+        shell: pwsh
+        env:
+          ENDPOINT: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT }}
+          ACCOUNT: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT }}
+          PROFILE_NAME: ${{ secrets.AZURE_TRUSTED_SIGNING_PROFILE }}
+        run: |
+          $file = Join-Path $env:RUNNER_TEMP 'trusted-signing.json'
+          @{ Endpoint = $env:ENDPOINT; TrustedSigningAccountName = $env:ACCOUNT; CertificateProfileName = $env:PROFILE_NAME } | ConvertTo-Json | Set-Content $file
+          "file=$file" >> $env:GITHUB_OUTPUT
+      - name: Pack
+        shell: pwsh
+        env:
+          RUNTIME: ${{ inputs.runtime }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SIGN: ${{ steps.sign.outputs.sign }}
+          AZURE_TRUSTED_SIGNING_METADATA_FILE: ${{ steps.azure_meta.outputs.file }}
+          SQUILL_SIGN_PFX_BASE64: ${{ secrets.SQUILL_SIGN_PFX_BASE64 }}
+          SQUILL_SIGN_PFX_PASSWORD: ${{ secrets.SQUILL_SIGN_PFX_PASSWORD }}
+        run: ./eng/pack-windows.ps1 -Runtime $env:RUNTIME -FromGithub -AlsoBeta -Sign:($env:SIGN -eq 'true')
+      - uses: actions/upload-artifact@v7
+        with:
+          name: squill-${{ inputs.runtime }}
+          path: ${{ inputs.runtime == 'win-x64' && 'artifacts/releases' || 'artifacts/releases-arm64' }}
+          retention-days: 14

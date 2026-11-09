@@ -131,6 +131,25 @@
               <TextBlock x:Name="RestartNote" Style="{StaticResource RowDescStyle}" Margin="0,0,0,6" Visibility="Collapsed" loc:Loc.Key="settings.restartNeeded" />
             </StackPanel>
           </Border>
+          <Border Style="{StaticResource CardStyle}">
+            <StackPanel Margin="20,14,20,10">
+              <TextBlock Style="{StaticResource RowTitleStyle}" loc:Loc.Key="settings.update.title" />
+              <Grid MinHeight="56" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                <TextBlock Foreground="{ThemeResource SquillFgBrush}" VerticalAlignment="Center" loc:Loc.Key="settings.update.frequency" />
+                <ComboBox x:Name="FrequencyBox" Grid.Column="1" Width="180" VerticalAlignment="Center" SelectionChanged="OnFrequencyChanged" />
+              </Grid>
+              <Grid MinHeight="56" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                <TextBlock Foreground="{ThemeResource SquillFgBrush}" VerticalAlignment="Center" loc:Loc.Key="settings.update.channel" />
+                <ComboBox x:Name="ChannelBox" Grid.Column="1" Width="260" VerticalAlignment="Center" SelectionChanged="OnChannelChanged" />
+              </Grid>
+              <TextBlock Style="{StaticResource RowDescStyle}" loc:Loc.Key="settings.update.channelNote" />
+              <TextBlock x:Name="NoDowngradeNote" Style="{StaticResource RowDescStyle}" Margin="0,4,0,0" Visibility="Collapsed" loc:Loc.Key="settings.update.noDowngrade" />
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Margin="0,10,0,6">
+                <Button x:Name="CheckNowButton" Click="OnCheckNow" loc:Loc.Key="update.button.checkNow" />
+                <TextBlock x:Name="UpdateStatusText" Grid.Column="1" Style="{StaticResource RowDescStyle}" VerticalAlignment="Center" />
+              </Grid>
+            </StackPanel>
+          </Border>
           <Border Style="{StaticResource CardStyle}" Padding="20">
             <StackPanel Spacing="14">
               <StackPanel>

@@ -43,6 +43,12 @@ public sealed partial class CatalogTests
         "er.types", // same word
         "er.tables", // TABLES · {0} / {1}, same word
         "er.title", // ER - {0}, same text
+        "settings.update.channel.stable", // proper name
+        "about.version", // same word
+        "about.channel.stable", // same word
+        "about.channel.beta", // proper name
+        "about.runtime", // .NET version, not translated
+        "about.runtime.jit", // .NET version, not translated
         "er.relationFrom", // only symbols and placeholders
     ];
 

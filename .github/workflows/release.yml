@@ -3,19 +3,68 @@ name: Release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and pack only; upload workflow artifacts and create no Release
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  windows:
-    runs-on: windows-latest
+  pack-x64:
+    permissions:
+      contents: read
+      id-token: write # only used by the optional Azure login (federated identity)
+    uses: ./.github/workflows/pack-windows.yml
+    secrets: inherit
+    with:
+      runner: windows-latest
+      runtime: win-x64
+      run-tests: true
+
+  # Native AOT arm64 needs the MSVC ARM64 build tools (docs/poc/velopack-aot.md section 8): built on a hosted arm64 runner.
+  # When this job fails the release is published x64-only (see the release job).
+  pack-arm64:
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/pack-windows.yml
+    secrets: inherit
+    with:
+      runner: windows-11-arm
+      runtime: win-arm64
+
+  release:
+    needs: [pack-x64, pack-arm64]
+    # A failed arm64 pack must not block the x64 release; a failed x64 pack always does.
+    if: ${{ !cancelled() && needs.pack-x64.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v6
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          global-json-file: global.json
-      - name: Pack
-        shell: pwsh
-        run: ./eng/pack-windows.ps1 -Version "${env:GITHUB_REF_NAME}".TrimStart('v')
-      - uses: actions/upload-artifact@v7
-        with:
-          name: squill-windows
+          pattern: squill-win-*
+          merge-multiple: true
           path: artifacts/releases
+      - name: Release notes
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.pack-x64.outputs.version }}
+        run: ./eng/release-notes.ps1 -Version $env:VERSION -OutFile artifacts/release-notes.md
+      - name: Publish the GitHub Release
+        if: github.event_name == 'push' || inputs.dry_run == false
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.pack-x64.outputs.version }}
+          TARGET: ${{ github.sha }}
+        run: ./eng/publish-release.ps1 -Tag "v$env:VERSION" -Prerelease:($env:VERSION -match '-') -Target $env:TARGET

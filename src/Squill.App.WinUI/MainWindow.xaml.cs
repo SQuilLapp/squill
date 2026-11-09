@@ -24,6 +24,8 @@ public sealed partial class MainWindow : Window
     private readonly Dictionary<QueryTabViewModel, TabViewItem> _items = [];
     private WorkspaceViewModel? _workspace;
     private SettingsViewModel? _settings;
+    private AppServices? _services;
+    private AboutWindow? _aboutWindow;
     private ConnectionEditorWindow? _editorWindow;
     private SettingsWindow? _settingsWindow;
     private bool _syncing;
@@ -35,7 +37,7 @@ public sealed partial class MainWindow : Window
         InitializeChrome();
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "squill.ico"));
         var splitter = new Splitter(true);
-        Grid.SetRow(splitter, 1);
+        Grid.SetRow(splitter, 2);
         Grid.SetColumn(splitter, 2);
         Root.Children.Add(splitter);
     }
@@ -49,6 +51,7 @@ public sealed partial class MainWindow : Window
         ActiveTabView.Dialogs = dialogs;
         _workspace = services.Workspace;
         _settings = services.Settings;
+        _services = services;
         _dataDirectory = dataDirectory;
         Root.KeyboardAccelerators.Add(SettingsAccelerator());
         services.Settings.ThemeChanged += (_, _) => ApplyTheme(services.Settings.Theme);
@@ -65,6 +68,7 @@ public sealed partial class MainWindow : Window
         Sidebar.SelectedNodeChanged += (_, node) => Properties.Show(node, services.Workspace);
         Status.Attach(services.Workspace);
         AttachMenu(services.Workspace);
+        AttachUpdates();
     }
 
     private WorkspaceViewModel Workspace => _workspace!;
@@ -85,9 +89,23 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        var window = new SettingsWindow(this, _settings!, _dataDirectory!);
+        var window = new SettingsWindow(this, _settings!, _dataDirectory!, _services!.Updates);
         _settingsWindow = window;
         window.Closed += (_, _) => _settingsWindow = null;
+        window.Activate();
+    }
+
+    private void OnAboutClicked(object sender, RoutedEventArgs e)
+    {
+        if (_aboutWindow is { } open)
+        {
+            open.Activate();
+            return;
+        }
+
+        var window = new AboutWindow(this, _services!.About);
+        _aboutWindow = window;
+        window.Closed += (_, _) => _aboutWindow = null;
         window.Activate();
     }
 

@@ -1,0 +1,36 @@
+<Window x:Class="Squill.App.WinUI.Views.UpdateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:Squill.App.WinUI.Localization">
+  <Grid x:Name="Root" Background="{ThemeResource SquillBgBaseBrush}" RowDefinitions="*,Auto">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="28,24,28,12" Spacing="12">
+        <TextBlock x:Name="TitleText" FontSize="{StaticResource SquillFontSizeTitle}" FontWeight="SemiBold" Foreground="{ThemeResource SquillFgBrush}" TextWrapping="Wrap" />
+        <StackPanel Spacing="2">
+          <TextBlock x:Name="CurrentText" Foreground="{ThemeResource SquillFg2Brush}" />
+          <TextBlock x:Name="NewText" Foreground="{ThemeResource SquillFg2Brush}" />
+          <TextBlock x:Name="SizeText" Foreground="{ThemeResource SquillFg2Brush}" TextWrapping="Wrap" />
+        </StackPanel>
+        <StackPanel x:Name="NotesPanel" Spacing="6">
+          <TextBlock FontWeight="SemiBold" Foreground="{ThemeResource SquillFgBrush}" loc:Loc.Key="update.dialog.notes" />
+          <ScrollViewer MaxHeight="280" HorizontalScrollBarVisibility="Disabled">
+            <ContentControl x:Name="NotesHost" HorizontalContentAlignment="Stretch" />
+          </ScrollViewer>
+        </StackPanel>
+        <ProgressBar x:Name="Progress" Minimum="0" Maximum="100" Visibility="Collapsed" />
+        <TextBlock x:Name="StatusText" Foreground="{ThemeResource SquillFgBrush}" TextWrapping="Wrap" />
+        <Expander x:Name="DetailsExpander" Visibility="Collapsed" HorizontalAlignment="Stretch" loc:Loc.HeaderKey="update.dialog.details">
+          <TextBlock x:Name="DetailsText" Style="{StaticResource MonoTextBlockStyle}" FontSize="{StaticResource SquillFontSizeBodySm}"
+                     Foreground="{ThemeResource SquillFg2Brush}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+        </Expander>
+      </StackPanel>
+    </ScrollViewer>
+    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="28,0,28,20">
+      <Button x:Name="DownloadButton" Click="OnDownload" loc:Loc.Key="update.button.download" />
+      <Button x:Name="RestartButton" Click="OnRestart" loc:Loc.Key="update.button.restart" />
+      <Button x:Name="RetryButton" Click="OnRetry" loc:Loc.Key="update.button.retry" />
+      <Button x:Name="SkipButton" Click="OnSkip" loc:Loc.Key="update.button.skip" />
+      <Button x:Name="LaterButton" Click="OnLater" loc:Loc.Key="update.button.later" />
+    </StackPanel>
+  </Grid>
+</Window>

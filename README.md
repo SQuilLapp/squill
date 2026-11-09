@@ -2,6 +2,12 @@
 
 SQuilL is a SQL client built on .NET 11 (RC3) and Native AOT. The Windows head uses WinUI 3, the macOS/Linux head uses Avalonia. Both share one view-model layer (`Squill.Presentation`).
 
+## Install
+
+Download `SQuilL-stable-x64-Setup.exe` (or `SQuilL-stable-arm64-Setup.exe` when the release has it) from the [latest release](https://github.com/squillapp/squill/releases/latest) and run it: SQuilL installs for the current user in `%LOCALAPPDATA%\SQuilL` and keeps your data in `%APPDATA%\SQuilL`, also after an update or an uninstall. While the installer is unsigned Windows SmartScreen asks for a confirmation (*More info*, *Run anyway*).
+
+Updates: nothing is checked until you choose a frequency (the first run asks once, Settings changes it); a banner offers a new version, *Download* fetches it in the background and *Restart to update* applies it, never without your click. The channel is Stable or Beta. Details, privacy and the release procedure: [docs/release.md](docs/release.md).
+
 ## Language and screens
 
 The interface is French or English (Settings, applied after a restart; `SQUILL_LANGUAGE=fr|en|system` overrides it for one run). Phase 9 restyled both heads after the owner's mockups; per-screen status and known gaps are in [ADR 0006](docs/adr/0006-visual-conformance.md) and [docs/design/visual-spec.md](docs/design/visual-spec.md). No screenshots are included yet; capture them with the tools in [tools/visual](tools/visual/README.md).
@@ -40,6 +46,9 @@ Results of a plain `SELECT` over one table can be edited in the grid: change cel
 See [ADR 0005](docs/adr/0005-grid-editing.md) for the design and what is not covered.
 
 ## Build and test
+
+The version is written once, in [eng/Version.props](eng/Version.props) (`SquillVersion`); the release tag is `v` + that value.
+`pwsh eng/get-version.ps1 [-Tag v0.1.0]` prints it and checks a tag against it.
 
 Prerequisite: the .NET SDK pinned in [global.json](global.json) (11.0.100-rc.3).
 
@@ -84,10 +93,12 @@ dotnet run --project tools/Squill.TokenGen -c Release -- tokens/squill.tokens.js
 
 ### Windows package
 
-`eng/pack-windows.ps1` publishes the WinUI head with Native AOT and packs it with Velopack (`dotnet tool restore` installs `vpk`) into `artifacts/releases`:
+`eng/pack-windows.ps1` is the release build entry point: it publishes the WinUI head with Native AOT and packs it with Velopack (`dotnet tool restore` installs `vpk`) into `artifacts/releases`. The version comes from `eng/Version.props`, the notes from the matching section of `CHANGELOG.md` (a local pack of the current version needs that section), the channel from the version (`stable-x64`, or `beta-x64` for a `-beta.N` version; `-AlsoBeta` packs a stable version for both).
 
 ```powershell
-./eng/pack-windows.ps1 -Version 0.0.1-test
+./eng/pack-windows.ps1                       # version of eng/Version.props
+./eng/pack-windows.ps1 -Version 0.0.1-test -AllowVersionOverride   # local check, Unreleased notes
+./eng/pack-windows.ps1 -FromGithub -AlsoBeta # also downloads the previous release so vpk builds deltas
 ```
 
 The `release` GitHub workflow (`.github/workflows/release.yml`) runs the same script.

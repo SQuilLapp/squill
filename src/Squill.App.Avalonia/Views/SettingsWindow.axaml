@@ -123,6 +123,29 @@
               <TextBlock Classes="rowDesc" Text="{loc:Text settings.restartNeeded}" IsVisible="{Binding RestartRequired}" Margin="0,0,0,6" />
             </StackPanel>
           </Border>
+          <Border Classes="card">
+            <StackPanel Margin="20,14,20,10">
+              <TextBlock Classes="rowTitle" Text="{loc:Text settings.update.title}" />
+              <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                <TextBlock Foreground="{DynamicResource SquillFgBrush}" VerticalAlignment="Center" Text="{loc:Text settings.update.frequency}" />
+                <ComboBox Name="FrequencyBox" Grid.Column="1" Width="180" VerticalAlignment="Center" AutomationProperties.Name="{loc:Text settings.update.frequency}"
+                          ItemsSource="{Binding FrequencyOptions}" DisplayMemberBinding="{Binding Label}"
+                          SelectedValueBinding="{Binding Value}" SelectedValue="{Binding UpdateFrequency, Mode=TwoWay}" />
+              </Grid>
+              <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                <TextBlock Foreground="{DynamicResource SquillFgBrush}" VerticalAlignment="Center" Text="{loc:Text settings.update.channel}" />
+                <ComboBox Name="ChannelBox" Grid.Column="1" Width="260" VerticalAlignment="Center" AutomationProperties.Name="{loc:Text settings.update.channel}"
+                          ItemsSource="{Binding ChannelOptions}" DisplayMemberBinding="{Binding Label}"
+                          SelectedValueBinding="{Binding Value}" SelectedValue="{Binding UpdateChannel, Mode=TwoWay}" />
+              </Grid>
+              <TextBlock Classes="rowDesc" Text="{loc:Text settings.update.channelNote}" />
+              <TextBlock Classes="rowDesc" Margin="0,4,0,0" Text="{loc:Text settings.update.noDowngrade}" IsVisible="{Binding ShowNoDowngradeNote}" />
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Margin="0,10,0,6">
+                <Button Name="CheckNowButton" Content="{loc:Text update.button.checkNow}" Click="OnCheckNow" AutomationProperties.Name="{loc:Text update.button.checkNow}" />
+                <TextBlock Name="UpdateStatusText" Grid.Column="1" Classes="rowDesc" VerticalAlignment="Center" />
+              </Grid>
+            </StackPanel>
+          </Border>
           <Border Classes="card" Padding="20">
             <StackPanel Spacing="14">
               <StackPanel>

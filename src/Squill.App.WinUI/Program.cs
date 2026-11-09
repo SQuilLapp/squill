@@ -12,7 +12,14 @@ public static class Program
     [STAThread]
     public static void Main()
     {
-        VelopackApp.Build().Run();
+        // A downloaded update is never applied without the user's click (docs/poc/velopack-aot.md section 2).
+        // Hooks run in a short-lived process with a few seconds to live: no UI, no file written. The first-run / update
+        // classification happens in the normal startup (AppComposition), so OnFirstRun and OnAfterUpdate stay unregistered.
+        // The uninstaller must leave %APPDATA%\SQuilL (the user's data) alone, hence the empty hook.
+        VelopackApp.Build()
+            .SetAutoApplyOnStartup(false)
+            .OnBeforeUninstallFastCallback(static _ => { /* intentionally empty: user data is kept */ })
+            .Run();
         ComWrappersSupport.InitializeComWrappers();
         Application.Start(callbackParams =>
         {
