@@ -1,6 +1,6 @@
 # P12-05 - Pack script: AOT publish and `vpk pack` for a channel
 
-Status: todo
+Status: done
 Depends on: P12-01, P12-02, P12-04
 
 ## Goal
@@ -17,8 +17,8 @@ Depends on: P12-01, P12-02, P12-04
 - Uploading anything (P12-16), signing (P12-17), arm64 (P12-18), running the installer (P12-19).
 
 ## Tasks
-- [ ] Rewrite the script per above; keep `artifacts/` git-ignored.
-- [ ] Run in the background: `rtk pwsh eng/pack-windows.ps1 -Version 0.0.1-test -AllowVersionOverride` (notes `Unreleased`), check the output table; run it a second time with `-Version 0.0.2-test -AllowVersionOverride -FromGithub` only to confirm the "no release yet" path does not fail. Delete `artifacts/` afterwards. DO NOT run the installer.
+- [x] Rewrite the script per above; keep `artifacts/` git-ignored.
+- [x] Run in the background: `rtk pwsh eng/pack-windows.ps1 -Version 0.0.1-test -AllowVersionOverride` (notes `Unreleased`), check the output table; run it a second time with `-Version 0.0.2-test -AllowVersionOverride -FromGithub` only to confirm the "no release yet" path does not fail. Delete `artifacts/` afterwards. DO NOT run the installer.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings (script-only change, build unchanged).
@@ -27,3 +27,8 @@ Depends on: P12-01, P12-02, P12-04
 
 ## Suggested commit message
 Make the pack script the single release build entry point
+
+## Implementation notes
+- The AOT publish prints assembly-level IL2104/IL3053 for `Microsoft.Data.SqlClient` and `System.Configuration.ConfigurationManager` (accepted since phase 5, `docs/poc/aot-drivers.md`, `WarningsNotAsErrors` in the head). The script therefore fails on every IL2xxx/IL3xxx line except those two codes on NuGet-cache assemblies.
+- Names produced by vpk 1.2.161: `SQuilL-<channel>-x64-Setup.exe`, `SQuilL-<v>-<channel>-x64-full.nupkg`, `releases.<channel>-x64.json`, plus Portable.zip, `RELEASES-<channel>-x64` and `assets.<channel>-x64.json`. The "no release yet" path warns `No releases found` and exits 0.
+- Not exercised: a real delta (no release exists yet); only the check function's delta branch is covered by `-SelfTest`.

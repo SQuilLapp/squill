@@ -235,7 +235,7 @@ Depends on: <card ids, ranges allowed>
 | [P12-02](phase-12/P12-02-version-source-of-truth.md) | Version: single source of truth, assembly version and AppVersion | none | done |
 | [P12-03](phase-12/P12-03-core-semantic-version.md) | Core: semantic version parsing and comparison | P12-02 | done |
 | [P12-04](phase-12/P12-04-changelog-and-release-notes.md) | Changelog and release notes extraction | P12-02 | done |
-| [P12-05](phase-12/P12-05-pack-script.md) | Pack script: AOT publish and `vpk pack` for a channel | P12-01, P12-02, P12-04 | todo |
+| [P12-05](phase-12/P12-05-pack-script.md) | Pack script: AOT publish and `vpk pack` for a channel | P12-01, P12-02, P12-04 | done |
 | [P12-06](phase-12/P12-06-install-lifecycle-and-data-dir.md) | Install lifecycle: first run, update hooks, uninstall, data directory kept | P12-01, P12-02 | todo |
 | [P12-07](phase-12/P12-07-platform-update-settings.md) | Platform: update settings and persisted update state | P12-03 | todo |
 | [P12-08](phase-12/P12-08-platform-update-service.md) | Platform: update service (state machine over an engine contract) | P12-03, P12-07 | todo |

@@ -87,10 +87,12 @@ dotnet run --project tools/Squill.TokenGen -c Release -- tokens/squill.tokens.js
 
 ### Windows package
 
-`eng/pack-windows.ps1` publishes the WinUI head with Native AOT and packs it with Velopack (`dotnet tool restore` installs `vpk`) into `artifacts/releases`:
+`eng/pack-windows.ps1` is the release build entry point: it publishes the WinUI head with Native AOT and packs it with Velopack (`dotnet tool restore` installs `vpk`) into `artifacts/releases`. The version comes from `eng/Version.props`, the notes from the matching section of `CHANGELOG.md` (a local pack of the current version needs that section), the channel from the version (`stable-x64`, or `beta-x64` for a `-beta.N` version; `-AlsoBeta` packs a stable version for both).
 
 ```powershell
-./eng/pack-windows.ps1 -Version 0.0.1-test
+./eng/pack-windows.ps1                       # version of eng/Version.props
+./eng/pack-windows.ps1 -Version 0.0.1-test -AllowVersionOverride   # local check, Unreleased notes
+./eng/pack-windows.ps1 -FromGithub -AlsoBeta # also downloads the previous release so vpk builds deltas
 ```
 
 The `release` GitHub workflow (`.github/workflows/release.yml`) runs the same script.
