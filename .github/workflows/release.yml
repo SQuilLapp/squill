@@ -28,6 +28,7 @@ jobs:
       runner: windows-latest
       runtime: win-x64
       run-tests: true
+      publish: ${{ github.event_name == 'push' || inputs.dry_run == false }}
 
   # Native AOT arm64 needs the MSVC ARM64 build tools (docs/poc/velopack-aot.md section 8): built on a hosted arm64 runner.
   # When this job fails the release is published x64-only (see the release job).
@@ -40,6 +41,7 @@ jobs:
     with:
       runner: windows-11-arm
       runtime: win-arm64
+      publish: ${{ github.event_name == 'push' || inputs.dry_run == false }}
 
   release:
     needs: [pack-x64, pack-arm64]
