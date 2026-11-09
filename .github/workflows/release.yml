@@ -18,91 +18,53 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  windows:
-    runs-on: windows-latest
+  pack-x64:
+    permissions:
+      contents: read
+      id-token: write # only used by the optional Azure login (federated identity)
+    uses: ./.github/workflows/pack-windows.yml
+    secrets: inherit
+    with:
+      runner: windows-latest
+      runtime: win-x64
+      run-tests: true
+
+  # Native AOT arm64 needs the MSVC ARM64 build tools (docs/poc/velopack-aot.md section 8): built on a hosted arm64 runner.
+  # When this job fails the release is published x64-only (see the release job).
+  pack-arm64:
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/pack-windows.yml
+    secrets: inherit
+    with:
+      runner: windows-11-arm
+      runtime: win-arm64
+
+  release:
+    needs: [pack-x64, pack-arm64]
+    # A failed arm64 pack must not block the x64 release; a failed x64 pack always does.
+    if: ${{ !cancelled() && needs.pack-x64.result == 'success' }}
+    runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write # only used by the optional Azure login (federated identity) below
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          fetch-depth: 0
-      - uses: actions/setup-dotnet@v6
-        with:
-          global-json-file: global.json
-      - name: Resolve the version
-        id: version
-        shell: pwsh
-        env:
-          EVENT: ${{ github.event_name }}
-          REF_NAME: ${{ github.ref_name }}
-        run: |
-          $version = if ($env:EVENT -eq 'push') { ./eng/get-version.ps1 -Tag $env:REF_NAME } else { ./eng/get-version.ps1 }
-          if ($LASTEXITCODE) { exit 1 }
-          "version=$version" >> $env:GITHUB_OUTPUT
-      - run: dotnet build Squill.Windows.slnx -c Release -warnaserror
-      - run: dotnet test --solution Squill.Windows.slnx -c Release
-      # Signing is optional: without any signing secret the release is unsigned exactly as before. Secrets are never
-      # available to pull requests (this workflow is not triggered by them) or to forks.
-      # Secrets: SQUILL_SIGN_PFX_BASE64 + SQUILL_SIGN_PFX_PASSWORD (certificate), or AZURE_TRUSTED_SIGNING_ENDPOINT,
-      # AZURE_TRUSTED_SIGNING_ACCOUNT, AZURE_TRUSTED_SIGNING_PROFILE, AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
-      # (OIDC federated identity; no client secret stored).
-      - name: Detect signing
-        id: sign
-        if: github.event_name != 'pull_request'
-        shell: pwsh
-        env:
-          HAS_PFX: ${{ secrets.SQUILL_SIGN_PFX_BASE64 != '' && secrets.SQUILL_SIGN_PFX_PASSWORD != '' }}
-          HAS_AZURE: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT != '' && secrets.AZURE_TRUSTED_SIGNING_ACCOUNT != '' && secrets.AZURE_TRUSTED_SIGNING_PROFILE != '' && secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
-        run: |
-          $azure = $env:HAS_AZURE -eq 'true'
-          "azure=$($azure.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
-          "sign=$(($azure -or $env:HAS_PFX -eq 'true').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
-      - name: Azure login
-        if: steps.sign.outputs.azure == 'true'
-        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Azure Trusted Signing metadata
-        id: azure_meta
-        if: steps.sign.outputs.azure == 'true'
-        shell: pwsh
-        env:
-          ENDPOINT: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT }}
-          ACCOUNT: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT }}
-          PROFILE_NAME: ${{ secrets.AZURE_TRUSTED_SIGNING_PROFILE }}
-        run: |
-          $file = Join-Path $env:RUNNER_TEMP 'trusted-signing.json'
-          @{ Endpoint = $env:ENDPOINT; TrustedSigningAccountName = $env:ACCOUNT; CertificateProfileName = $env:PROFILE_NAME } | ConvertTo-Json | Set-Content $file
-          "file=$file" >> $env:GITHUB_OUTPUT
-      - name: Pack
-        shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SIGN: ${{ steps.sign.outputs.sign }}
-          AZURE_TRUSTED_SIGNING_METADATA_FILE: ${{ steps.azure_meta.outputs.file }}
-          SQUILL_SIGN_PFX_BASE64: ${{ secrets.SQUILL_SIGN_PFX_BASE64 }}
-          SQUILL_SIGN_PFX_PASSWORD: ${{ secrets.SQUILL_SIGN_PFX_PASSWORD }}
-        run: ./eng/pack-windows.ps1 -FromGithub -AlsoBeta -Sign:($env:SIGN -eq 'true')
+          pattern: squill-win-*
+          merge-multiple: true
+          path: artifacts/releases
       - name: Release notes
         shell: pwsh
         env:
-          VERSION: ${{ steps.version.outputs.version }}
+          VERSION: ${{ needs.pack-x64.outputs.version }}
         run: ./eng/release-notes.ps1 -Version $env:VERSION -OutFile artifacts/release-notes.md
-      - uses: actions/upload-artifact@v7
-        with:
-          name: squill-windows
-          path: |
-            artifacts/releases
-            artifacts/release-notes.md
-          retention-days: 14
       - name: Publish the GitHub Release
         if: github.event_name == 'push' || inputs.dry_run == false
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ steps.version.outputs.version }}
+          VERSION: ${{ needs.pack-x64.outputs.version }}
           TARGET: ${{ github.sha }}
         run: ./eng/publish-release.ps1 -Tag "v$env:VERSION" -Prerelease:($env:VERSION -match '-') -Target $env:TARGET

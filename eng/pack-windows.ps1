@@ -14,11 +14,12 @@ SemVer 2 version. Default: eng/get-version.ps1. A different value needs -AllowVe
 .PARAMETER Channel
 stable or beta. Default: beta when the version has a pre-release suffix, otherwise stable.
 .PARAMETER Runtime
-Runtime identifier; only win-x64 for now.
+Runtime identifier: win-x64 (default) or win-arm64 (needs the MSVC ARM64 build tools; the release workflow builds it on an arm64 runner).
+The publish folder is artifacts/publish (x64) or artifacts/publish-arm64, the vpk channel carries the architecture.
 .PARAMETER PackId
 Velopack pack id. Never change it: it breaks updates.
 .PARAMETER OutputDir
-vpk output directory, relative to the repository root unless rooted.
+vpk output directory, relative to the repository root unless rooted. Default: artifacts/releases (win-x64) or artifacts/releases-arm64.
 .PARAMETER FromGithub
 Downloads the previous release of each packed channel before packing. Uses GITHUB_TOKEN or `gh auth token` when available, else anonymous.
 .PARAMETER SkipPublish
@@ -46,9 +47,9 @@ Runs the output check over temporary directories and throws on any mismatch.
 param(
     [string]$Version,
     [ValidateSet('stable', 'beta')][string]$Channel,
-    [ValidateSet('win-x64')][string]$Runtime = 'win-x64',
+    [ValidateSet('win-x64', 'win-arm64')][string]$Runtime = 'win-x64',
     [string]$PackId = 'SQuilL',
-    [string]$OutputDir = 'artifacts/releases',
+    [string]$OutputDir,
     [switch]$FromGithub,
     [switch]$SkipPublish,
     [switch]$AlsoBeta,
@@ -106,6 +107,19 @@ function Assert-Signed([string]$Dir, [string]$PackId, [string]$Version, [string]
     finally { Remove-Item $extract -Recurse -Force -ErrorAction SilentlyContinue }
 }
 
+# Reads the machine field of a PE file header: x64 or arm64.
+function Get-PeMachine([string]$Path) {
+    $stream = [IO.File]::OpenRead($Path)
+    try {
+        $head = [byte[]]::new(1024)
+        $null = $stream.Read($head, 0, $head.Length)
+    }
+    finally { $stream.Dispose() }
+    $pe = [BitConverter]::ToInt32($head, 0x3C)
+    if ($pe -lt 0 -or $pe + 6 -gt $head.Length -or [BitConverter]::ToUInt32($head, $pe) -ne 0x00004550) { throw "'$Path' is not a PE file." }
+    switch ([BitConverter]::ToUInt16($head, $pe + 4)) { 0x8664 { 'x64' } 0xAA64 { 'arm64' } default { 'other' } }
+}
+
 function Test-SignatureAccepted([string]$Status, [bool]$AllowUntrusted) {
     $Status -ceq 'Valid' -or ($AllowUntrusted -and $Status -cin 'NotTrusted', 'UnknownError')
 }
@@ -131,6 +145,18 @@ if ($SelfTest) {
         if (-not $failed) { throw 'Self-test: a feed without the version was accepted.' }
     }
     finally { Remove-Item $tmp -Recurse -Force }
+    $fake = Join-Path ([IO.Path]::GetTempPath()) "pe-selftest-$([guid]::NewGuid().ToString('N')).exe"
+    try {
+        foreach ($case in @(@(0x8664, 'x64'), @(0xAA64, 'arm64'), @(0x014C, 'other'))) {
+            $bytes = [byte[]]::new(256)
+            [BitConverter]::GetBytes(0x40).CopyTo($bytes, 0x3C)
+            [BitConverter]::GetBytes(0x00004550).CopyTo($bytes, 0x40)
+            [BitConverter]::GetBytes([uint16]$case[0]).CopyTo($bytes, 0x44)
+            [IO.File]::WriteAllBytes($fake, $bytes)
+            if ((Get-PeMachine $fake) -ne $case[1]) { throw "Self-test: PE machine $($case[0]) was not read as $($case[1])." }
+        }
+    }
+    finally { Remove-Item $fake -Force -ErrorAction SilentlyContinue }
     $vars = @{}
     $get = { param($n) $vars[$n] }
     $failed = ''
@@ -166,7 +192,9 @@ try {
     if ($AlsoBeta -and $Channel -eq 'stable') { $channels += "beta-$arch" }
 
     $signing = $Sign ? (Get-SigningConfig { param($n) [Environment]::GetEnvironmentVariable($n) }) : $null
-    $publish = Join-Path $root 'artifacts/publish'
+    $suffix = $arch -eq 'x64' ? '' : "-$arch"
+    $publish = Join-Path $root "artifacts/publish$suffix"
+    if (-not $OutputDir) { $OutputDir = "artifacts/releases$suffix" }
     $releases = [IO.Path]::GetFullPath($OutputDir, $root)
     $notes = Join-Path $root 'artifacts/release-notes.md'
     New-Item -ItemType Directory (Split-Path $notes) -Force | Out-Null
@@ -195,7 +223,9 @@ try {
         $trim = @($log | Where-Object { "$_" -match '\bIL[23]\d{3}\b' -and "$_" -notmatch $accepted })
         if ($trim.Count -gt 0) { throw "dotnet publish reported trim/AOT warnings:`n$($trim -join "`n")" }
     }
-    elseif (-not (Test-Path $publish)) { throw 'artifacts/publish does not exist; run without -SkipPublish first.' }
+    elseif (-not (Test-Path $publish)) { throw "$publish does not exist; run without -SkipPublish first." }
+    $machine = Get-PeMachine (Join-Path $publish 'Squill.App.WinUI.exe')
+    if ($machine -ne $arch) { throw "Squill.App.WinUI.exe is a $machine executable but the runtime is $Runtime." }
     New-Item -ItemType Directory $releases -Force | Out-Null
 
     dotnet tool restore
