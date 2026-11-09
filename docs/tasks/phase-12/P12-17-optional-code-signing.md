@@ -1,6 +1,6 @@
 # P12-17 - Optional code signing in the pack script and the release workflow
 
-Status: todo
+Status: done
 Depends on: P12-16
 
 ## Goal
@@ -19,9 +19,9 @@ When the owner provides a signing certificate or an Azure Trusted Signing accoun
 - Buying or creating a certificate or Azure account, signing arm64 or other platforms, signing the update feed (Velopack verifies package hashes already).
 
 ## Tasks
-- [ ] `-Sign` in `eng/pack-windows.ps1`, workflow detection and decode steps, header documentation.
-- [ ] Unsigned path proof: run `rtk pwsh eng/pack-windows.ps1 -Version 0.0.1-test -AllowVersionOverride` still passes (background; no `-Sign`); run with `-Sign` and no variables: it must fail with the missing-variable message and exit non-zero (no pack started: fail before the publish).
-- [ ] Self-signed positive test, optional and local only: create a throwaway self-signed code-signing certificate in `Cert:\CurrentUser\My`, export a PFX in the scratchpad, run with the PFX variables, expect `Valid` is **not** reached (untrusted root gives `UnknownError`/`NotTrusted`): in that case the script's status check must accept `NotTrusted` only when `SQUILL_SIGN_ALLOW_UNTRUSTED=1` (test aid, documented); remove the certificate and files afterwards.
+- [x] `-Sign` in `eng/pack-windows.ps1`, workflow detection and decode steps, header documentation.
+- [x] Unsigned path proof: run `rtk pwsh eng/pack-windows.ps1 -Version 0.0.1-test -AllowVersionOverride` still passes (background; no `-Sign`); run with `-Sign` and no variables: it must fail with the missing-variable message and exit non-zero (no pack started: fail before the publish).
+- [x] Self-signed positive test, optional and local only: create a throwaway self-signed code-signing certificate in `Cert:\CurrentUser\My`, export a PFX in the scratchpad, run with the PFX variables, expect `Valid` is **not** reached (untrusted root gives `UnknownError`/`NotTrusted`): in that case the script's status check must accept `NotTrusted` only when `SQUILL_SIGN_ALLOW_UNTRUSTED=1` (test aid, documented); remove the certificate and files afterwards.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; the unsigned pack run passes; the `-Sign` without variables run fails fast with the right message.
@@ -29,3 +29,10 @@ When the owner provides a signing certificate or an Azure Trusted Signing accoun
 
 ## Suggested commit message
 Add optional code signing to the pack script and the release workflow
+
+## Report
+- `eng/pack-windows.ps1 -Sign` (off by default), self-test extended; `release.yml` got `Detect signing`, `Azure login` (azure/login v3.1.0 pinned to its commit, OIDC, job permission `id-token: write`) and `Azure Trusted Signing metadata` steps, and the Pack step passes `-Sign` only when a complete set of secrets exists. Documented secrets: `SQUILL_SIGN_PFX_BASE64`, `SQUILL_SIGN_PFX_PASSWORD`, or `AZURE_TRUSTED_SIGNING_ENDPOINT/ACCOUNT/PROFILE` + `AZURE_CLIENT_ID/TENANT_ID/SUBSCRIPTION_ID`.
+- Deviation: the script (not the workflow) decodes the PFX to a temporary file and deletes it in a `finally`, so a local run and the CI run use the same code; vpk output is scrubbed of the password and the file path.
+- Deviation: the self-signed test showed Windows reports `UnknownError` (not `NotTrusted`) for an untrusted self-signed root, so `SQUILL_SIGN_ALLOW_UNTRUSTED=1` accepts both; `NotSigned`/`HashMismatch` always fail.
+- Proof: unsigned pack of 0.0.1-test passes; `-Sign` without variables fails before the publish naming the variables; with a throwaway self-signed PFX the Setup exe and the app exe inside the package were signed (status accepted only with the test aid), no password or path leaked in the output; the certificate, the PFX and the temporary files were removed.
+- Not verified: a real Azure Trusted Signing or CA certificate run (needs the owner's account); the CI dry run of the release workflow after this card (see commit history for the run).

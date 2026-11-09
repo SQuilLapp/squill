@@ -22,6 +22,7 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write
+      id-token: write # only used by the optional Azure login (federated identity) below
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,11 +42,50 @@ jobs:
           "version=$version" >> $env:GITHUB_OUTPUT
       - run: dotnet build Squill.Windows.slnx -c Release -warnaserror
       - run: dotnet test --solution Squill.Windows.slnx -c Release
+      # Signing is optional: without any signing secret the release is unsigned exactly as before. Secrets are never
+      # available to pull requests (this workflow is not triggered by them) or to forks.
+      # Secrets: SQUILL_SIGN_PFX_BASE64 + SQUILL_SIGN_PFX_PASSWORD (certificate), or AZURE_TRUSTED_SIGNING_ENDPOINT,
+      # AZURE_TRUSTED_SIGNING_ACCOUNT, AZURE_TRUSTED_SIGNING_PROFILE, AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+      # (OIDC federated identity; no client secret stored).
+      - name: Detect signing
+        id: sign
+        if: github.event_name != 'pull_request'
+        shell: pwsh
+        env:
+          HAS_PFX: ${{ secrets.SQUILL_SIGN_PFX_BASE64 != '' && secrets.SQUILL_SIGN_PFX_PASSWORD != '' }}
+          HAS_AZURE: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT != '' && secrets.AZURE_TRUSTED_SIGNING_ACCOUNT != '' && secrets.AZURE_TRUSTED_SIGNING_PROFILE != '' && secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
+        run: |
+          $azure = $env:HAS_AZURE -eq 'true'
+          "azure=$($azure.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "sign=$(($azure -or $env:HAS_PFX -eq 'true').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+      - name: Azure login
+        if: steps.sign.outputs.azure == 'true'
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Azure Trusted Signing metadata
+        id: azure_meta
+        if: steps.sign.outputs.azure == 'true'
+        shell: pwsh
+        env:
+          ENDPOINT: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT }}
+          ACCOUNT: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT }}
+          PROFILE_NAME: ${{ secrets.AZURE_TRUSTED_SIGNING_PROFILE }}
+        run: |
+          $file = Join-Path $env:RUNNER_TEMP 'trusted-signing.json'
+          @{ Endpoint = $env:ENDPOINT; TrustedSigningAccountName = $env:ACCOUNT; CertificateProfileName = $env:PROFILE_NAME } | ConvertTo-Json | Set-Content $file
+          "file=$file" >> $env:GITHUB_OUTPUT
       - name: Pack
         shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./eng/pack-windows.ps1 -FromGithub -AlsoBeta
+          SIGN: ${{ steps.sign.outputs.sign }}
+          AZURE_TRUSTED_SIGNING_METADATA_FILE: ${{ steps.azure_meta.outputs.file }}
+          SQUILL_SIGN_PFX_BASE64: ${{ secrets.SQUILL_SIGN_PFX_BASE64 }}
+          SQUILL_SIGN_PFX_PASSWORD: ${{ secrets.SQUILL_SIGN_PFX_PASSWORD }}
+        run: ./eng/pack-windows.ps1 -FromGithub -AlsoBeta -Sign:($env:SIGN -eq 'true')
       - name: Release notes
         shell: pwsh
         env:
