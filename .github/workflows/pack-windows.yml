@@ -16,6 +16,10 @@ on:
         description: Build the Windows solution and run its tests before packing
         type: boolean
         default: false
+      publish:
+        description: True for a real release (also packs the beta channel); false for a dry run (stable only, files also uploaded one by one)
+        type: boolean
+        default: true
     outputs:
       version:
         description: The version being released (from eng/Version.props, checked against the tag)
@@ -90,12 +94,26 @@ jobs:
           RUNTIME: ${{ inputs.runtime }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SIGN: ${{ steps.sign.outputs.sign }}
+          ALSO_BETA: ${{ inputs.publish }}
           AZURE_TRUSTED_SIGNING_METADATA_FILE: ${{ steps.azure_meta.outputs.file }}
           SQUILL_SIGN_PFX_BASE64: ${{ secrets.SQUILL_SIGN_PFX_BASE64 }}
           SQUILL_SIGN_PFX_PASSWORD: ${{ secrets.SQUILL_SIGN_PFX_PASSWORD }}
-        run: ./eng/pack-windows.ps1 -Runtime $env:RUNTIME -FromGithub -AlsoBeta -Sign:($env:SIGN -eq 'true')
+        run: ./eng/pack-windows.ps1 -Runtime $env:RUNTIME -FromGithub -AlsoBeta:($env:ALSO_BETA -eq 'true') -Sign:($env:SIGN -eq 'true')
       - uses: actions/upload-artifact@v7
         with:
           name: squill-${{ inputs.runtime }}
           path: ${{ inputs.runtime == 'win-x64' && 'artifacts/releases' || 'artifacts/releases-arm64' }}
+          retention-days: 14
+      # Dry run only: the main artifact above is one zip; these upload the useful files unzipped (archive: false takes one file each).
+      - uses: actions/upload-artifact@v7
+        if: ${{ !inputs.publish }}
+        with:
+          path: ${{ inputs.runtime == 'win-x64' && 'artifacts/releases/SQuilL-stable-x64-Setup.exe' || 'artifacts/releases-arm64/SQuilL-stable-arm64-Setup.exe' }}
+          archive: false
+          retention-days: 14
+      - uses: actions/upload-artifact@v7
+        if: ${{ !inputs.publish }}
+        with:
+          path: ${{ inputs.runtime == 'win-x64' && 'artifacts/releases/SQuilL-stable-x64-Portable.zip' || 'artifacts/releases-arm64/SQuilL-stable-arm64-Portable.zip' }}
+          archive: false
           retention-days: 14
