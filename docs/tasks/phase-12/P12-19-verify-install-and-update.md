@@ -1,6 +1,6 @@
 # P12-19 - End-to-end verification: install, update from N to N+1, uninstall
 
-Status: todo
+Status: done (automated part; the manual checklist in docs/verification/release.md is pending the owner)
 Depends on: P12-05, P12-06, P12-09, P12-14, P12-16, P12-15
 
 ## Goal
@@ -18,8 +18,8 @@ Prove on this machine, with a local feed and no GitHub Release, that a user can 
 - A real GitHub Release or tag, signing, arm64, Avalonia.
 
 ## Tasks
-- [ ] `eng/verify-update.ps1`; run it in the background (about 15 minutes: two AOT publishes), then write `docs/verification/release.md`.
-- [ ] Owner checklist section with exact clicks.
+- [x] `eng/verify-update.ps1`; run it in the background (about 15 minutes: two AOT publishes), then write `docs/verification/release.md`.
+- [x] Owner checklist section with exact clicks (unticked, to be done by the owner).
 
 ## Acceptance criteria
 - Report complete (every step has a result); steps 1-4 and 7-10 automated and green.

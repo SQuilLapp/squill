@@ -249,7 +249,7 @@ Depends on: <card ids, ranges allowed>
 | [P12-16](phase-12/P12-16-release-workflow.md) | Release workflow: tag to GitHub Release | P12-05, P12-01 | done |
 | [P12-17](phase-12/P12-17-optional-code-signing.md) | Optional code signing in the pack script and the release workflow | P12-16 | done |
 | [P12-18](phase-12/P12-18-windows-arm64.md) | Windows arm64 build and package (conditional) | P12-16, P12-01 | done |
-| [P12-19](phase-12/P12-19-verify-install-and-update.md) | End-to-end verification: install, update from N to N+1, uninstall | P12-05, P12-06, P12-09, P12-14, P12-15, P12-16 | todo |
+| [P12-19](phase-12/P12-19-verify-install-and-update.md) | End-to-end verification: install, update from N to N+1, uninstall | P12-05, P12-06, P12-09, P12-14, P12-15, P12-16 | done (manual checklist pending the owner) |
 | [P12-20](phase-12/P12-20-docs-and-adr.md) | Documentation: release guide, ADR 0009, README and architecture note | P12-17 ... P12-19 | todo |
 | [P12-21](phase-12/P12-21-avalonia-linux-macos-packaging.md) | Avalonia head: Linux and macOS packaging with Velopack (optional) | P12-15, P12-16, P12-20 | todo |
 
