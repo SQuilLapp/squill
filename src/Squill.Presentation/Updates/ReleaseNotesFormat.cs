@@ -1,9 +1,7 @@
-using Squill.Presentation.Updates;
-
-namespace Squill.App.WinUI.Views;
+namespace Squill.Presentation.Updates;
 
 /// <summary>Decisions of the release notes rendering that do not need a UI thread.</summary>
-internal static class ReleaseNotesFormat
+public static class ReleaseNotesFormat
 {
     /// <summary>Gets the glyph drawn before each bullet item.</summary>
     public const string BulletGlyph = "•";

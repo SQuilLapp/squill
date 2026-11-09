@@ -1,10 +1,10 @@
-using Squill.App.WinUI.Views;
+using Squill.Presentation.Updates;
 using Squill.Platform.Updates;
 using Xunit;
 
-namespace Squill.App.WinUI.Tests;
+namespace Squill.Presentation.Tests.Updates;
 
-public class UpdateBannerFormatTests
+public class UpdateBannerLayoutTests
 {
     [Theory]
     [InlineData(UpdateStatus.Available, BannerParts.Details | BannerParts.Download)]
@@ -16,13 +16,13 @@ public class UpdateBannerFormatTests
     [InlineData(UpdateStatus.Checking, BannerParts.None)]
     [InlineData(UpdateStatus.UpToDate, BannerParts.None)]
     public void Each_status_shows_its_own_controls(UpdateStatus status, BannerParts expected) =>
-        Assert.Equal(expected, UpdateBannerFormat.PartsFor(status));
+        Assert.Equal(expected, UpdateBannerLayout.PartsFor(status));
 
     [Fact]
     public void Every_status_is_covered_and_only_failure_warns()
     {
         foreach (var status in Enum.GetValues<UpdateStatus>())
-            Assert.Equal(status == UpdateStatus.Failed, UpdateBannerFormat.IsWarning(status));
+            Assert.Equal(status == UpdateStatus.Failed, UpdateBannerLayout.IsWarning(status));
         Assert.Equal(8, Enum.GetValues<UpdateStatus>().Length);
     }
 }

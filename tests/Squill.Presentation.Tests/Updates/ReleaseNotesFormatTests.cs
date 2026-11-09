@@ -1,8 +1,7 @@
-using Squill.App.WinUI.Views;
 using Squill.Presentation.Updates;
 using Xunit;
 
-namespace Squill.App.WinUI.Tests;
+namespace Squill.Presentation.Tests.Updates;
 
 public class ReleaseNotesFormatTests
 {

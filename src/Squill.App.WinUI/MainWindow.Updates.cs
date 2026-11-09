@@ -2,7 +2,6 @@ using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
-using Squill.App.WinUI.Views;
 using Squill.Platform.Updates;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Updates;
@@ -48,14 +47,14 @@ public sealed partial class MainWindow
 
     private void RefreshBanner()
     {
-        var parts = UpdateBannerFormat.PartsFor(Updates.Status);
+        var parts = UpdateBannerLayout.PartsFor(Updates.Status);
         _bannerDetails.Visibility = Show(parts.HasFlag(BannerParts.Details));
         _bannerDownload.Visibility = Show(parts.HasFlag(BannerParts.Download));
         _bannerProgress.Visibility = Show(parts.HasFlag(BannerParts.Progress));
         _bannerRestart.Visibility = Show(parts.HasFlag(BannerParts.Restart));
         _bannerRetry.Visibility = Show(parts.HasFlag(BannerParts.Retry));
         _bannerProgress.Value = Updates.Progress;
-        UpdateBar.Severity = UpdateBannerFormat.IsWarning(Updates.Status) ? InfoBarSeverity.Warning : InfoBarSeverity.Informational;
+        UpdateBar.Severity = UpdateBannerLayout.IsWarning(Updates.Status) ? InfoBarSeverity.Warning : InfoBarSeverity.Informational;
         UpdateBar.Message = Updates.BannerText;
         UpdateBar.IsOpen = Updates.IsBannerVisible;
     }
@@ -88,7 +87,7 @@ public sealed partial class MainWindow
     /// <summary>Starts the update flow once the window is shown: the scheduled check and the one-time question; never blocks the first paint.</summary>
     public async void StartUpdates()
     {
-        if (Environment.GetEnvironmentVariable("SQUILL_NO_UPDATE_CHECK") == "1")
+        if (UpdateStartup.IsDisabled())
             return;
         await Updates.StartAsync();
         if (Updates.ShouldAskFrequency && Content is FrameworkElement root && await UpdateAskDialog.ShowAsync(root) is { } frequency)

@@ -53,6 +53,7 @@ public sealed partial class MainWindow : Window
         _settings = services.Settings;
         _settings.PropertyChanged += OnSettingsPropertyChanged;
         ActiveTabView.EditorFontSize = _settings.EditorFontSize;
+        AttachUpdates(services.Updates, services.About);
     }
 
     private void OnSettingsPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -64,7 +65,7 @@ public sealed partial class MainWindow : Window
     private void OpenSettings()
     {
         if (_settings is not null)
-            new SettingsWindow { DataContext = _settings, DataDirectory = _dataDirectory }.Show(this);
+            new SettingsWindow { DataContext = _settings, DataDirectory = _dataDirectory, Updates = _updates }.Show(this);
     }
 
     private void OnSettingsClicked(object? sender, RoutedEventArgs e) => OpenSettings();

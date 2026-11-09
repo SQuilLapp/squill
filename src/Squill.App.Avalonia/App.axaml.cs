@@ -62,6 +62,7 @@ public sealed partial class App : Application
         services.Workspace.ConnectionList.LoadCommand.Execute(null);
         var window = new MainWindow { DataContext = services.Workspace };
         window.Attach(services, _paths!.DataDirectory);
+        window.Opened += (_, _) => window.StartUpdates();
         return window;
     }
 

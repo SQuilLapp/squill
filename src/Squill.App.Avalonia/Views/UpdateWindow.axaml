@@ -1,0 +1,40 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:Squill.App.Avalonia.Localization"
+        x:Class="Squill.App.Avalonia.Views.UpdateWindow"
+        Width="540" Height="600" CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Icon="avares://Squill.App.Avalonia/Assets/squill.ico"
+        Background="{DynamicResource SquillBgBaseBrush}">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="28,0,28,20">
+      <Button Name="DownloadButton" Classes="primary" Content="{loc:Text update.button.download}" Click="OnDownload" AutomationProperties.Name="{loc:Text update.button.download}" />
+      <Button Name="RestartButton" Classes="primary" Content="{loc:Text update.button.restart}" Click="OnRestart" AutomationProperties.Name="{loc:Text update.button.restart}" />
+      <Button Name="RetryButton" Content="{loc:Text update.button.retry}" Click="OnRetry" AutomationProperties.Name="{loc:Text update.button.retry}" />
+      <Button Name="SkipButton" Content="{loc:Text update.button.skip}" Click="OnSkip" AutomationProperties.Name="{loc:Text update.button.skip}" />
+      <Button Name="LaterButton" Content="{loc:Text update.button.later}" Click="OnLater" AutomationProperties.Name="{loc:Text update.button.later}" />
+    </StackPanel>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="28,24,28,12" Spacing="12">
+        <TextBlock Name="TitleText" FontSize="{DynamicResource SquillFontSizeTitle}" FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" TextWrapping="Wrap" />
+        <StackPanel Spacing="2">
+          <TextBlock Name="CurrentText" Foreground="{DynamicResource SquillFg2Brush}" />
+          <TextBlock Name="NewText" Foreground="{DynamicResource SquillFg2Brush}" />
+          <TextBlock Name="SizeText" Foreground="{DynamicResource SquillFg2Brush}" TextWrapping="Wrap" />
+        </StackPanel>
+        <StackPanel Name="NotesPanel" Spacing="6">
+          <TextBlock FontWeight="SemiBold" Foreground="{DynamicResource SquillFgBrush}" Text="{loc:Text update.dialog.notes}" />
+          <ScrollViewer MaxHeight="280" HorizontalScrollBarVisibility="Disabled">
+            <ContentControl Name="NotesHost" HorizontalContentAlignment="Stretch" />
+          </ScrollViewer>
+        </StackPanel>
+        <ProgressBar Name="Progress" Minimum="0" Maximum="100" IsVisible="False" />
+        <TextBlock Name="StatusText" Foreground="{DynamicResource SquillFgBrush}" TextWrapping="Wrap" />
+        <Expander Name="DetailsExpander" IsVisible="False" HorizontalAlignment="Stretch" Header="{loc:Text update.dialog.details}">
+          <SelectableTextBlock Name="DetailsText" FontFamily="{DynamicResource SquillFontMono}" FontSize="{DynamicResource SquillFontSizeBodySm}"
+                               Foreground="{DynamicResource SquillFg2Brush}" TextWrapping="Wrap" />
+        </Expander>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

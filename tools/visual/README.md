@@ -21,6 +21,8 @@ rtk bypass dotnet run --project src/Squill.App.WinUI -c Release      # WinUI hea
 
 `SQUILL_LANGUAGE` (`fr`, `en` or `system`) overrides the saved language for a run, without saving it; set it before launching to capture the English or French screens.
 
+`SQUILL_NO_UPDATE_CHECK=1` skips the start-up update flow (scheduled check and the one-time question) in both heads; set it for captures and test runs.
+
 Open the screen by hand (double-click `pg-prod-eu`, open a table or a query), then in another shell:
 
 ```powershell

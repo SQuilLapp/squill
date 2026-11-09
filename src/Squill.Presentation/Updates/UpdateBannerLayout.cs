@@ -1,6 +1,6 @@
 using Squill.Platform.Updates;
 
-namespace Squill.App.WinUI.Views;
+namespace Squill.Presentation.Updates;
 
 /// <summary>Which controls of the update notice are shown for a status; no UI thread needed.</summary>
 [Flags]
@@ -26,7 +26,7 @@ public enum BannerParts
 }
 
 /// <summary>Maps the update status to the parts of the notice.</summary>
-internal static class UpdateBannerFormat
+public static class UpdateBannerLayout
 {
     /// <summary>Gets the controls shown with the notice.</summary>
     /// <param name="status">The current update status.</param>
