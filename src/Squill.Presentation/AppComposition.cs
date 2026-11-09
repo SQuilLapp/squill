@@ -8,6 +8,7 @@ using Squill.Platform.Secrets;
 using Squill.Platform.Settings;
 using Squill.Platform.Ssh;
 using Squill.Platform.Storage;
+using Squill.Platform.Updates;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Localization;
@@ -15,6 +16,7 @@ using Squill.Presentation.Panels;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Settings;
 using Squill.Presentation.Terminal;
+using Squill.Presentation.Updates;
 using Squill.Presentation.Workspace;
 
 namespace Squill.Presentation;
@@ -44,12 +46,14 @@ public interface IPlatformServices
 /// <param name="Snippets">The snippets panel.</param>
 /// <param name="Settings">The settings, including the theme.</param>
 /// <param name="RunKind">How this start relates to the previous one (first run, updated, downgraded or same).</param>
+/// <param name="Updates">The update flow shared by the banner, the dialog and the About view.</param>
 public sealed record AppServices(
     WorkspaceViewModel Workspace,
     HistoryViewModel History,
     SnippetsViewModel Snippets,
     SettingsViewModel Settings,
-    RunKind RunKind = RunKind.Same);
+    RunKind RunKind,
+    UpdateViewModel Updates);
 
 /// <summary>Builds the object graph shared by all heads.</summary>
 public static class AppComposition
@@ -60,17 +64,20 @@ public static class AppComposition
     /// <param name="diagramStore">Persists ER diagram layouts; <see langword="null"/> disables the diagram.</param>
     /// <param name="measureText">Text measurer of the head's diagram font; <see langword="null"/> disables the diagram.</param>
     /// <param name="currentVersion">Version of the running build; <see langword="null"/> uses <see cref="AppVersion.Current"/> (tests pass their own).</param>
+    /// <param name="updateEngine">Update engine; <see langword="null"/> uses the Velopack engine over the GitHub releases (tests pass a fake).</param>
     /// <returns>The root view-models.</returns>
     public static AppServices Create(
         IPlatformServices platform,
         AppPaths? paths = null,
         IDiagramLayoutStore? diagramStore = null,
         Func<string, double>? measureText = null,
-        string? currentVersion = null)
+        string? currentVersion = null,
+        IUpdateEngine? updateEngine = null)
     {
         ArgumentNullException.ThrowIfNull(platform);
         paths ??= new AppPaths();
-        var runKind = new InstallStateStore(paths).Record(currentVersion ?? AppVersion.Current);
+        currentVersion ??= AppVersion.Current;
+        var runKind = new InstallStateStore(paths).Record(currentVersion);
         var profiles = new JsonProfileStore(paths, SecretStoreFactory.Create(paths.DataDirectory));
         var history = new JsonQueryHistoryStore(paths);
         var settings = new JsonSettingsStore(paths);
@@ -80,11 +87,20 @@ public static class AppComposition
         var workspace = new WorkspaceViewModel(
             sessions, list, history, settings, platform.Dispatcher, platform.Dialogs, platform.EditorFactory,
             profiles, platform.TerminalHostFactory, diagramStore: diagramStore, measureText: measureText);
+        var updates = new UpdateViewModel(
+            new UpdateService(
+                updateEngine ?? UpdateEngineFactory.Create("https://github.com/squillapp/squill", Environment.GetEnvironmentVariable("SQUILL_UPDATE_FEED")),
+                settings,
+                new JsonUpdateStateStore(paths),
+                SemanticVersion.Parse(currentVersion, CultureInfo.InvariantCulture)),
+            platform.Dispatcher,
+            settings);
         return new AppServices(
             workspace,
             new HistoryViewModel(history, workspace, platform.Dialogs),
             new SnippetsViewModel(new JsonSnippetStore(paths), workspace, platform.Dialogs),
             new SettingsViewModel(settings),
-            runKind);
+            runKind,
+            updates);
     }
 }

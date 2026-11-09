@@ -40,6 +40,9 @@ public sealed class UpdateService
     /// <summary>Raised after every change of the properties; never while the service holds its lock.</summary>
     public event Action? Changed;
 
+    /// <summary>Gets a value indicating whether the application was installed by the installer, so updates are possible.</summary>
+    public bool IsInstalled => _engine.IsInstalled;
+
     /// <summary>Gets the current status.</summary>
     public UpdateStatus Status => Read(() => _status);
 
@@ -80,6 +83,11 @@ public sealed class UpdateService
         }
 
         var state = await _state.LoadAsync(ct);
+        if (state.LastCheckUtc is { } stored)
+        {
+            Apply(() => _lastCheckUtc ??= stored);
+        }
+
         if (UpdateSchedule.IsDue(frequency, state.LastCheckUtc, _time.GetUtcNow()))
         {
             await CheckAsync(manual: false, ct);

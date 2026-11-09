@@ -1,6 +1,6 @@
 # P12-11 - Presentation: update view-model and composition
 
-Status: todo
+Status: done
 Depends on: P12-06, P12-08, P12-09, P12-10
 
 ## Goal
@@ -20,8 +20,8 @@ One view-model gives both heads everything the update UI needs (banner, dialog, 
 - Settings rows (P12-12), About view-model (P12-12), all UI.
 
 ## Tasks
-- [ ] View-model, composition change, catalog keys fr/en (French with accents like the existing catalog).
-- [ ] Tests in `tests/Squill.Presentation.Tests/Updates/` with the `FakeUpdateEngine` (share it: move it to `tests/Shared` or link the file, do not duplicate) and `ImmediateDispatcher`: banner visibility per status, `Later` hides and a new version shows again, `NotAsked` -> `ShouldAskFrequency` and zero engine calls, `ChooseFrequencyAsync` saves and checks, `Never` saves and does not check, check -> Available -> Download -> Ready -> Restart calls `ApplyAndRestart` once, skip persists and silences the next scheduled check, failures map to the right key (fr and en text non-empty), commands disabled while busy, `Dispose` cancels a running check, text in both languages (`UiText` initialised for each).
+- [x] View-model, composition change, catalog keys fr/en (French with accents like the existing catalog).
+- [x] Tests in `tests/Squill.Presentation.Tests/Updates/` with the `FakeUpdateEngine` (share it: move it to `tests/Shared` or link the file, do not duplicate) and `ImmediateDispatcher`: banner visibility per status, `Later` hides and a new version shows again, `NotAsked` -> `ShouldAskFrequency` and zero engine calls, `ChooseFrequencyAsync` saves and checks, `Never` saves and does not check, check -> Available -> Download -> Ready -> Restart calls `ApplyAndRestart` once, skip persists and silences the next scheduled check, failures map to the right key (fr and en text non-empty), commands disabled while busy, `Dispose` cancels a running check, text in both languages (`UiText` initialised for each).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` and `Squill.Windows.slnx` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green (including catalog parity and scanner tests).

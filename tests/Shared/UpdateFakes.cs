@@ -2,7 +2,7 @@ using Squill.Core;
 using Squill.Platform.Settings;
 using Squill.Platform.Updates;
 
-namespace Squill.Platform.Tests.Updates;
+namespace Squill.Tests.Shared;
 
 internal sealed class FakeUpdateEngine : IUpdateEngine
 {

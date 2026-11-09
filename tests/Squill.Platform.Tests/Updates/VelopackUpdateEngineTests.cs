@@ -3,6 +3,7 @@ using Squill.Core;
 using Squill.Platform.Updates;
 using Velopack.Locators;
 using Velopack.Logging;
+using Squill.Tests.Shared;
 using Xunit;
 
 namespace Squill.Platform.Tests.Updates;

@@ -1,6 +1,7 @@
 using Squill.Core;
 using Squill.Platform.Settings;
 using Squill.Platform.Updates;
+using Squill.Tests.Shared;
 using Xunit;
 
 namespace Squill.Platform.Tests.Updates;
