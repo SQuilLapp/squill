@@ -94,6 +94,9 @@ try {
         else {
             # The debug symbols folder is a nested bundle: it breaks codesign and adds 140 MB.
             Get-ChildItem $publish -Filter '*.dSYM' -Directory | Remove-Item -Recurse -Force
+            # Windows and Linux libraries of the Oracle bridge are not macOS code: codesign --deep rejects those folders.
+            Get-ChildItem (Join-Path $publish 'oracle-bridge/runtimes') -Directory -ErrorAction SilentlyContinue |
+                Where-Object Name -ne 'osx' | Remove-Item -Recurse -Force
             dotnet vpk bundle --packId $PackId --packVersion $Version --packTitle SQuilL --packAuthors SQuilL `
                 --packDir $publish --mainExe Squill.App.Avalonia --icon assets/brand/app-icons/macos/squill.icns `
                 --runtime $Runtime --channel $c --outputDir $releases
