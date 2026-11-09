@@ -1,6 +1,6 @@
 # P12-09 - Platform: Velopack update engine (GitHub Releases or local feed)
 
-Status: todo
+Status: done
 Depends on: P12-01, P12-08
 
 ## Goal
@@ -19,9 +19,9 @@ The real `IUpdateEngine`: checks the GitHub Releases feed (or `SQUILL_UPDATE_FEE
 - UI, view-models, installing anything, real GitHub calls in tests.
 
 ## Tasks
-- [ ] Engine, factory, package reference (version from `Directory.Packages.props`, already 1.2.161).
-- [ ] Tests in `tests/Squill.Platform.Tests/Updates/` (always run, no network): not installed -> `IsInstalled` false and `CheckAsync` throws `NotInstalled`; channel id string for the four combinations; feed override classification (directory, http URL, https URL, garbage -> `FeedInvalid`, empty -> GitHub); an unreachable `http://127.0.0.1:1/` feed maps to `Network` and `CheckAsync` honors cancellation. A check against a hand-written local feed directory (`releases.<channel>.json` listing a version) is added only if P12-01 showed it works without being installed; otherwise it is covered by P12-19 (say which in the report).
-- [ ] Add the engine to the AOT proof: the WinUI and Avalonia heads must still publish with zero IL2xxx/IL3xxx warnings (this card does not reference it from the heads yet; the check is on `Squill.Platform` as a library through the heads' existing references, so run both publishes).
+- [x] Engine, factory, package reference (version from `Directory.Packages.props`, already 1.2.161).
+- [x] Tests in `tests/Squill.Platform.Tests/Updates/` (always run, no network): not installed -> `IsInstalled` false and `CheckAsync` throws `NotInstalled`; channel id string for the four combinations; feed override classification (directory, http URL, https URL, garbage -> `FeedInvalid`, empty -> GitHub); an unreachable `http://127.0.0.1:1/` feed maps to `Network` and `CheckAsync` honors cancellation. A check against a hand-written local feed directory (`releases.<channel>.json` listing a version) is added only if P12-01 showed it works without being installed; otherwise it is covered by P12-19 (say which in the report).
+- [x] Add the engine to the AOT proof: the WinUI and Avalonia heads must still publish with zero IL2xxx/IL3xxx warnings (this card does not reference it from the heads yet; the check is on `Squill.Platform` as a library through the heads' existing references, so run both publishes).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` and `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green.
