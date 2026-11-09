@@ -230,7 +230,7 @@ Depends on: <card ids, ranges allowed>
 | [P11-38](phase-11/P11-38-verify-mysql.md) | End-to-end verification: MySQL | P11-37, P11-18, P11-24, P11-27 ... P11-32 | automated done, manual pending |
 | [P11-39](phase-11/P11-39-verify-sqlserver.md) | End-to-end verification: SQL Server | P11-37, P11-19, P11-24, P11-27 ... P11-32 | automated done, manual pending |
 | [P11-40](phase-11/P11-40-docs-and-adr.md) | Documentation: engine parity ADR 0008, README and architecture note | P11-36 ... P11-39 | done |
-| [P12-01](phase-12/P12-01-velopack-aot-poc.md) | Velopack under Native AOT: proof of concept and report | none | todo |
+| [P12-01](phase-12/P12-01-velopack-aot-poc.md) | Velopack under Native AOT: proof of concept and report | none | done |
 | [P12-02](phase-12/P12-02-version-source-of-truth.md) | Version: single source of truth, assembly version and AppVersion | none | todo |
 | [P12-03](phase-12/P12-03-core-semantic-version.md) | Core: semantic version parsing and comparison | P12-02 | todo |
 | [P12-04](phase-12/P12-04-changelog-and-release-notes.md) | Changelog and release notes extraction | P12-02 | todo |

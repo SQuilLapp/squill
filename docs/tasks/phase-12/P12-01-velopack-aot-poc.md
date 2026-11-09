@@ -1,6 +1,6 @@
 # P12-01 - Velopack under Native AOT: proof of concept and report
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -24,10 +24,10 @@ Prove, before any design depends on it, that the `Velopack` package (1.2.161, al
 - Any change to `src/`, `eng/` or the workflows; real GitHub Releases; signing.
 
 ## Tasks
-- [ ] Build the POC, answer the nine questions, uninstall everything, delete the project and `artifacts/poc-velopack/`.
-- [ ] Write `docs/poc/velopack-aot.md` (verdicts first, then evidence, then the API table of question 3).
-- [ ] Add a "Velopack" row to the risk table of `docs/architecture.md` (R10 or next free) pointing to the report.
-- [ ] If an answer contradicts `release-recipe.md` (channel names, delta flow, hooks), edit the recipe and say which line in the report.
+- [x] Build the POC, answer the nine questions, uninstall everything, delete the project and `artifacts/poc-velopack/`.
+- [x] Write `docs/poc/velopack-aot.md` (verdicts first, then evidence, then the API table of question 3).
+- [x] Add a "Velopack" row to the risk table of `docs/architecture.md` (R10 or next free) pointing to the report.
+- [x] If an answer contradicts `release-recipe.md` (channel names, delta flow, hooks), edit the recipe and say which line in the report.
 
 ## Acceptance criteria
 - Report complete: nine answers, each with a verdict and evidence; no empty section.

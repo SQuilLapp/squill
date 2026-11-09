@@ -35,6 +35,7 @@
 | R6 | Cross-platform secret storage | Medium | DPAPI, libsecret (source-generated P/Invoke) and Keychain stores behind `ISecretStore` ([AOT driver report](poc/aot-drivers.md) covers drivers only; see tasks P2-01 to P2-03 in the [task index](tasks/README.md)) |
 | R7 | SSH tunnel under AOT | Medium | SSH.NET compatible (publish and startup only) ([AOT driver report](poc/aot-drivers.md)) |
 | R8 | Mockups (15 screens M01-M15) in WinUI 3 and Avalonia | Medium | Workspace shell, connections, results, history, snippets and settings implemented on both heads (tasks P5-04 to P5-11 in the [task index](tasks/README.md)) |
+| R9 | Installer and automatic updates (Velopack under Native AOT) | High | Met: `UpdateManager` publishes with 0 IL2xxx/IL3xxx warnings and installs, updates (delta) and uninstalls from a local feed without touching `%APPDATA%\SQuilL`; arm64 only on CI ([Velopack report](poc/velopack-aot.md)) |
 
 ## Order of work
 
