@@ -1,6 +1,6 @@
 # P12-07 - Platform: update settings and persisted update state
 
-Status: todo
+Status: done
 Depends on: P12-03
 
 ## Goal
@@ -16,9 +16,9 @@ The user's choices about updates (when to check, which channel) are stored with 
 - The service, view-models, UI.
 
 ## Tasks
-- [ ] `UpdateCheckFrequency`, `AppSettings` members, `UpdateState`, `IUpdateStateStore`, `JsonUpdateStateStore`, `UpdateSchedule`, XML docs.
-- [ ] Fix every `new AppSettings(...)` / `with` call the compiler flags (positional defaults keep most untouched).
-- [ ] Tests in `tests/Squill.Platform.Tests`: old `settings.json` (without the fields) loads with defaults, new fields round trip, `UpdateSchedule.IsDue` table (all frequencies; boundaries 19h59/20h, 6.5 days; future date; null), state store round trip, missing and corrupt `update-state.json` give the empty state, writes land only in the data dir.
+- [x] `UpdateCheckFrequency`, `AppSettings` members, `UpdateState`, `IUpdateStateStore`, `JsonUpdateStateStore`, `UpdateSchedule`, XML docs.
+- [x] Fix every `new AppSettings(...)` / `with` call the compiler flags (positional defaults keep most untouched).
+- [x] Tests in `tests/Squill.Platform.Tests`: old `settings.json` (without the fields) loads with defaults, new fields round trip, `UpdateSchedule.IsDue` table (all frequencies; boundaries 19h59/20h, 6.5 days; future date; null), state store round trip, missing and corrupt `update-state.json` give the empty state, writes land only in the data dir.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green.
