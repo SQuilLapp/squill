@@ -86,7 +86,7 @@ public sealed partial class MainWindow
     }
 
     /// <summary>Starts the update flow once the window is shown: the scheduled check and the one-time question; never blocks the first paint.</summary>
-    public async void StartUpdates()
+    public async Task StartUpdatesAsync()
     {
         if (UpdateStartup.IsDisabled())
             return;

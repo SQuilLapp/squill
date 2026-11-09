@@ -68,6 +68,6 @@ public sealed partial class App : Application
         platform.AttachWindow(main);
         main.Attach(Services, paths.DataDirectory, platform.Dialogs);
         _window.Activate();
-        main.StartUpdates();
+        _ = main.StartUpdatesAsync();
     }
 }

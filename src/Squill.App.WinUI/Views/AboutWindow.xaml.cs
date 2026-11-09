@@ -92,6 +92,6 @@ public sealed partial class AboutWindow : Window
     private void OnOpenDataFolder(object sender, RoutedEventArgs e)
     {
         if (Directory.Exists(_about.DataFolder))
-            Process.Start(new ProcessStartInfo("explorer.exe", $"\"{_about.DataFolder}\"") { UseShellExecute = true })?.Dispose();
+            Process.Start(new ProcessStartInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe"), $"\"{_about.DataFolder}\"") { UseShellExecute = true })?.Dispose();
     }
 }
