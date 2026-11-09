@@ -92,12 +92,22 @@ try {
             }
         }
         else {
+            # The debug symbols folder is a nested bundle: it breaks codesign and adds 140 MB.
+            Get-ChildItem $publish -Filter '*.dSYM' -Directory | Remove-Item -Recurse -Force
             dotnet vpk bundle --packId $PackId --packVersion $Version --packTitle SQuilL --packAuthors SQuilL `
                 --packDir $publish --mainExe Squill.App.Avalonia --icon assets/brand/app-icons/macos/squill.icns `
                 --runtime $Runtime --channel $c --outputDir $releases
             if ($LASTEXITCODE -ne 0) { throw "vpk bundle failed for channel $c." }
             $app = Get-ChildItem $releases -Directory -Filter '*.app' | Select-Object -First 1
             if (-not $app) { throw "vpk bundle produced no .app in $releases." }
+            # vpk writes Info.plist with a UTF-8 BOM, which macOS can reject ("is damaged"): rewrite it without.
+            $plist = Join-Path $app.FullName 'Contents/Info.plist'
+            [IO.File]::WriteAllText($plist, [IO.File]::ReadAllText($plist), [Text.UTF8Encoding]::new($false))
+            # Ad hoc signature (no certificate): Apple Silicon refuses unsigned code. Not a notarization, Gatekeeper still warns.
+            & codesign --force --deep -s - $app.FullName
+            if ($LASTEXITCODE -ne 0) { throw 'codesign (ad hoc) failed.' }
+            & codesign --verify --deep --strict $app.FullName
+            if ($LASTEXITCODE -ne 0) { throw 'codesign verification failed.' }
             $zip = Join-Path $releases "$PackId-$Version-$Runtime.zip"
             & ditto -c -k --keepParent $app.FullName $zip
             if ($LASTEXITCODE -ne 0 -or -not (Test-Path $zip)) { throw 'zip of the .app failed.' }

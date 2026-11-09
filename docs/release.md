@@ -73,7 +73,7 @@ The Avalonia head is packed by `eng/pack-unix.ps1` (job `pack-unix` of the Relea
 
 - **Linux x64**: `vpk pack` builds an AppImage plus the update feed for the channels `stable-linux-x64` (and `beta-linux-x64` for a published stable release). The OS is part of the channel name so the files never collide with the Windows ones in the same Release. No delta packages yet.
 - **macOS arm64**: `vpk bundle` builds the `.app`, which the script zips as `SQuilL-<version>-osx-arm64.zip`. There is no feed, so no automatic update on macOS: users download the next zip.
-- **Not signed, not notarized**: Gatekeeper warns on macOS (right-click, Open); Linux needs `chmod +x` on the AppImage.
+- **Ad hoc signed only, not notarized**: the `.app` gets a certificate-less signature (Apple Silicon refuses unsigned code) but Gatekeeper still warns. A downloaded copy may say "is damaged": run `xattr -cr SQuilL.app` to remove the quarantine flag. Linux needs `chmod +x` on the AppImage.
 - **Published, not run**: nobody has run these packages on a real Linux or macOS desktop. A failed job never blocks the Windows release; check the artifacts by hand before announcing them.
 
 `pwsh eng/pack-unix.ps1 -Runtime linux-x64` (or `osx-arm64`) repeats the pack on the matching OS; the output is `artifacts/releases-<runtime>`.
