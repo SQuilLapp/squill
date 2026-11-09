@@ -2,6 +2,12 @@
 
 SQuilL is a SQL client built on .NET 11 (RC3) and Native AOT. The Windows head uses WinUI 3, the macOS/Linux head uses Avalonia. Both share one view-model layer (`Squill.Presentation`).
 
+## Install
+
+Download `SQuilL-stable-x64-Setup.exe` (or `SQuilL-stable-arm64-Setup.exe` when the release has it) from the [latest release](https://github.com/squillapp/squill/releases/latest) and run it: SQuilL installs for the current user in `%LOCALAPPDATA%\SQuilL` and keeps your data in `%APPDATA%\SQuilL`, also after an update or an uninstall. While the installer is unsigned Windows SmartScreen asks for a confirmation (*More info*, *Run anyway*).
+
+Updates: nothing is checked until you choose a frequency (the first run asks once, Settings changes it); a banner offers a new version, *Download* fetches it in the background and *Restart to update* applies it, never without your click. The channel is Stable or Beta. Details, privacy and the release procedure: [docs/release.md](docs/release.md).
+
 ## Language and screens
 
 The interface is French or English (Settings, applied after a restart; `SQUILL_LANGUAGE=fr|en|system` overrides it for one run). Phase 9 restyled both heads after the owner's mockups; per-screen status and known gaps are in [ADR 0006](docs/adr/0006-visual-conformance.md) and [docs/design/visual-spec.md](docs/design/visual-spec.md). No screenshots are included yet; capture them with the tools in [tools/visual](tools/visual/README.md).

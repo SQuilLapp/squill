@@ -1,6 +1,6 @@
 # P12-20 - Documentation: release guide, ADR 0009, README and architecture note
 
-Status: todo
+Status: done
 Depends on: P12-19, P12-17, P12-18
 
 ## Goal
@@ -18,8 +18,8 @@ Everything a maintainer needs to cut a release, and everything a user needs to i
 - Cutting the first real release (owner's decision after reading the report of P12-19).
 
 ## Tasks
-- [ ] Write the four documents and the index/README edits above.
-- [ ] Check every link and every command quoted in `docs/release.md` by running it (`-?`/`-SelfTest` forms for scripts) or by `grep`; no command that was not tried.
+- [x] Write the four documents and the index/README edits above.
+- [x] Check every link and every command quoted in `docs/release.md` by running it (`-?`/`-SelfTest` forms for scripts) or by `grep`; no command that was not tried.
 
 ## Acceptance criteria
 - `rtk pwsh eng/release-notes.ps1 -Version 0.1.0` succeeds; `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings (docs only, nothing else changed).
@@ -27,3 +27,11 @@ Everything a maintainer needs to cut a release, and everything a user needs to i
 
 ## Suggested commit message
 Document the release process and record ADR 0009
+
+## Report
+
+Headings of [docs/release.md](../../release.md): Installing, Updating, Uninstalling, Cutting a release, Beta releases, Local build, Signing, Troubleshooting, Rollback.
+
+Commands run while writing it (all succeeded): `pwsh eng/get-version.ps1` (and with `-Tag v0.1.0`), `pwsh eng/release-notes.ps1 -Version 0.1.0` and `-SelfTest`, `pwsh eng/pack-windows.ps1 -SelfTest`, `pwsh eng/publish-release.ps1 -SelfTest`, `pwsh eng/verify-update.ps1` (full run, see the P12-19 report) and `-SelfTest`, `gh release list`, `gh release delete --help` (flag `--cleanup-tag` exists), `gh workflow run --help`.
+
+Quoted but deliberately not run: `git tag` / `git push origin <tag>` (would start a real release), `gh release delete v0.2.0`, `gh workflow run release.yml` (starts CI), the `-FromGithub` and `-Runtime win-arm64` forms of `pack-windows.ps1` (network, missing ARM64 tools). Known gap: a GitHub API rate limit shows as the generic network failure, not a dedicated message.

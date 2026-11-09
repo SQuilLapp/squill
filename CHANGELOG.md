@@ -24,3 +24,4 @@ _Nothing yet._
 - Query history.
 - French and English interface, switchable in Settings, with light and dark themes.
 - Engine parity across the four databases, checked against real servers.
+- Windows installer (`Setup.exe`) and automatic updates from GitHub Releases: stable and beta channels, delta downloads, applied only after a click; your data in `%APPDATA%\SQuilL` is kept on update and uninstall.
