@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Squill.App.WinUI.Views;
 using Squill.Platform.Updates;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Updates;
