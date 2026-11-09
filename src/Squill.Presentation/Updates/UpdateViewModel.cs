@@ -123,6 +123,9 @@ public sealed partial class UpdateViewModel : ViewModelBase, IDisposable
     /// <summary>Gets a value indicating whether a check or a download is running.</summary>
     public bool IsBusy => Status is UpdateStatus.Checking or UpdateStatus.Downloading;
 
+    /// <summary>Gets a value indicating whether the application was installed by the installer, so updates are possible.</summary>
+    public bool IsInstalled => _service.IsInstalled;
+
     /// <summary>Gets a value indicating whether a check can be started.</summary>
     public bool CanCheck => _service.IsInstalled && !IsBusy;
 

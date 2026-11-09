@@ -1,6 +1,6 @@
 # P12-12 - Presentation: update settings and About view-models
 
-Status: todo
+Status: done
 Depends on: P12-11
 
 ## Goal
@@ -16,8 +16,8 @@ The settings window can edit the update frequency and channel, and an About dial
 - Any window or control (P12-13, P12-14, P12-15).
 
 ## Tasks
-- [ ] Settings members and options, `AboutViewModel`, embedded changelog, catalog keys fr/en.
-- [ ] Tests in `tests/Squill.Presentation.Tests/Settings/` and `/Updates/`: option lists in both languages, `NotAsked` shown as `Never` and not saved on load, saved on change, channel saved and reloaded, downgrade note rule, about texts for installed / portable fakes, `RunKind.Updated` shows the line, embedded changelog is found and non-empty, data folder request raised.
+- [x] Settings members and options, `AboutViewModel`, embedded changelog, catalog keys fr/en.
+- [x] Tests in `tests/Squill.Presentation.Tests/Settings/` and `/Updates/`: option lists in both languages, `NotAsked` shown as `Never` and not saved on load, saved on change, channel saved and reloaded, downgrade note rule, about texts for installed / portable fakes, `RunKind.Updated` shows the line, embedded changelog is found and non-empty, data folder request raised.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green; both head publishes zero IL2xxx/IL3xxx warnings (embedded resource included).

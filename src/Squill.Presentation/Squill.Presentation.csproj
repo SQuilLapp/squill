@@ -8,4 +8,7 @@
     <InternalsVisibleTo Include="Squill.Presentation.Tests" />
     <InternalsVisibleTo Include="Squill.App.Avalonia.Tests" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\CHANGELOG.md" LogicalName="Squill.Presentation.CHANGELOG.md" />
+  </ItemGroup>
 </Project>

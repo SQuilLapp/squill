@@ -68,4 +68,5 @@ src/Squill.Presentation/Sessions/SqlRunner.cs|COMMIT TRANSACTION|SQL statement
 src/Squill.Presentation/Sessions/SqlRunner.cs|ROLLBACK TRANSACTION|SQL statement
 src/Squill.Presentation/Terminal/TerminalLauncher.cs|Client SDK|install folder name, not display text
 src/Squill.Presentation/Terminal/TerminalLauncher.cs|Microsoft SQL Server|install folder name, not display text
+src/Squill.Presentation/Updates/ChangelogSection.cs|_Nothing yet._|changelog placeholder marker, not UI text
 src/Squill.Sql/Analysis/SqlDiagnosticsProvider.cs|SQL0001|diagnostic code, not display text

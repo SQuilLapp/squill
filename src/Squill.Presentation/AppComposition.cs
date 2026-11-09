@@ -47,13 +47,15 @@ public interface IPlatformServices
 /// <param name="Settings">The settings, including the theme.</param>
 /// <param name="RunKind">How this start relates to the previous one (first run, updated, downgraded or same).</param>
 /// <param name="Updates">The update flow shared by the banner, the dialog and the About view.</param>
+/// <param name="About">The About dialog's view-model.</param>
 public sealed record AppServices(
     WorkspaceViewModel Workspace,
     HistoryViewModel History,
     SnippetsViewModel Snippets,
     SettingsViewModel Settings,
     RunKind RunKind,
-    UpdateViewModel Updates);
+    UpdateViewModel Updates,
+    AboutViewModel About);
 
 /// <summary>Builds the object graph shared by all heads.</summary>
 public static class AppComposition
@@ -77,7 +79,9 @@ public static class AppComposition
         ArgumentNullException.ThrowIfNull(platform);
         paths ??= new AppPaths();
         currentVersion ??= AppVersion.Current;
-        var runKind = new InstallStateStore(paths).Record(currentVersion);
+        var installState = new InstallStateStore(paths);
+        var previousVersion = installState.Load()?.LastRunVersion;
+        var runKind = installState.Record(currentVersion);
         var profiles = new JsonProfileStore(paths, SecretStoreFactory.Create(paths.DataDirectory));
         var history = new JsonQueryHistoryStore(paths);
         var settings = new JsonSettingsStore(paths);
@@ -101,6 +105,7 @@ public static class AppComposition
             new SnippetsViewModel(new JsonSnippetStore(paths), workspace, platform.Dialogs),
             new SettingsViewModel(settings),
             runKind,
-            updates);
+            updates,
+            new AboutViewModel(updates, paths.DataDirectory, runKind, previousVersion, currentVersion, AboutViewModel.ReadEmbeddedChangelog()));
     }
 }

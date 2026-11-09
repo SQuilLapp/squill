@@ -12,11 +12,23 @@ namespace Squill.Presentation.Settings;
 /// <param name="Label">Its text in the active language.</param>
 public sealed record LanguageOption(AppLanguage Value, string Label);
 
+/// <summary>One entry of the update frequency picker.</summary>
+/// <param name="Value">The setting it selects.</param>
+/// <param name="Label">Its text in the active language.</param>
+public sealed record FrequencyOption(UpdateCheckFrequency Value, string Label);
+
+/// <summary>One entry of the update channel picker.</summary>
+/// <param name="Value">The channel it selects.</param>
+/// <param name="Label">Its text in the active language.</param>
+public sealed record ChannelOption(UpdateChannel Value, string Label);
+
 /// <summary>Exposes the user preferences, clamps edits to their allowed range and saves them on every change once loaded.</summary>
 /// <param name="store">Where the settings are read and saved.</param>
-public sealed partial class SettingsViewModel(ISettingsStore store) : ViewModelBase
+/// <param name="currentVersion">Version of the running build, used for the downgrade note; <see langword="null"/> uses <see cref="AppVersion.Current"/>.</param>
+public sealed partial class SettingsViewModel(ISettingsStore store, string? currentVersion = null) : ViewModelBase
 {
     private bool _loaded;
+    private bool _frequencyUnchosen = true;
 
     /// <summary>Raised after <see cref="Theme"/> changed, so the head can switch the theme variant.</summary>
     public event EventHandler? ThemeChanged;
@@ -48,6 +60,35 @@ public sealed partial class SettingsViewModel(ISettingsStore store) : ViewModelB
     [ObservableProperty]
     public partial AppLanguage Language { get; set; } = AppSettings.Default.Language;
 
+    /// <summary>Gets or sets how often SQuilL checks for updates; a stored "not asked" shows as <see cref="UpdateCheckFrequency.Never"/> and stays unsaved until the user picks a value.</summary>
+    [ObservableProperty]
+    public partial UpdateCheckFrequency UpdateFrequency { get; set; } = UpdateCheckFrequency.Never;
+
+    /// <summary>Gets or sets the release channel followed for updates.</summary>
+    [ObservableProperty]
+    public partial UpdateChannel UpdateChannel { get; set; } = AppSettings.Default.UpdateChannel;
+
+    /// <summary>Gets the frequencies the picker offers.</summary>
+    public IReadOnlyList<FrequencyOption> FrequencyOptions { get; } =
+    [
+        new(UpdateCheckFrequency.Never, UiText.Get("settings.update.frequency.never")),
+        new(UpdateCheckFrequency.Startup, UiText.Get("settings.update.frequency.startup")),
+        new(UpdateCheckFrequency.Daily, UiText.Get("settings.update.frequency.daily")),
+        new(UpdateCheckFrequency.Weekly, UiText.Get("settings.update.frequency.weekly")),
+    ];
+
+    /// <summary>Gets the channels the picker offers.</summary>
+    public IReadOnlyList<ChannelOption> ChannelOptions { get; } =
+    [
+        new(UpdateChannel.Stable, UiText.Get("settings.update.channel.stable")),
+        new(UpdateChannel.Beta, UiText.Get("settings.update.channel.beta")),
+    ];
+
+    /// <summary>Gets a value indicating whether the "no downgrade" note applies: the stable channel is chosen while a pre-release runs.</summary>
+    public bool ShowNoDowngradeNote =>
+        UpdateChannel == UpdateChannel.Stable
+        && SemanticVersion.Parse(currentVersion ?? AppVersion.Current, CultureInfo.InvariantCulture).IsPreRelease;
+
     /// <summary>Gets the language in effect since startup.</summary>
     public UiLanguage ActiveLanguage { get; } = UiText.Language;
 
@@ -63,7 +104,14 @@ public sealed partial class SettingsViewModel(ISettingsStore store) : ViewModelB
     public bool RestartRequired => LanguageResolver.Resolve(Language, CultureInfo.CurrentUICulture) != ActiveLanguage;
 
     /// <summary>Gets the current values as a settings record.</summary>
-    public AppSettings Current => new(Theme, EditorFontSize, MaxGridRows, FormatterKeywordCase, Language);
+    public AppSettings Current => new(
+        Theme,
+        EditorFontSize,
+        MaxGridRows,
+        FormatterKeywordCase,
+        Language,
+        _frequencyUnchosen ? UpdateCheckFrequency.NotAsked : UpdateFrequency,
+        UpdateChannel);
 
     [RelayCommand]
     private async Task LoadAsync(CancellationToken ct)
@@ -75,6 +123,9 @@ public sealed partial class SettingsViewModel(ISettingsStore store) : ViewModelB
         MaxGridRows = settings.MaxGridRows;
         FormatterKeywordCase = settings.FormatterKeywordCase;
         Language = settings.Language;
+        _frequencyUnchosen = settings.UpdateFrequency == UpdateCheckFrequency.NotAsked;
+        UpdateFrequency = _frequencyUnchosen ? UpdateCheckFrequency.Never : settings.UpdateFrequency;
+        UpdateChannel = settings.UpdateChannel;
         _loaded = true;
         ThemeChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -109,6 +160,22 @@ public sealed partial class SettingsViewModel(ISettingsStore store) : ViewModelB
     partial void OnLanguageChanged(AppLanguage value)
     {
         OnPropertyChanged(nameof(RestartRequired));
+        Save();
+    }
+
+    partial void OnUpdateFrequencyChanged(UpdateCheckFrequency value)
+    {
+        if (_loaded)
+        {
+            _frequencyUnchosen = false;
+        }
+
+        Save();
+    }
+
+    partial void OnUpdateChannelChanged(UpdateChannel value)
+    {
+        OnPropertyChanged(nameof(ShowNoDowngradeNote));
         Save();
     }
 
