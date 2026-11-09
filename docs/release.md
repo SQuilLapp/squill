@@ -53,7 +53,7 @@ A failed arm64 job does not block the release: it is published x64-only. A faile
 
 ## Beta releases
 
-Use a pre-release version, for example `0.3.0-beta.1`, in `eng/Version.props`, a `## [0.3.0-beta.1] - yyyy-MM-dd` section in `CHANGELOG.md` (a pre-release has its own section, there is no fallback), and the tag `v0.3.0-beta.1`. The release is packed for the `beta-x64` channel only and marked as a GitHub pre-release; stable users never see it. A stable tag (`v0.3.0`) is packed for **both** `stable-x64` and `beta-x64`, so beta users also receive stable releases. Velopack channel names carry the architecture (`stable-x64`, `beta-x64`, and `-arm64` for the arm64 packages).
+Use a pre-release version, for example `0.3.0-beta.1`, in `eng/Version.props`, a `## [0.3.0-beta.1] - yyyy-MM-dd` section in `CHANGELOG.md` (a pre-release has its own section, there is no fallback), and the tag `v0.3.0-beta.1`. The release is packed for the `beta-x64` channel only and marked as a GitHub pre-release; stable users never see it. A stable tag (`v0.3.0`) is packed for **both** `stable-x64` and `beta-x64`, so beta users also receive stable releases. Velopack channel names carry the architecture (`stable-x64`, `beta-x64`, and `-arm64` for the arm64 packages; off Windows the OS too, for example `stable-linux-x64`).
 
 ## Local build
 
@@ -66,6 +66,17 @@ pwsh eng/pack-windows.ps1 -SelfTest                                # checks the 
 ```
 
 The output is `artifacts/releases` (installers, packages, feed files; git-ignored), the publish folder is `artifacts/publish`. A pack takes several minutes (Native AOT publish). `dotnet tool restore` installs the pinned `vpk`. To prove the whole chain on one machine (install, update through a local feed, uninstall, data kept) run `pwsh eng/verify-update.ps1`; the last run is recorded in [verification/release.md](verification/release.md).
+
+## Linux and macOS (Avalonia)
+
+The Avalonia head is packed by `eng/pack-unix.ps1` (job `pack-unix` of the Release workflow, on `ubuntu-latest` and `macos-latest`; each runtime can only be packed on its own OS, never from Windows):
+
+- **Linux x64**: `vpk pack` builds an AppImage plus the update feed for the channels `stable-linux-x64` (and `beta-linux-x64` for a published stable release). The OS is part of the channel name so the files never collide with the Windows ones in the same Release. No delta packages yet.
+- **macOS arm64**: `vpk bundle` builds the `.app`, which the script zips as `SQuilL-<version>-osx-arm64.zip`. There is no feed, so no automatic update on macOS: users download the next zip.
+- **Not signed, not notarized**: Gatekeeper warns on macOS (right-click, Open); Linux needs `chmod +x` on the AppImage.
+- **Published, not run**: nobody has run these packages on a real Linux or macOS desktop. A failed job never blocks the Windows release; check the artifacts by hand before announcing them.
+
+`pwsh eng/pack-unix.ps1 -Runtime linux-x64` (or `osx-arm64`) repeats the pack on the matching OS; the output is `artifacts/releases-<runtime>`.
 
 ## Signing
 
