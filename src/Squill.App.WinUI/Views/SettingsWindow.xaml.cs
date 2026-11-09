@@ -1,11 +1,14 @@
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Squill.Core;
 using Squill.Platform.Settings;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Settings;
+using Squill.Presentation.Updates;
 using Windows.Graphics;
 using Windows.System;
 using WinRT.Interop;
@@ -22,18 +25,21 @@ public sealed partial class SettingsWindow : Window
     private readonly Window _owner;
     private readonly SettingsViewModel _settings;
     private readonly string _dataDirectory;
+    private readonly UpdateViewModel _updates;
     private bool _loading;
 
     /// <summary>Creates the window bound to the settings.</summary>
     /// <param name="owner">The main window; it stays disabled while this window is open.</param>
     /// <param name="settings">The settings to show and edit.</param>
     /// <param name="dataDirectory">The directory holding profiles, settings and history, shown on the Advanced page.</param>
-    public SettingsWindow(Window owner, SettingsViewModel settings, string dataDirectory)
+    /// <param name="updates">The update flow behind the status line and the check button.</param>
+    public SettingsWindow(Window owner, SettingsViewModel settings, string dataDirectory, UpdateViewModel updates)
     {
         InitializeComponent();
         _owner = owner;
         _settings = settings;
         _dataDirectory = dataDirectory;
+        _updates = updates;
         CaptionBar.Follow(this, Root, ((FrameworkElement)owner.Content));
         Title = UiText.Get("settings.title");
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "squill.ico"));
@@ -44,6 +50,10 @@ public sealed partial class SettingsWindow : Window
             KeywordCaseBox.Items.Add(value);
         foreach (var option in settings.LanguageOptions)
             LanguageBox.Items.Add(option.Label);
+        foreach (var option in settings.FrequencyOptions)
+            FrequencyBox.Items.Add(option.Label);
+        foreach (var option in settings.ChannelOptions)
+            ChannelBox.Items.Add(option.Label);
 
         _loading = true;
         FontSizeBox.Value = settings.EditorFontSize;
@@ -51,13 +61,49 @@ public sealed partial class SettingsWindow : Window
         KeywordCaseBox.SelectedItem = settings.FormatterKeywordCase;
         LanguageBox.SelectedIndex = IndexOf(settings.Language);
         RestartNote.Visibility = Show(settings.RestartRequired);
+        FrequencyBox.SelectedIndex = settings.FrequencyOptions.ToList().FindIndex(o => o.Value == settings.UpdateFrequency);
+        ChannelBox.SelectedIndex = settings.ChannelOptions.ToList().FindIndex(o => o.Value == settings.UpdateChannel);
+        NoDowngradeNote.Visibility = Show(settings.ShowNoDowngradeNote);
         Card(SettingsFormat.ThemeIndex(settings.Theme)).IsChecked = true;
         _loading = false;
         DataFolderPath.Text = dataDirectory;
         NavAppearance.IsChecked = true;
 
         PlaceModal(owner);
-        Closed += (_, _) => _owner.Activate();
+        AutomationProperties.SetName(FrequencyBox, UiText.Get("settings.update.frequency"));
+        AutomationProperties.SetName(ChannelBox, UiText.Get("settings.update.channel"));
+        AutomationProperties.SetName(CheckNowButton, UiText.Get("update.button.checkNow"));
+        updates.PropertyChanged += OnUpdatesChanged;
+        RefreshUpdateStatus();
+        Closed += (_, _) =>
+        {
+            updates.PropertyChanged -= OnUpdatesChanged;
+            _owner.Activate();
+        };
+    }
+
+    private void OnUpdatesChanged(object? sender, PropertyChangedEventArgs e) => RefreshUpdateStatus();
+
+    private void RefreshUpdateStatus()
+    {
+        UpdateStatusText.Text = _updates.StatusText;
+        CheckNowButton.IsEnabled = _updates.CanCheck;
+    }
+
+    private void OnCheckNow(object sender, RoutedEventArgs e) => _updates.CheckNowCommand.Execute(null);
+
+    private void OnFrequencyChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_loading && FrequencyBox.SelectedIndex >= 0)
+            _settings.UpdateFrequency = _settings.FrequencyOptions[FrequencyBox.SelectedIndex].Value;
+    }
+
+    private void OnChannelChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loading || ChannelBox.SelectedIndex < 0)
+            return;
+        _settings.UpdateChannel = _settings.ChannelOptions[ChannelBox.SelectedIndex].Value;
+        NoDowngradeNote.Visibility = Show(_settings.ShowNoDowngradeNote);
     }
 
     private RadioButton Card(int index) => index switch

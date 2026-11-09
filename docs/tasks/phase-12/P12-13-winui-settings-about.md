@@ -1,6 +1,6 @@
 # P12-13 - WinUI head: update rows in the settings window and the About dialog
 
-Status: todo
+Status: done
 Depends on: P12-12, P9-24
 
 ## Goal
@@ -17,9 +17,9 @@ The WinUI user can choose how often SQuilL checks and which channel, check by ha
 - The "update available" banner and the update dialog (P12-14), Avalonia (P12-15).
 
 ## Tasks
-- [ ] Settings rows, `AboutWindow`, `ReleaseNotesPresenter`, menu entry, catalog keys (`menu.help`, `menu.about`, `about.title`, `about.openDataFolder`, `about.repository`, `about.close`) in both catalogs.
-- [ ] Tests in `tests/Squill.App.WinUI.Tests`: presenter output for a notes sample (block and run counts, only http(s) hyperlinks), formatting helpers; scanner/parity tests of phase 10 green.
-- [ ] Capture both windows with `SQUILL_LANGUAGE=en` and `fr` (tools of P9-02, `docs/design/visual-spec.md` section 11) from the published exe with a throwaway `SQUILL_DATA_DIR`; text must not clip in fr; list what could not be driven under "to check by hand".
+- [x] Settings rows, `AboutWindow`, `ReleaseNotesPresenter`, menu entry, catalog keys (`menu.help`, `menu.about`, `about.title`, `about.openDataFolder`, `about.repository`, `about.close`) in both catalogs.
+- [x] Tests in `tests/Squill.App.WinUI.Tests`: presenter output for a notes sample (block and run counts, only http(s) hyperlinks), formatting helpers; scanner/parity tests of phase 10 green.
+- [x] Capture both windows (partly: see below) with `SQUILL_LANGUAGE=en` and `fr` (tools of P9-02, `docs/design/visual-spec.md` section 11) from the published exe with a throwaway `SQUILL_DATA_DIR`; text must not clip in fr; list what could not be driven under "to check by hand".
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green.
@@ -28,3 +28,13 @@ The WinUI user can choose how often SQuilL checks and which channel, check by ha
 
 ## Suggested commit message
 Add update settings and the About window to the WinUI head
+
+## Report
+- Done: Updates card in the Appearance page (below the language row), `AboutWindow`, `ReleaseNotesPresenter` + `ReleaseNotesFormat`, `Help > About` entry (the existing `menu.help` / `menu.about` keys), catalog keys `about.title`, `about.openDataFolder`, `about.repository`, `about.close` (en + fr).
+- Deviation: code runs have no background (a `Run` cannot have one); they use the mono font and the foreground token.
+- AOT publish: no IL2xxx/IL3xxx from SQuilL code; the only ones are the existing third-party `Microsoft.Data.SqlClient` / `System.Configuration.ConfigurationManager` trim warnings. The published exe starts and stays alive with a throwaway `SQUILL_DATA_DIR`.
+
+## To check by hand
+- Open About from `Help` (en and fr): no clipped text, Esc closes, *Open* opens the data folder, the repository link opens in the browser, *Check now* shows "Not installed through the installer" from the build folder.
+- Settings: frequency Daily and channel Beta, restart, values kept; `NotAsked` shows as Never without saving; the no-downgrade note appears for Stable on a pre-release.
+- Screenshot captures of both windows (P9-02 tools) were not driven automatically.

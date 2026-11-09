@@ -1,0 +1,42 @@
+<Window x:Class="Squill.App.WinUI.Views.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:Squill.App.WinUI.Localization">
+  <Grid x:Name="Root" Background="{ThemeResource SquillBgBaseBrush}" RowDefinitions="*,Auto">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="28,24,28,12" Spacing="14">
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <Image x:Name="Logo" Width="32" Height="32" />
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock x:Name="ProductName" FontSize="{StaticResource SquillFontSizeTitle}" FontWeight="SemiBold" Foreground="{ThemeResource SquillFgBrush}" />
+            <TextBlock x:Name="VersionText" Foreground="{ThemeResource SquillFg2Brush}" />
+          </StackPanel>
+        </StackPanel>
+        <StackPanel Spacing="2">
+          <TextBlock x:Name="ChannelText" Foreground="{ThemeResource SquillFg2Brush}" />
+          <TextBlock x:Name="InstallKindText" Foreground="{ThemeResource SquillFg2Brush}" TextWrapping="Wrap" />
+          <TextBlock x:Name="RuntimeText" Foreground="{ThemeResource SquillFg2Brush}" />
+          <TextBlock x:Name="LicenseText" Foreground="{ThemeResource SquillFg2Brush}" />
+        </StackPanel>
+        <StackPanel Spacing="2">
+          <TextBlock x:Name="DataFolderPath" Style="{StaticResource MonoTextBlockStyle}" FontSize="{StaticResource SquillFontSizeBodySm}"
+                     Foreground="{ThemeResource SquillFg2Brush}" TextWrapping="Wrap" />
+          <HyperlinkButton x:Name="OpenFolderLink" Padding="0" Click="OnOpenDataFolder" loc:Loc.Key="about.openDataFolder" />
+          <HyperlinkButton x:Name="RepositoryLink" Padding="0" loc:Loc.Key="about.repository" />
+        </StackPanel>
+        <TextBlock x:Name="StatusText" Foreground="{ThemeResource SquillFgBrush}" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button x:Name="CheckButton" Click="OnCheckNow" loc:Loc.Key="update.button.checkNow" />
+          <Button x:Name="RestartButton" Click="OnRestart" loc:Loc.Key="update.button.restart" />
+        </StackPanel>
+        <StackPanel x:Name="WhatsNew" Spacing="6" Visibility="Collapsed">
+          <TextBlock x:Name="WhatsNewText" FontWeight="SemiBold" Foreground="{ThemeResource SquillFgBrush}" />
+          <ContentControl x:Name="NotesHost" HorizontalContentAlignment="Stretch" />
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="28,0,28,20">
+      <Button x:Name="CloseButton" Click="OnClose" loc:Loc.Key="about.close" />
+    </StackPanel>
+  </Grid>
+</Window>

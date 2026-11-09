@@ -498,5 +498,9 @@ internal static class UiTextCatalogEn
         ("about.runtime.jit", ".NET {0}"),
         ("about.license", "License: MIT"),
         ("about.whatsnew", "Updated from {0}"),
+        ("about.title", "About SQuilL"),
+        ("about.openDataFolder", "Open data folder"),
+        ("about.repository", "Repository on GitHub"),
+        ("about.close", "Close"),
     ];
 }
