@@ -1,6 +1,8 @@
 using System.Globalization;
 using Squill.Data;
+using Squill.Core;
 using Squill.Platform;
+using Squill.Platform.Lifecycle;
 using Squill.Platform.Profiles;
 using Squill.Platform.Secrets;
 using Squill.Platform.Settings;
@@ -41,7 +43,13 @@ public interface IPlatformServices
 /// <param name="History">The query history panel.</param>
 /// <param name="Snippets">The snippets panel.</param>
 /// <param name="Settings">The settings, including the theme.</param>
-public sealed record AppServices(WorkspaceViewModel Workspace, HistoryViewModel History, SnippetsViewModel Snippets, SettingsViewModel Settings);
+/// <param name="RunKind">How this start relates to the previous one (first run, updated, downgraded or same).</param>
+public sealed record AppServices(
+    WorkspaceViewModel Workspace,
+    HistoryViewModel History,
+    SnippetsViewModel Snippets,
+    SettingsViewModel Settings,
+    RunKind RunKind = RunKind.Same);
 
 /// <summary>Builds the object graph shared by all heads.</summary>
 public static class AppComposition
@@ -51,15 +59,18 @@ public static class AppComposition
     /// <param name="paths">Application paths; <see langword="null"/> uses the per-user default (tests pass a temporary directory).</param>
     /// <param name="diagramStore">Persists ER diagram layouts; <see langword="null"/> disables the diagram.</param>
     /// <param name="measureText">Text measurer of the head's diagram font; <see langword="null"/> disables the diagram.</param>
+    /// <param name="currentVersion">Version of the running build; <see langword="null"/> uses <see cref="AppVersion.Current"/> (tests pass their own).</param>
     /// <returns>The root view-models.</returns>
     public static AppServices Create(
         IPlatformServices platform,
         AppPaths? paths = null,
         IDiagramLayoutStore? diagramStore = null,
-        Func<string, double>? measureText = null)
+        Func<string, double>? measureText = null,
+        string? currentVersion = null)
     {
         ArgumentNullException.ThrowIfNull(platform);
         paths ??= new AppPaths();
+        var runKind = new InstallStateStore(paths).Record(currentVersion ?? AppVersion.Current);
         var profiles = new JsonProfileStore(paths, SecretStoreFactory.Create(paths.DataDirectory));
         var history = new JsonQueryHistoryStore(paths);
         var settings = new JsonSettingsStore(paths);
@@ -73,6 +84,7 @@ public static class AppComposition
             workspace,
             new HistoryViewModel(history, workspace, platform.Dialogs),
             new SnippetsViewModel(new JsonSnippetStore(paths), workspace, platform.Dialogs),
-            new SettingsViewModel(settings));
+            new SettingsViewModel(settings),
+            runKind);
     }
 }

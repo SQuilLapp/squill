@@ -1,6 +1,6 @@
 # P12-06 - Install lifecycle: first run, update hooks, uninstall, data directory kept
 
-Status: todo
+Status: done
 Depends on: P12-01, P12-02
 
 ## Goal
@@ -18,9 +18,9 @@ Installing, updating and uninstalling never touch the user's data in `%APPDATA%\
 - Update UI, update service, any dialog about data deletion on uninstall.
 
 ## Tasks
-- [ ] Audit + fixes (smallest possible), `InstallLifecycle`, `InstallStateStore`, hook wiring in `Program.cs`.
-- [ ] Startup call (head-independent): `AppComposition.Create` reads the state, classifies against `AppVersion.Current`, exposes `RunKind` on `AppServices` (add an optional member at the end of the record; heads unchanged), then saves the current version. A throwing state file (corrupt JSON) is treated as `FirstRun` and overwritten.
-- [ ] Tests in `tests/Squill.Platform.Tests` with `AppPaths(tempDir)`: classify table, store round trip, corrupt file, state file written in the data dir and nowhere else, `install-state.json` content is exactly the version.
+- [x] Audit + fixes (smallest possible), `InstallLifecycle`, `InstallStateStore`, hook wiring in `Program.cs`.
+- [x] Startup call (head-independent): `AppComposition.Create` reads the state, classifies against `AppVersion.Current`, exposes `RunKind` on `AppServices` (add an optional member at the end of the record; heads unchanged), then saves the current version. A throwing state file (corrupt JSON) is treated as `FirstRun` and overwritten.
+- [x] Tests in `tests/Squill.Platform.Tests` with `AppPaths(tempDir)`: classify table, store round trip, corrupt file, state file written in the data dir and nowhere else, `install-state.json` content is exactly the version.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green.
@@ -29,3 +29,19 @@ Installing, updating and uninstalling never touch the user's data in `%APPDATA%\
 
 ## Suggested commit message
 Keep user data out of the install root and track the last run version
+
+## Implementation notes
+
+Write-path audit of `src/` (no fix was needed):
+
+| Path | Read or write | Verdict |
+|---|---|---|
+| `AppContext.BaseDirectory` + `Assets/*` (icons, fonts, WinUI head) | read | read-only assets in the install root, fine |
+| `AppContext.BaseDirectory/oracle-bridge/Squill.OracleBridge(.exe)` (`BridgeClient`) | read, process start | published next to the exe by `eng/OracleBridge.targets`, never written at run time |
+| `AppPaths.Combine` users: profiles, settings, history, snippets, diagram layouts (`JsonFileStore`, `JsonDiagramLayoutStore`), `install-state.json` | write | all under `AppPaths.DataDirectory` (`%APPDATA%\SQuilL`) |
+| `DpapiSecretStore` | write | directory given by `SecretStoreFactory` = `AppPaths.DataDirectory`; DPAPI is user-scoped, not path-scoped, so secrets survive updates and reinstalls |
+| `ResultFileWriter`, `DiagramTabViewModel` SVG export | write | user-chosen file path, not the install root |
+| `Environment.CurrentDirectory`, `Path.GetTempPath` | none in `src/` | n/a |
+
+- Hooks: only `OnBeforeUninstallFastCallback` is registered (empty by design) plus `SetAutoApplyOnStartup(false)`; `OnFirstRun` / `OnAfterUpdate` are not needed because `AppComposition` classifies the start.
+- Verified: published AOT exe with a throwaway `SQUILL_DATA_DIR` wrote `install-state.json` (`0.1.0`) and exited with code 0 on close; no AOT warning from SQuilL code. Not verified: a real uninstall (P12-19).
