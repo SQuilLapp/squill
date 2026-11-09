@@ -240,7 +240,7 @@ Depends on: <card ids, ranges allowed>
 | [P12-07](phase-12/P12-07-platform-update-settings.md) | Platform: update settings and persisted update state | P12-03 | done |
 | [P12-08](phase-12/P12-08-platform-update-service.md) | Platform: update service (state machine over an engine contract) | P12-03, P12-07 | done |
 | [P12-09](phase-12/P12-09-velopack-update-engine.md) | Platform: Velopack update engine (GitHub Releases or local feed) | P12-01, P12-08 | done |
-| [P12-10](phase-12/P12-10-presentation-release-notes.md) | Presentation: release notes model (markdown subset) | P12-04 | todo |
+| [P12-10](phase-12/P12-10-presentation-release-notes.md) | Presentation: release notes model (markdown subset) | P12-04 | done |
 | [P12-11](phase-12/P12-11-presentation-update-view-model.md) | Presentation: update view-model and composition | P12-06, P12-08, P12-09, P12-10 | todo |
 | [P12-12](phase-12/P12-12-presentation-settings-about.md) | Presentation: update settings and About view-models | P12-11 | todo |
 | [P12-13](phase-12/P12-13-winui-settings-about.md) | WinUI head: update rows in the settings window and the About dialog | P12-12, P9-24 | todo |

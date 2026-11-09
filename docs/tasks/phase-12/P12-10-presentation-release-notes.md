@@ -1,6 +1,6 @@
 # P12-10 - Presentation: release notes model (markdown subset)
 
-Status: todo
+Status: done
 Depends on: P12-04
 
 ## Goal
@@ -17,8 +17,8 @@ Release notes arrive as markdown (from `CHANGELOG.md` through Velopack). Both he
 - Rendering, the update view-model, HTML notes.
 
 ## Tasks
-- [ ] `ReleaseNotes`, `NotesBlock` records, `NotesRun`, `NotesRunStyle`, XML docs.
-- [ ] Tests in `tests/Squill.Presentation.Tests/Updates/`: the seeded `0.1.0` body of `CHANGELOG.md` (copied as a string constant into the test, not read from disk) parses into the expected blocks; each inline style; nested markers (`**a `b`**` stays one bold run containing the backticks as text); unclosed markers; link schemes table (https ok, `javascript:alert(1)`, `file:///c:/x`, relative, `ms-settings:` -> plain); CRLF; empty/null -> empty list; 100 KiB input truncated; a `|` table row and `<b>` stay plain text (no HTML interpretation).
+- [x] `ReleaseNotes`, `NotesBlock` records, `NotesRun`, `NotesRunStyle`, XML docs.
+- [x] Tests in `tests/Squill.Presentation.Tests/Updates/`: the seeded `0.1.0` body of `CHANGELOG.md` (copied as a string constant into the test, not read from disk) parses into the expected blocks; each inline style; nested markers (`**a `b`**` stays one bold run containing the backticks as text); unclosed markers; link schemes table (https ok, `javascript:alert(1)`, `file:///c:/x`, relative, `ms-settings:` -> plain); CRLF; empty/null -> empty list; 100 KiB input truncated; a `|` table row and `<b>` stay plain text (no HTML interpretation).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green.
