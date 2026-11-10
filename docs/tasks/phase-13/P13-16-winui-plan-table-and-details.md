@@ -1,6 +1,6 @@
 # P13-16 - WinUI head: plan table, details panel and warnings
 
-Status: todo
+Status: done
 Depends on: P13-15
 
 ## Goal
@@ -15,8 +15,8 @@ The `Arbre` view of the WinUI plan tab: the table of nodes with relative-cost ba
 - The graph (P13-17), column sorting, node collapse, Avalonia.
 
 ## Tasks
-- [ ] Table, details panel, suggestion card, bindings, localized strings reuse of P13-12/14 keys (add `plan.copy`, `plan.openineditor` fr/en).
-- [ ] Capture `Arbre` and `Graphique` (table half) light and dark with the PostgreSQL plan of the P11 sample schema (container via `rtk pwsh eng/run-docker-tests.ps1 -Engine postgres`'s fixture is not interactive: instead start `postgres:17-alpine` with the Podman steps of `docs/verification/postgres.md`, close it afterwards) and compare with the PNGs; SQLite plan captured too (no bars, no figures).
+- [x] Table, details panel, suggestion card, bindings, localized strings reuse of P13-12/14 keys (add `plan.copy`, `plan.openineditor` fr/en).
+- [ ] (not done, see report) Capture `Arbre` and `Graphique` (table half) light and dark with the PostgreSQL plan of the P11 sample schema (container via `rtk pwsh eng/run-docker-tests.ps1 -Engine postgres`'s fixture is not interactive: instead start `postgres:17-alpine` with the Podman steps of `docs/verification/postgres.md`, close it afterwards) and compare with the PNGs; SQLite plan captured too (no bars, no figures).
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green; WinUI AOT publish zero IL2xxx/IL3xxx.

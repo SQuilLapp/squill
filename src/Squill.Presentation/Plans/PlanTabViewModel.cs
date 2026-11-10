@@ -95,6 +95,17 @@ public sealed partial class PlanTabViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Opens a suggested statement in a new query tab on the session of the source tab.</summary>
+    /// <param name="script">The statement text.</param>
+    [RelayCommand]
+    private void OpenInEditor(string? script)
+    {
+        if (!string.IsNullOrEmpty(script))
+        {
+            Source.RequestScript(script);
+        }
+    }
+
     [RelayCommand]
     private void Close() => CloseRequested?.Invoke(this);
 

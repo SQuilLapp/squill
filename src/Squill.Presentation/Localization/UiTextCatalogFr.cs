@@ -575,5 +575,8 @@ internal static class UiTextCatalogFr
         ("plan.col.actRows", "Lignes réelles"),
         ("plan.col.time", "Temps"),
         ("plan.col.loops", "Boucles"),
+        ("plan.suggestion.title", "Suggestion d'index"),
+        ("plan.copy", "Copier"),
+        ("plan.openineditor", "Ouvrir dans l'éditeur"),
     ];
 }

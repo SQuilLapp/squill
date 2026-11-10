@@ -40,6 +40,8 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     /// <summary>Raised with a DML script that a result editor wants opened in a new query tab.</summary>
     public event Action<string>? ScriptRequested;
 
+    internal void RequestScript(string script) => ScriptRequested?.Invoke(script);
+
     /// <summary>Raised with the plan tab of this query tab when a plan was produced; the same instance each time, its content replaced.</summary>
     public event Action<PlanTabViewModel>? PlanReady;
 

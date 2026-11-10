@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Squill.App.WinUI.Controls;
 using Squill.Core.Plans;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Plans;
@@ -11,6 +12,8 @@ namespace Squill.App.WinUI.Views;
 public sealed partial class PlanTabView : UserControl
 {
     private PlanTabViewModel? _tab;
+    private readonly PlanTable _table = new();
+    private readonly Splitter _splitter = new(false) { ResizeBefore = true };
     private PlanViewModel? _plan;
 
     /// <summary>Creates the view.</summary>
@@ -20,6 +23,10 @@ public sealed partial class PlanTabView : UserControl
         TreeButton.Content = UiText.Get("plan.view.tree");
         GraphButton.Content = UiText.Get("plan.view.graph");
         TextButton.Content = UiText.Get("plan.view.text");
+        Grid.SetRow(_splitter, 1);
+        Grid.SetRow(_table, 2);
+        PlanBody.Children.Add(_splitter);
+        PlanBody.Children.Add(_table);
         ActualThemeChanged += (_, _) => Refresh();
     }
 
@@ -90,6 +97,21 @@ public sealed partial class PlanTabView : UserControl
         MessageText.Visibility = tab.MessageLine.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
         if (RawText.Text != plan.SourceText)
             RawText.Text = plan.SourceText;
+
+        var text = plan.ViewMode == PlanViewMode.Text;
+        RawText.Visibility = text ? Visibility.Visible : Visibility.Collapsed;
+        PlanBody.Visibility = text ? Visibility.Collapsed : Visibility.Visible;
+        var graph = plan.ViewMode == PlanViewMode.Graph;
+        if (graph != (_splitter.Visibility == Visibility.Visible))
+        {
+            // Entering the graph view restores the 62 / 38 split; the table takes the whole body in the tree view.
+            GraphRow.Height = graph ? new GridLength(62, GridUnitType.Star) : new GridLength(0);
+            TableRow.Height = new GridLength(38, GridUnitType.Star);
+            _splitter.Visibility = graph ? Visibility.Visible : Visibility.Collapsed;
+            GraphHost.Visibility = _splitter.Visibility;
+        }
+
+        _table.Bind(tab, plan);
     }
 
     private void OnViewClicked(object sender, RoutedEventArgs e)

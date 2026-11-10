@@ -25,8 +25,16 @@
       </Grid>
     </Border>
     <TextBlock x:Name="MessageText" Grid.Row="1" Margin="12,8" TextWrapping="Wrap" IsTextSelectionEnabled="True" Foreground="{ThemeResource SquillDangerBrush}" Visibility="Collapsed" />
-    <!-- P13-16 and P13-17 fill this host with the table, the details panel and the graph; until then every view shows the raw text. -->
     <Grid x:Name="BodyHost" Grid.Row="2">
+      <Grid x:Name="PlanBody">
+        <Grid.RowDefinitions>
+          <RowDefinition x:Name="GraphRow" Height="62*" />
+          <RowDefinition x:Name="SplitterRow" Height="Auto" />
+          <RowDefinition x:Name="TableRow" Height="38*" />
+        </Grid.RowDefinitions>
+        <!-- P13-17 puts the graph canvas in GraphHost. -->
+        <Grid x:Name="GraphHost" />
+      </Grid>
       <TextBox x:Name="RawText" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap" BorderThickness="0" CornerRadius="0" Padding="12"
                FontFamily="{StaticResource SquillFontMono}" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
     </Grid>

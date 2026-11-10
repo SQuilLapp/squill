@@ -267,7 +267,7 @@ Depends on: <card ids, ranges allowed>
 | [P13-13](phase-13/P13-13-presentation-plan-layout.md) | Presentation: plan graph layout | P13-12 | done |
 | [P13-14](phase-13/P13-14-presentation-explain-commands-and-tab.md) | Presentation: Expliquer / Analyser commands and the plan tab | P13-03, P13-04, P13-12, P13-13 | done |
 | [P13-15](phase-13/P13-15-winui-plan-host-and-toolbar.md) | WinUI head: Expliquer and Analyser buttons, plan tab host, tab strip, status bar | P13-14, P9-12 | done |
-| [P13-16](phase-13/P13-16-winui-plan-table-and-details.md) | WinUI head: plan table, details panel and warnings | P13-15 | todo |
+| [P13-16](phase-13/P13-16-winui-plan-table-and-details.md) | WinUI head: plan table, details panel and warnings | P13-15 | done |
 | [P13-17](phase-13/P13-17-winui-plan-graph.md) | WinUI head: plan graph canvas | P13-13, P13-16 | todo |
 | [P13-18](phase-13/P13-18-avalonia-plan-host-and-toolbar.md) | Avalonia head: Expliquer and Analyser buttons, plan tab host, tab strip, status bar | P13-14, P13-15, P9-11 | todo |
 | [P13-19](phase-13/P13-19-avalonia-plan-table-and-details.md) | Avalonia head: plan table, details panel and warnings | P13-16, P13-18 | todo |

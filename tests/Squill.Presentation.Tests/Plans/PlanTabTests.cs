@@ -107,6 +107,20 @@ public sealed class PlanTabTests
     }
 
     [Fact]
+    public async Task OpenInEditor_RaisesTheScriptOfTheSourceTab()
+    {
+        var f = new Fixture("select 1");
+        var scripts = new List<string>();
+        f.Vm.ScriptRequested += scripts.Add;
+        await f.Vm.ExplainCommand.ExecuteAsync(null);
+
+        f.Opened[0].OpenInEditorCommand.Execute("CREATE INDEX x ON t (a);");
+        f.Opened[0].OpenInEditorCommand.Execute("");
+
+        Assert.Equal(["CREATE INDEX x ON t (a);"], scripts);
+    }
+
+    [Fact]
     public async Task Analyze_WriteStatement_IsRefusedWithTheReason()
     {
         var f = new Fixture("delete from t");
