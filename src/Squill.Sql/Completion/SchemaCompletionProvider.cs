@@ -63,7 +63,15 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
 
         if (tablePosition)
         {
-            return Tables(schema, qualifiers, request.Dialect, range);
+            var tables = Tables(schema, qualifiers, request.Dialect, range);
+
+            // Join rows go above the plain rows; a typed schema qualifier hides the join context from the analyzer, so none are offered then.
+            if (qualifiers.Count == 0 && previous!.Equals("JOIN", StringComparison.OrdinalIgnoreCase))
+            {
+                tables.InsertRange(0, JoinRows.Build(schema, JoinContextAnalyzer.Analyze(request, start, offset), request.Dialect, range));
+            }
+
+            return tables;
         }
 
         if (scope.Clause is ClauseKind.Select or ClauseKind.Where or ClauseKind.On or ClauseKind.GroupBy
