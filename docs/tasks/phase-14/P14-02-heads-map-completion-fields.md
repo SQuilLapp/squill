@@ -1,6 +1,6 @@
 # P14-02 - Heads: map the new completion fields to LoomEditor and the plain editor
 
-Status: todo
+Status: done
 Depends on: P14-01
 
 ## Goal
@@ -15,9 +15,9 @@ The popup of both heads shows and uses `FilterText`, `Documentation` and snippet
 - Any provider producing documentation or snippets (P14-15, P14-16); LoomEditor changes.
 
 ## Tasks
-- [ ] Test first (Avalonia head tests): an item with `FilterText`, `Documentation` and `IsSnippet = true` reaches the Loom item with the same values and the `InsertAsSnippet` rule; an item without them has `null` / `None`.
-- [ ] Implement in `LoomSqlProviders` and `PlainSqlEditor`.
-- [ ] WinUI head builds (`rtk dotnet build Squill.Windows.slnx -c Release -warnaserror`); by hand on WinUI is not needed yet (no provider uses the fields), P14-18 covers it.
+- [x] Test first (Avalonia head tests): an item with `FilterText`, `Documentation` and `IsSnippet = true` reaches the Loom item with the same values and the `InsertAsSnippet` rule; an item without them has `null` / `None`.
+- [x] Implement in `LoomSqlProviders` and `PlainSqlEditor`.
+- [x] WinUI head builds (`rtk dotnet build Squill.Windows.slnx -c Release -warnaserror`); by hand on WinUI is not needed yet (no provider uses the fields), P14-18 covers it.
 
 ## Acceptance criteria
 - Recipe section 4 with both solutions built.

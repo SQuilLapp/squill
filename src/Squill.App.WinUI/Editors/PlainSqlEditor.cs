@@ -227,7 +227,7 @@ public sealed class PlainSqlEditor : ISqlEditor, IEditorControl
         try
         {
             _box.Select(start, caret - start);
-            _box.SelectedText = item.InsertText;
+            _box.SelectedText = item.IsSnippet ? SnippetText.ToPlain(item.InsertText) : item.InsertText;
         }
         finally
         {

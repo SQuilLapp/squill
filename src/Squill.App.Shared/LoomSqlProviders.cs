@@ -106,12 +106,22 @@ internal sealed class LoomSqlProviders(Func<DatabaseDialect> dialectOf) : ICompl
     private static LoomCompletionItem Map(TextModel model, SqlCompletionItem item)
     {
         var range = ToRange(model, item.ReplaceRange);
-        return new LoomCompletionItem(item.Label, item.InsertText, MapKind(item.Kind))
+        var target = new LoomCompletionItem(item.Label, item.InsertText, MapKind(item.Kind))
         {
-            Detail = item.Detail,
-            SortText = item.SortText,
             Range = new CompletionRange(range, range),
         };
+        ApplyFields(target, item);
+        return target;
+    }
+
+    /// <summary>Copies the fields of <paramref name="source"/> that do not depend on the text model.</summary>
+    internal static void ApplyFields(LoomCompletionItem target, SqlCompletionItem source)
+    {
+        target.Detail = source.Detail;
+        target.SortText = source.SortText;
+        target.FilterText = source.FilterText;
+        target.Documentation = source.Documentation is { } d ? new MarkdownString(d) : null;
+        target.InsertTextRules = source.IsSnippet ? InsertTextRules.InsertAsSnippet : InsertTextRules.None;
     }
 
     private static CompletionItemKind MapKind(SqlCompletionKind kind) => kind switch
