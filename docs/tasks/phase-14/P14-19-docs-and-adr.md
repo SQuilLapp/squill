@@ -1,6 +1,6 @@
 # P14-19 - Documentation: completion ADR 0011, README and architecture note
 
-Status: todo
+Status: done
 Depends on: P14-18
 
 ## Goal
@@ -14,7 +14,7 @@ Record what phase 14 decided and what it left out, and update the user-facing do
 - New features.
 
 ## Tasks
-- [ ] ADR, README, architecture, ADR 0002 pointer, task index status.
+- [x] ADR, README, architecture, ADR 0002 pointer, task index status.
 
 ## Acceptance criteria
 - Build and test green (docs only, but run them); links in the touched files resolve (check with a grep for the new file names).

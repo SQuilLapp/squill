@@ -58,6 +58,11 @@ Done through phase 13 (execution plan, see [ADR 0010](adr/0010-execution-plan.md
 - **Version.** One source, `eng/Version.props`; the release tag is `v` + that value, the runtime reads it through the generated `AppVersion`.
 - **Data.** The install root is `%LOCALAPPDATA%\SQuilL`; user data stays in `%APPDATA%\SQuilL` and survives updates and uninstall. The maintainer and user guide is [release.md](release.md).
 
+## SQL completion (phase 14)
+
+- **Where.** `Squill.Sql/Completion`: `ISqlCompletionProvider`, `KeywordCompletionProvider`, `SchemaCompletionProvider`, `FunctionCompletionProvider`, `SnippetCompletionProvider`, merged by `CompositeCompletionProvider` ordered by `SortText` (`CompletionOrder`); join logic in `JoinContext`, `TableRelationFinder`, `AliasGenerator`, `JoinConditionText`, `JoinRows`, `OnClauseRows`; text helpers `TableReference`, `IdentifierQuoting`, `KeywordCasing`, `SnippetText`, `CompletionDocumentation`, `CompletionTrigger`.
+- **Wiring.** `QueryTabViewModel.SessionCompletionProvider` adds `session.Schema` and the keyword-case setting to each request; `src/Squill.App.Shared/LoomSqlProviders.cs` (linked into both heads) slices the script to the statement under the caret and maps `CompletionItem` to LoomEditor's; `PlainSqlEditor` is the fallback. Decisions, alternatives and known limits: [ADR 0011](adr/0011-sql-completion.md); evidence and manual checklist: [verification/completion.md](verification/completion.md).
+
 ## Execution plan (phase 13)
 
 - **Layers.** `Squill.Core/Plans` holds the model (`QueryPlan`, `PlanNode`, `PlanWarning`, `PlanSuggestion`) and `PlanAnalysis` (relative cost, critical nodes, misestimates). `Squill.Data` has the optional `IPlanReader` (the four connections implement it; `ConnectionSession.PlanSupport` exposes it); each driver has an internal `<Driver>PlanReader` and a pure `<Driver>PlanParser`. `Squill.Sql/Plans` has `PlanEligibility` (what may be explained or analyzed). `Squill.Presentation/Plans` has `PlanViewModel`, `PlanTabViewModel` and `PlanLayout`; `QueryTabViewModel` has `ExplainCommand` / `AnalyzeCommand` and `WorkspaceViewModel.Plans` holds the plan tabs. Both heads draw `PlanTabView`, the table, the details panel and the graph canvas.
