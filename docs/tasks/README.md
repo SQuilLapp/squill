@@ -273,7 +273,7 @@ Depends on: <card ids, ranges allowed>
 | [P13-19](phase-13/P13-19-avalonia-plan-table-and-details.md) | Avalonia head: plan table, details panel and warnings | P13-16, P13-18 | done |
 | [P13-20](phase-13/P13-20-avalonia-plan-graph.md) | Avalonia head: plan graph canvas | P13-17, P13-19 | done |
 | [P13-21](phase-13/P13-21-verify-plan.md) | End-to-end verification: execution plan on the four engines | P13-11, P13-17, P13-20 | automated done, manual pending |
-| [P13-22](phase-13/P13-22-docs-and-adr.md) | Documentation: execution plan ADR 0010, README and architecture note | P13-21 | todo |
+| [P13-22](phase-13/P13-22-docs-and-adr.md) | Documentation: execution plan ADR 0010, README and architecture note | P13-21 | done |
 
 ### Phase 9 - Visual conformance
 
@@ -309,7 +309,7 @@ Goal: a user installs SQuilL with one `Setup.exe`, is told when a newer version 
 - Status: P12-01 to P12-20 are done. P12-19 is done for its automated part (install, update, uninstall, data kept: all green); its by-hand checklist in [docs/verification/release.md](../verification/release.md) is pending the owner. P12-21 is optional and not started. The first real release (tag `v0.1.0`) is the owner's decision after reading that report.
 - Cards that package run in the background (an AOT publish takes minutes), never run an installer except P12-01 (throwaway id `SQuilLPoc`) and P12-19 (`SQuilLVerify`), and clean `artifacts/` afterwards. Bugs found by P12-19 too big for the card get `P12-22` onwards (added to this index).
 
-### Phase 13 - Execution plan (mockup M06)
+### Phase 13 - Execution plan (mockup M06) - done except the owner's manual checklist ([verification/plan.md](../verification/plan.md))
 
 Goal: `Expliquer` and `Analyser` on the query toolbar open a plan tab (`<name> · Plan`) with the tree / graph / text views, relative cost, estimated and actual rows, warnings and, on SQL Server, the engine's missing-index suggestion, on SQLite, PostgreSQL, MySQL and SQL Server in both heads. Decisions (final, details in [plan-recipe.md](phase-13/plan-recipe.md) and in ADR 0010 written by P13-22): `Expliquer` never executes the statement; `Analyser` executes read-only statements only, in a rolled-back transaction where the engine allows it (PostgreSQL `BEGIN READ ONLY`, SQL Server transaction; MySQL has no wrapper); SQLite gives a structure only (no cost, estimate or timing, nothing invented); a figure the engine does not give is omitted; `Comparer...`, live statistics, app-invented index suggestions for PostgreSQL/MySQL, plan export, MariaDB and Oracle are out of scope; `Analyser` on a Production-environment connection asks for confirmation.
 

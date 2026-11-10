@@ -83,7 +83,7 @@ M14: window title `Paramètres — SQuilL` with a back arrow. Left nav 260 wide:
 
 ## 10. What the app does not have (not drawn in phase 9)
 
-M01 start page, M06 plan, M09 schema compare, M10 transfer, M11 privileges, M12 sessions, M13 command palette, M15 production confirmation dialog, the filter bar, column menu and row panel of M05, tags/SSL/proxy/driver tabs of M02, impact estimate of M07, shortcuts/drivers/accent/material/density of M14, auto-commit/manual transaction controls of the toolbar (Valider/Annuler of M03/M04). Each is a feature, not a style, and needs its own phase.
+M01 start page, M09 schema compare, M10 transfer, M11 privileges, M12 sessions, M13 command palette, M15 production confirmation dialog, the filter bar, column menu and row panel of M05, tags/SSL/proxy/driver tabs of M02, impact estimate of M07, shortcuts/drivers/accent/material/density of M14, auto-commit/manual transaction controls of the toolbar (Valider/Annuler of M03/M04). Each is a feature, not a style, and needs its own phase.
 
 ## 11. Verification procedure (every head card)
 
@@ -107,3 +107,12 @@ Collected from the card reports and commit messages. "Matched" means looked at a
 | ER diagram (M08) | Partly: row counts, comment and layout options, PNG/PDF/Mermaid export not drawn; relation tooltip and hover not driven (P9-21) | Partly: same; capture narrower than 1440 px, `Exporter` item and hops tooltip not checked (P9-22) |
 | Settings (M14) | Four pages in scope done after the mockup (no capture comparison recorded); language row added by phase 10 (P10-05); shortcuts, drivers, accent, material, density not drawn (P9-23) | Same (P9-24) |
 | Shared control styles | Gallery captured (P9-05) | Gallery in static states only; popup shadow is the WinUI default; popups and pointer-over/pressed not driven (P9-06) |
+| Execution plan (M06) | Built in phase 13 (P13-18 ... P13-20): toolbar, table, details, graph; never compared with the PNGs: the headless run could not write captures out of its sandbox, so only "the two themes render different pixels" is tested | Built in phase 13 (P13-15 ... P13-17): same; the plan tab could not be driven (needs a live connection), so no capture was compared. The owner's comparison is step 2 and 3 of the last table of [verification/plan.md](../verification/plan.md) |
+
+## 13. Screen M06 - Execution plan (`M06-Plan-*`)
+
+Phase 13, decisions in [ADR 0010](../adr/0010-execution-plan.md) and [plan-recipe.md](../tasks/phase-13/plan-recipe.md) (the PNG wins over the recipe for layout).
+
+Drawn: a workspace tab `<query tab> · Plan` in the environment color. Toolbar (40 high): segmented `Arbre` / `Graphique` / `Texte`, the command, summary figures, critical and warning pills, zoom `-` `100 %` `+`, `Relancer` with `Ctrl+Maj+E`. Body: `Graphique` = canvas on top of the table, `Arbre` = table only, `Texte` = raw engine output in mono. Table columns `Nœud`, `Coût relatif`, `Coût total`, `Lignes est.`, `Lignes réelles`, `Temps`, `Boucles`; details panel 264 wide on the right. Graph: operators left to right, cards 250 wide with icon, name, target, cost bar, percent and time, `est. N · réel M ×factor` line on a misestimate, warning line; amber border from 30 % or on a warning, red from 60 %; edge width grows with rows; PostgreSQL `Hash` helpers as dashed pills on the edge; legend bottom right. `Suggestion d'index` card with `Copier` and `Ouvrir dans l'éditeur`, SQL Server only. Status bar: engine message line, `<n> nœuds · <ms> ms`, server version.
+
+Not drawn: `Comparer...`, live statistics, index suggestions for PostgreSQL or MySQL, plan export or saving, a `Workers` line unless the engine reports it. A figure the engine does not give is an en dash or hidden (SQLite gives no cost, estimate or timing: no bars or percentages).
