@@ -531,7 +531,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     private sealed class SessionCompletionProvider(ConnectionSession session, Func<KeywordCase> keywordCase) : ISqlCompletionProvider
     {
         private static readonly CompositeCompletionProvider Inner =
-            new(new KeywordCompletionProvider(), new SchemaCompletionProvider(), new FunctionCompletionProvider());
+            new(new KeywordCompletionProvider(), new SchemaCompletionProvider(), new FunctionCompletionProvider(), new SnippetCompletionProvider());
 
         /// <inheritdoc />
         public IReadOnlyList<CompletionItem> GetCompletions(SqlRequest request) =>

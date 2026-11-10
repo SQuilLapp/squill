@@ -1,6 +1,6 @@
 # P14-16 - Sql: statement snippets with tab stops
 
-Status: todo
+Status: done
 Depends on: P14-01, P14-02, P14-14
 
 ## Goal
@@ -23,12 +23,17 @@ At the start of a statement the popup offers templates (`sel`, `ins`, `upd`, `de
 - User-defined snippets in the popup (the app has a snippet store used by another feature), `MERGE` / `EXEC` templates, a snippet to generate `INSERT` from a table's columns.
 
 ## Tasks
-- [ ] Tests first (`tests/Squill.Sql.Tests/Completion/SnippetCompletionTests.cs`): at an empty script and after `;` the six items exist with exact `InsertText`; none after `select 1 from `; keyword case Lower gives `select`; the result of `SnippetText.ToPlain` for each; dialect specific `crt` type; every template is balanced (each `${n:` closed, `$0` last, only one `$0`, no unescaped `$` or `}` in literals).
-- [ ] Check LoomEditor's snippet syntax support for mirrors by reading `D:\LoomEditor\src\LoomEditor.View\Features\Snippet` (package 0.5.0 behaviour: the same files at tag `v0.5.0` if present; if the tag is absent say that this was read at 0.6.0).
-- [ ] Implement, XML docs.
+- [x] Tests first (`tests/Squill.Sql.Tests/Completion/SnippetCompletionTests.cs`): at an empty script and after `;` the six items exist with exact `InsertText`; none after `select 1 from `; keyword case Lower gives `select`; the result of `SnippetText.ToPlain` for each; dialect specific `crt` type; every template is balanced (each `${n:` closed, `$0` last, only one `$0`, no unescaped `$` or `}` in literals).
+- [x] Check LoomEditor's snippet syntax support for mirrors by reading `D:\LoomEditor\src\LoomEditor.View\Features\Snippet` (package 0.5.0 behaviour: the same files at tag `v0.5.0` if present; if the tag is absent say that this was read at 0.6.0).
+- [x] Implement, XML docs.
 
 ## Acceptance criteria
 - Recipe section 4, WinUI head built (the item flows through `LoomSqlProviders`).
 
 ## Suggested commit message
 Add statement snippets to the completion popup
+
+## Report
+- LoomEditor snippet parser read at tag `v0.5.0`: it is Monaco's port, so a repeated `${1:name}` mirrors; both occurrences of `${1:name}` are written in `cte` (the plain-text editor then gets the default twice).
+- The provider is `public` (not `internal`) because `Squill.Presentation` registers it in `SessionCompletionProvider` and has no `InternalsVisibleTo`.
+- "Columns filled in for `ins` / `upd` after a table name" was not implemented: it contradicts "Out of scope" (a snippet generating `INSERT` from a table's columns).
