@@ -137,13 +137,13 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
             var owner = qualifiers[^1];
             foreach (var t in schema.Tables.Where(t => string.Equals(t.Schema, owner, StringComparison.OrdinalIgnoreCase)))
             {
-                items.Add(Table(t, dialect, range));
+                items.Add(Table(t, null, dialect, range));
             }
 
             return items;
         }
 
-        items.AddRange(schema.Tables.Select(t => Table(t, dialect, range)));
+        items.AddRange(schema.Tables.Select(t => Table(t, schema, dialect, range)));
         var schemas = schema.Tables.Select(t => t.Schema).OfType<string>().Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         if (schemas.Count > 1)
         {
@@ -153,8 +153,20 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
         return items;
     }
 
-    private static CompletionItem Table(TableInfo t, DatabaseDialect dialect, TextRange range) =>
-        new(t.Name, CompletionKind.Struct, IdentifierQuoting.Quote(t.Name, dialect), t.Kind.IsViewLike() ? "view" : "table", "0" + t.Name, range);
+    // snapshot is null after "schema.": the schema is already typed, so the bare name is inserted.
+    private static CompletionItem Table(TableInfo t, SchemaSnapshot? snapshot, DatabaseDialect dialect, TextRange range)
+    {
+        var kind = t.Kind.IsViewLike() ? "view" : "table";
+        var qualified = snapshot is not null && TableReference.NeedsSchema(t, snapshot);
+        return new CompletionItem(
+            t.Name,
+            CompletionKind.Struct,
+            snapshot is null ? IdentifierQuoting.Quote(t.Name, dialect) : TableReference.Insert(t, snapshot, dialect),
+            qualified ? $"{kind} ({t.Schema})" : kind,
+            "0" + t.Name,
+            range,
+            t.Name);
+    }
 
     private static List<CompletionItem> Columns(SchemaSnapshot schema, ScopeInfo scope, List<string> qualifiers, DatabaseDialect dialect, TextRange range)
     {

@@ -276,7 +276,7 @@ Depends on: <card ids, ranges allowed>
 | [P13-22](phase-13/P13-22-docs-and-adr.md) | Documentation: execution plan ADR 0010, README and architecture note | P13-21 | done |
 | [P14-01](phase-14/P14-01-sql-completion-item-fields.md) | Sql: filter text, documentation and snippet flag on completion items | none | done |
 | [P14-02](phase-14/P14-02-heads-map-completion-fields.md) | Heads: map the new completion fields to LoomEditor and the plain editor | P14-01 | done |
-| [P14-03](phase-14/P14-03-sql-schema-qualified-tables.md) | Sql: tables outside the default schema are inserted qualified | none | todo |
+| [P14-03](phase-14/P14-03-sql-schema-qualified-tables.md) | Sql: tables outside the default schema are inserted qualified | none | done |
 | [P14-04](phase-14/P14-04-sql-join-context.md) | Sql: join context at the caret (kind, left sources, existing condition) | none | todo |
 | [P14-05](phase-14/P14-05-sql-table-relations.md) | Sql: relations between a new table and the tables already in the FROM list | P14-04 | todo |
 | [P14-06](phase-14/P14-06-sql-alias-generator.md) | Sql: alias generation | none | todo |

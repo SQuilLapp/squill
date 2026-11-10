@@ -1,6 +1,6 @@
 # P14-03 - Sql: tables outside the default schema are inserted qualified
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -16,8 +16,8 @@ Accepting a table from the popup always gives a name the engine resolves: `audit
 - Join conditions (they reference tables by alias or bare name only), columns, database (catalog) qualification on SQL Server / MySQL cross-database names.
 
 ## Tasks
-- [ ] Tests first (`tests/Squill.Sql.Tests/Completion/TableReferenceTests.cs` and additions in `SchemaCompletionTests`): default schema table bare; other schema table qualified; same name in two schemas, default one bare and other qualified; `DefaultSchema` null and unique name bare; two same names and no default both qualified; quoting per dialect (`[audit].[log]`, `` `audit`.`log` ``, `"Audit"."log"` on PostgreSQL with a capital); item after `audit.` is bare.
-- [ ] Implement; update the existing test expectations that listed `Detail` of other-schema tables, with the reason in the commit message.
+- [x] Tests first (`tests/Squill.Sql.Tests/Completion/TableReferenceTests.cs` and additions in `SchemaCompletionTests`): default schema table bare; other schema table qualified; same name in two schemas, default one bare and other qualified; `DefaultSchema` null and unique name bare; two same names and no default both qualified; quoting per dialect (`[audit].[log]`, `` `audit`.`log` ``, `"Audit"."log"` on PostgreSQL with a capital); item after `audit.` is bare.
+- [x] Implement; update the existing test expectations that listed `Detail` of other-schema tables, with the reason in the commit message.
 
 ## Acceptance criteria
 - Recipe section 4.

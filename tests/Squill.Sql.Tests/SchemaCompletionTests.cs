@@ -165,4 +165,23 @@ public sealed class SchemaCompletionTests
         Assert.Equal(insert, item.InsertText);
         Assert.Equal(rangeStart, item.ReplaceRange.Start);
     }
+
+    [Fact]
+    public void TableOutsideDefaultSchemaWithDuplicateName_IsInsertedQualified_AndLabelledWithItsSchema()
+    {
+        var schema = new SchemaSnapshot("public", [Table("public", "log", TableKind.Table, ("a", "int")), Table("audit", "log", TableKind.Table, ("b", "int"))]);
+        var items = At("select * from |", schema: schema).Where(i => i.Label == "log").OrderBy(i => i.InsertText, StringComparer.Ordinal).ToArray();
+        Assert.Equal(["audit.log", "log"], items.Select(i => i.InsertText));
+        Assert.Equal(["table (audit)", "table"], items.Select(i => i.Detail));
+        Assert.All(items, i => Assert.Equal("log", i.FilterText));
+    }
+
+    [Fact]
+    public void AfterSchemaDot_TheBareNameIsInserted()
+    {
+        var schema = new SchemaSnapshot("public", [Table("public", "log", TableKind.Table, ("a", "int")), Table("audit", "log", TableKind.Table, ("b", "int"))]);
+        var item = Assert.Single(At("select * from audit.|", schema: schema));
+        Assert.Equal("log", item.InsertText);
+        Assert.Equal("table", item.Detail);
+    }
 }
