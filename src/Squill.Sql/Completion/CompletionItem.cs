@@ -9,10 +9,16 @@ namespace Squill.Sql.Completion;
 /// <param name="Detail">A short description such as a data type, or <see langword="null"/>.</param>
 /// <param name="SortText">The key used to order the list, or <see langword="null"/> to sort by label.</param>
 /// <param name="ReplaceRange">The prefix being typed, replaced when the item is accepted.</param>
+/// <param name="FilterText">The text matched against the typed prefix, or <see langword="null"/> to use <paramref name="Label"/>.</param>
+/// <param name="Documentation">Markdown shown beside the item (paragraphs, bold, code, lists), or <see langword="null"/>.</param>
+/// <param name="IsSnippet">Whether <paramref name="InsertText"/> is a snippet template with tab stops.</param>
 public sealed record CompletionItem(
     string Label,
     CompletionKind Kind,
     string InsertText,
     string? Detail,
     string? SortText,
-    TextRange ReplaceRange);
+    TextRange ReplaceRange,
+    string? FilterText = null,
+    string? Documentation = null,
+    bool IsSnippet = false);

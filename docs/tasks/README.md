@@ -274,6 +274,25 @@ Depends on: <card ids, ranges allowed>
 | [P13-20](phase-13/P13-20-avalonia-plan-graph.md) | Avalonia head: plan graph canvas | P13-17, P13-19 | done |
 | [P13-21](phase-13/P13-21-verify-plan.md) | End-to-end verification: execution plan on the four engines | P13-11, P13-17, P13-20 | automated done, manual pending |
 | [P13-22](phase-13/P13-22-docs-and-adr.md) | Documentation: execution plan ADR 0010, README and architecture note | P13-21 | done |
+| [P14-01](phase-14/P14-01-sql-completion-item-fields.md) | Sql: filter text, documentation and snippet flag on completion items | none | done |
+| [P14-02](phase-14/P14-02-heads-map-completion-fields.md) | Heads: map the new completion fields to LoomEditor and the plain editor | P14-01 | done |
+| [P14-03](phase-14/P14-03-sql-schema-qualified-tables.md) | Sql: tables outside the default schema are inserted qualified | none | done |
+| [P14-04](phase-14/P14-04-sql-join-context.md) | Sql: join context at the caret (kind, left sources, existing condition) | none | done |
+| [P14-05](phase-14/P14-05-sql-table-relations.md) | Sql: relations between a new table and the tables already in the FROM list | P14-04 | done |
+| [P14-06](phase-14/P14-06-sql-alias-generator.md) | Sql: alias generation | none | done |
+| [P14-07](phase-14/P14-07-sql-join-condition-text.md) | Sql: the text of a join condition | P14-05, P14-06 | done |
+| [P14-08](phase-14/P14-08-sql-join-rows-in-table-popup.md) | Sql: picking a table after JOIN generates the ON condition | P14-01, P14-03 ... P14-07 | done |
+| [P14-09](phase-14/P14-09-sql-on-clause-proposals.md) | Sql: conditions proposed inside an ON clause follow the same rules | P14-05, P14-07, P14-08 | done |
+| [P14-10](phase-14/P14-10-popup-opens-after-space.md) | Sql and heads: the popup opens by itself after FROM / JOIN and a space | P14-02, P14-08 | done |
+| [P14-11](phase-14/P14-11-sql-qualify-ambiguous-columns.md) | Sql: a column shared by two tables is inserted qualified | P14-01, P14-04 | done |
+| [P14-12](phase-14/P14-12-sql-ranking.md) | Sql: ranking by relevance (keys first, tables already used, related tables) | P14-08, P14-09 | done |
+| [P14-13](phase-14/P14-13-sql-dialect-join-keywords.md) | Sql: join and clause keywords that exist on the engine and make sense at the caret | P14-09 | done |
+| [P14-14](phase-14/P14-14-completion-session-functions-and-keyword-case.md) | Sql and Presentation: functions in the popup and the keyword-case setting | P14-07, P14-13 | done |
+| [P14-15](phase-14/P14-15-sql-item-documentation.md) | Sql: documentation text for tables, columns, aliases, functions and join rows | P14-02, P14-08, P14-09 | done |
+| [P14-16](phase-14/P14-16-sql-statement-snippets.md) | Sql: statement snippets with tab stops | P14-01, P14-02, P14-14 | done |
+| [P14-17](phase-14/P14-17-data-join-completion-on-every-engine.md) | Data: generated join conditions run on every engine | P14-08, P14-09, P14-11 | done |
+| [P14-18](phase-14/P14-18-verify-completion.md) | End-to-end verification: completion through the query tab, and the manual checklist | P14-08 ... P14-17 | automated done, manual pending |
+| [P14-19](phase-14/P14-19-docs-and-adr.md) | Documentation: completion ADR 0011, README and architecture note | P14-18 | done |
 
 ### Phase 9 - Visual conformance
 
@@ -316,3 +335,11 @@ Goal: `Expliquer` and `Analyser` on the query toolbar open a plan tab (`<name> Â
 - Branch: implement phase 13 on the existing branch `phase-13-execution-plan`; do not create another branch.
 - Order: model and analysis P13-01 ... P13-04, then providers P13-05 ... P13-10 (SQLite first, no container; PostgreSQL, MySQL, SQL Server need Podman, see [verification-recipe.md](phase-11/verification-recipe.md)), the shared engine scenario P13-11, Presentation P13-12 ... P13-14, WinUI P13-15 ... P13-17 before Avalonia P13-18 ... P13-20, verification P13-21, docs P13-22.
 - Riskiest cards: P13-08 (MySQL `EXPLAIN ANALYZE` is parsed from indented text; stop rule in the card) and P13-09 / P13-10 (SQL Server showplan is connection state: a connection must never stay in showplan mode). Bugs found by P13-21 too big for the card get `P13-23` onwards (added to this index).
+
+### Phase 14 - SQL completion: join conditions and a better popup - done except the owner's manual checklist ([verification/completion.md](../verification/completion.md))
+
+Goal: picking a table after `JOIN` in the completion popup also writes the alias and the `ON a.x = b.y` condition from the foreign keys, and the popup in general proposes better: qualified names where the bare name would fail, columns ranked by keys, join keywords the engine accepts, functions, documentation text, the keyword-case setting, statement snippets. Decisions (final, details in [completion-recipe.md](phase-14/completion-recipe.md) and in ADR 0011 written by P14-19): join rows are added **above** the unchanged table list (one row per foreign key relation, both directions, composite keys, several keys between the same pair, self joins, same-name key fallback); the condition is written **existing table first, new table second for every join kind** (the `=` is symmetric, the join keyword decides which rows are kept) and only `INNER`, `LEFT`, `RIGHT`, `FULL` and plain `JOIN` get an `ON` (`CROSS`, `NATURAL`, comma, `APPLY` and a join that already has `ON` / `USING` do not); an alias is generated only when needed (another source has one, repeat of a table, self reference); everything is quoted per dialect; one undo step; all logic stays in `Squill.Sql/Completion`, the heads only map fields.
+
+- Branch: implement phase 14 on the branch `phase-14-completion`; do not create another branch.
+- Order: foundations P14-01 / P14-02 (item fields and head mapping), P14-03 (qualified tables), then the join pipeline P14-04 ... P14-09 (context, relations, alias, text, rows, ON clause), then P14-10 (auto-open after a space), P14-11 ... P14-16 (columns, ranking, keywords, functions and keyword case, documentation, snippets; each independent after its dependencies), the engine proof P14-17 (Podman, see [verification-recipe.md](phase-11/verification-recipe.md)), verification P14-18, docs P14-19. WinUI and Avalonia share the provider code, so there are no per-head cards beyond the field mapping.
+- Riskiest cards: P14-08 (largest; performance guard on 5,000 tables) and P14-10 (a trigger character on space must not accept items nor slow typing). Bugs found by P14-17 / P14-18 too big for the card get `P14-20` onwards (added to this index).

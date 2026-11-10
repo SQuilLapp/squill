@@ -134,4 +134,12 @@ public sealed class ScopeResolverTests
         Assert.Equal(ClauseKind.From, SqlScopeResolver.Resolve(script, 999).Clause);
         Assert.Equal(ClauseKind.None, SqlScopeResolver.Resolve(script, -5).Clause);
     }
+
+    [Fact]
+    public void LocalCountCoversOnlyTheInnermostStatement()
+    {
+        var scope = At("select (select 1 from c join d on true where |) from a");
+        Assert.Equal(["c", "d", "a"], scope.Sources.Select(s => s.Name));
+        Assert.Equal(2, scope.LocalCount);
+    }
 }

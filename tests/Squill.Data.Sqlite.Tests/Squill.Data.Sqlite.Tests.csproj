@@ -24,6 +24,7 @@
     <Compile Include="../Shared/CancelScenario.cs" Link="CancelScenario.cs" />
     <Compile Include="../Shared/MultiResultScenario.cs" Link="MultiResultScenario.cs" />
     <Compile Include="../Shared/PlanScenario.cs" Link="PlanScenario.cs" />
+    <Compile Include="../Shared/JoinCompletionScenario.cs" Link="JoinCompletionScenario.cs" />
     <Compile Include="../Shared/PlanFlowScenario.cs" Link="PlanFlowScenario.cs" />
     <Content Include="Plans/*.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../Shared/SampleSchema/sqlite.sql" Link="SampleSchema/sqlite.sql" CopyToOutputDirectory="PreserveNewest" />

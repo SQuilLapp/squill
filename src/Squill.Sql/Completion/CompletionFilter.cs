@@ -18,7 +18,7 @@ public static class CompletionFilter
         var contains = new List<CompletionItem>();
         foreach (var item in items)
         {
-            var index = item.Label.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
+            var index = (item.FilterText ?? item.Label).IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
             if (index == 0)
             {
                 starts.Add(item);

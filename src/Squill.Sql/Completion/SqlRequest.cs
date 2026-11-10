@@ -7,4 +7,5 @@ namespace Squill.Sql.Completion;
 /// <param name="Offset">The caret offset in <paramref name="Text"/>.</param>
 /// <param name="Dialect">The dialect of the connection.</param>
 /// <param name="Schema">The known tables, or <see langword="null"/> when no schema is loaded.</param>
-public sealed record SqlRequest(string Text, int Offset, DatabaseDialect Dialect, SchemaSnapshot? Schema);
+/// <param name="KeywordCase">How completion writes keywords.</param>
+public sealed record SqlRequest(string Text, int Offset, DatabaseDialect Dialect, SchemaSnapshot? Schema, KeywordCase KeywordCase = KeywordCase.Upper);

@@ -30,12 +30,17 @@ public static class SqlScopeResolver
         }
 
         var sources = new List<VisibleSource>();
+        var local = 0;
         for (var i = chain.Count - 1; i >= 0; i--)
         {
             AddSources(chain[i], sources);
+            if (i == chain.Count - 1)
+            {
+                local = sources.Count;
+            }
         }
 
-        return new ScopeInfo(ClauseOf(chain[^1].Statement, script, offset), sources);
+        return new ScopeInfo(ClauseOf(chain[^1].Statement, script, offset), sources) { LocalCount = local };
     }
 
     private sealed record Frame(Statement Statement, IReadOnlyList<CommonTableExpr> Visible);

@@ -24,7 +24,7 @@ internal sealed class LoomSqlProviders(Func<DatabaseDialect> dialectOf) : ICompl
 
     public double LastCompletionMs { get; private set; }
 
-    public IReadOnlyList<string>? TriggerCharacters { get; } = (string[])["."];
+    public IReadOnlyList<string>? TriggerCharacters { get; } = (string[])[".", " "];
 
     public async Task<CompletionList?> ProvideCompletionItemsAsync(TextModel model, LoomPosition position, CompletionContext context, CancellationToken token)
     {
@@ -37,6 +37,17 @@ internal sealed class LoomSqlProviders(Func<DatabaseDialect> dialectOf) : ICompl
         var text = model.GetValue(EndOfLinePreference.LF);
         var offset = model.GetOffsetAt(position);
         var dialect = dialectOf();
+
+        // A typed space only opens the popup after FROM, JOIN, ON and the like.
+        if (context.TriggerKind == CompletionTriggerKind.TriggerCharacter && context.TriggerCharacter == " ")
+        {
+            var (typed, typedShift) = CurrentStatement(text, offset, dialect);
+            if (!CompletionTrigger.OpensAfterSpace(new SqlRequest(typed, offset - typedShift, dialect, null)))
+            {
+                return null;
+            }
+        }
+
         var items = await Task.Run(
             () =>
             {
@@ -106,12 +117,22 @@ internal sealed class LoomSqlProviders(Func<DatabaseDialect> dialectOf) : ICompl
     private static LoomCompletionItem Map(TextModel model, SqlCompletionItem item)
     {
         var range = ToRange(model, item.ReplaceRange);
-        return new LoomCompletionItem(item.Label, item.InsertText, MapKind(item.Kind))
+        var target = new LoomCompletionItem(item.Label, item.InsertText, MapKind(item.Kind))
         {
-            Detail = item.Detail,
-            SortText = item.SortText,
             Range = new CompletionRange(range, range),
         };
+        ApplyFields(target, item);
+        return target;
+    }
+
+    /// <summary>Copies the fields of <paramref name="source"/> that do not depend on the text model.</summary>
+    internal static void ApplyFields(LoomCompletionItem target, SqlCompletionItem source)
+    {
+        target.Detail = source.Detail;
+        target.SortText = source.SortText;
+        target.FilterText = source.FilterText;
+        target.Documentation = source.Documentation is { } d ? new MarkdownString(d) : null;
+        target.InsertTextRules = source.IsSnippet ? InsertTextRules.InsertAsSnippet : InsertTextRules.None;
     }
 
     private static CompletionItemKind MapKind(SqlCompletionKind kind) => kind switch

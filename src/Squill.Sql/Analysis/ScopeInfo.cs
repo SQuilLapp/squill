@@ -3,7 +3,11 @@ namespace Squill.Sql.Analysis;
 /// <summary>What is visible at a caret position.</summary>
 /// <param name="Clause">The clause that holds the caret.</param>
 /// <param name="Sources">The visible sources, those of the innermost statement first, then those of enclosing statements.</param>
-public sealed record ScopeInfo(ClauseKind Clause, IReadOnlyList<VisibleSource> Sources);
+public sealed record ScopeInfo(ClauseKind Clause, IReadOnlyList<VisibleSource> Sources)
+{
+    /// <summary>The number of leading <see cref="Sources"/> that belong to the innermost statement, the rest come from enclosing statements.</summary>
+    public int LocalCount { get; init; }
+}
 
 /// <summary>A table, view, CTE or derived table whose columns can be referenced.</summary>
 /// <param name="Schema">The schema part as written, or <see langword="null"/>.</param>
