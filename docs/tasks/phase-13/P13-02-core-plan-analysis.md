@@ -1,6 +1,6 @@
 # P13-02 - Core: plan analysis (relative cost, severity, warnings)
 
-Status: todo
+Status: done
 Depends on: P13-01
 
 ## Goal
@@ -19,8 +19,8 @@ Pure functions that turn a `QueryPlan` into what the screen shows: exclusive cos
 - Text of the messages (Presentation, P13-12), index suggestions.
 
 ## Tasks
-- [ ] `PlanAnalysis`, result records, `PlanMessageCodes` constants (`plan.misestimate`, `plan.fullscan`, plus the codes the providers use, listed in their cards: `plan.sortspill`, `plan.hashspill`, `plan.missingindex`, `plan.implicitconversion`, `plan.noindex`, `plan.nostats`, `plan.nojoinpredicate`, and the eligibility reasons `plan.reason.empty`, `plan.reason.alreadyexplain`, `plan.reason.notexplainable`, `plan.reason.writes`, `plan.reason.noanalyze` used by P13-03).
-- [ ] Tests (`tests/Squill.Core.Tests/Plans/PlanAnalysisTests.cs`, hand-built trees): shares sum to <= 1; time preferred over cost; no timing and no cost gives null shares and severity `Normal` except provider warnings; misestimate boundary (9.9 vs 10 vs 590, under and over, zero values); `plan.fullscan` only above 10 000 and not under a limit; clamping when children exceed the parent; counts.
+- [x] `PlanAnalysis`, result records, `PlanMessageCodes` constants (`plan.misestimate`, `plan.fullscan`, plus the codes the providers use, listed in their cards: `plan.sortspill`, `plan.hashspill`, `plan.missingindex`, `plan.implicitconversion`, `plan.noindex`, `plan.nostats`, `plan.nojoinpredicate`, and the eligibility reasons `plan.reason.empty`, `plan.reason.alreadyexplain`, `plan.reason.notexplainable`, `plan.reason.writes`, `plan.reason.noanalyze` used by P13-03).
+- [x] Tests (`tests/Squill.Core.Tests/Plans/PlanAnalysisTests.cs`, hand-built trees): shares sum to <= 1; time preferred over cost; no timing and no cost gives null shares and severity `Normal` except provider warnings; misestimate boundary (9.9 vs 10 vs 590, under and over, zero values); `plan.fullscan` only above 10 000 and not under a limit; clamping when children exceed the parent; counts.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5.
