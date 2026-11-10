@@ -1,6 +1,6 @@
 # P13-05 - Data.Sqlite: EXPLAIN QUERY PLAN
 
-Status: todo
+Status: done
 Depends on: P13-04, P13-02
 
 ## Goal
@@ -22,9 +22,9 @@ Depends on: P13-04, P13-02
 - Actual statistics (`sqlite3_stmt_scanstatus` is not exposed by the driver), `EXPLAIN` opcode listing.
 
 ## Tasks
-- [ ] Reader + parser.
-- [ ] Unit tests of the parser over committed sample rows (`tests/Squill.Data.Sqlite.Tests/Plans/*.txt`, captured by running the real provider once): single table scan, search by index and by rowid, join of two tables (two siblings), order by (temp b-tree), group by, subquery, union, unknown line.
-- [ ] Real-database tests (no container) on the SQLite sample schema (`tests/Shared/SampleSchema/sqlite.sql`): the join+order statement of P13-11 gives a tree whose leaves name the real tables; parameters bound; `Actual` throws `PlanUnavailableException`; a normal statement runs afterwards.
+- [x] Reader + parser.
+- [x] Unit tests of the parser over committed sample rows (`tests/Squill.Data.Sqlite.Tests/Plans/*.txt`, captured by running the real provider once): single table scan, search by index and by rowid, join of two tables (two siblings), order by (temp b-tree), group by, subquery, union, unknown line.
+- [x] Real-database tests (no container) on the SQLite sample schema (`tests/Shared/SampleSchema/sqlite.sql`): the join+order statement of P13-11 gives a tree whose leaves name the real tables; parameters bound; `Actual` throws `PlanUnavailableException`; a normal statement runs afterwards.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5; AOT probe `tools/Squill.AotProbe.Sqlite` publishes with zero IL2xxx/IL3xxx.

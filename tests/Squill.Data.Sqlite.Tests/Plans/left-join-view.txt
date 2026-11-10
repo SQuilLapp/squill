@@ -1,0 +1,4 @@
+2	0	0	CO-ROUTINE order_totals
+10	2	216	SCAN c
+12	2	62	SEARCH o USING INDEX orders_customer_placed (customer_id=?) LEFT-JOIN
+60	0	82	SCAN order_totals

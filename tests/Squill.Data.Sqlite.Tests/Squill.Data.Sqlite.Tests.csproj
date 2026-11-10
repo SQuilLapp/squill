@@ -23,6 +23,7 @@
     <Compile Include="../Shared/ScenarioStubs.cs" Link="ScenarioStubs.cs" />
     <Compile Include="../Shared/CancelScenario.cs" Link="CancelScenario.cs" />
     <Compile Include="../Shared/MultiResultScenario.cs" Link="MultiResultScenario.cs" />
+    <Content Include="Plans/*.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../Shared/SampleSchema/sqlite.sql" Link="SampleSchema/sqlite.sql" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../Shared/SqlCorpusScenario.cs" Link="SqlCorpusScenario.cs" />
     <Compile Include="../Shared/SqlCorpus.cs" Link="SqlCorpus.cs" />

@@ -1,10 +1,12 @@
+using System.Globalization;
 using Microsoft.Data.Sqlite;
 using Squill.Core;
+using Squill.Core.Plans;
 
 namespace Squill.Data.Sqlite;
 
 /// <summary>SQLite implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class SqliteDatabaseConnection(SqliteConnection connection, int commandTimeoutSeconds) : IDatabaseConnection
+internal sealed class SqliteDatabaseConnection(SqliteConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader
 {
     /// <inheritdoc />
     public string ServerVersion => connection.ServerVersion;
@@ -27,6 +29,24 @@ internal sealed class SqliteDatabaseConnection(SqliteConnection connection, int 
             await command.DisposeAsync();
             throw;
         }
+    }
+
+    /// <inheritdoc />
+    public bool SupportsActualPlan => false;
+
+    /// <inheritdoc />
+    public async ValueTask<QueryPlan> ExplainAsync(string sql, IReadOnlyList<QueryParameter> parameters, PlanMode mode, CancellationToken cancellationToken)
+    {
+        if (mode == PlanMode.Actual)
+            throw new PlanUnavailableException("engine", "SQLite cannot report actual execution statistics.");
+        await using var reader = await ExecuteAsync("EXPLAIN QUERY PLAN " + sql, parameters, cancellationToken);
+        var rows = new List<SqlitePlanRow>();
+        while (await reader.ReadBatchAsync(256, cancellationToken) is { } batch)
+        {
+            foreach (var row in batch)
+                rows.Add(new SqlitePlanRow(Convert.ToInt64(row[0], CultureInfo.InvariantCulture), Convert.ToInt64(row[1], CultureInfo.InvariantCulture), Convert.ToString(row[3], CultureInfo.InvariantCulture) ?? ""));
+        }
+        return SqlitePlanParser.Parse(sql, rows);
     }
 
     /// <inheritdoc />
