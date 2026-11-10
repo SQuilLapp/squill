@@ -259,7 +259,7 @@ Depends on: <card ids, ranges allowed>
 | [P13-05](phase-13/P13-05-sqlite-plan.md) | Data.Sqlite: EXPLAIN QUERY PLAN | P13-02, P13-04 | done |
 | [P13-06](phase-13/P13-06-postgres-plan.md) | Data.Postgres: EXPLAIN (FORMAT JSON), estimated and analyze | P13-02, P13-04, P11-02 | done |
 | [P13-07](phase-13/P13-07-mysql-plan-estimated.md) | Data.MySql: EXPLAIN FORMAT=JSON (estimated) | P13-02, P13-04, P11-03 | done |
-| [P13-08](phase-13/P13-08-mysql-plan-analyze.md) | Data.MySql: EXPLAIN ANALYZE (actual) | P13-07 | todo |
+| [P13-08](phase-13/P13-08-mysql-plan-analyze.md) | Data.MySql: EXPLAIN ANALYZE (actual) | P13-07 | done |
 | [P13-09](phase-13/P13-09-sqlserver-plan-estimated.md) | Data.SqlServer: SHOWPLAN_XML (estimated) | P13-02, P13-04, P11-04 | todo |
 | [P13-10](phase-13/P13-10-sqlserver-plan-actual.md) | Data.SqlServer: STATISTICS XML (actual) | P13-09 | todo |
 | [P13-11](phase-13/P13-11-data-plan-cross-engine.md) | Data: one plan scenario run on every engine | P13-05, P13-06, P13-08, P13-10 | todo |

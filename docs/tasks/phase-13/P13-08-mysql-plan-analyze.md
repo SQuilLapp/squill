@@ -1,6 +1,6 @@
 # P13-08 - Data.MySql: EXPLAIN ANALYZE (actual)
 
-Status: todo
+Status: done
 Depends on: P13-07
 
 ## Goal
@@ -16,9 +16,9 @@ Depends on: P13-07
 - `EXPLAIN ANALYZE FORMAT=JSON` (MySQL 9.x only, not the pinned image), analyzing DML (MySQL refuses).
 
 ## Tasks
-- [ ] Parser, reader switch, samples (`tests/Squill.Data.MySql.Tests/Plans/analyze-*.txt`: join with filter, sort + limit, aggregate, never-executed branch).
-- [ ] Unit tests (nesting by indent, loops multiplication, never executed, junk line survives, empty output).
-- [ ] Docker-gated: analyze of the sample-schema join returns actual rows > 0 on the scans; analyzing an `INSERT` is refused by the guard before reaching the server; normal statement afterwards.
+- [x] Parser, reader switch, samples (`tests/Squill.Data.MySql.Tests/Plans/analyze-*.txt`: join with filter, sort + limit, aggregate, never-executed branch).
+- [x] Unit tests (nesting by indent, loops multiplication, never executed, junk line survives, empty output).
+- [x] Docker-gated: analyze of the sample-schema join returns actual rows > 0 on the scans; analyzing an `INSERT` is refused by the guard before reaching the server; normal statement afterwards.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5, Docker run for mysql green. `MySqlDatabaseConnection.SupportsActualPlan` becomes true.
