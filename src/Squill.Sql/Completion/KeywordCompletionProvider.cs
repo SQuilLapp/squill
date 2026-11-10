@@ -11,8 +11,47 @@ public sealed class KeywordCompletionProvider : ISqlCompletionProvider
     private static readonly string[] Expression =
         ["CASE", "NOT", "NULL", "TRUE", "FALSE", "EXISTS", "CAST", "AND", "OR", "IN", "IS NULL", "IS NOT NULL", "LIKE", "BETWEEN"];
 
-    private static readonly string[] Joins =
-        ["JOIN", "INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN", "CROSS JOIN"];
+    /// <summary>The join keywords each engine accepts (SQLite has RIGHT and FULL joins since 3.39, which the bundled Microsoft.Data.Sqlite provides; Oracle has APPLY since 12c).</summary>
+    private static string[] JoinsOf(DatabaseDialect dialect) => dialect switch
+    {
+        DatabaseDialect.PostgreSql => ["JOIN", "INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN", "CROSS JOIN", "NATURAL JOIN", "JOIN LATERAL", "LEFT JOIN LATERAL"],
+        DatabaseDialect.MySql => ["JOIN", "INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "CROSS JOIN", "NATURAL JOIN", "STRAIGHT_JOIN"],
+        DatabaseDialect.SqlServer => ["JOIN", "INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN", "CROSS JOIN", "CROSS APPLY", "OUTER APPLY"],
+        DatabaseDialect.Sqlite => ["JOIN", "INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN", "CROSS JOIN", "NATURAL JOIN"],
+        _ => ["JOIN", "INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN", "CROSS JOIN", "NATURAL JOIN", "CROSS APPLY", "OUTER APPLY"],
+    };
+
+    /// <summary>Tells whether the join that owns the caret can take <c>ON</c> / <c>USING</c> (not <c>CROSS</c>, <c>NATURAL</c> or an apply).</summary>
+    private static bool TakesCondition(string before, DatabaseDialect dialect)
+    {
+        var words = SqlTokenizers.For(dialect).Tokenize(before)
+            .Where(t => t.Kind is not (TokenKind.Whitespace or TokenKind.LineComment or TokenKind.BlockComment or TokenKind.EndOfFile))
+            .Select(t => t.Text(before).ToUpperInvariant())
+            .ToList();
+        var depth = 0;
+        for (var i = words.Count - 1; i >= 0; i--)
+        {
+            switch (words[i])
+            {
+                case ")":
+                    depth++;
+                    break;
+                case "(" when depth == 0:
+                    return true;
+                case "(":
+                    depth--;
+                    break;
+                case "JOIN" or "STRAIGHT_JOIN" when depth == 0:
+                    return !(i > 0 && words[i - 1] is "CROSS" or "NATURAL");
+                case "APPLY" when depth == 0:
+                    return false;
+                case "FROM" or "ON" or "," when depth == 0:
+                    return true;
+            }
+        }
+
+        return true;
+    }
 
     private static readonly string[] SetOperators = ["UNION", "UNION ALL", "EXCEPT", "INTERSECT"];
 
@@ -30,7 +69,7 @@ public sealed class KeywordCompletionProvider : ISqlCompletionProvider
         var range = new TextRange(start, offset - start);
         var previous = Previous(text[..start], request.Dialect);
         var scope = SqlScopeResolver.Resolve(SqlParser.Parse(text, request.Dialect), offset);
-        var words = Words(scope.Clause, previous, request.Dialect);
+        var words = Words(scope.Clause, previous, request.Dialect, text[..start]);
         return [.. words.Distinct().Select(w => new CompletionItem(w, CompletionKind.Keyword, w, null, CompletionOrder.Keyword + w, range))];
     }
 
@@ -51,8 +90,9 @@ public sealed class KeywordCompletionProvider : ISqlCompletionProvider
         return null;
     }
 
-    private static List<string> Words(ClauseKind clause, (TokenKind Kind, string Text)? previous, DatabaseDialect dialect)
+    private static List<string> Words(ClauseKind clause, (TokenKind Kind, string Text)? previous, DatabaseDialect dialect, string before)
     {
+        var joins = JoinsOf(dialect);
         var words = new List<string>();
         if (previous is null || previous.Value.Text == ";")
         {
@@ -82,19 +122,28 @@ public sealed class KeywordCompletionProvider : ISqlCompletionProvider
 
                 break;
             case ClauseKind.From when afterSource:
-                words.AddRange(["AS", .. Joins, "WHERE", "GROUP BY", "ORDER BY", "HAVING", .. SetOperators, limit]);
+                words.AddRange(["AS", .. joins, "WHERE", "GROUP BY", "ORDER BY", "HAVING", .. SetOperators, limit]);
                 break;
             case ClauseKind.From when dialect == DatabaseDialect.PostgreSql:
                 words.Add("LATERAL");
                 break;
             case ClauseKind.Join when afterSource:
-                words.AddRange(["ON", "USING", "AS", .. Joins, "WHERE"]);
+                if (TakesCondition(before, dialect))
+                {
+                    words.Add("ON");
+                    if (dialect != DatabaseDialect.SqlServer)
+                    {
+                        words.Add("USING");
+                    }
+                }
+
+                words.AddRange(["AS", .. joins, "WHERE"]);
                 break;
             case ClauseKind.Join when dialect == DatabaseDialect.PostgreSql:
                 words.Add("LATERAL");
                 break;
             case ClauseKind.On:
-                words.AddRange([.. Expression, .. Joins, "WHERE"]);
+                words.AddRange([.. Expression, .. joins, "WHERE"]);
                 break;
             case ClauseKind.Where:
                 words.AddRange([.. Expression, "GROUP BY", "ORDER BY", .. SetOperators, limit]);

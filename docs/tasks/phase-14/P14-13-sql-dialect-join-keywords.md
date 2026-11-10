@@ -1,6 +1,6 @@
 # P14-13 - Sql: join and clause keywords that exist on the engine and make sense at the caret
 
-Status: todo
+Status: done
 Depends on: P14-09
 
 ## Goal
@@ -16,9 +16,9 @@ The keyword popup stops proposing words the engine rejects (`FULL JOIN` on MySQL
 - New statements keywords, `MERGE` / `WITH` templates (P14-16), validating the user's own text.
 
 ## Tasks
-- [ ] Tests first (extend `tests/Squill.Sql.Tests/KeywordCompletionTests.cs` or a new `JoinKeywordTests.cs`): per dialect the exact join list after `from a `; `from a cross join b |` has no `ON`; `from a natural join b |` no `ON`; `from a left join b |` has `ON` and (PostgreSQL) `USING`, SQL Server has no `USING`; `from a join b on x = y |` unchanged; `from a, |` unchanged.
-- [ ] Update the existing tests that listed `FULL JOIN` for MySQL, reason in the commit message.
-- [ ] Implement, XML docs.
+- [x] Tests first (extend `tests/Squill.Sql.Tests/KeywordCompletionTests.cs` or a new `JoinKeywordTests.cs`): per dialect the exact join list after `from a `; `from a cross join b |` has no `ON`; `from a natural join b |` no `ON`; `from a left join b |` has `ON` and (PostgreSQL) `USING`, SQL Server has no `USING`; `from a join b on x = y |` unchanged; `from a, |` unchanged.
+- [x] Update the existing tests that listed `FULL JOIN` for MySQL, reason in the commit message.
+- [x] Implement, XML docs.
 
 ## Acceptance criteria
 - Recipe section 4.
