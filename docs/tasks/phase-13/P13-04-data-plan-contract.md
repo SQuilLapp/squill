@@ -1,6 +1,6 @@
 # P13-04 - Data: plan reader contract
 
-Status: todo
+Status: done
 Depends on: P13-01
 
 ## Goal
@@ -16,8 +16,8 @@ The provider-facing contract that returns a `QueryPlan`, and the fake used by Pr
 - Any real engine (P13-05 ... P13-10).
 
 ## Tasks
-- [ ] Interface, two exceptions, fake, XML docs.
-- [ ] `tests/Squill.Data.Tests`: the fake returns the configured plan and records the mode; exceptions carry reason and source text.
+- [x] Interface, two exceptions, fake, XML docs.
+- [x] `tests/Squill.Data.Tests`: the fake returns the configured plan and records the mode; exceptions carry reason and source text.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5. Oracle project builds without change.
