@@ -152,7 +152,9 @@ public sealed class PlainSqlEditor : ISqlEditor, IEditorControl
     {
         TextChanged?.Invoke(this, EventArgs.Empty);
         var caret = CaretOffset;
-        if (!_applying && caret > 0 && caret <= _box.Text.Length && IsIdentifierChar(_box.Text[caret - 1]))
+        if (!_applying && caret > 0 && caret <= _box.Text.Length
+            && (IsIdentifierChar(_box.Text[caret - 1])
+                || (_completion is not null && CompletionTrigger.OpensAfterSpace(new SqlRequest(_box.Text, caret, _dialect, null)))))
         {
             ShowCompletion();
         }

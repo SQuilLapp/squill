@@ -24,7 +24,7 @@ internal sealed class LoomSqlProviders(Func<DatabaseDialect> dialectOf) : ICompl
 
     public double LastCompletionMs { get; private set; }
 
-    public IReadOnlyList<string>? TriggerCharacters { get; } = (string[])["."];
+    public IReadOnlyList<string>? TriggerCharacters { get; } = (string[])[".", " "];
 
     public async Task<CompletionList?> ProvideCompletionItemsAsync(TextModel model, LoomPosition position, CompletionContext context, CancellationToken token)
     {
@@ -37,6 +37,17 @@ internal sealed class LoomSqlProviders(Func<DatabaseDialect> dialectOf) : ICompl
         var text = model.GetValue(EndOfLinePreference.LF);
         var offset = model.GetOffsetAt(position);
         var dialect = dialectOf();
+
+        // A typed space only opens the popup after FROM, JOIN, ON and the like.
+        if (context.TriggerKind == CompletionTriggerKind.TriggerCharacter && context.TriggerCharacter == " ")
+        {
+            var (typed, typedShift) = CurrentStatement(text, offset, dialect);
+            if (!CompletionTrigger.OpensAfterSpace(new SqlRequest(typed, offset - typedShift, dialect, null)))
+            {
+                return null;
+            }
+        }
+
         var items = await Task.Run(
             () =>
             {

@@ -283,7 +283,7 @@ Depends on: <card ids, ranges allowed>
 | [P14-07](phase-14/P14-07-sql-join-condition-text.md) | Sql: the text of a join condition | P14-05, P14-06 | done |
 | [P14-08](phase-14/P14-08-sql-join-rows-in-table-popup.md) | Sql: picking a table after JOIN generates the ON condition | P14-01, P14-03 ... P14-07 | done |
 | [P14-09](phase-14/P14-09-sql-on-clause-proposals.md) | Sql: conditions proposed inside an ON clause follow the same rules | P14-05, P14-07, P14-08 | done |
-| [P14-10](phase-14/P14-10-popup-opens-after-space.md) | Sql and heads: the popup opens by itself after FROM / JOIN and a space | P14-02, P14-08 | todo |
+| [P14-10](phase-14/P14-10-popup-opens-after-space.md) | Sql and heads: the popup opens by itself after FROM / JOIN and a space | P14-02, P14-08 | done |
 | [P14-11](phase-14/P14-11-sql-qualify-ambiguous-columns.md) | Sql: a column shared by two tables is inserted qualified | P14-01, P14-04 | todo |
 | [P14-12](phase-14/P14-12-sql-ranking.md) | Sql: ranking by relevance (keys first, tables already used, related tables) | P14-08, P14-09 | todo |
 | [P14-13](phase-14/P14-13-sql-dialect-join-keywords.md) | Sql: join and clause keywords that exist on the engine and make sense at the caret | P14-09 | todo |

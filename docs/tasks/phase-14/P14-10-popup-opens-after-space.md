@@ -1,6 +1,6 @@
 # P14-10 - Sql and heads: the popup opens by itself after FROM / JOIN and a space
 
-Status: todo
+Status: done
 Depends on: P14-02, P14-08
 
 ## Goal
@@ -17,9 +17,9 @@ Typing `JOIN ` (or `FROM `, `INTO `, `UPDATE `, a comma in a FROM list, `ON `) o
 - Opening after other keywords, a setting to disable auto-open, changing the widget.
 
 ## Tasks
-- [ ] Tests first (`tests/Squill.Sql.Tests/Completion/CompletionTriggerTests.cs`): true after `select * from `, `... join `, `left join `, `insert into `, `update `, `... on `, `from a, `; false after `select * from a ` (alias position), `where `, in a string `'from '`, in a line comment, after `from a join b on x = y ` (a complete condition), empty text, caret not after a space; a 100 kB script before the caret answers in well under 50 ms (generous bound).
-- [ ] Head mapping test in `tests/Squill.App.Avalonia.Tests` if `LoomSqlProviders` is reachable (see P14-02); otherwise state in the report that it is covered by P14-18.
-- [ ] Implement in Sql, `LoomSqlProviders`, `PlainSqlEditor`; build both solutions.
+- [x] Tests first (`tests/Squill.Sql.Tests/Completion/CompletionTriggerTests.cs`): true after `select * from `, `... join `, `left join `, `insert into `, `update `, `... on `, `from a, `; false after `select * from a ` (alias position), `where `, in a string `'from '`, in a line comment, after `from a join b on x = y ` (a complete condition), empty text, caret not after a space; a 100 kB script before the caret answers in well under 50 ms (generous bound).
+- [ ] Head mapping test: not added (no TextModel factory found for LoomSqlProviders); covered by P14-18.
+- [x] Implement in Sql, `LoomSqlProviders`, `PlainSqlEditor`; build both solutions.
 
 ## Acceptance criteria
 - Recipe section 4, both solutions built.
