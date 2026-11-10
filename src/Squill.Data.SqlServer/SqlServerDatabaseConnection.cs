@@ -40,13 +40,11 @@ internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int 
     }
 
     /// <inheritdoc />
-    public bool SupportsActualPlan => false;
+    public bool SupportsActualPlan => true;
 
     /// <inheritdoc />
     public ValueTask<QueryPlan> ExplainAsync(string sql, IReadOnlyList<QueryParameter> parameters, PlanMode mode, CancellationToken cancellationToken) =>
-        mode == PlanMode.Actual
-            ? throw new PlanUnavailableException("engine", "Actual plans are not available on SQL Server yet.")
-            : SqlServerPlanReader.ExplainAsync(connection, commandTimeoutSeconds, sql, parameters, cancellationToken);
+        SqlServerPlanReader.ExplainAsync(connection, commandTimeoutSeconds, sql, parameters, mode, cancellationToken);
 
     /// <inheritdoc />
     public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>

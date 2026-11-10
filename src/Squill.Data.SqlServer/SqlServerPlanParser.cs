@@ -18,12 +18,18 @@ internal static class SqlServerPlanParser
     // Elements that hold a predicate; the first scalar string below each is the node detail.
     private static readonly HashSet<string> PredicateElements = new(StringComparer.Ordinal) { "Predicate", "SeekPredicateNew", "SeekPredicate", "Residual", "ProbeResidual" };
 
-    /// <summary>Parses the XML document returned by <c>SET SHOWPLAN_XML ON</c>.</summary>
+    // Per-thread runtime counters summed into the details panel (ActualRows and ActualExecutions become dedicated node fields).
+    private static readonly string[] CounterProperties = ["ActualCPUms", "ActualLogicalReads", "ActualPhysicalReads", "ActualRebinds", "ActualRewinds"];
+
+    private const long PageBytes = 8192;
+
+    /// <summary>Parses the XML document returned by <c>SET SHOWPLAN_XML ON</c> or <c>SET STATISTICS XML ON</c>.</summary>
     /// <param name="statement">The explained statement.</param>
     /// <param name="xml">The document exactly as SQL Server returned it.</param>
-    /// <returns>The estimated plan; only the first statement of the batch is read.</returns>
+    /// <param name="mode">Estimated for showplan, actual for statistics XML (runtime counters are read whenever the document has them).</param>
+    /// <returns>The plan; only the first statement of the batch is read.</returns>
     /// <exception cref="PlanParseException">The text is not a showplan document.</exception>
-    public static QueryPlan Parse(string statement, string xml)
+    public static QueryPlan Parse(string statement, string xml, PlanMode mode = PlanMode.Estimated)
     {
         XDocument document;
         try
@@ -59,7 +65,17 @@ internal static class SqlServerPlanParser
         }
 
         double? planning = double.TryParse((string?)queryPlan.Attribute("CompileTime"), NumberStyles.Float, CultureInfo.InvariantCulture, out var compile) ? compile : null;
-        return new QueryPlan(DatabaseDialect.SqlServer, PlanMode.Estimated, statement, PlanIds.Assign(root), warnings, suggestions, planning, null, null, false, PlanSourceFormat.Xml, document.ToString());
+        var tree = PlanIds.Assign(root);
+        double? execution = null;
+        long? buffers = null;
+        if (mode == PlanMode.Actual)
+        {
+            execution = Number(queryPlan.Element(Ns + "QueryTimeStats") ?? queryPlan, "ElapsedTime") ?? tree.ActualTimeMs;
+            if (queryPlan.Descendants(Ns + "RunTimeCountersPerThread").Any())
+                buffers = (long)queryPlan.Descendants(Ns + "RunTimeCountersPerThread").Sum(c => Number(c, "ActualLogicalReads") ?? 0) * PageBytes;
+        }
+
+        return new QueryPlan(DatabaseDialect.SqlServer, mode, statement, tree, warnings, suggestions, planning, execution, buffers, false, PlanSourceFormat.Xml, document.ToString());
     }
 
     private static PlanNode Node(XElement relOp)
@@ -77,9 +93,20 @@ internal static class SqlServerPlanParser
         if (own.Select(e => (string?)e.Attribute("Ordered")).FirstOrDefault(v => v is not null) is { } ordered)
             properties.Add(new PlanProperty("Ordered", ordered));
 
+        // ActualElapsedms is inclusive of the children, like the model; threads run in parallel, so the maximum is used (summing would overstate).
+        var counters = own.Where(e => e.Name == Ns + "RunTimeCountersPerThread").ToList();
+        double? Sum(string name) => counters.Any(c => c.Attribute(name) is not null) ? counters.Sum(c => Number(c, name) ?? 0) : null;
+        foreach (var name in CounterProperties)
+        {
+            if (Sum(name) is { } total)
+                properties.Add(new PlanProperty(name, total.ToString(CultureInfo.InvariantCulture)));
+        }
+
         return new PlanNode(
             0, physical, Kind(physical, logical), Target(own), Detail(own), Number(relOp, "EstimateRows"), Number(relOp, "EstimatedTotalSubtreeCost"), null,
-            Number(relOp, "AvgRowSize") is { } width ? (int)width : null, null, null, null, properties, Warnings(relOp.Element(Ns + "Warnings"), physical),
+            Number(relOp, "AvgRowSize") is { } width ? (int)width : null, Sum("ActualRows"),
+            counters.Any(c => c.Attribute("ActualElapsedms") is not null) ? counters.Max(c => Number(c, "ActualElapsedms") ?? 0) : null,
+            Sum("ActualExecutions") is { } loops ? (long)loops : null, properties, Warnings(relOp.Element(Ns + "Warnings"), physical),
             false, [.. Children(relOp).Select(Node)]);
     }
 

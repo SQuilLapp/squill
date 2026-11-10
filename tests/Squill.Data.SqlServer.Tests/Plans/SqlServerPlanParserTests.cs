@@ -1,4 +1,5 @@
 using Squill.Core;
+using System.Xml.Linq;
 using Squill.Core.Plans;
 using Xunit;
 
@@ -142,5 +143,67 @@ public sealed class SqlServerPlanParserTests
     {
         var ex = Assert.Throws<PlanParseException>(() => SqlServerPlanParser.Parse("select 1", text));
         Assert.Equal(text, ex.SourceText);
+    }
+
+    private static QueryPlan LoadActual(string name) => SqlServerPlanParser.Parse("select 1", Sample(name), PlanMode.Actual);
+
+    [Fact]
+    public void Actual_JoinHasRowsLoopsTimesAndBufferTotals()
+    {
+        var plan = LoadActual("actual-join");
+        Assert.Equal(PlanMode.Actual, plan.Mode);
+        Assert.False(plan.RolledBack);
+        Assert.Equal(1, plan.ExecutionTimeMs);
+        Assert.Equal(5, plan.Root.ActualRows);
+        Assert.Equal(1, plan.Root.Loops);
+        Assert.NotNull(plan.Root.ActualTimeMs);
+        Assert.NotNull(Property(plan.Root, "ActualCPUms"));
+        Assert.All(plan.Flatten(), n => Assert.NotNull(n.ActualRows));
+        Assert.Contains(plan.Flatten(), n => n.Kind == PlanNodeKind.TableScan && n.ActualRows == 200);
+        Assert.NotNull(plan.BuffersReadBytes);
+        Assert.Equal(0, plan.BuffersReadBytes % 8192);
+    }
+
+    [Fact]
+    public void Actual_OperatorThatNeverRan_HasZeroExecutionsAndRows()
+    {
+        var plan = LoadActual("actual-not-executed");
+        var seek = plan.Flatten().Single(n => n.Kind == PlanNodeKind.IndexSeek);
+        Assert.Equal(0, seek.Loops);
+        Assert.Equal(0, seek.ActualRows);
+    }
+
+    [Fact]
+    public void Actual_Threads_SumRowsAndLoops_ButTakeTheSlowestElapsedTime()
+    {
+        var document = XDocument.Parse(Sample("actual-single"));
+        XNamespace ns = "http://schemas.microsoft.com/sqlserver/2004/07/showplan";
+        var first = document.Descendants(ns + "RunTimeCountersPerThread").First();
+        var second = new XElement(first);
+        second.SetAttributeValue("Thread", "1");
+        second.SetAttributeValue("ActualRows", "10");
+        second.SetAttributeValue("ActualElapsedms", "7");
+        second.SetAttributeValue("ActualExecutions", "1");
+        second.SetAttributeValue("ActualCPUms", "4");
+        first.SetAttributeValue("ActualRows", "5");
+        first.SetAttributeValue("ActualElapsedms", "3");
+        first.SetAttributeValue("ActualCPUms", "2");
+        first.AddAfterSelf(second);
+        var node = SqlServerPlanParser.Parse("select 1", document.ToString(), PlanMode.Actual).Root;
+        Assert.Equal(15, node.ActualRows);
+        Assert.Equal(7, node.ActualTimeMs);
+        Assert.Equal(2, node.Loops);
+        Assert.Equal("6", Property(node, "ActualCPUms"));
+    }
+
+    [Fact]
+    public void Actual_WithoutRuntimeElement_LeavesTheActualFieldsNull()
+    {
+        var plan = SqlServerPlanParser.Parse("select 1", Sample("single"), PlanMode.Actual);
+        Assert.Null(plan.Root.ActualRows);
+        Assert.Null(plan.Root.ActualTimeMs);
+        Assert.Null(plan.Root.Loops);
+        Assert.Null(plan.BuffersReadBytes);
+        Assert.Null(plan.ExecutionTimeMs);
     }
 }
