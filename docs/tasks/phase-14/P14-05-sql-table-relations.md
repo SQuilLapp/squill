@@ -1,6 +1,6 @@
 # P14-05 - Sql: relations between a new table and the tables already in the FROM list
 
-Status: todo
+Status: done
 Depends on: P14-04
 
 ## Goal
@@ -17,8 +17,8 @@ A pure finder returns, for a candidate table, the ordered list of ways it can be
 - Building text, aliases, quoting, naming heuristics such as `customer_id` -> `customers.id`.
 
 ## Tasks
-- [ ] Tests first (`tests/Squill.Sql.Tests/Completion/TableRelationFinderTests.cs`): child to parent (`orders` candidate, `customers` visible) and parent to child (`customers` candidate, `orders` visible) with the right `OtherReferencesExisting`; composite key order kept; two keys between `orders` and `customers` (billing and shipping) give two relations in constraint-name order; self reference (`employees.manager_id -> employees.id`, source `employees e`, candidate `employees`) gives two relations; three visible sources, the nearest (last) first; schema-qualified referenced table matched only in the right schema (`a.t` vs `b.t`); a source that is a CTE or derived table is skipped; mismatched key lengths ignored; fallback `customer_no` primary key of `customers` found in `orders` when no key exists, not used when a key exists, `id` never used; candidate unrelated gives empty; case-insensitive names.
-- [ ] Implement, XML docs.
+- [x] Tests first (`tests/Squill.Sql.Tests/Completion/TableRelationFinderTests.cs`): child to parent (`orders` candidate, `customers` visible) and parent to child (`customers` candidate, `orders` visible) with the right `OtherReferencesExisting`; composite key order kept; two keys between `orders` and `customers` (billing and shipping) give two relations in constraint-name order; self reference (`employees.manager_id -> employees.id`, source `employees e`, candidate `employees`) gives two relations; three visible sources, the nearest (last) first; schema-qualified referenced table matched only in the right schema (`a.t` vs `b.t`); a source that is a CTE or derived table is skipped; mismatched key lengths ignored; fallback `customer_no` primary key of `customers` found in `orders` when no key exists, not used when a key exists, `id` never used; candidate unrelated gives empty; case-insensitive names.
+- [x] Implement, XML docs.
 
 ## Acceptance criteria
 - Recipe section 4.

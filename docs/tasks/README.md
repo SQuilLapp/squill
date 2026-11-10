@@ -278,7 +278,7 @@ Depends on: <card ids, ranges allowed>
 | [P14-02](phase-14/P14-02-heads-map-completion-fields.md) | Heads: map the new completion fields to LoomEditor and the plain editor | P14-01 | done |
 | [P14-03](phase-14/P14-03-sql-schema-qualified-tables.md) | Sql: tables outside the default schema are inserted qualified | none | done |
 | [P14-04](phase-14/P14-04-sql-join-context.md) | Sql: join context at the caret (kind, left sources, existing condition) | none | done |
-| [P14-05](phase-14/P14-05-sql-table-relations.md) | Sql: relations between a new table and the tables already in the FROM list | P14-04 | todo |
+| [P14-05](phase-14/P14-05-sql-table-relations.md) | Sql: relations between a new table and the tables already in the FROM list | P14-04 | done |
 | [P14-06](phase-14/P14-06-sql-alias-generator.md) | Sql: alias generation | none | todo |
 | [P14-07](phase-14/P14-07-sql-join-condition-text.md) | Sql: the text of a join condition | P14-05, P14-06 | todo |
 | [P14-08](phase-14/P14-08-sql-join-rows-in-table-popup.md) | Sql: picking a table after JOIN generates the ON condition | P14-01, P14-03 ... P14-07 | todo |
