@@ -1,6 +1,6 @@
 # P14-04 - Sql: join context at the caret (kind, left sources, existing condition)
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -17,8 +17,8 @@ One pure function says, for a caret in a table position, whether it is a join, w
 - Using the context (P14-07, P14-08), `USING`, `JOIN` inside `MERGE`, `DELETE ... USING`.
 
 ## Tasks
-- [ ] Tests first (`tests/Squill.Sql.Tests/Completion/JoinContextTests.cs`, marked text with `|` like `SchemaCompletionTests`, plus a `ScopeResolverTests` case for `LocalCount`): `from a join |`, `from a inner join |`, `left join`, `left outer join`, `right join`, `full outer join`, `cross join`, `natural join`, `cross apply` on SqlServer, `from a, |`, a half-typed word `join ord|` (word not a source), `from a join b on x=y join |` (two left sources), a subquery `select (select 1 from c join |) from a` (left source only `c`), a caret right before an existing condition (`from a join | on a.x = b.y` -> `HasCondition`, and `from a join ord| on ...` the same), `from |` first table (`IsJoin` false), `insert into |`, `update |`, empty script, comment between `LEFT` and `JOIN`.
-- [ ] Implement, XML docs on the internal type and its public members.
+- [x] Tests first (`tests/Squill.Sql.Tests/Completion/JoinContextTests.cs`, marked text with `|` like `SchemaCompletionTests`, plus a `ScopeResolverTests` case for `LocalCount`): `from a join |`, `from a inner join |`, `left join`, `left outer join`, `right join`, `full outer join`, `cross join`, `natural join`, `cross apply` on SqlServer, `from a, |`, a half-typed word `join ord|` (word not a source), `from a join b on x=y join |` (two left sources), a subquery `select (select 1 from c join |) from a` (left source only `c`), a caret right before an existing condition (`from a join | on a.x = b.y` -> `HasCondition`, and `from a join ord| on ...` the same), `from |` first table (`IsJoin` false), `insert into |`, `update |`, empty script, comment between `LEFT` and `JOIN`.
+- [x] Implement, XML docs on the internal type and its public members.
 
 ## Acceptance criteria
 - Recipe section 4.
