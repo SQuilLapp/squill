@@ -57,7 +57,7 @@ public sealed class VelopackUpdateEngine : IUpdateEngine
             throw new UpdateEngineException(UpdateFailure.NotInstalled, "The application is not installed.");
         }
 
-        var manager = new UpdateManager(CreateSource(channel), new UpdateOptions { ExplicitChannel = ChannelName(channel, _architecture) }, _locator);
+        var manager = new UpdateManager(CreateSource(channel), new UpdateOptions { ExplicitChannel = ChannelName(channel, _architecture, CurrentOs()) }, _locator);
         UpdateInfo? info;
         try
         {
@@ -106,12 +106,18 @@ public sealed class VelopackUpdateEngine : IUpdateEngine
         pending.Manager.ApplyUpdatesAndRestart(pending.Info);
     }
 
-    /// <summary>Builds the Velopack channel name, which carries the architecture because Velopack keeps one feed per channel.</summary>
+    /// <summary>Builds the Velopack channel name, which carries the architecture (and the OS off Windows) because Velopack keeps one feed per channel and file names have no OS.</summary>
     /// <param name="channel">The user's channel.</param>
     /// <param name="architecture">The process architecture.</param>
-    /// <returns>For example <c>stable-x64</c>.</returns>
-    internal static string ChannelName(UpdateChannel channel, Architecture architecture) =>
-        $"{channel.ChannelId()}-{architecture.ToString().ToLowerInvariant()}";
+    /// <param name="os">The OS infix: <c>linux</c> or <c>osx</c>; null or empty for Windows, whose channel names stay unchanged.</param>
+    /// <returns>For example <c>stable-x64</c> (Windows) or <c>stable-linux-x64</c>.</returns>
+    internal static string ChannelName(UpdateChannel channel, Architecture architecture, string? os = null) =>
+        string.IsNullOrEmpty(os)
+            ? $"{channel.ChannelId()}-{architecture.ToString().ToLowerInvariant()}"
+            : $"{channel.ChannelId()}-{os}-{architecture.ToString().ToLowerInvariant()}";
+
+    private static string? CurrentOs() =>
+        OperatingSystem.IsLinux() ? "linux" : OperatingSystem.IsMacOS() ? "osx" : null;
 
     /// <summary>Classifies a feed override.</summary>
     /// <param name="feedOverride">The raw value of <c>SQUILL_UPDATE_FEED</c>.</param>

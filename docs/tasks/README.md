@@ -251,7 +251,7 @@ Depends on: <card ids, ranges allowed>
 | [P12-18](phase-12/P12-18-windows-arm64.md) | Windows arm64 build and package (conditional) | P12-16, P12-01 | done |
 | [P12-19](phase-12/P12-19-verify-install-and-update.md) | End-to-end verification: install, update from N to N+1, uninstall | P12-05, P12-06, P12-09, P12-14, P12-15, P12-16 | done (manual checklist pending the owner) |
 | [P12-20](phase-12/P12-20-docs-and-adr.md) | Documentation: release guide, ADR 0009, README and architecture note | P12-17 ... P12-19 | done |
-| [P12-21](phase-12/P12-21-avalonia-linux-macos-packaging.md) | Avalonia head: Linux and macOS packaging with Velopack (optional) | P12-15, P12-16, P12-20 | todo |
+| [P12-21](phase-12/P12-21-avalonia-linux-macos-packaging.md) | Avalonia head: Linux and macOS packaging with Velopack (optional) | P12-15, P12-16, P12-20 | done (not run on Linux/macOS) |
 | [P13-01](phase-13/P13-01-core-plan-model.md) | Core: engine-neutral query plan model | none | done |
 | [P13-02](phase-13/P13-02-core-plan-analysis.md) | Core: plan analysis (relative cost, severity, warnings) | P13-01 | done |
 | [P13-03](phase-13/P13-03-sql-plan-eligibility.md) | Sql: which statements can be explained or analyzed | P13-01 | done |
@@ -325,7 +325,7 @@ Goal: a user installs SQuilL with one `Setup.exe`, is told when a newer version 
 
 - Branch: implement phase 12 on the existing branch `phase-12-release`; do not create another branch. Never push a `v*` tag from a card (it would publish a real Release).
 - Order: P12-01 first (Velopack under Native AOT: if its stop rule triggers, the Platform/engine cards are rewritten before anything else), then versioning and build P12-02 ... P12-06, then update logic P12-07 ... P12-09 (Platform), P12-10 ... P12-12 (Presentation), the heads P12-13 / P12-14 (WinUI) before P12-15 (Avalonia), the CI release P12-16 / P12-17 / P12-18, then verification P12-19 and docs P12-20, optional P12-21 last.
-- Status: P12-01 to P12-20 are done. P12-19 is done for its automated part (install, update, uninstall, data kept: all green); its by-hand checklist in [docs/verification/release.md](../verification/release.md) is pending the owner. P12-21 is optional and not started. The first real release (tag `v0.1.0`) is the owner's decision after reading that report.
+- Status: P12-01 to P12-20 are done. P12-19 is done for its automated part (install, update, uninstall, data kept: all green); its by-hand checklist in [docs/verification/release.md](../verification/release.md) is pending the owner. P12-21 (Avalonia Linux/macOS packaging) is done but was never run on a real Linux or macOS desktop. The first real release (tag `v0.1.0`) is the owner's decision after reading that report.
 - Cards that package run in the background (an AOT publish takes minutes), never run an installer except P12-01 (throwaway id `SQuilLPoc`) and P12-19 (`SQuilLVerify`), and clean `artifacts/` afterwards. Bugs found by P12-19 too big for the card get `P12-22` onwards (added to this index).
 
 ### Phase 13 - Execution plan (mockup M06) - done except the owner's manual checklist ([verification/plan.md](../verification/plan.md))

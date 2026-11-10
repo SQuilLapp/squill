@@ -43,9 +43,40 @@ jobs:
       runtime: win-arm64
       publish: ${{ github.event_name == 'push' || inputs.dry_run == false }}
 
+  # Avalonia head, Linux (AppImage + update feed) and macOS (.app zip, no feed): packed on their own OS, "published, not run"
+  # (nobody runs them in CI). A failed job here never blocks the Windows release (see the release job).
+  pack-unix:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            runtime: linux-x64
+          - runner: macos-latest
+            runtime: osx-arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Pack
+        shell: pwsh
+        env:
+          RUNTIME: ${{ matrix.runtime }}
+          ALSO_BETA: ${{ github.event_name == 'push' || inputs.dry_run == false }}
+        run: ./eng/pack-unix.ps1 -Runtime $env:RUNTIME -AlsoBeta:($env:ALSO_BETA -eq 'true')
+      - uses: actions/upload-artifact@v7
+        with:
+          name: squill-${{ matrix.runtime }}
+          path: artifacts/releases-${{ matrix.runtime }}
+          retention-days: 14
+
   release:
-    needs: [pack-x64, pack-arm64]
-    # A failed arm64 pack must not block the x64 release; a failed x64 pack always does.
+    needs: [pack-x64, pack-arm64, pack-unix]
+    # A failed arm64 or unix pack must not block the x64 release; a failed x64 pack always does.
     if: ${{ !cancelled() && needs.pack-x64.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
@@ -54,7 +85,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          pattern: squill-win-*
+          pattern: squill-{win,linux,osx}-*
           merge-multiple: true
           path: artifacts/releases
       - name: Release notes

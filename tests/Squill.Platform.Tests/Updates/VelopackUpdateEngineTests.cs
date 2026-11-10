@@ -57,6 +57,14 @@ public sealed class VelopackUpdateEngineTests : IDisposable
     public void ChannelName_CarriesTheArchitecture(UpdateChannel channel, Architecture architecture, string expected) =>
         Assert.Equal(expected, VelopackUpdateEngine.ChannelName(channel, architecture));
 
+    [Theory]
+    [InlineData(UpdateChannel.Stable, Architecture.X64, "linux", "stable-linux-x64")]
+    [InlineData(UpdateChannel.Beta, Architecture.X64, "linux", "beta-linux-x64")]
+    [InlineData(UpdateChannel.Stable, Architecture.Arm64, "osx", "stable-osx-arm64")]
+    [InlineData(UpdateChannel.Beta, Architecture.Arm64, "osx", "beta-osx-arm64")]
+    public void ChannelName_CarriesTheOsOffWindows(UpdateChannel channel, Architecture architecture, string os, string expected) =>
+        Assert.Equal(expected, VelopackUpdateEngine.ChannelName(channel, architecture, os));
+
     [Fact]
     public void Classify_SeparatesTheFeedKinds()
     {
