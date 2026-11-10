@@ -1,6 +1,6 @@
 # P13-13 - Presentation: plan graph layout
 
-Status: todo
+Status: done
 Depends on: P13-12
 
 ## Goal
@@ -18,8 +18,8 @@ A pure layout function that places the graph of the mockup (operators flow left 
 - Drawing, panning, zooming, hit testing (heads), collapse of subtrees.
 
 ## Tasks
-- [ ] `PlanLayout` and result records.
-- [ ] Tests (`tests/Squill.Presentation.Tests/Plans/PlanLayoutTests.cs`): the shape of the mockup (10 nodes with two Hash helpers) gives 8 cards, 2 pills and right-most root; no two cards overlap (pairwise check) on a bushy random-but-seeded tree of 200 nodes; inner node centered; helper pill lies between the two cards; thickness monotonic in rows; single-node plan; SQLite-shaped plan without figures (flat thickness, no extra lines); determinism (same input same output).
+- [x] `PlanLayout` and result records.
+- [x] Tests (`tests/Squill.Presentation.Tests/Plans/PlanLayoutTests.cs`): the shape of the mockup (10 nodes with two Hash helpers) gives 8 cards, 2 pills and right-most root; no two cards overlap (pairwise check) on a bushy random-but-seeded tree of 200 nodes; inner node centered; helper pill lies between the two cards; thickness monotonic in rows; single-node plan; SQLite-shaped plan without figures (flat thickness, no extra lines); determinism (same input same output).
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5.
