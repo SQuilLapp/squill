@@ -132,15 +132,7 @@ internal static class JoinRows
         var condition = JoinConditionText.Build(relation, relation.Existing.Alias ?? relation.Existing.Name, newName, dialect, lowerKeywords);
         var on = lowerKeywords ? "on " : "ON ";
 
-        var documentation = JoinConditionText.Describe(relation);
-        if (relation.Origin == RelationOrigin.ForeignKey)
-        {
-            var owner = relation.OtherReferencesExisting ? candidate : existingTable;
-            if (owner?.ForeignKeys.FirstOrDefault(f => f.Name == relation.ForeignKeyName) is { } fk)
-            {
-                documentation += " ON DELETE " + fk.OnDelete.ToSql();
-            }
-        }
+        var documentation = CompletionDocumentation.Relation(schema, relation);
 
         return new CompletionItem(
             label,

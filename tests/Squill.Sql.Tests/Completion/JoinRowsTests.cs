@@ -46,7 +46,7 @@ public sealed class JoinRowsTests
         Assert.Equal("ON c.id = o.customer_id", row.Detail);
         Assert.Equal("orders", row.FilterText);
         Assert.Equal(CompletionKind.Struct, row.Kind);
-        Assert.Equal("orders.customer_id -> customers.id (fk_orders_customer) ON DELETE CASCADE", row.Documentation);
+        Assert.Equal("orders.customer_id -> customers.id (fk_orders_customer) ON DELETE CASCADE, ON UPDATE NO ACTION", row.Documentation);
     }
 
     [Fact]

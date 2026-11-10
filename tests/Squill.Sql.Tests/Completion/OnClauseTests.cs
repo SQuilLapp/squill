@@ -40,7 +40,7 @@ public sealed class OnClauseTests
         Assert.Equal("c.id = o.customer_id", item.InsertText);
         Assert.Equal("fk_orders_customer", item.Detail);
         Assert.Equal(CompletionKind.Snippet, item.Kind);
-        Assert.Equal("orders.customer_id -> customers.id (fk_orders_customer)", item.Documentation);
+        Assert.Equal("orders.customer_id -> customers.id (fk_orders_customer) ON DELETE NO ACTION, ON UPDATE NO ACTION", item.Documentation);
         Assert.Equal(["o.customer_id = c.id"], Labels("select * from orders o join customers c on |"));
     }
 

@@ -1,6 +1,6 @@
 # P14-15 - Sql: documentation text for tables, columns, aliases, functions and join rows
 
-Status: todo
+Status: done
 Depends on: P14-02, P14-08, P14-09
 
 ## Goal
@@ -21,8 +21,8 @@ The side panel of the popup explains the highlighted item: a table's columns and
 - Resolving documentation lazily through LoomEditor's `ResolveCompletionItemAsync`, localization of the texts, keyword documentation.
 
 ## Tasks
-- [ ] Tests first (`tests/Squill.Sql.Tests/Completion/CompletionDocumentationTests.cs`): exact text of a table with 3 columns and a foreign key, a table with 20 columns (12 + `...and 8 more`), a view with a definition, a column with default and foreign key, a column that is referenced by two tables, an alias, a CTE, a built-in and a stored function, a join row with `ON DELETE CASCADE`, the 2,000 character cap, a name containing a backtick.
-- [ ] Wire into `SchemaCompletionProvider`, `FunctionCompletionProvider`, relation and condition rows; the performance guard; XML docs.
+- [x] Tests first (`tests/Squill.Sql.Tests/Completion/CompletionDocumentationTests.cs`): exact text of a table with 3 columns and a foreign key, a table with 20 columns (12 + `...and 8 more`), a view with a definition, a column with default and foreign key, a column that is referenced by two tables, an alias, a CTE, a built-in and a stored function, a join row with `ON DELETE CASCADE`, the 2,000 character cap, a name containing a backtick.
+- [x] Wire into `SchemaCompletionProvider`, `FunctionCompletionProvider`, relation and condition rows; the performance guard; XML docs.
 
 ## Acceptance criteria
 - Recipe section 4.

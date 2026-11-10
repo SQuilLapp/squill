@@ -58,7 +58,7 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
 
         if (qualifiers.Count == 0 && InsertTarget(tokens, end) is var (insertSchema, insertTable) && schema.FindTable(insertSchema, insertTable) is { } target)
         {
-            return [.. target.Columns.Select(c => new CompletionItem(c.Name, CompletionKind.Field, IdentifierQuoting.Quote(c.Name, request.Dialect), c.DataType, CompletionOrder.Column + c.Name, range))];
+            return [.. target.Columns.Select(c => new CompletionItem(c.Name, CompletionKind.Field, IdentifierQuoting.Quote(c.Name, request.Dialect), c.DataType, CompletionOrder.Column + c.Name, range, null, CompletionDocumentation.Column(schema, target, c, target.Name)))];
         }
 
         if (tablePosition)
@@ -194,7 +194,8 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
             qualified ? $"{kind} ({t.Schema})" : kind,
             sortText,
             range,
-            t.Name);
+            t.Name,
+            CompletionDocumentation.Table(t));
     }
 
     private static List<CompletionItem> Columns(SchemaSnapshot schema, ScopeInfo scope, List<string> qualifiers, DatabaseDialect dialect, TextRange range, Dictionary<VisibleSource, HashSet<string>> keys)
@@ -209,6 +210,7 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
         {
             var (source, cols) = columns[i];
             var owner = source.Alias ?? source.Name;
+            var table = source.DerivedColumns is null ? schema.FindTable(source.Schema, source.Name) : null;
             var canQualify = i < local.Count && owner.Length > 0;
             foreach (var (name, type) in cols)
             {
@@ -221,7 +223,10 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
                 }
 
                 var group = keys.TryGetValue(source, out var key) && key.Contains(name) ? CompletionOrder.KeyColumn : CompletionOrder.Column;
-                items.Add(new CompletionItem(name, CompletionKind.Field, insert, detail, group + name, range, name));
+                var doc = table?.Columns.FirstOrDefault(c => c.Name == name) is { } definition
+                    ? CompletionDocumentation.Column(schema, table, definition, owner)
+                    : CompletionDocumentation.DerivedColumn(owner, name);
+                items.Add(new CompletionItem(name, CompletionKind.Field, insert, detail, group + name, range, name, doc));
             }
         }
 
@@ -230,7 +235,7 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
             foreach (var source in sources.Where(s => s.Name.Length > 0 || s.Alias is not null))
             {
                 var label = source.Alias ?? source.Name;
-                items.Add(new CompletionItem(label, CompletionKind.Class, IdentifierQuoting.Quote(label, dialect), source.Alias is null ? "table" : "alias", CompletionOrder.Qualifier + label, range));
+                items.Add(new CompletionItem(label, CompletionKind.Class, IdentifierQuoting.Quote(label, dialect), source.Alias is null ? "table" : "alias", CompletionOrder.Qualifier + label, range, null, CompletionDocumentation.Source(source)));
             }
         }
 

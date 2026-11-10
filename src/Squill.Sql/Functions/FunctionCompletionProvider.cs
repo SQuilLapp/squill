@@ -28,10 +28,10 @@ public sealed class FunctionCompletionProvider : ISqlCompletionProvider
 
         var range = new TextRange(start, offset - start);
         var builtIn = FunctionCatalog.For(request.Dialect)
-            .Select(f => new CompletionItem(f.Name, CompletionKind.Function, f.Name, f.Display, CompletionOrder.Function + f.Name, range));
+            .Select(f => new CompletionItem(f.Name, CompletionKind.Function, f.Name, f.Display, CompletionOrder.Function + f.Name, range, null, CompletionDocumentation.Function(f)));
         var stored = (request.Schema?.Routines ?? [])
             .Where(r => r.Kind == RoutineKind.Function)
-            .Select(r => new CompletionItem(r.Name, CompletionKind.Function, IdentifierQuoting.Quote(r.Name, request.Dialect), r.Signature + (r.ReturnType is null ? string.Empty : " -> " + r.ReturnType), CompletionOrder.Function + r.Name, range));
+            .Select(r => new CompletionItem(r.Name, CompletionKind.Function, IdentifierQuoting.Quote(r.Name, request.Dialect), r.Signature + (r.ReturnType is null ? string.Empty : " -> " + r.ReturnType), CompletionOrder.Function + r.Name, range, null, CompletionDocumentation.Function(r)));
         return [.. builtIn, .. stored];
     }
 }

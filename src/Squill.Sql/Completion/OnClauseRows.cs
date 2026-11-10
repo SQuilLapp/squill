@@ -119,7 +119,7 @@ internal static class OnClauseRows
                 relation.ForeignKeyName ?? "same column name",
                 CompletionOrder.Relation + items.Count.ToString("D6", System.Globalization.CultureInfo.InvariantCulture),
                 range,
-                Documentation: JoinConditionText.Describe(relation)));
+                Documentation: CompletionDocumentation.Relation(schema, relation)));
         }
 
         return items;
