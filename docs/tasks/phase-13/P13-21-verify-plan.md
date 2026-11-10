@@ -1,6 +1,6 @@
 # P13-21 - End-to-end verification: execution plan on the four engines
 
-Status: todo
+Status: automated done, manual pending
 Depends on: P13-11, P13-17, P13-20
 
 ## Goal
@@ -15,7 +15,7 @@ Prove the whole path (query tab -> session -> provider -> view-model -> layout) 
 - Docs and ADR (P13-22).
 
 ## Tasks
-- [ ] Scenario and its test classes (one per driver test project, WinUI/Avalonia unaffected), `docs/verification/plan.md`, clean-up (`podman ps -a` empty, `dotnet build-server shutdown`).
+- [x] Scenario and its test classes (one per driver test project, WinUI/Avalonia unaffected), `docs/verification/plan.md`, clean-up (`podman ps -a` empty, `dotnet build-server shutdown`).
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5, Docker run for all engines green with nothing skipped, no container left. The card status is `automated done, manual pending` until the owner ticks the checklist.
