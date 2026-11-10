@@ -8,6 +8,8 @@
   <Grid RowDefinitions="40,Auto,*" Background="{DynamicResource SquillBgBaseBrush}">
     <Border Background="{DynamicResource SquillBgSurfaceBrush}" BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
       <Grid ColumnDefinitions="*,Auto" Margin="12,0">
+        <!-- Narrow window: the toolbar scrolls sideways instead of running under the zoom and rerun buttons. -->
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="0,0,8,0">
         <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
           <StackPanel Classes="segmented">
             <RadioButton Name="TreeButton" Classes="segment" GroupName="PlanView" Content="{loc:Text plan.view.tree}" Click="OnViewClicked" />
@@ -34,6 +36,7 @@
           <Border Name="CriticalPill" Classes="badge danger" VerticalAlignment="Center"><TextBlock Name="CriticalText" /></Border>
           <Border Name="WarningPill" Classes="badge warning" VerticalAlignment="Center"><TextBlock Name="WarningText" /></Border>
         </StackPanel>
+        </ScrollViewer>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
           <Button Classes="icon" Click="OnZoomOutClicked"><TextBlock Text="–" /></Button>
           <TextBlock Name="ZoomText" Classes="mono" MinWidth="40" TextAlignment="Center" VerticalAlignment="Center" />

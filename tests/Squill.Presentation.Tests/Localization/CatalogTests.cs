@@ -41,6 +41,7 @@ public sealed partial class CatalogTests
         "designer.onDelete", // SQL clause
         "designer.onUpdate", // SQL clause
         "er.types", // same word
+        "menu.macServices", // macOS menu name, same word
         "er.tables", // TABLES · {0} / {1}, same word
         "er.title", // ER - {0}, same text
         "settings.update.channel.stable", // proper name

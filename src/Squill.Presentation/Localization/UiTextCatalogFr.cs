@@ -27,6 +27,11 @@ internal static class UiTextCatalogFr
         ("menu.undo", "Annuler"),
         ("menu.redo", "Rétablir"),
         ("menu.about", "À propos"),
+        ("menu.macServices", "Services"),
+        ("menu.macHide", "Masquer {0}"),
+        ("menu.macHideOthers", "Masquer les autres"),
+        ("menu.macShowAll", "Tout afficher"),
+        ("menu.macQuit", "Quitter {0}"),
         ("menu.newTerminal", "Nouveau terminal"),
         ("rail.explorer", "Explorateur"),
 

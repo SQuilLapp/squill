@@ -24,6 +24,8 @@ public sealed partial class TableDesignerView : UserControl
         // Focusing a cell of a row selects that row, so the toolbar and the detail card follow the keyboard and the pointer.
         AddHandler(GotFocusEvent, OnRowFocused, RoutingStrategies.Bubble, handledEventsToo: true);
         DataContextChanged += (_, _) => Rebind();
+        // The columns table fills the visible width and scrolls sideways only below its minimum width.
+        ColumnsScroller.SizeChanged += (_, e) => ColumnsTable.Width = Math.Max(ColumnsTable.MinWidth, e.NewSize.Width);
     }
 
     private void Rebind()

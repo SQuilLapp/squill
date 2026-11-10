@@ -61,15 +61,21 @@
       <Setter Property="Margin" Value="8,0" />
     </Style>
   </UserControl.Styles>
-  <Grid ColumnDefinitions="*,264" Background="{DynamicResource SquillBgBaseBrush}">
-    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="20,16,20,6">
-      <!-- Header -->
-      <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
+  <Grid Background="{DynamicResource SquillBgBaseBrush}">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="0.5*" MinWidth="180" MaxWidth="264" />
+    </Grid.ColumnDefinitions>
+    <!-- ClipToBounds: on a narrow window nothing here may be drawn over the DDL preview. -->
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="20,16,20,6" ClipToBounds="True">
+      <!-- Header: the buttons wrap under the title when the row is too narrow for both. -->
+      <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,12">
         <Path Classes="icon" Width="32" Height="32" Margin="0,0,12,0" VerticalAlignment="Top" Data="{StaticResource SquillIconTable}" />
-        <StackPanel Grid.Column="1" Spacing="4">
+        <WrapPanel Grid.Column="1">
+        <StackPanel Spacing="4" Margin="0,0,12,6">
           <StackPanel Orientation="Horizontal" Spacing="6">
-            <TextBox Width="80" Classes="cell" FontSize="16" Text="{Binding Schema, Mode=TwoWay}" PlaceholderText="{loc:Text designer.schema}" />
-            <TextBox Name="NameBox" Width="170" Classes="cell" FontSize="16" FontWeight="SemiBold" Text="{Binding Name, Mode=TwoWay}"
+            <TextBox MinWidth="80" MaxWidth="160" Classes="cell" FontSize="16" Text="{Binding Schema, Mode=TwoWay}" PlaceholderText="{loc:Text designer.schema}" />
+            <TextBox Name="NameBox" MinWidth="120" MaxWidth="320" Classes="cell" FontSize="16" FontWeight="SemiBold" Text="{Binding Name, Mode=TwoWay}"
                      PlaceholderText="{loc:Text designer.name}" />
             <Border Classes="badge" Classes.env-prod="{Binding IsProd}" Classes.env-staging="{Binding IsStaging}"
                     Classes.env-dev="{Binding IsDev}" Classes.env-local="{Binding IsLocal}"
@@ -79,20 +85,25 @@
           </StackPanel>
           <TextBlock Text="{Binding Subtitle}" Foreground="{DynamicResource SquillFg3Brush}" TextTrimming="CharacterEllipsis" />
         </StackPanel>
-        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Top">
+        <WrapPanel ItemSpacing="12" LineSpacing="6" VerticalAlignment="Top" Margin="0,0,0,6">
           <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="{Binding DraftText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
             <Ellipse Width="6" Height="6" Fill="{DynamicResource SquillInfoBrush}" />
             <TextBlock Text="{Binding DraftText}" MaxWidth="150" TextWrapping="Wrap" LineHeight="16" Foreground="{DynamicResource SquillInfoBrush}" FontWeight="SemiBold" />
           </StackPanel>
-          <Button Content="{loc:Text results.cancel}" Command="{Binding CancelCommand}" IsVisible="{Binding IsApplying}" />
-          <Button Name="RevertButton" Content="{loc:Text designer.discard}" Command="{Binding RevertCommand}" />
+          <Button Command="{Binding CancelCommand}" IsVisible="{Binding IsApplying}">
+            <TextBlock Text="{loc:Text results.cancel}" TextTrimming="CharacterEllipsis" />
+          </Button>
+          <Button Name="RevertButton" Command="{Binding RevertCommand}">
+            <TextBlock Text="{loc:Text designer.discard}" TextTrimming="CharacterEllipsis" />
+          </Button>
           <Button Name="ApplyButton" Classes="primary" Command="{Binding ApplyCommand}">
             <StackPanel Orientation="Horizontal" Spacing="8">
               <TextBlock Text="{loc:Text designer.apply}" />
               <TextBlock Classes="mono" FontSize="11" Opacity="0.7" VerticalAlignment="Center" Text="Ctrl+S" />
             </StackPanel>
           </Button>
-        </StackPanel>
+        </WrapPanel>
+        </WrapPanel>
       </Grid>
       <TabControl Grid.Row="1">
         <TabItem>
@@ -103,7 +114,8 @@
             </StackPanel>
           </TabItem.Header>
           <ScrollViewer><StackPanel Margin="0,8,0,0">
-            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto" Margin="0,0,0,8">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="0,0,0,8">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*">
               <Button Command="{Binding AddColumnCommand}" Height="28" MinHeight="28">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                   <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconPlus}" />
@@ -121,14 +133,19 @@
                       Command="{Binding MoveColumnDownCommand}" CommandParameter="{Binding SelectedColumn}">
                 <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconArrowDown}" />
               </Button>
-              <TextBlock Grid.Column="5" Text="{loc:Text designer.shortcutsHint}" Foreground="{DynamicResource SquillFg3Brush}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="4" Margin="12,0,0,0" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" Text="{loc:Text designer.shortcutsHint}"
+                         Foreground="{DynamicResource SquillFg3Brush}" VerticalAlignment="Center" />
             </Grid>
-            <Border BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="1" CornerRadius="{DynamicResource SquillRadiusLg}"
-                    ClipToBounds="True" VerticalAlignment="Top">
+            </ScrollViewer>
+            <!-- Too narrow for every column at its minimum width: the table scrolls sideways, a column is never squeezed under its neighbour. -->
+            <ScrollViewer Name="ColumnsScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+            <!-- Width set from the scroller (code-behind): the visible width, at least MinWidth; the same star columns then line up in header and rows. -->
+            <Border Name="ColumnsTable" MinWidth="520" BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="1" CornerRadius="{DynamicResource SquillRadiusLg}"
+                    ClipToBounds="True" VerticalAlignment="Top" HorizontalAlignment="Left">
               <DockPanel>
                 <Border DockPanel.Dock="Top" Height="28" Background="{DynamicResource SquillBgSurfaceBrush}"
                         BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
-                  <Grid ColumnDefinitions="36,48,*,170,56,150,100">
+                  <Grid ColumnDefinitions="36,48,2*,1.4*,56,1.2*,*">
                     <TextBlock Grid.Column="1" Classes="colhead" Text="{loc:Text designer.colPk}" />
                     <TextBlock Grid.Column="2" Classes="colhead" Text="{loc:Text designer.colName}" />
                     <TextBlock Grid.Column="3" Classes="colhead" Text="{loc:Text designer.colType}" />
@@ -143,7 +160,7 @@
                     <DataTemplate x:DataType="dz:ColumnRowViewModel">
                       <Border Classes="row" Classes.modified="{Binding IsModified}" Classes.new="{Binding IsNew}"
                               BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
-                        <Grid ColumnDefinitions="36,48,*,170,56,150,100">
+                        <Grid ColumnDefinitions="36,48,2*,1.4*,56,1.2*,*">
                           <Border Grid.ColumnSpan="6" IsHitTestVisible="False" BorderThickness="1"
                                   BorderBrush="{DynamicResource SquillDangerBrush}" Background="{DynamicResource SquillDangerSoftBrush}">
                             <Border.IsVisible>
@@ -178,9 +195,10 @@
                 </ListBox>
               </DockPanel>
             </Border>
+            </ScrollViewer>
             <Border Classes="card" Margin="0,12,0,0" IsVisible="{Binding SelectedColumn, Converter={x:Static ObjectConverters.IsNotNull}}">
               <StackPanel Spacing="8">
-                <TextBlock Text="{Binding SelectedColumnTitle}" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding SelectedColumnTitle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                 <Grid ColumnDefinitions="90,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
                   <TextBlock Classes="label" Text="{loc:Text designer.colType}" />
                   <AutoCompleteBox Name="SelectedType" Grid.Column="1" Text="{Binding SelectedColumn.DataType, Mode=TwoWay}" FilterMode="Contains"
@@ -201,9 +219,10 @@
           </StackPanel>
         </TabItem.Header>
         <DockPanel>
-          <Button DockPanel.Dock="Bottom" Content="{loc:Text designer.addIndex}" HorizontalAlignment="Left" Margin="0,4,0,0"
-                  Command="{Binding AddIndexCommand}" />
-          <ScrollViewer>
+          <Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Margin="0,4,0,0" Command="{Binding AddIndexCommand}">
+            <TextBlock Text="{loc:Text designer.addIndex}" TextTrimming="CharacterEllipsis" />
+          </Button>
+          <ScrollViewer HorizontalScrollBarVisibility="Auto">
             <ItemsControl Name="IndexRows" ItemsSource="{Binding Indexes}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="dz:IndexRowViewModel">
@@ -239,9 +258,10 @@
           </StackPanel>
         </TabItem.Header>
         <DockPanel>
-          <Button DockPanel.Dock="Bottom" Content="{loc:Text designer.addForeignKey}" HorizontalAlignment="Left" Margin="0,4,0,0"
-                  Command="{Binding AddForeignKeyCommand}" />
-          <ScrollViewer>
+          <Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Margin="0,4,0,0" Command="{Binding AddForeignKeyCommand}">
+            <TextBlock Text="{loc:Text designer.addForeignKey}" TextTrimming="CharacterEllipsis" />
+          </Button>
+          <ScrollViewer HorizontalScrollBarVisibility="Auto">
             <ItemsControl Name="ForeignKeyRows" ItemsSource="{Binding ForeignKeys}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="dz:ForeignKeyRowViewModel">

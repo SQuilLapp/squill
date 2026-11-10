@@ -29,6 +29,7 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         InitializeTitleLayout();
+        InitializeMacChrome();
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.OemComma, KeyModifiers.Control), Command = new RelayCommand(OpenSettings) });
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.E, KeyModifiers.Control), Command = new RelayCommand(OnExplainKey) });
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.E, KeyModifiers.Control | KeyModifiers.Shift), Command = new RelayCommand(OnAnalyzeKey) });
@@ -58,6 +59,7 @@ public sealed partial class MainWindow : Window
         _settings.PropertyChanged += OnSettingsPropertyChanged;
         ActiveTabView.EditorFontSize = _settings.EditorFontSize;
         AttachUpdates(services.Updates, services.About);
+        InitializeMacMenu();
     }
 
     private void OnSettingsPropertyChanged(object? sender, PropertyChangedEventArgs e)

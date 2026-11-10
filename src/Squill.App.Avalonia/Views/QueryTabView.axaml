@@ -59,6 +59,8 @@
             <Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconHistory}" />
           </Button>
         </StackPanel>
+        <!-- Narrow window: the run buttons scroll sideways instead of being cut. -->
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="0,0,6,0">
         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
           <Button Name="RunButton" Classes="primary" Height="28" MinHeight="28" Command="{Binding RunCommand}">
             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -82,6 +84,7 @@
           <Button Name="StopButton" Height="28" MinHeight="28" Content="{loc:Text editor.stop}"
                   IsEnabled="{Binding IsRunning}" Command="{Binding CancelCommand}" />
         </StackPanel>
+        </ScrollViewer>
       </DockPanel>
     </Border>
     <Grid Grid.Row="1" ColumnDefinitions="3,*">
@@ -156,10 +159,11 @@
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-          <StackPanel Name="Marker" Orientation="Horizontal" Spacing="6" Margin="10,0,0,0" VerticalAlignment="Center" IsVisible="False">
-            <Path Name="MarkerIcon" Classes="icon" Width="12" Height="12" />
-            <TextBlock Name="MarkerText" FontSize="12" VerticalAlignment="Center" />
-          </StackPanel>
+          <!-- DockPanel, not StackPanel: the text gets the room left by the Export button and trims instead of running under it. -->
+          <DockPanel Name="Marker" Margin="10,0,8,0" VerticalAlignment="Center" IsVisible="False">
+            <Path Name="MarkerIcon" DockPanel.Dock="Left" Margin="0,0,6,0" Classes="icon" Width="12" Height="12" />
+            <TextBlock Name="MarkerText" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+          </DockPanel>
         </DockPanel>
       </Border>
       <Border Name="EditBar" Grid.Row="1" Height="36" Padding="12,0" IsVisible="False"
@@ -178,11 +182,11 @@
             <Button Name="Discard" Height="26" MinHeight="26" Content="{loc:Text results.cancel}" />
             <Button Name="Commit" Classes="primary" Height="26" MinHeight="26" Content="{loc:Text results.commit}" />
           </StackPanel>
-          <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-            <Path Classes="icon" Width="14" Height="14" Stroke="{DynamicResource SquillInfoBrush}" Data="{StaticResource SquillIconPencil}" />
-            <TextBlock Name="EditStatus" FontWeight="SemiBold" VerticalAlignment="Center" />
-            <TextBlock Name="EditDetail" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource SquillFg2Brush}" />
-          </StackPanel>
+          <DockPanel VerticalAlignment="Center" Margin="0,0,8,0">
+            <Path DockPanel.Dock="Left" Margin="0,0,8,0" Classes="icon" Width="14" Height="14" Stroke="{DynamicResource SquillInfoBrush}" Data="{StaticResource SquillIconPencil}" />
+            <TextBlock Name="EditStatus" DockPanel.Dock="Left" Margin="0,0,8,0" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <TextBlock Name="EditDetail" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SquillFg2Brush}" />
+          </DockPanel>
         </DockPanel>
       </Border>
       <ProgressBar Grid.Row="2" IsIndeterminate="True" Height="2" IsVisible="{Binding IsRunning}" />
