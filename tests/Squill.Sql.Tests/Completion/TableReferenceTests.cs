@@ -21,10 +21,10 @@ public sealed class TableReferenceTests
     }
 
     [Fact]
-    public void UniqueNameInOtherSchema_IsBare()
+    public void UniqueNameInOtherSchema_IsQualified()
     {
-        // "log" exists only in audit and the default schema has none: FindTable(null) still finds the unique one, so bare.
-        Assert.Equal("log", Insert(Snap("public", T("public", "users"), T("audit", "log")), 1));
+        // The engine resolves a bare name only in the default schema (search_path, default schema): found by running it on PostgreSQL.
+        Assert.Equal("audit.log", Insert(Snap("public", T("public", "users"), T("audit", "log")), 1));
     }
 
     [Fact]

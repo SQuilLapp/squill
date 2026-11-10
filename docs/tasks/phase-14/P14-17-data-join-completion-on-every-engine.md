@@ -1,6 +1,6 @@
 # P14-17 - Data: generated join conditions run on every engine
 
-Status: todo
+Status: done
 Depends on: P14-08, P14-09, P14-11
 
 ## Goal
@@ -16,11 +16,16 @@ Prove against real servers that the text the popup generates is valid on each en
 - Oracle, performance, the UI.
 
 ## Tasks
-- [ ] Scenario and the four test classes; run `rtk pwsh eng/run-docker-tests.ps1 -Engine all` (Podman; see [verification-recipe.md](../phase-11/verification-recipe.md) section 1; stop and report if Podman is unavailable, never mark skipped tests as verified); SQLite tests run without Docker.
-- [ ] A bug found by the scenario in a Sql card: fix it here when under ~30 lines with a regression test in `tests/Squill.Sql.Tests`, otherwise write card `P14-20` onwards (add it to the index).
+- [x] Scenario and the four test classes; run `rtk pwsh eng/run-docker-tests.ps1 -Engine all` (Podman; see [verification-recipe.md](../phase-11/verification-recipe.md) section 1; stop and report if Podman is unavailable, never mark skipped tests as verified); SQLite tests run without Docker.
+- [x] A bug found by the scenario in a Sql card: fix it here when under ~30 lines with a regression test in `tests/Squill.Sql.Tests`, otherwise write card `P14-20` onwards (add it to the index).
 
 ## Acceptance criteria
 - Recipe section 4; Docker run for all engines green with nothing skipped, `podman ps -a` shows no container left, `dotnet build-server shutdown` done.
 
 ## Suggested commit message
 Prove generated join conditions on the four engines
+
+## Report
+- Bug found by step (1) on PostgreSQL and fixed here (3 lines + regression test): `TableReference.NeedsSchema` treated a table with a unique name as resolvable bare even when the engine has a default schema, so `sample.orders` was inserted as `orders` (relation "orders" does not exist). A bare name resolves only in the default schema; the unique-name fallback now applies only when `DefaultSchema` is null (SQLite, MySQL without a database). `TableReferenceTests.UniqueNameInOtherSchema` now expects `audit.log` (it encoded the wrong rule from P14-03).
+- Result: SQLite (no Docker), PostgreSQL 17, MySQL 8.4, SQL Server 2022 all green via `eng/run-docker-tests.ps1`, nothing skipped. Two MySQL full runs had unrelated fixture start failures ("container state improper", 1 then 4 tests); the next full MySQL run was green and the class itself passed alone each time (infrastructure flake, not investigated).
+- Steps run: join, every kind (inner, left, left outer, right, full; MySQL without full, asserted absent), child table, self join (2 rows), two keys (2 rows), composite key (`AND`), quoted `Odd Name`, no row after cross / natural, conditions after `on `. A control statement against a missing table proves errors surface as exceptions.
