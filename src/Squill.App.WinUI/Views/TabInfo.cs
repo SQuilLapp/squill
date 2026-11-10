@@ -1,6 +1,7 @@
 using Squill.Core;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
+using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
 using Squill.Presentation.Terminal;
 
@@ -17,6 +18,7 @@ internal static class TabInfo
         QueryTabViewModel q => (q.Title, q.Session.Profile.Environment, q.IsModified),
         TableDesignerViewModel d => (d.Title, d.Session.Profile.Environment, d.HasChanges),
         DiagramTabViewModel g => (g.Title, g.Session.Profile.Environment, false),
+        PlanTabViewModel p => (p.Title, p.Environment, false),
         TerminalTabViewModel t => (t.Title, ConnectionEnvironment.None, false),
         _ => ("", ConnectionEnvironment.None, false),
     };

@@ -1,6 +1,6 @@
 # P13-15 - WinUI head: Expliquer and Analyser buttons, plan tab host, tab strip, status bar
 
-Status: todo
+Status: done
 Depends on: P13-14, P9-12
 
 ## Goal
@@ -18,8 +18,8 @@ In the WinUI head the toolbar shows `Expliquer` and `Analyser`, a plan tab opens
 - Table, details and graph bodies (P13-16, P13-17), Avalonia.
 
 ## Tasks
-- [ ] Toolbar buttons, `PlanTabView` toolbar and `Texte` body, tab strip and status bar integration, localized labels.
-- [ ] Capture (tools of P9-02, section 11 of `visual-spec.md`) of the plan tab toolbar in light and dark, `SQUILL_LANGUAGE=fr`, against `M06-Plan-clair/sombre` (toolbar area only); anything not compared goes to the report as "to check by hand".
+- [x] Toolbar buttons, `PlanTabView` toolbar and `Texte` body, tab strip and status bar integration, localized labels.
+- [ ] Capture (tools of P9-02, section 11 of `visual-spec.md`) of the plan tab toolbar in light and dark, `SQUILL_LANGUAGE=fr`, against `M06-Plan-clair/sombre` (toolbar area only); anything not compared goes to the report as "to check by hand". Not done: the plan tab could not be driven (needs a live connection), so no capture was compared; to check by hand.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green; WinUI AOT publish with zero IL2xxx/IL3xxx warnings.

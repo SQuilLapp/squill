@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Media;
 using ConnectionEnvironment = Squill.Core.ConnectionEnvironment;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
+using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
 using Squill.Presentation.Workspace;
 
@@ -28,6 +29,7 @@ public sealed partial class StatusBar : UserControl
     private readonly List<Border> _segments = [];
     private WorkspaceViewModel? _workspace;
     private QueryTabViewModel? _tab;
+    private PlanTabViewModel? _plan;
 
     /// <summary>Creates the view.</summary>
     public StatusBar()
@@ -73,6 +75,20 @@ public sealed partial class StatusBar : UserControl
     {
         _workspace = workspace;
         workspace.PropertyChanged += OnWorkspaceChanged;
+        Refresh();
+    }
+
+    /// <summary>Shows the plan status line and the plan figures (node count, time, server version) in place of the run status and cursor position while a plan tab is active.</summary>
+    /// <param name="plan">The active plan tab, or <see langword="null"/> when another kind of tab is shown.</param>
+    public void ShowPlan(PlanTabViewModel? plan)
+    {
+        if (ReferenceEquals(_plan, plan))
+            return;
+        if (_plan is not null)
+            _plan.PropertyChanged -= OnTabChanged;
+        _plan = plan;
+        if (_plan is not null)
+            _plan.PropertyChanged += OnTabChanged;
         Refresh();
     }
 
@@ -139,7 +155,8 @@ public sealed partial class StatusBar : UserControl
         Paint();
         RefreshEnvironment(workspace.ActiveEnvironment);
         _connection.Text = ChromeFormat.Connection(workspace.ActiveSession?.Profile);
-        _version.Text = workspace.ActiveSession?.Connection.ServerVersion ?? "";
+        _version.Text = _plan?.ServerVersion ?? workspace.ActiveSession?.Connection.ServerVersion ?? "";
+        _segments[3].Visibility = _plan is null ? Visibility.Visible : Visibility.Collapsed;
         RefreshRunStatus();
         RefreshPosition();
     }
@@ -178,6 +195,14 @@ public sealed partial class StatusBar : UserControl
 
     private void RefreshRunStatus()
     {
+        if (_plan is { } plan)
+        {
+            _status.Text = plan.Plan.StatusLine;
+            _status.Foreground = Brush("SquillFg2Brush");
+            _elapsed.Text = "";
+            return;
+        }
+
         var tab = _tab;
         if (tab is null)
         {
@@ -200,5 +225,5 @@ public sealed partial class StatusBar : UserControl
     }
 
     private void RefreshPosition() =>
-        _position.Text = _tab is { } tab ? ChromeFormat.Position(tab.Editor.Text, tab.Editor.CaretOffset) : "";
+        _position.Text = _plan is { } plan ? plan.SummaryText : _tab is { } tab ? ChromeFormat.Position(tab.Editor.Text, tab.Editor.CaretOffset) : "";
 }

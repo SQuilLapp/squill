@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Shapes;
+using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
 
 namespace Squill.App.WinUI.Views;
@@ -25,16 +26,29 @@ internal static class TabHeader
         void Refresh()
         {
             var info = TabInfo.Describe(source);
-            title.Text = info.Title;
+            if (source is PlanTabViewModel plan)
+                ShowPlanTitle(title, plan, Tokens.Brush(item, "SquillFg3Brush"));
+            else
+                title.Text = info.Title;
             dot.Visibility = info.IsDirty ? Visibility.Visible : Visibility.Collapsed;
         }
 
         Refresh();
+        item.ActualThemeChanged += (_, _) => Refresh();
         if (source is INotifyPropertyChanged changed)
             changed.PropertyChanged += (_, _) => item.DispatcherQueue?.TryEnqueue(Refresh);
         if (source is QueryTabViewModel query)
             query.Editor.TextChanged += (_, _) => Refresh();
         return item;
+    }
+
+    // The query tab name in the tab color, then the muted " · Plan" suffix of the localized title.
+    private static void ShowPlanTitle(TextBlock title, PlanTabViewModel plan, Microsoft.UI.Xaml.Media.Brush muted)
+    {
+        var name = plan.Source.Title;
+        title.Inlines.Clear();
+        title.Inlines.Add(new Microsoft.UI.Xaml.Documents.Run { Text = name });
+        title.Inlines.Add(new Microsoft.UI.Xaml.Documents.Run { Text = plan.Title.StartsWith(name, StringComparison.Ordinal) ? plan.Title[name.Length..] : plan.Title, Foreground = muted });
     }
 
     private static Style Style(string key) => (Style)Application.Current.Resources[key];

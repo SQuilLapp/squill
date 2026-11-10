@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Squill.App.WinUI.Views;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
+using Squill.Presentation.Plans;
 using Squill.Presentation.Workspace;
 
 namespace Squill.App.WinUI;
@@ -17,6 +18,7 @@ public sealed partial class MainWindow
     {
         workspace.Diagrams.CollectionChanged += OnExtraTabsChanged;
         workspace.Designers.CollectionChanged += OnExtraTabsChanged;
+        workspace.Plans.CollectionChanged += OnExtraTabsChanged;
     }
 
     private void OnExtraTabsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -55,12 +57,21 @@ public sealed partial class MainWindow
     {
         DiagramArea.Visibility = Visibility.Collapsed;
         DesignerArea.Visibility = Visibility.Collapsed;
+        PlanArea.Visibility = Visibility.Collapsed;
+        Status.ShowPlan(null);
     }
 
     private void ShowDiagram(DiagramTabViewModel diagram)
     {
         ShowOnly(DiagramArea);
         DiagramArea.ViewModel = diagram;
+    }
+
+    private void ShowPlan(PlanTabViewModel plan)
+    {
+        ShowOnly(PlanArea);
+        PlanArea.ViewModel = plan;
+        Status.ShowPlan(plan);
     }
 
     private void ShowDesigner(TableDesignerViewModel designer)

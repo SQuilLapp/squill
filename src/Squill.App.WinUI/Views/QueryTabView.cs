@@ -25,6 +25,8 @@ public sealed partial class QueryTabView : UserControl
     private readonly Border _envStripe = new() { Width = 3, Visibility = Visibility.Collapsed };
     private readonly Button _run = new() { Style = Res("PrimaryButtonStyle"), Height = 28, MinHeight = 28 };
     private readonly Button _script = new() { Height = 28, MinHeight = 28 };
+    private readonly Button _explain = new() { Height = 28, MinHeight = 28 };
+    private readonly Button _analyze = new() { Height = 28, MinHeight = 28 };
     private readonly Button _stop = new() { Height = 28, MinHeight = 28, Content = UiText.Get("editor.stop") };
     private readonly Button _format = new() { Style = Res("IconButtonStyle") };
     private readonly Button _historyToggle = new() { Style = Res("IconButtonStyle") };
@@ -253,12 +255,14 @@ public sealed partial class QueryTabView : UserControl
     {
         _run.Content = ButtonLabel(UiText.Get("editor.run"), UiText.Get("editor.runShortcut"), chip: false);
         _script.Content = ButtonLabel(UiText.Get("editor.script"), UiText.Get("editor.scriptShortcut"), chip: true);
+        _explain.Content = UiText.Get("plan.action.explain");
+        _analyze.Content = ButtonLabel(UiText.Get("plan.action.analyze"), UiText.Get("plan.analyzeShortcut"), chip: true);
         _format.Content = Icons.Create("SquillIconFormat", 14, Brush("SquillFg2Brush"));
         _historyToggle.Content = Icons.Create("SquillIconHistory", 14, Brush("SquillFg2Brush"));
         ToolTipService.SetToolTip(_format, UiText.Get("menu.format"));
         ToolTipService.SetToolTip(_historyToggle, UiText.Get("editor.history"));
         _historyToggle.Click += (_, _) => ToggleSidePanel();
-        var left = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { _run, _script, _stop } };
+        var left = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { _run, _script, _explain, _analyze, _stop } };
         var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { _format, _historyToggle } };
         Grid.SetColumn(right, 1);
         var row = new Grid { ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } }, Children = { left, right } };
@@ -370,10 +374,13 @@ public sealed partial class QueryTabView : UserControl
         _run.Command = tab?.RunCommand;
         _script.Command = tab?.RunAllCommand;
         _stop.Command = tab?.CancelCommand;
+        _explain.Command = tab?.ExplainCommand;
+        _analyze.Command = tab?.AnalyzeCommand;
         _format.Command = tab?.FormatDocumentCommand;
         RebuildResultTabs();
         ShowResult();
         ShowRunning();
+        ShowPlanButtons();
     }
 
     private void OnResultsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildResultTabs();
@@ -449,6 +456,17 @@ public sealed partial class QueryTabView : UserControl
             ShowResult();
         else if (e.PropertyName == nameof(QueryTabViewModel.IsRunning))
             ShowRunning();
+        else if (e.PropertyName is nameof(QueryTabViewModel.CanExplain) or nameof(QueryTabViewModel.CanAnalyze) or nameof(QueryTabViewModel.ExplainDisabledReason) or nameof(QueryTabViewModel.AnalyzeDisabledReason))
+            ShowPlanButtons();
+    }
+
+    // The commands stay executable; the view-model says through CanExplain / CanAnalyze whether the statement qualifies and why not.
+    private void ShowPlanButtons()
+    {
+        _explain.IsEnabled = _tab?.CanExplain == true;
+        _analyze.IsEnabled = _tab?.CanAnalyze == true;
+        ToolTipService.SetToolTip(_explain, _explain.IsEnabled ? null : _tab?.ExplainDisabledReason);
+        ToolTipService.SetToolTip(_analyze, _analyze.IsEnabled ? null : _tab?.AnalyzeDisabledReason);
     }
 
     private void ShowRunning()
