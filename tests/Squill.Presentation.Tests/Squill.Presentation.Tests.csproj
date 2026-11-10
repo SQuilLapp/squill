@@ -19,6 +19,7 @@
     <Compile Include="../Shared/ErStressScenario.cs" Link="Diagram/ErStressScenario.cs" />
     <Compile Include="../Shared/ExportSnapshotScenario.cs" Link="Results/ExportSnapshotScenario.cs" />
     <Content Include="Results/Snapshots/*.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../Shared/SampleSchema/sqlite.sql" Link="SampleSchema/sqlite.sql" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Diagram/Snapshots/*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

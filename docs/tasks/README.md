@@ -291,7 +291,7 @@ Depends on: <card ids, ranges allowed>
 | [P14-15](phase-14/P14-15-sql-item-documentation.md) | Sql: documentation text for tables, columns, aliases, functions and join rows | P14-02, P14-08, P14-09 | done |
 | [P14-16](phase-14/P14-16-sql-statement-snippets.md) | Sql: statement snippets with tab stops | P14-01, P14-02, P14-14 | done |
 | [P14-17](phase-14/P14-17-data-join-completion-on-every-engine.md) | Data: generated join conditions run on every engine | P14-08, P14-09, P14-11 | done |
-| [P14-18](phase-14/P14-18-verify-completion.md) | End-to-end verification: completion through the query tab, and the manual checklist | P14-08 ... P14-17 | todo |
+| [P14-18](phase-14/P14-18-verify-completion.md) | End-to-end verification: completion through the query tab, and the manual checklist | P14-08 ... P14-17 | automated done, manual pending |
 | [P14-19](phase-14/P14-19-docs-and-adr.md) | Documentation: completion ADR 0011, README and architecture note | P14-18 | todo |
 
 ### Phase 9 - Visual conformance

@@ -1,6 +1,6 @@
 # P14-18 - End-to-end verification: completion through the query tab, and the manual checklist
 
-Status: todo
+Status: automated done, manual pending
 Depends on: P14-08 ... P14-17
 
 ## Goal
@@ -15,10 +15,15 @@ Prove the whole path (query tab -> session schema -> providers -> editor adapter
 - Docs and ADR (P14-19).
 
 ## Tasks
-- [ ] Flow tests, `docs/verification/completion.md`, clean-up (`dotnet build-server shutdown`, executables closed).
+- [x] Flow tests, `docs/verification/completion.md`, clean-up (`dotnet build-server shutdown`, executables closed).
 
 ## Acceptance criteria
 - Recipe section 4. Status `automated done, manual pending` until the owner ticks the checklist.
 
 ## Suggested commit message
 Verify completion end to end and add the manual checklist
+
+## Report
+- Automated: `CompletionFlowTests` (4 tests, SQLite sample, real session + query tab + stub editor): join row first and the inserted text runs (3 rows), keyword case Lower, functions in a SELECT list, new table in the popup after `CREATE TABLE`. The 100,000-line slicing check was skipped: the slicing is in `LoomSqlProviders` (App.Shared), unreachable from the test projects.
+- Done beyond the tests: Native AOT publish of `Squill.App.Avalonia` (win-x64): 0 warnings, exe launched, alive and responding after 10 s, then stopped. The WinUI head was not published or launched (not covered by this card's tests; built in `Squill.Windows.slnx` by P14-16).
+- NOT driven: the popup in either head (typing, Enter / Tab / Escape, Ctrl+Z, docs panel, themes, snippets, 5,000-table stall, French run). All of it is the unticked checklist in `docs/verification/completion.md`. No bug found in this card.
