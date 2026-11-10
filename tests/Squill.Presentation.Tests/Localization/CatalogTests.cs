@@ -50,6 +50,7 @@ public sealed partial class CatalogTests
         "about.runtime", // .NET version, not translated
         "about.runtime.jit", // .NET version, not translated
         "er.relationFrom", // only symbols and placeholders
+        "plan.prop.workers", // engine term kept as is
     ];
 
     private static Dictionary<string, string> Fr => UiTextCatalogFr.Entries.ToDictionary(e => e.Key, e => e.Value);

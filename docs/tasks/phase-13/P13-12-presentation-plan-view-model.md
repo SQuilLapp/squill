@@ -1,6 +1,6 @@
 # P13-12 - Presentation: plan view-model (rows, details, summary, text)
 
-Status: todo
+Status: done
 Depends on: P13-02
 
 ## Goal
@@ -18,11 +18,19 @@ Everything the plan screen shows, as view-model state both heads bind to, with n
 - Graph geometry (P13-13), commands that produce a plan (P13-14), drawing.
 
 ## Tasks
-- [ ] View-models, formatting, catalog keys fr/en.
-- [ ] Tests (`tests/Squill.Presentation.Tests/Plans/PlanViewModelTests.cs`, hand-built plans for PostgreSQL-shaped, SQLite-shaped (no figures: nothing invented, no pills, `-` cells), SQL Server with suggestion): default selection, summary omissions, plural pills in both languages, status lines, zoom bounds, details title and property translation, row order and depth, rounding of percentages (0.64 -> `64 %`, 0.004 -> `0 %`).
+- [x] View-models, formatting, catalog keys fr/en.
+- [x] Tests (`tests/Squill.Presentation.Tests/Plans/PlanViewModelTests.cs`, hand-built plans for PostgreSQL-shaped, SQLite-shaped (no figures: nothing invented, no pills, `-` cells), SQL Server with suggestion): default selection, summary omissions, plural pills in both languages, status lines, zoom bounds, details title and property translation, row order and depth, rounding of percentages (0.64 -> `64 %`, 0.004 -> `0 %`).
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5; localization guard tests green.
 
 ## Suggested commit message
 Add the plan view-model and its strings
+
+## Notes from the implementation
+- The view's representation is `PlanViewModel.ViewMode` (`PlanViewMode`), not `Mode`, to avoid confusion with `QueryPlan.Mode`.
+- A missing figure is an en dash (`–`, as in the recipe), shown by `PlanText.Missing`; the card text said `-`.
+- `IPlatformServices` has no clipboard service: the details view-model exposes `CopyText` and the heads copy it.
+- Warning texts use literal keys `plan.warning.*` through `PlanText.Warning` (not `IssueText`, whose `issue.` prefix would give `issue.plan.*`); the sort-spill text has a `.size` variant for PostgreSQL, which reports the size. The status line takes the engine statement family as `{0}` (`STATISTICS XML` on SQL Server).
+- The engine statement families and a few PostgreSQL property names are listed in `ignored-literals.txt` (not translatable); `plan.prop.workers` joins the same-in-both-languages allow list.
+- At most one node can be critical in the time/cost model (exclusive shares sum to at most 1), so the plural of the critical pill is only exercised for 1.
