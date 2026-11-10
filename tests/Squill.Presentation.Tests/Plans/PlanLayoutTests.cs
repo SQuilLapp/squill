@@ -47,6 +47,18 @@ public sealed class PlanLayoutTests
     }
 
     [Fact]
+    public void Pills_NeverOverlapACard()
+    {
+        var r = PlanLayout.Compute(Rows(Mockup()), s => s.Length * 9.0);
+        foreach (var pill in r.Pills)
+        {
+            Assert.All(r.Nodes, b => Assert.True(
+                pill.X + pill.Width <= b.X || b.X + b.Width <= pill.X || pill.Y + pill.Height <= b.Y || b.Y + b.Height <= pill.Y,
+                $"Pill {pill.Id} overlaps card {b.Id}."));
+        }
+    }
+
+    [Fact]
     public void InnerNode_IsCenteredOnItsFirstAndLastChild()
     {
         var root = Node("Join", 1, children: [Node("A", 1), Node("B", 1), Node("C", 1)]);

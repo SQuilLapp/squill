@@ -58,6 +58,7 @@ public static class PlanLayout
     private const double Margin = 24;
     private const double PillHeight = 22;
     private const double PillPadding = 24;
+    private const double PillClearance = 12;
 
     /// <summary>Computes the layout of a plan in O(n).</summary>
     /// <param name="rows">The plan rows in pre-order, as <see cref="PlanViewModel.Rows"/> gives them.</param>
@@ -98,6 +99,16 @@ public static class PlanLayout
         for (var i = 0; i < n; i++)
         {
             isPill[i] = rows[i].IsHelper && childCount[i] == 1 && parent[i] >= 0;
+        }
+
+        // The gap between columns must hold the widest pill, or a pill is drawn under the cards beside it.
+        var gap = ColumnGap;
+        for (var i = 0; i < n; i++)
+        {
+            if (isPill[i])
+            {
+                gap = Math.Max(gap, measureText(PillText(rows[i])) + PillPadding + 2 * PillClearance);
+            }
         }
 
         var effParent = new int[n];
@@ -205,7 +216,7 @@ public static class PlanLayout
         var x = new double[m];
         for (var c = 0; c < m; c++)
         {
-            x[c] = Margin + (maxColumn - column[cards[c]]) * (CardWidth + ColumnGap);
+            x[c] = Margin + (maxColumn - column[cards[c]]) * (CardWidth + gap);
             boxes.Add(new PlanNodeBox(rows[cards[c]].Node.Id, cards[c], x[c], y[c], CardWidth, height[c], extra[c]));
         }
 
@@ -239,7 +250,7 @@ public static class PlanLayout
         }
 
         pills.Sort((a, b) => a.Id.CompareTo(b.Id));
-        return new PlanLayoutResult(boxes, pills, edges, Margin * 2 + (maxColumn + 1) * CardWidth + maxColumn * ColumnGap, Margin * 2 + block[0]);
+        return new PlanLayoutResult(boxes, pills, edges, Margin * 2 + (maxColumn + 1) * CardWidth + maxColumn * gap, Margin * 2 + block[0]);
     }
 
     private static double? RowCount(PlanRowViewModel row) => row.Node.ActualRows ?? row.Node.EstimatedRows;
