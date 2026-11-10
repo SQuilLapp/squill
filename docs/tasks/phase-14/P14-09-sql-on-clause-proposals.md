@@ -1,6 +1,6 @@
 # P14-09 - Sql: conditions proposed inside an ON clause follow the same rules
 
-Status: todo
+Status: done
 Depends on: P14-05, P14-07, P14-08
 
 ## Goal
@@ -17,9 +17,9 @@ When the user typed `JOIN orders o ON ` by hand (or deleted the generated condit
 - `USING (...)` proposals, conditions between non-adjacent joins in a chain beyond "every earlier source".
 
 ## Tasks
-- [ ] Tests first (`tests/Squill.Sql.Tests/Completion/OnClauseTests.cs`): `from customers c join orders o on |` gives `c.id = o.customer_id` first; same with an inner / left / right / full join (identical rows); composite key; two keys between the pair give two rows; second join `... join order_items oi on |` offers relations of `oi` to **both** `o` and `p` (when `products p` is earlier) ranked nearest first and never a relation between `c` and `o` again; after `on c.id = o.customer_id and |` the already written condition is gone and the next relation (if any) is there; same condition written reversed (`o.customer_id = c.id`) also counts as present; no alias sources use table names; quoting per dialect.
-- [ ] Update the old `JoinConditions` tests (child-first expectations) to the new order, reason in the commit message.
-- [ ] Implement, XML docs.
+- [x] Tests first (`tests/Squill.Sql.Tests/Completion/OnClauseTests.cs`): `from customers c join orders o on |` gives `c.id = o.customer_id` first; same with an inner / left / right / full join (identical rows); composite key; two keys between the pair give two rows; second join `... join order_items oi on |` offers relations of `oi` to **both** `o` and `p` (when `products p` is earlier) ranked nearest first and never a relation between `c` and `o` again; after `on c.id = o.customer_id and |` the already written condition is gone and the next relation (if any) is there; same condition written reversed (`o.customer_id = c.id`) also counts as present; no alias sources use table names; quoting per dialect.
+- [x] Update the old `JoinConditions` tests (child-first expectations) to the new order, reason in the commit message.
+- [x] Implement, XML docs.
 
 ## Acceptance criteria
 - Recipe section 4.

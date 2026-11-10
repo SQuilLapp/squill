@@ -80,7 +80,7 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
             var columns = Columns(schema, scope, qualifiers, request.Dialect, range);
             if (scope.Clause == ClauseKind.On && qualifiers.Count == 0)
             {
-                columns.InsertRange(0, JoinConditions(schema, scope, request.Dialect, range));
+                columns.InsertRange(0, OnClauseRows.Build(request, schema, scope, start, range));
             }
 
             return columns;
@@ -113,28 +113,6 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
         }
 
         return j >= 0 && tokens[j].Text.Equals("INTO", StringComparison.OrdinalIgnoreCase) ? (owner, name) : null;
-    }
-
-    /// <summary>Proposes <c>a.fk = b.pk</c> conditions for every foreign key between two visible tables.</summary>
-    private static IEnumerable<CompletionItem> JoinConditions(SchemaSnapshot schema, ScopeInfo scope, DatabaseDialect dialect, TextRange range)
-    {
-        var sources = scope.Sources.Where(s => s.DerivedColumns is null).Select(s => (Source: s, Table: schema.FindTable(s.Schema, s.Name))).Where(x => x.Table is not null).ToList();
-        foreach (var (child, childTable) in sources)
-        {
-            foreach (var fk in childTable!.ForeignKeys)
-            {
-                foreach (var (parent, parentTable) in sources.Where(p => !ReferenceEquals(p.Source, child)
-                    && string.Equals(p.Table!.Name, fk.ReferencedTable, StringComparison.OrdinalIgnoreCase)
-                    && (fk.ReferencedSchema is null || string.Equals(p.Table.Schema, fk.ReferencedSchema, StringComparison.OrdinalIgnoreCase))))
-                {
-                    var left = IdentifierQuoting.Quote(child.Alias ?? child.Name, dialect);
-                    var right = IdentifierQuoting.Quote(parent.Alias ?? parent.Name, dialect);
-                    var text = string.Join(" AND ", fk.Columns.Select((c, i) =>
-                        $"{left}.{IdentifierQuoting.Quote(c, dialect)} = {right}.{IdentifierQuoting.Quote(i < fk.ReferencedColumns.Count ? fk.ReferencedColumns[i] : c, dialect)}"));
-                    yield return new CompletionItem(text, CompletionKind.Snippet, text, fk.Name, "00" + text, range);
-                }
-            }
-        }
     }
 
     private static List<CompletionItem> Tables(SchemaSnapshot schema, List<string> qualifiers, DatabaseDialect dialect, TextRange range)
