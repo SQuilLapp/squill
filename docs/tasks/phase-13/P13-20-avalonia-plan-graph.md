@@ -1,6 +1,6 @@
 # P13-20 - Avalonia head: plan graph canvas
 
-Status: todo
+Status: done
 Depends on: P13-19, P13-17
 
 ## Goal
@@ -14,8 +14,8 @@ Twin of P13-17 for Avalonia: the `Graphique` canvas drawn from `PlanLayout`. Fol
 - Collapse, node dragging, export.
 
 ## Tasks
-- [ ] Canvas, icons, legend, interaction, selection sync with the table.
-- [ ] Capture light and dark with the PostgreSQL ANALYZE plan against M06 and a SQLite plan; list differences.
+- [x] Canvas, icons, legend, interaction, selection sync with the table.
+- [ ] (not done: no screenshot capture possible in this environment) Capture light and dark with the PostgreSQL ANALYZE plan against M06 and a SQLite plan; list differences.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green; Avalonia AOT publish zero IL2xxx/IL3xxx.

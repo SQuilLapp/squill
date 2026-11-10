@@ -77,6 +77,7 @@ public sealed partial class PlanTabView : UserControl
             GraphHost.IsVisible = graph;
         }
 
+        GraphCanvas.Plan = graph ? plan : null;
         _table.Bind(tab, plan);
     }
 

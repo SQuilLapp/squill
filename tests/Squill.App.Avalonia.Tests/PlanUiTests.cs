@@ -148,6 +148,33 @@ public sealed class PlanUiTests
         });
     }
 
+    [Fact]
+    public async Task GraphView_DrawsCanvas_AndClickOnCardSelectsRow()
+    {
+        await WithPlanAsync(async (window, services) =>
+        {
+            await services.Workspace.ActiveTab!.AnalyzeCommand.ExecuteAsync(null);
+            var plan = services.Workspace.ActivePlan!.Plan;
+            var view = window.GetLogicalDescendants().OfType<PlanTabView>().Single();
+            plan.ViewMode = Squill.Presentation.Plans.PlanViewMode.Graph;
+            await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { }, global::Avalonia.Threading.DispatcherPriority.Background);
+            var canvas = view.FindControl<PlanGraphCanvas>("GraphCanvas")!;
+            Assert.Same(plan, canvas.Plan);
+            Assert.True(canvas.IsVisible);
+
+            // Click the card of the last row: the layout is deterministic for a given measure function, so recompute it to find the card.
+            var layout = Squill.Presentation.Plans.PlanLayout.Compute(plan.Rows, t => t.Length * 7.2);
+            var box = layout.Nodes.Single(n => ReferenceEquals(plan.Rows[n.Row], plan.Rows[^1]));
+            plan.SelectedRow = plan.Rows[0];
+            var inCanvas = new Point((box.X + (box.Width / 2)) * plan.Zoom, (box.Y + (box.Height / 2)) * plan.Zoom);
+            var at = canvas.TranslatePoint(inCanvas, window)!.Value;
+            window.MouseDown(at, global::Avalonia.Input.MouseButton.Left);
+            window.MouseUp(at, global::Avalonia.Input.MouseButton.Left);
+            Assert.Same(plan.Rows[^1], plan.SelectedRow);
+            Assert.NotEmpty(Render(window));
+        });
+    }
+
     private static byte[] Render(Window window)
     {
         var size = new PixelSize((int)window.Width, (int)window.Height);
