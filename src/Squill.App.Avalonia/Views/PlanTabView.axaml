@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:p="using:Squill.Presentation.Plans"
+             xmlns:loc="using:Squill.App.Avalonia.Localization"
+             xmlns:c="using:Squill.App.Avalonia.Controls"
+             x:Class="Squill.App.Avalonia.Views.PlanTabView"
+             x:DataType="p:PlanTabViewModel">
+  <Grid RowDefinitions="40,Auto,*" Background="{DynamicResource SquillBgBaseBrush}">
+    <Border Background="{DynamicResource SquillBgSurfaceBrush}" BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="*,Auto" Margin="12,0">
+        <!-- Narrow window: the toolbar scrolls sideways instead of running under the zoom and rerun buttons. -->
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="0,0,8,0">
+        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <StackPanel Classes="segmented">
+            <RadioButton Name="TreeButton" Classes="segment" GroupName="PlanView" Content="{loc:Text plan.view.tree}" Click="OnViewClicked" />
+            <RadioButton Name="GraphButton" Classes="segment" GroupName="PlanView" Content="{loc:Text plan.view.graph}" Click="OnViewClicked" />
+            <RadioButton Name="TextButton" Classes="segment" GroupName="PlanView" Content="{loc:Text plan.view.text}" Click="OnViewClicked" />
+          </StackPanel>
+          <TextBlock Name="CommandText" Classes="mono" Foreground="{DynamicResource SquillFg3Brush}" VerticalAlignment="Center" />
+          <Border Width="1" Height="16" Background="{DynamicResource SquillBorderSubtleBrush}" />
+          <ItemsControl Name="Figures">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="14" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="p:PlanFigure">
+                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Label}" Foreground="{DynamicResource SquillFg2Brush}" />
+                  <TextBlock Text="{Binding Value}" FontWeight="SemiBold" />
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <Border Name="CriticalPill" Classes="badge danger" VerticalAlignment="Center"><TextBlock Name="CriticalText" /></Border>
+          <Border Name="WarningPill" Classes="badge warning" VerticalAlignment="Center"><TextBlock Name="WarningText" /></Border>
+        </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Classes="icon" Click="OnZoomOutClicked"><TextBlock Text="–" /></Button>
+          <TextBlock Name="ZoomText" Classes="mono" MinWidth="40" TextAlignment="Center" VerticalAlignment="Center" />
+          <Button Classes="icon" Click="OnZoomInClicked"><Path Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconPlus}" /></Button>
+          <Button Name="RerunButton" Click="OnRerunClicked">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="{loc:Text plan.action.rerun}" />
+              <Border Name="RerunChip" Classes="kbd"><TextBlock Text="{loc:Text plan.analyzeShortcut}" /></Border>
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+    <TextBlock Name="MessageText" Grid.Row="1" Margin="12,8" TextWrapping="Wrap" Foreground="{DynamicResource SquillDangerBrush}" IsVisible="False" />
+    <Grid Name="BodyHost" Grid.Row="2">
+      <Grid Name="PlanBody" RowDefinitions="62*,Auto,38*">
+        <Grid Name="GraphHost">
+          <c:PlanGraphCanvas Name="GraphCanvas" />
+          <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="12" Padding="10,6" CornerRadius="6" BorderThickness="1" IsHitTestVisible="False"
+                  Background="{DynamicResource SquillBgSurfaceBrush}" BorderBrush="{DynamicResource SquillBorderBrush}">
+            <StackPanel Orientation="Horizontal" Spacing="14">
+              <TextBlock Text="{loc:Text plan.legend.thickness}" Foreground="{DynamicResource SquillFg2Brush}" />
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Border Width="10" Height="10" CornerRadius="2" VerticalAlignment="Center" Background="{DynamicResource SquillWarningBrush}" />
+                <TextBlock Text="{loc:Text plan.legend.alert}" Foreground="{DynamicResource SquillFg2Brush}" />
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Border Width="10" Height="10" CornerRadius="2" VerticalAlignment="Center" Background="{DynamicResource SquillDangerBrush}" />
+                <TextBlock Text="{loc:Text plan.legend.critical}" Foreground="{DynamicResource SquillFg2Brush}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </Grid>
+        <GridSplitter Name="PlanSplitter" Grid.Row="1" Height="4" ResizeDirection="Rows" Background="{DynamicResource SquillBorderSubtleBrush}" />
+      </Grid>
+      <TextBox Name="RawText" Classes="mono" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap" BorderThickness="0" CornerRadius="0" Padding="12"
+               ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
+    </Grid>
+  </Grid>
+</UserControl>

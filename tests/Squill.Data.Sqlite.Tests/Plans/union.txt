@@ -1,0 +1,5 @@
+2	0	0	MERGE (UNION)
+4	2	0	LEFT
+7	4	216	SCAN customers
+14	2	0	RIGHT
+17	14	216	SCAN orders

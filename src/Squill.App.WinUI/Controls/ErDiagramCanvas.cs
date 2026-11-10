@@ -470,7 +470,7 @@ public sealed partial class ErDiagramCanvas : Grid, IDisposable
     }
 
     // Win2D takes one family: the first entry of the token's fallback list (the bundled file), resolved next to the executable.
-    private static string ResolveMonoFamily()
+    internal static string ResolveMonoFamily()
     {
         var family = ((Microsoft.UI.Xaml.Media.FontFamily)DataGridCanvas.FindMerged(Application.Current.Resources, "SquillFontMono")!).Source.Split(',')[0].Trim();
         const string AppX = "ms-appx:///";

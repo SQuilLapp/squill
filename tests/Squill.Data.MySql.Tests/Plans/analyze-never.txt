@@ -1,0 +1,6 @@
+-> Nested loop inner join  (cost=1982 rows=1695) (actual time=0.306..0.306 rows=0 loops=1)
+    -> Filter: (c.`name` = 'nobody')  (cost=202 rows=200) (actual time=0.305..0.305 rows=0 loops=1)
+        -> Table scan on c  (cost=202 rows=2000) (actual time=0.0203..0.241 rows=2000 loops=1)
+    -> Filter: (o.total > 1.0000)  (cost=6.36 rows=8.48) (never executed)
+        -> Index lookup on o using orders_customer_placed (customer_id=c.id)  (cost=6.36 rows=25.4) (never executed)
+

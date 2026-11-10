@@ -102,12 +102,12 @@
       <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
   </Window.Styles>
-  <Grid RowDefinitions="41,Auto,*,Auto" ColumnDefinitions="45,270,Auto,*,Auto">
+  <Grid Name="RootGrid" RowDefinitions="41,Auto,*,Auto" ColumnDefinitions="45,270,Auto,*,Auto">
     <Border Name="TitleBar" Grid.ColumnSpan="5" Background="{DynamicResource SquillBgBaseBrush}"
             BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
       <Grid Name="TitleGrid" ColumnDefinitions="Auto,*,0">
-        <StackPanel Orientation="Horizontal" Margin="14,0,0,0">
-          <Image Source="avares://Squill.App.Avalonia/Assets/squill-32.png" Width="16" Height="16" Margin="0,0,8,0" />
+        <StackPanel Name="TitleStart" Orientation="Horizontal" Margin="14,0,0,0">
+          <Image Name="TitleIcon" Source="avares://Squill.App.Avalonia/Assets/squill-32.png" Width="16" Height="16" Margin="0,0,8,0" />
           <Button Name="HamburgerButton" IsVisible="False" Width="32" Height="28" Padding="0" Background="Transparent" BorderThickness="0"
                   VerticalAlignment="Center" ToolTip.Tip="{loc:Text menu.main}">
             <Path Data="M3,6 H21 M3,12 H21 M3,18 H21" Width="14" Height="14" Stretch="Uniform" StrokeThickness="2" StrokeLineCap="Round"
@@ -119,7 +119,7 @@
               <MenuItem Header="{loc:Text menu.closeTab}" InputGesture="Ctrl+W" Command="{Binding CloseTabCommand}"
                         CommandParameter="{Binding ActiveTab}" />
               <Separator />
-              <MenuItem Name="SettingsMenuItem" Header="{loc:Text menu.settings}" InputGesture="Ctrl+," Click="OnSettingsClicked" />
+              <MenuItem Name="SettingsMenuItem" Classes="appmenu" Header="{loc:Text menu.settings}" InputGesture="Ctrl+," Click="OnSettingsClicked" />
               <MenuItem Name="DataFolderMenuItem" Header="{loc:Text menu.openDataFolder}" Click="OnOpenDataFolder" />
             </MenuItem>
             <MenuItem Header="{loc:Text menu.edit}">
@@ -140,12 +140,12 @@
               <MenuItem Header="{loc:Text menu.newTable}" Command="{Binding NewTableCommand}" />
             </MenuItem>
             <MenuItem Name="ToolsMenu" Header="{loc:Text menu.tools}">
-              <MenuItem Header="{loc:Text menu.settings}" Click="OnSettingsClicked" />
+              <MenuItem Classes="appmenu" Header="{loc:Text menu.settings}" Click="OnSettingsClicked" />
             </MenuItem>
             <MenuItem Header="{loc:Text menu.help}">
-              <MenuItem Header="{loc:Text menu.checkForUpdates}" Click="OnCheckForUpdatesClicked" />
+              <MenuItem Name="UpdatesMenuItem" Classes="appmenu" Header="{loc:Text menu.checkForUpdates}" Click="OnCheckForUpdatesClicked" />
               <Separator />
-              <MenuItem Name="AboutMenuItem" Header="{loc:Text menu.about}" Click="OnAboutClicked" />
+              <MenuItem Name="AboutMenuItem" Classes="appmenu" Header="{loc:Text menu.about}" Click="OnAboutClicked" />
             </MenuItem>
           </Menu>
         </StackPanel>
@@ -244,7 +244,8 @@
                           BorderThickness="0,2,0,0" Padding="12,0,6,0" Height="35">
                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                       <Border Classes="envsquare" Width="8" Height="8" CornerRadius="2" />
-                      <TextBlock Text="{Binding Title}" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
+                      <TextBlock Text="{Binding Title}" FontSize="13" MaxWidth="240" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
+                      <TextBlock Text="{Binding Suffix}" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SquillFg3Brush}" IsVisible="{Binding HasSuffix}" />
                       <Ellipse Width="6" Height="6" Fill="{DynamicResource SquillFg3Brush}" IsVisible="{Binding IsDirty}" VerticalAlignment="Center" />
                       <Button Classes="ghost close" Width="20" Height="20" MinHeight="20" Padding="0" CornerRadius="4" Click="OnCloseTabClicked">
                         <Path Classes="icon" Width="10" Height="10" Data="{StaticResource SquillIconClose}" />
@@ -260,9 +261,13 @@
       <v:QueryTabView Grid.Row="1" Name="ActiveTabView" DataContext="{Binding ActiveTab}" />
       <v:DiagramTabView Grid.Row="1" Name="DiagramArea" IsVisible="False" />
       <v:TableDesignerView Grid.Row="1" Name="DesignerArea" IsVisible="False" />
+      <v:PlanTabView Grid.Row="1" Name="PlanArea" IsVisible="False" />
       <Grid Name="TerminalArea" Grid.Row="1" IsVisible="False" Background="{DynamicResource SquillBgBaseBrush}" />
     </Grid>
-    <v:PropertiesPanel Grid.Row="2" Grid.Column="4" Name="Properties" />
+    <!-- Hidden on a narrow window (MainWindow.TitleLayout.cs) so the editor keeps its room. -->
+    <Panel Grid.Row="2" Grid.Column="4" Name="PropertiesHost">
+      <v:PropertiesPanel Name="Properties" />
+    </Panel>
     <v:StatusBar Grid.Row="3" Name="Status" Grid.ColumnSpan="5" />
   </Grid>
 </Window>

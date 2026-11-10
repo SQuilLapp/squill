@@ -3,15 +3,19 @@ using Avalonia.Controls;
 
 namespace Squill.App.Avalonia;
 
-// Narrow window: the search box shrinks first; then the menu folds into a hamburger button. macOS keeps its menu as is (it has a menu bar of its own).
+// Narrow window: the Properties panel hides, the search box shrinks, then the menu folds into a hamburger button. macOS keeps its menu as is (it has a menu bar of its own).
 public sealed partial class MainWindow
 {
     private double _menuWidth;
     private bool _menuCollapsed;
     private MenuFlyout? _hamburgerFlyout;
 
+    // Below this window width the Properties panel gives its 264 px back to the editor (the designer needs them most).
+    internal const double PropertiesMinWindowWidth = 1280;
+
     private void InitializeTitleLayout()
     {
+        RootGrid.SizeChanged += (_, e) => PropertiesHost.IsVisible = e.NewSize.Width >= PropertiesMinWindowWidth;
         if (OperatingSystem.IsMacOS())
             return;
         TitleBar.SizeChanged += (_, _) => UpdateTitleLayout();

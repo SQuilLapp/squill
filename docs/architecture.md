@@ -39,7 +39,7 @@
 
 ## Order of work
 
-Done through phase 12 (installer and automatic updates, see [ADR 0009](adr/0009-release-and-auto-update.md); the manual checklist of [verification/release.md](verification/release.md) is still pending); phase 11 (engine parity, see [ADR 0008](adr/0008-engine-parity.md); the manual window checks of P11-36 to P11-39 are still pending); phase 10 (localization, see [ADR 0007](adr/0007-localization.md)); phase 9: (visual conformance, see [ADR 0006](adr/0006-visual-conformance.md)); phase 8 and 7 added (schema designer and ER diagram, see [ADR 0004](adr/0004-schema-designer.md); editable data grid, see [ADR 0005](adr/0005-grid-editing.md)); the card list and statuses are in [docs/tasks/README.md](tasks/README.md).
+Done through phase 13 (execution plan, see [ADR 0010](adr/0010-execution-plan.md); the manual checklist of [verification/plan.md](verification/plan.md) is still pending), phase 12 (installer and automatic updates, see [ADR 0009](adr/0009-release-and-auto-update.md); the manual checklist of [verification/release.md](verification/release.md) is still pending); phase 11 (engine parity, see [ADR 0008](adr/0008-engine-parity.md); the manual window checks of P11-36 to P11-39 are still pending); phase 10 (localization, see [ADR 0007](adr/0007-localization.md)); phase 9: (visual conformance, see [ADR 0006](adr/0006-visual-conformance.md)); phase 8 and 7 added (schema designer and ER diagram, see [ADR 0004](adr/0004-schema-designer.md); editable data grid, see [ADR 0005](adr/0005-grid-editing.md)); the card list and statuses are in [docs/tasks/README.md](tasks/README.md).
 
 ## Engine parity (phase 11)
 
@@ -57,3 +57,13 @@ Done through phase 12 (installer and automatic updates, see [ADR 0009](adr/0009-
 - **Layers.** `Squill.Platform.Updates` holds the update engine (`IUpdateEngine`, the only code that references `Velopack`), the schedule and the state store; `Squill.Presentation.Updates` holds the shared view-model, release notes and banner layout used by both heads. `Squill.Platform.Lifecycle` tracks the last run version (`InstallLifecycle`). Only the WinUI head wires `VelopackApp` and its hooks (`Program.cs`).
 - **Version.** One source, `eng/Version.props`; the release tag is `v` + that value, the runtime reads it through the generated `AppVersion`.
 - **Data.** The install root is `%LOCALAPPDATA%\SQuilL`; user data stays in `%APPDATA%\SQuilL` and survives updates and uninstall. The maintainer and user guide is [release.md](release.md).
+
+## SQL completion (phase 14)
+
+- **Where.** `Squill.Sql/Completion`: `ISqlCompletionProvider`, `KeywordCompletionProvider`, `SchemaCompletionProvider`, `FunctionCompletionProvider`, `SnippetCompletionProvider`, merged by `CompositeCompletionProvider` ordered by `SortText` (`CompletionOrder`); join logic in `JoinContext`, `TableRelationFinder`, `AliasGenerator`, `JoinConditionText`, `JoinRows`, `OnClauseRows`; text helpers `TableReference`, `IdentifierQuoting`, `KeywordCasing`, `SnippetText`, `CompletionDocumentation`, `CompletionTrigger`.
+- **Wiring.** `QueryTabViewModel.SessionCompletionProvider` adds `session.Schema` and the keyword-case setting to each request; `src/Squill.App.Shared/LoomSqlProviders.cs` (linked into both heads) slices the script to the statement under the caret and maps `CompletionItem` to LoomEditor's; `PlainSqlEditor` is the fallback. Decisions, alternatives and known limits: [ADR 0011](adr/0011-sql-completion.md); evidence and manual checklist: [verification/completion.md](verification/completion.md).
+
+## Execution plan (phase 13)
+
+- **Layers.** `Squill.Core/Plans` holds the model (`QueryPlan`, `PlanNode`, `PlanWarning`, `PlanSuggestion`) and `PlanAnalysis` (relative cost, critical nodes, misestimates). `Squill.Data` has the optional `IPlanReader` (the four connections implement it; `ConnectionSession.PlanSupport` exposes it); each driver has an internal `<Driver>PlanReader` and a pure `<Driver>PlanParser`. `Squill.Sql/Plans` has `PlanEligibility` (what may be explained or analyzed). `Squill.Presentation/Plans` has `PlanViewModel`, `PlanTabViewModel` and `PlanLayout`; `QueryTabViewModel` has `ExplainCommand` / `AnalyzeCommand` and `WorkspaceViewModel.Plans` holds the plan tabs. Both heads draw `PlanTabView`, the table, the details panel and the graph canvas.
+- **The plan tab** is a workspace tab of its own (one per query tab, closed with it); a plan writes no history entry. Decisions, per-engine mechanisms and known limits: [ADR 0010](adr/0010-execution-plan.md).

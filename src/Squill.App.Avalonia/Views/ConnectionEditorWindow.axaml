@@ -69,7 +69,13 @@
 
     <Grid Grid.Column="1" RowDefinitions="*,Auto">
       <ScrollViewer>
-        <Grid Margin="32" ColumnDefinitions="*,32,339" RowDefinitions="Auto,24,Auto,Auto,Auto">
+        <!-- Proportional columns: at the minimum window width a fixed 339 px side column left the form 270 px and squeezed its fields. -->
+        <Grid Margin="32" RowDefinitions="Auto,24,Auto,Auto,Auto">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="32" />
+            <ColumnDefinition Width="*" MaxWidth="339" />
+          </Grid.ColumnDefinitions>
           <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="14">
             <controls:EngineIcon Name="HeaderEngine" Width="32" Height="32" />
             <StackPanel VerticalAlignment="Center">
@@ -81,14 +87,14 @@
 
           <StackPanel Grid.Row="2" Spacing="8">
             <TextBlock Text="{loc:Text connections.engine}" Classes="caps" />
-            <UniformGrid Columns="6">
-              <Button Name="TilePostgres" Classes="tile" Tag="{x:Static core:DatabaseDialect.PostgreSql}" Click="OnEngineTile" Margin="0,0,7,0">
+            <UniformGrid Columns="3">
+              <Button Name="TilePostgres" Classes="tile" Tag="{x:Static core:DatabaseDialect.PostgreSql}" Click="OnEngineTile" Margin="0,0,7,7">
                 <StackPanel Spacing="2"><controls:EngineIcon Dialect="PostgreSql" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="PostgreSQL" HorizontalAlignment="Center" /></StackPanel>
               </Button>
-              <Button Name="TileMySql" Classes="tile" Tag="{x:Static core:DatabaseDialect.MySql}" Click="OnEngineTile" Margin="0,0,7,0">
+              <Button Name="TileMySql" Classes="tile" Tag="{x:Static core:DatabaseDialect.MySql}" Click="OnEngineTile" Margin="0,0,7,7">
                 <StackPanel Spacing="2"><controls:EngineIcon Dialect="MySql" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="MySQL" HorizontalAlignment="Center" /></StackPanel>
               </Button>
-              <Button Name="TileMariaDb" Classes="tile" Tag="{x:Static core:DatabaseDialect.MySql}" Click="OnEngineTile" Margin="0,0,7,0">
+              <Button Name="TileMariaDb" Classes="tile" Tag="{x:Static core:DatabaseDialect.MySql}" Click="OnEngineTile" Margin="0,0,0,7">
                 <StackPanel Spacing="2"><controls:EngineIcon Dialect="MySql" MariaDb="True" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="MariaDB" HorizontalAlignment="Center" /></StackPanel>
               </Button>
               <Button Name="TileSqlServer" Classes="tile" Tag="{x:Static core:DatabaseDialect.SqlServer}" Click="OnEngineTile" Margin="0,0,7,0">
@@ -125,7 +131,7 @@
           <TabControl Name="Tabs" Grid.Row="3" Margin="0,24,0,0" Padding="0">
             <TabItem Header="{loc:Text connections.tabGeneral}">
               <StackPanel Spacing="14" Margin="0,16,0,0">
-                <Grid ColumnDefinitions="*,16,220">
+                <Grid ColumnDefinitions="3*,16,2*">
                   <StackPanel Spacing="6">
                     <TextBlock Text="{loc:Text connections.name}" Classes="lbl" />
                     <TextBox Name="NameBox" Text="{Binding Name, Mode=TwoWay}" />
@@ -147,7 +153,7 @@
 
                 <StackPanel Name="ServerFields" Spacing="14"
                             IsVisible="{Binding Dialect, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static core:DatabaseDialect.Sqlite}}">
-                  <Grid ColumnDefinitions="*,16,220">
+                  <Grid ColumnDefinitions="3*,16,2*">
                     <StackPanel Spacing="6">
                       <TextBlock Text="{loc:Text connections.host}" Classes="lbl" />
                       <TextBox Text="{Binding Host, Mode=TwoWay}" />
@@ -197,7 +203,7 @@
               <StackPanel Spacing="14" Margin="0,16,0,0">
                 <CheckBox Content="{loc:Text connections.useSsh}" IsChecked="{Binding UseSsh, Mode=TwoWay}" />
                 <StackPanel Name="SshFields" Spacing="14" IsVisible="{Binding UseSsh}">
-                  <Grid ColumnDefinitions="*,16,220">
+                  <Grid ColumnDefinitions="3*,16,2*">
                     <StackPanel Spacing="6">
                       <TextBlock Text="{loc:Text connections.sshHost}" Classes="lbl" />
                       <TextBox Text="{Binding SshHost, Mode=TwoWay}" />
@@ -207,7 +213,7 @@
                       <TextBox Text="{Binding SshPort, Mode=TwoWay}" />
                     </StackPanel>
                   </Grid>
-                  <Grid ColumnDefinitions="*,16,220">
+                  <Grid ColumnDefinitions="3*,16,2*">
                     <StackPanel Spacing="6">
                       <TextBlock Text="{loc:Text connections.sshUser}" Classes="lbl" />
                       <TextBox Text="{Binding SshUserName, Mode=TwoWay}" />

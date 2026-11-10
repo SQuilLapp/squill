@@ -10,6 +10,7 @@ using Squill.Presentation;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
+using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
 using Squill.Presentation.Settings;
 using Squill.Presentation.Terminal;
@@ -144,6 +145,9 @@ public sealed partial class MainWindow : Window
             case nameof(WorkspaceViewModel.ActiveDiagram) when Workspace.ActiveDiagram is { } diagram:
                 SelectExtraTab(diagram);
                 break;
+            case nameof(WorkspaceViewModel.ActivePlan) when Workspace.ActivePlan is { } plan:
+                SelectExtraTab(plan);
+                break;
             case nameof(WorkspaceViewModel.ActiveDesigner) when Workspace.ActiveDesigner is { } designer:
                 SelectExtraTab(designer);
                 break;
@@ -186,6 +190,7 @@ public sealed partial class MainWindow : Window
         {
             case QueryTabViewModel tab:
                 Workspace.ActiveTab = tab;
+                Workspace.ActivePlan = null;
                 ShowQueryArea();
                 break;
             case DiagramTabViewModel diagram:
@@ -195,6 +200,10 @@ public sealed partial class MainWindow : Window
             case TableDesignerViewModel designer:
                 Workspace.ActiveDesigner = designer;
                 ShowDesigner(designer);
+                break;
+            case PlanTabViewModel plan:
+                Workspace.ActivePlan = plan;
+                ShowPlan(plan);
                 break;
             case TerminalTabViewModel terminal:
                 ShowTerminal(terminal);
@@ -210,6 +219,8 @@ public sealed partial class MainWindow : Window
             Workspace.CloseTerminalCommand.Execute(terminal);
         else if (args.Tab.Tag is DiagramTabViewModel diagram)
             Workspace.CloseDiagramCommand.Execute(diagram);
+        else if (args.Tab.Tag is PlanTabViewModel plan)
+            plan.CloseCommand.Execute(null);
         else if (args.Tab.Tag is TableDesignerViewModel designer)
             Workspace.CloseDesignerCommand.Execute(designer);
     }
@@ -241,6 +252,8 @@ public sealed partial class MainWindow : Window
             Workspace.CloseTerminalCommand.Execute(terminal);
         else if (selected is DiagramTabViewModel diagram)
             Workspace.CloseDiagramCommand.Execute(diagram);
+        else if (selected is PlanTabViewModel plan)
+            plan.CloseCommand.Execute(null);
         else if (selected is TableDesignerViewModel designer)
             Workspace.CloseDesignerCommand.Execute(designer);
         else
@@ -256,6 +269,26 @@ public sealed partial class MainWindow : Window
     private void OnNewTabAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) => Accelerate(args, () => OnNewTabClicked(sender, null!));
 
     private void OnCloseTabAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) => Accelerate(args, () => OnCloseTabClicked(sender, null!));
+
+    // Ctrl+E and Ctrl+Shift+E reach the plan commands only while a query tab or a plan tab is shown; elsewhere the keys stay free.
+    private void OnExplainAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (PlanArea.Visibility == Visibility.Visible)
+        {
+            if (Workspace.ActivePlan is { Mode: Squill.Core.Plans.PlanMode.Estimated } plan)
+                Accelerate(args, () => plan.RerunCommand.Execute(null));
+        }
+        else if (ActiveTabView.Visibility == Visibility.Visible)
+            Accelerate(args, () => Workspace.ActiveTab?.ExplainCommand.Execute(null));
+    }
+
+    private void OnAnalyzeAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (PlanArea.Visibility == Visibility.Visible)
+            Accelerate(args, () => Workspace.ActivePlan?.RerunCommand.Execute(null));
+        else if (ActiveTabView.Visibility == Visibility.Visible)
+            Accelerate(args, () => Workspace.ActiveTab?.AnalyzeCommand.Execute(null));
+    }
 
     private static void Accelerate(KeyboardAcceleratorInvokedEventArgs args, Action action)
     {

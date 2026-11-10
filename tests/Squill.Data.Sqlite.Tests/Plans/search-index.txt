@@ -1,0 +1,1 @@
+3	0	39	SEARCH customers USING INDEX sqlite_autoindex_customers_1 (email=?)

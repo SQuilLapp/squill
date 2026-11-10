@@ -99,12 +99,24 @@ public sealed partial class QueryTabView : UserControl
             EditorHost.Child = (_tab.Editor as AvaloniaSqlEditor)?.Control;
         }
         ShowResult();
+        ShowPlanButtons();
     }
 
     private void OnTabPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(QueryTabViewModel.SelectedResult))
             ShowResult();
+        else if (e.PropertyName is nameof(QueryTabViewModel.CanExplain) or nameof(QueryTabViewModel.CanAnalyze) or nameof(QueryTabViewModel.ExplainDisabledReason) or nameof(QueryTabViewModel.AnalyzeDisabledReason))
+            ShowPlanButtons();
+    }
+
+    // The commands stay executable; the view-model says through CanExplain / CanAnalyze whether the statement qualifies and why not.
+    private void ShowPlanButtons()
+    {
+        ExplainButton.IsEnabled = _tab?.CanExplain == true;
+        AnalyzeButton.IsEnabled = _tab?.CanAnalyze == true;
+        ToolTip.SetTip(ExplainButton, ExplainButton.IsEnabled ? null : _tab?.ExplainDisabledReason);
+        ToolTip.SetTip(AnalyzeButton, AnalyzeButton.IsEnabled ? null : _tab?.AnalyzeDisabledReason);
     }
 
     private void ShowResult()

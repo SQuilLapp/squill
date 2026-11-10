@@ -8,6 +8,8 @@ using Squill.App.Avalonia.Views;
 using Squill.Presentation;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
+using Squill.Core.Plans;
+using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
 using Squill.Presentation.Settings;
 using Squill.Presentation.Terminal;
@@ -27,7 +29,10 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         InitializeTitleLayout();
+        InitializeMacChrome();
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.OemComma, KeyModifiers.Control), Command = new RelayCommand(OpenSettings) });
+        KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.E, KeyModifiers.Control), Command = new RelayCommand(OnExplainKey) });
+        KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.E, KeyModifiers.Control | KeyModifiers.Shift), Command = new RelayCommand(OnAnalyzeKey) });
     }
 
     /// <summary>Connects the history, snippets and settings view-models and the data directory the File menu opens.</summary>
@@ -54,6 +59,7 @@ public sealed partial class MainWindow : Window
         _settings.PropertyChanged += OnSettingsPropertyChanged;
         ActiveTabView.EditorFontSize = _settings.EditorFontSize;
         AttachUpdates(services.Updates, services.About);
+        InitializeMacMenu();
     }
 
     private void OnSettingsPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -98,18 +104,42 @@ public sealed partial class MainWindow : Window
         ShowArea(_tabs.Selected?.Source);
     }
 
-    // The query view always sits underneath; a diagram, designer or terminal area overlays it.
+    // The query view always sits underneath; a diagram, plan, designer or terminal area overlays it.
     private void ShowArea(object? source)
     {
         TerminalArea.IsVisible = false;
         var diagram = source as DiagramTabViewModel;
         DiagramArea.DataContext = diagram;
         DiagramArea.IsVisible = diagram is not null;
+        var plan = source as PlanTabViewModel;
+        PlanArea.DataContext = plan;
+        PlanArea.IsVisible = plan is not null;
+        Status.ShowPlan(plan);
         var designer = source as TableDesignerViewModel;
         DesignerArea.DataContext = designer;
         DesignerArea.IsVisible = designer is not null;
         if (source is TerminalTabViewModel terminal)
             ShowTerminal(terminal);
+    }
+
+    // Ctrl+E and Ctrl+Shift+E reach the plan commands only while a query tab or a plan tab is shown; elsewhere the keys stay free.
+    private void OnExplainKey()
+    {
+        if (PlanArea.IsVisible)
+        {
+            if (PlanArea.DataContext is PlanTabViewModel { Mode: PlanMode.Estimated } plan)
+                plan.RerunCommand.Execute(null);
+        }
+        else if (_tabs?.Selected?.Source is QueryTabViewModel query)
+            query.ExplainCommand.Execute(null);
+    }
+
+    private void OnAnalyzeKey()
+    {
+        if (PlanArea.IsVisible)
+            (PlanArea.DataContext as PlanTabViewModel)?.RerunCommand.Execute(null);
+        else if (_tabs?.Selected?.Source is QueryTabViewModel query)
+            query.AnalyzeCommand.Execute(null);
     }
 
     private void OnCloseTabClicked(object? sender, RoutedEventArgs e)

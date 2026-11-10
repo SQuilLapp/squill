@@ -26,7 +26,7 @@ Phase 9 (cards P9-01 to P9-27) restyled both heads (WinUI 3 and Avalonia) after 
 ## Follow-up feature phases (proposals only, nothing decided)
 `visual-spec.md` section 10 lists mockup screens that need their own feature work:
 - Start page (M01) and command palette (M13).
-- Query plan (M06).
+- Query plan (M06): done in phase 13, see [ADR 0010](0010-execution-plan.md).
 - Schema compare (M09) and data transfer (M10).
 - Privileges (M11) and sessions (M12).
 - Production confirmation dialog (M15) with the auto-commit / manual transaction controls.

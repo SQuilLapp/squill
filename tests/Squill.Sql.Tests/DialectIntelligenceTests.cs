@@ -79,7 +79,7 @@ public sealed class DialectIntelligenceTests
             new("cte-columns", "with t as (select id, name from customers) select t.| from t", ["id", "name"], ["email"]),
             new("insert-columns", "insert into customers (|", ["name", "email"], ["orders"]),
             new("fk-join", "select * from orders o join customers c on |", [fk], []),
-            new("fk-join-reverse", "select * from customers c join orders o on |", [fk], []),
+            new("fk-join-reverse", "select * from customers c join orders o on |", ["c.id = o.customer_id"], []),
             dialect == DatabaseDialect.Sqlite
                 ? new("builtin-function", "select | from customers", ["typeof", "strftime"], ["GETDATE", "date_trunc"])
                 : new("routine-function", "select | from customers", ["add_numbers"], ["touch_customers"]),

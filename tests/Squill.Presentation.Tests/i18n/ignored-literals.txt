@@ -1,5 +1,6 @@
 # relative/path|exact text|reason   (kept sorted; the text is the literal as written in the source)
 src/Squill.App.Avalonia/Controls/ErDiagramCanvas.cs|avares://Squill.App.Avalonia/Assets/Fonts#JetBrains Mono, Cascadia Code, monospace|font family resource uri
+src/Squill.App.Avalonia/MainWindow.MacOS.cs|About Avalonia|matches the default Avalonia menu item to replace, not shown
 src/Squill.App.Avalonia/MainWindow.axaml|Ctrl+K|keyboard accelerator text, not translated
 src/Squill.App.Avalonia/Services/AvaloniaDialogService.cs|mono|style class name, not text
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFg3Brush|resource key
@@ -45,6 +46,15 @@ src/Squill.Presentation/Editing/ChangeSetBuilder.cs|{c.Definition.Name} cannot b
 src/Squill.Presentation/Editing/ChangeSetBuilder.cs|{d.Name} is required|English fallback of a coded issue, rendered through issue.edit.columnRequired
 src/Squill.Presentation/Explorer/DefinitionScript.cs|ON {SqlQuoting.Quote(trigger.Table, dialect)} FOR EACH ROW\n{trigger.Definition.Trim()}|SQL text, never translated
 src/Squill.Presentation/Localization/IssueText.cs|issue.|catalog key prefix, not text
+src/Squill.Presentation/Plans/PlanText.cs|Rows Removed by Filter|PostgreSQL property name matched as the engine prints it
+src/Squill.Presentation/Plans/PlanText.cs|Workers Launched|PostgreSQL property name matched as the engine prints it
+src/Squill.Presentation/Plans/PlanText.cs|Workers Planned|PostgreSQL property name matched as the engine prints it
+src/Squill.Presentation/Plans/PlanViewModel.cs|EXPLAIN (ANALYZE, BUFFERS)|SQL statement family of the engine, not translated
+src/Squill.Presentation/Plans/PlanViewModel.cs|EXPLAIN (FORMAT JSON)|SQL statement family of the engine, not translated
+src/Squill.Presentation/Plans/PlanViewModel.cs|EXPLAIN ANALYZE|SQL statement family of the engine, not translated
+src/Squill.Presentation/Plans/PlanViewModel.cs|EXPLAIN FORMAT=JSON|SQL statement family of the engine, not translated
+src/Squill.Presentation/Plans/PlanViewModel.cs|EXPLAIN QUERY PLAN|SQL statement family of the engine, not translated
+src/Squill.Presentation/Plans/PlanViewModel.cs|STATISTICS XML|SQL statement family of the engine, not translated
 src/Squill.Presentation/Results/CellFormatter.cs|<unsupported: |placeholder for a value that cannot be formatted, data not UI text
 src/Squill.Presentation/Results/CellFormatter.cs|yyyy-MM-dd HH:mm:ss.fffzzz|invariant data format string
 src/Squill.Presentation/Results/CellFormatter.cs|yyyy-MM-dd HH:mm:ss.fff|invariant data format string

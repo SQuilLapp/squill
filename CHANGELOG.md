@@ -6,7 +6,25 @@
 
 ## [Unreleased]
 
-_Nothing yet._
+## [0.2.0] - 2026-11-10
+
+### Added
+
+- Query execution plan: Explain and Analyze open a plan tab (tree, graph and text views, relative cost, estimated and actual rows, warnings) on SQLite, PostgreSQL, MySQL and SQL Server.
+- SQL completion: after `JOIN` the popup offers each related table with its alias and the `ON` condition built from the foreign keys (one row per key, composite keys, self joins), and the popup opens by itself after `JOIN `.
+- SQL completion: statement snippets (`sel`, `ins`, `upd`, `del`, `cte`, `crt`), documentation text on items, functions in the popup, and the keyword case setting is followed.
+- macOS: the menu moves to the system menu bar, with a SQuilL application menu (About, Settings, Check for updates, Hide, Quit) and Cmd shortcuts.
+- macOS: a double click on the title bar zooms the window.
+
+### Changed
+
+- SQL completion: items are ranked by keys, usage and relatedness, and the join keywords offered follow the engine (no `FULL JOIN` on MySQL).
+- On a narrow window the Properties panel hides below 1280 px, toolbars scroll sideways and the designer's column table scrolls instead of squeezing its columns.
+
+### Fixed
+
+- SQL completion: tables outside the default schema are inserted schema-qualified, and a column name shared by two tables is inserted qualified.
+- Texts drawn over each other or cut without an ellipsis in the table designer, the toolbars, the connection editor and Settings.
 
 ## [0.1.0] - 2026-11-09
 

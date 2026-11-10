@@ -252,6 +252,47 @@ Depends on: <card ids, ranges allowed>
 | [P12-19](phase-12/P12-19-verify-install-and-update.md) | End-to-end verification: install, update from N to N+1, uninstall | P12-05, P12-06, P12-09, P12-14, P12-15, P12-16 | done (manual checklist pending the owner) |
 | [P12-20](phase-12/P12-20-docs-and-adr.md) | Documentation: release guide, ADR 0009, README and architecture note | P12-17 ... P12-19 | done |
 | [P12-21](phase-12/P12-21-avalonia-linux-macos-packaging.md) | Avalonia head: Linux and macOS packaging with Velopack (optional) | P12-15, P12-16, P12-20 | done (not run on Linux/macOS) |
+| [P13-01](phase-13/P13-01-core-plan-model.md) | Core: engine-neutral query plan model | none | done |
+| [P13-02](phase-13/P13-02-core-plan-analysis.md) | Core: plan analysis (relative cost, severity, warnings) | P13-01 | done |
+| [P13-03](phase-13/P13-03-sql-plan-eligibility.md) | Sql: which statements can be explained or analyzed | P13-01 | done |
+| [P13-04](phase-13/P13-04-data-plan-contract.md) | Data: plan reader contract | P13-01 | done |
+| [P13-05](phase-13/P13-05-sqlite-plan.md) | Data.Sqlite: EXPLAIN QUERY PLAN | P13-02, P13-04 | done |
+| [P13-06](phase-13/P13-06-postgres-plan.md) | Data.Postgres: EXPLAIN (FORMAT JSON), estimated and analyze | P13-02, P13-04, P11-02 | done |
+| [P13-07](phase-13/P13-07-mysql-plan-estimated.md) | Data.MySql: EXPLAIN FORMAT=JSON (estimated) | P13-02, P13-04, P11-03 | done |
+| [P13-08](phase-13/P13-08-mysql-plan-analyze.md) | Data.MySql: EXPLAIN ANALYZE (actual) | P13-07 | done |
+| [P13-09](phase-13/P13-09-sqlserver-plan-estimated.md) | Data.SqlServer: SHOWPLAN_XML (estimated) | P13-02, P13-04, P11-04 | done |
+| [P13-10](phase-13/P13-10-sqlserver-plan-actual.md) | Data.SqlServer: STATISTICS XML (actual) | P13-09 | done |
+| [P13-11](phase-13/P13-11-data-plan-cross-engine.md) | Data: one plan scenario run on every engine | P13-05, P13-06, P13-08, P13-10 | done |
+| [P13-12](phase-13/P13-12-presentation-plan-view-model.md) | Presentation: plan view-model (rows, details, summary, text) | P13-02 | done |
+| [P13-13](phase-13/P13-13-presentation-plan-layout.md) | Presentation: plan graph layout | P13-12 | done |
+| [P13-14](phase-13/P13-14-presentation-explain-commands-and-tab.md) | Presentation: Expliquer / Analyser commands and the plan tab | P13-03, P13-04, P13-12, P13-13 | done |
+| [P13-15](phase-13/P13-15-winui-plan-host-and-toolbar.md) | WinUI head: Expliquer and Analyser buttons, plan tab host, tab strip, status bar | P13-14, P9-12 | done |
+| [P13-16](phase-13/P13-16-winui-plan-table-and-details.md) | WinUI head: plan table, details panel and warnings | P13-15 | done |
+| [P13-17](phase-13/P13-17-winui-plan-graph.md) | WinUI head: plan graph canvas | P13-13, P13-16 | done |
+| [P13-18](phase-13/P13-18-avalonia-plan-host-and-toolbar.md) | Avalonia head: Expliquer and Analyser buttons, plan tab host, tab strip, status bar | P13-14, P13-15, P9-11 | done |
+| [P13-19](phase-13/P13-19-avalonia-plan-table-and-details.md) | Avalonia head: plan table, details panel and warnings | P13-16, P13-18 | done |
+| [P13-20](phase-13/P13-20-avalonia-plan-graph.md) | Avalonia head: plan graph canvas | P13-17, P13-19 | done |
+| [P13-21](phase-13/P13-21-verify-plan.md) | End-to-end verification: execution plan on the four engines | P13-11, P13-17, P13-20 | automated done, manual pending |
+| [P13-22](phase-13/P13-22-docs-and-adr.md) | Documentation: execution plan ADR 0010, README and architecture note | P13-21 | done |
+| [P14-01](phase-14/P14-01-sql-completion-item-fields.md) | Sql: filter text, documentation and snippet flag on completion items | none | done |
+| [P14-02](phase-14/P14-02-heads-map-completion-fields.md) | Heads: map the new completion fields to LoomEditor and the plain editor | P14-01 | done |
+| [P14-03](phase-14/P14-03-sql-schema-qualified-tables.md) | Sql: tables outside the default schema are inserted qualified | none | done |
+| [P14-04](phase-14/P14-04-sql-join-context.md) | Sql: join context at the caret (kind, left sources, existing condition) | none | done |
+| [P14-05](phase-14/P14-05-sql-table-relations.md) | Sql: relations between a new table and the tables already in the FROM list | P14-04 | done |
+| [P14-06](phase-14/P14-06-sql-alias-generator.md) | Sql: alias generation | none | done |
+| [P14-07](phase-14/P14-07-sql-join-condition-text.md) | Sql: the text of a join condition | P14-05, P14-06 | done |
+| [P14-08](phase-14/P14-08-sql-join-rows-in-table-popup.md) | Sql: picking a table after JOIN generates the ON condition | P14-01, P14-03 ... P14-07 | done |
+| [P14-09](phase-14/P14-09-sql-on-clause-proposals.md) | Sql: conditions proposed inside an ON clause follow the same rules | P14-05, P14-07, P14-08 | done |
+| [P14-10](phase-14/P14-10-popup-opens-after-space.md) | Sql and heads: the popup opens by itself after FROM / JOIN and a space | P14-02, P14-08 | done |
+| [P14-11](phase-14/P14-11-sql-qualify-ambiguous-columns.md) | Sql: a column shared by two tables is inserted qualified | P14-01, P14-04 | done |
+| [P14-12](phase-14/P14-12-sql-ranking.md) | Sql: ranking by relevance (keys first, tables already used, related tables) | P14-08, P14-09 | done |
+| [P14-13](phase-14/P14-13-sql-dialect-join-keywords.md) | Sql: join and clause keywords that exist on the engine and make sense at the caret | P14-09 | done |
+| [P14-14](phase-14/P14-14-completion-session-functions-and-keyword-case.md) | Sql and Presentation: functions in the popup and the keyword-case setting | P14-07, P14-13 | done |
+| [P14-15](phase-14/P14-15-sql-item-documentation.md) | Sql: documentation text for tables, columns, aliases, functions and join rows | P14-02, P14-08, P14-09 | done |
+| [P14-16](phase-14/P14-16-sql-statement-snippets.md) | Sql: statement snippets with tab stops | P14-01, P14-02, P14-14 | done |
+| [P14-17](phase-14/P14-17-data-join-completion-on-every-engine.md) | Data: generated join conditions run on every engine | P14-08, P14-09, P14-11 | done |
+| [P14-18](phase-14/P14-18-verify-completion.md) | End-to-end verification: completion through the query tab, and the manual checklist | P14-08 ... P14-17 | automated done, manual pending |
+| [P14-19](phase-14/P14-19-docs-and-adr.md) | Documentation: completion ADR 0011, README and architecture note | P14-18 | done |
 
 ### Phase 9 - Visual conformance
 
@@ -286,3 +327,19 @@ Goal: a user installs SQuilL with one `Setup.exe`, is told when a newer version 
 - Order: P12-01 first (Velopack under Native AOT: if its stop rule triggers, the Platform/engine cards are rewritten before anything else), then versioning and build P12-02 ... P12-06, then update logic P12-07 ... P12-09 (Platform), P12-10 ... P12-12 (Presentation), the heads P12-13 / P12-14 (WinUI) before P12-15 (Avalonia), the CI release P12-16 / P12-17 / P12-18, then verification P12-19 and docs P12-20, optional P12-21 last.
 - Status: P12-01 to P12-20 are done. P12-19 is done for its automated part (install, update, uninstall, data kept: all green); its by-hand checklist in [docs/verification/release.md](../verification/release.md) is pending the owner. P12-21 (Avalonia Linux/macOS packaging) is done but was never run on a real Linux or macOS desktop. The first real release (tag `v0.1.0`) is the owner's decision after reading that report.
 - Cards that package run in the background (an AOT publish takes minutes), never run an installer except P12-01 (throwaway id `SQuilLPoc`) and P12-19 (`SQuilLVerify`), and clean `artifacts/` afterwards. Bugs found by P12-19 too big for the card get `P12-22` onwards (added to this index).
+
+### Phase 13 - Execution plan (mockup M06) - done except the owner's manual checklist ([verification/plan.md](../verification/plan.md))
+
+Goal: `Expliquer` and `Analyser` on the query toolbar open a plan tab (`<name> · Plan`) with the tree / graph / text views, relative cost, estimated and actual rows, warnings and, on SQL Server, the engine's missing-index suggestion, on SQLite, PostgreSQL, MySQL and SQL Server in both heads. Decisions (final, details in [plan-recipe.md](phase-13/plan-recipe.md) and in ADR 0010 written by P13-22): `Expliquer` never executes the statement; `Analyser` executes read-only statements only, in a rolled-back transaction where the engine allows it (PostgreSQL `BEGIN READ ONLY`, SQL Server transaction; MySQL has no wrapper); SQLite gives a structure only (no cost, estimate or timing, nothing invented); a figure the engine does not give is omitted; `Comparer...`, live statistics, app-invented index suggestions for PostgreSQL/MySQL, plan export, MariaDB and Oracle are out of scope; `Analyser` on a Production-environment connection asks for confirmation.
+
+- Branch: implement phase 13 on the existing branch `phase-13-execution-plan`; do not create another branch.
+- Order: model and analysis P13-01 ... P13-04, then providers P13-05 ... P13-10 (SQLite first, no container; PostgreSQL, MySQL, SQL Server need Podman, see [verification-recipe.md](phase-11/verification-recipe.md)), the shared engine scenario P13-11, Presentation P13-12 ... P13-14, WinUI P13-15 ... P13-17 before Avalonia P13-18 ... P13-20, verification P13-21, docs P13-22.
+- Riskiest cards: P13-08 (MySQL `EXPLAIN ANALYZE` is parsed from indented text; stop rule in the card) and P13-09 / P13-10 (SQL Server showplan is connection state: a connection must never stay in showplan mode). Bugs found by P13-21 too big for the card get `P13-23` onwards (added to this index).
+
+### Phase 14 - SQL completion: join conditions and a better popup - done except the owner's manual checklist ([verification/completion.md](../verification/completion.md))
+
+Goal: picking a table after `JOIN` in the completion popup also writes the alias and the `ON a.x = b.y` condition from the foreign keys, and the popup in general proposes better: qualified names where the bare name would fail, columns ranked by keys, join keywords the engine accepts, functions, documentation text, the keyword-case setting, statement snippets. Decisions (final, details in [completion-recipe.md](phase-14/completion-recipe.md) and in ADR 0011 written by P14-19): join rows are added **above** the unchanged table list (one row per foreign key relation, both directions, composite keys, several keys between the same pair, self joins, same-name key fallback); the condition is written **existing table first, new table second for every join kind** (the `=` is symmetric, the join keyword decides which rows are kept) and only `INNER`, `LEFT`, `RIGHT`, `FULL` and plain `JOIN` get an `ON` (`CROSS`, `NATURAL`, comma, `APPLY` and a join that already has `ON` / `USING` do not); an alias is generated only when needed (another source has one, repeat of a table, self reference); everything is quoted per dialect; one undo step; all logic stays in `Squill.Sql/Completion`, the heads only map fields.
+
+- Branch: implement phase 14 on the branch `phase-14-completion`; do not create another branch.
+- Order: foundations P14-01 / P14-02 (item fields and head mapping), P14-03 (qualified tables), then the join pipeline P14-04 ... P14-09 (context, relations, alias, text, rows, ON clause), then P14-10 (auto-open after a space), P14-11 ... P14-16 (columns, ranking, keywords, functions and keyword case, documentation, snippets; each independent after its dependencies), the engine proof P14-17 (Podman, see [verification-recipe.md](phase-11/verification-recipe.md)), verification P14-18, docs P14-19. WinUI and Avalonia share the provider code, so there are no per-head cards beyond the field mapping.
+- Riskiest cards: P14-08 (largest; performance guard on 5,000 tables) and P14-10 (a trigger character on space must not accept items nor slow typing). Bugs found by P14-17 / P14-18 too big for the card get `P14-20` onwards (added to this index).

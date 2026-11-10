@@ -1,0 +1,56 @@
+<UserControl x:Class="Squill.App.WinUI.Views.PlanTabView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Grid RowDefinitions="40,Auto,*" Background="{ThemeResource SquillBgBaseBrush}">
+    <Border Background="{ThemeResource SquillBgSurfaceBrush}" BorderBrush="{ThemeResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="*,Auto" Margin="12,0">
+        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <StackPanel Orientation="Horizontal" Spacing="4">
+            <RadioButton x:Name="TreeButton" Style="{StaticResource SegmentedRadioButtonStyle}" MinWidth="0" Padding="14,0" GroupName="PlanView" Click="OnViewClicked" />
+            <RadioButton x:Name="GraphButton" Style="{StaticResource SegmentedRadioButtonStyle}" MinWidth="0" Padding="14,0" GroupName="PlanView" Click="OnViewClicked" />
+            <RadioButton x:Name="TextButton" Style="{StaticResource SegmentedRadioButtonStyle}" MinWidth="0" Padding="14,0" GroupName="PlanView" Click="OnViewClicked" />
+          </StackPanel>
+          <TextBlock x:Name="CommandText" Style="{StaticResource MonoTextBlockStyle}" Foreground="{ThemeResource SquillFg3Brush}" VerticalAlignment="Center" />
+          <Border Width="1" Height="16" Background="{ThemeResource SquillBorderSubtleBrush}" />
+          <StackPanel x:Name="Figures" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center" />
+          <ContentControl x:Name="CriticalPill" Style="{StaticResource BadgeDangerStyle}" VerticalAlignment="Center" />
+          <ContentControl x:Name="WarningPill" Style="{StaticResource BadgeWarningStyle}" VerticalAlignment="Center" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Style="{StaticResource IconButtonStyle}" Content="–" Click="OnZoomOutClicked" />
+          <TextBlock x:Name="ZoomText" Style="{StaticResource MonoTextBlockStyle}" MinWidth="40" TextAlignment="Center" VerticalAlignment="Center" />
+          <Button Style="{StaticResource IconButtonStyle}" Content="+" Click="OnZoomInClicked" />
+          <Button x:Name="RerunButton" Click="OnRerunClicked" />
+        </StackPanel>
+      </Grid>
+    </Border>
+    <TextBlock x:Name="MessageText" Grid.Row="1" Margin="12,8" TextWrapping="Wrap" IsTextSelectionEnabled="True" Foreground="{ThemeResource SquillDangerBrush}" Visibility="Collapsed" />
+    <Grid x:Name="BodyHost" Grid.Row="2">
+      <Grid x:Name="PlanBody">
+        <Grid.RowDefinitions>
+          <RowDefinition x:Name="GraphRow" Height="62*" />
+          <RowDefinition x:Name="SplitterRow" Height="Auto" />
+          <RowDefinition x:Name="TableRow" Height="38*" />
+        </Grid.RowDefinitions>
+        <Grid x:Name="GraphHost">
+          <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="12" Padding="10,6" CornerRadius="6" BorderThickness="1" IsHitTestVisible="False"
+                  Background="{ThemeResource SquillBgSurfaceBrush}" BorderBrush="{ThemeResource SquillBorderBrush}" Canvas.ZIndex="1">
+            <StackPanel Orientation="Horizontal" Spacing="14">
+              <TextBlock x:Name="LegendThickness" Foreground="{ThemeResource SquillFg2Brush}" />
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Border Width="10" Height="10" CornerRadius="2" VerticalAlignment="Center" Background="{ThemeResource SquillWarningBrush}" />
+                <TextBlock x:Name="LegendAlert" Foreground="{ThemeResource SquillFg2Brush}" />
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Border Width="10" Height="10" CornerRadius="2" VerticalAlignment="Center" Background="{ThemeResource SquillDangerBrush}" />
+                <TextBlock x:Name="LegendCritical" Foreground="{ThemeResource SquillFg2Brush}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </Grid>
+      </Grid>
+      <TextBox x:Name="RawText" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap" BorderThickness="0" CornerRadius="0" Padding="12"
+               FontFamily="{StaticResource SquillFontMono}" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
+    </Grid>
+  </Grid>
+</UserControl>

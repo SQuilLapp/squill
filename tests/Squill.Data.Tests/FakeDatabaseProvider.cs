@@ -1,4 +1,5 @@
 using Squill.Core;
+using Squill.Core.Plans;
 
 namespace Squill.Data.Tests;
 
@@ -7,12 +8,31 @@ internal sealed class FakeDatabaseProvider(DatabaseDialect dialect, IReadOnlyLis
 {
     public DatabaseDialect Dialect { get; } = dialect;
 
-    public ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken) =>
-        ValueTask.FromResult<IDatabaseConnection>(new FakeConnection(columns, rows));
+    /// <summary>Gets or sets the plan returned by <see cref="IPlanReader.ExplainAsync"/>.</summary>
+    public QueryPlan? Plan { get; set; }
 
-    private sealed class FakeConnection(IReadOnlyList<ColumnInfo> columns, object?[][] rows) : IDatabaseConnection
+    /// <summary>Gets or sets an exception thrown by <see cref="IPlanReader.ExplainAsync"/> instead of returning <see cref="Plan"/>.</summary>
+    public Exception? PlanException { get; set; }
+
+    /// <summary>Gets the recorded plan requests, in order.</summary>
+    public List<(string Sql, PlanMode Mode)> PlanCalls { get; } = [];
+
+    public ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken) =>
+        ValueTask.FromResult<IDatabaseConnection>(new FakeConnection(this, columns, rows));
+
+    private sealed class FakeConnection(FakeDatabaseProvider owner, IReadOnlyList<ColumnInfo> columns, object?[][] rows) : IDatabaseConnection, IPlanReader
     {
         public string ServerVersion => "fake-1.0";
+
+        public bool SupportsActualPlan => true;
+
+        public ValueTask<QueryPlan> ExplainAsync(string sql, IReadOnlyList<QueryParameter> parameters, PlanMode mode, CancellationToken cancellationToken)
+        {
+            owner.PlanCalls.Add((sql, mode));
+            if (owner.PlanException is { } ex)
+                throw ex;
+            return ValueTask.FromResult(owner.Plan ?? throw new InvalidOperationException("No plan configured."));
+        }
 
         public ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken) =>
             ValueTask.FromResult<IResultReader>(new FakeResultReader(columns, rows));

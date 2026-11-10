@@ -28,7 +28,7 @@
       <Border DockPanel.Dock="Right" Classes="segment" BorderThickness="0">
         <TextBlock Name="ServerVersionText" Classes="mono" TextTrimming="CharacterEllipsis" />
       </Border>
-      <Border DockPanel.Dock="Right" Classes="segment" BorderThickness="1,0,0,0">
+      <Border Name="EncodingSegment" DockPanel.Dock="Right" Classes="segment" BorderThickness="1,0,0,0">
         <TextBlock Text="{loc:Text status.encoding}" Classes="mono" />
       </Border>
       <Border DockPanel.Dock="Right" Classes="segment" BorderThickness="1,0,0,0">

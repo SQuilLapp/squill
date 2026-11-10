@@ -27,6 +27,21 @@ SSH tunnels (`SSH.NET`) are compatible under the same conditions (publish and st
 
 Phase 11 ran the four engines against real servers (Testcontainers). The feature-by-engine support matrix, what is not supported (MariaDB, Azure SQL, sequences, user-defined types, ...) and the manual window checks still pending are in [ADR 0008](docs/adr/0008-engine-parity.md). Tests and how to run them: [docs/testing.md](docs/testing.md).
 
+SQL completion (phase 14): after `JOIN` the popup offers each table with its alias and the `ON` condition built from the foreign keys, inserts schema-qualified names where needed, follows the keyword-case setting, and has statement snippets (`sel`, `ins`, `upd`, `del`, `cte`, `crt`). Decisions and limits: [ADR 0011](docs/adr/0011-sql-completion.md).
+
+## Execution plan
+
+`Expliquer` on the query toolbar opens a plan tab (`<name> · Plan`) for the statement under the caret with a tree, a graph and the raw text, relative cost, row estimates and, on SQL Server, the engine's own missing-index suggestion. `Expliquer` never runs the statement. `Analyser` runs it and shows real rows and timings, for read-only statements only (in a rolled-back transaction where the engine allows it); on a Production connection it asks first.
+
+| Database | `Expliquer` | `Analyser` | Cost / estimate / timing |
+|---|---|---|---|
+| SQLite | yes (structure only) | no | none: nothing is invented |
+| PostgreSQL | yes | yes, `BEGIN READ ONLY` then rollback | cost, estimate, timing, buffers |
+| MySQL 8.x | yes | yes (`EXPLAIN ANALYZE`, no wrapper) | cost and estimate (estimated), timing (actual) |
+| SQL Server | yes (not with bound parameters) | yes, rolled-back transaction | cost, estimate, timing, missing index |
+
+MariaDB and Oracle are not supported for plans, and plan comparison and export do not exist. See [ADR 0010](docs/adr/0010-execution-plan.md) for the design and known limits; the screens still need the owner's checks of [docs/verification/plan.md](docs/verification/plan.md).
+
 ## Schema designer and ER diagram
 
 Open a table in the designer to create or alter columns, indexes and foreign keys: the generated DDL is previewed before it runs. The ER diagram shows the tables of a schema with their foreign keys, can be exported to SVG, and remembers box positions per connection. Both work on SQLite, PostgreSQL, MySQL / MariaDB and SQL Server.
@@ -114,7 +129,7 @@ Dependency graph: `Core` <- `Data` <- `Data.<Driver>`; `Core` <- `Sql`; `Core` <
 | Project | Role |
 |---|---|
 | `src/Squill.Core` | Dialects, connection profile, result and schema models |
-| `src/Squill.Data` | Provider contracts (`IDatabaseProvider`, connections, result readers) and registry |
+| `src/Squill.Data` | Provider contracts (`IDatabaseProvider`, connections, result readers, optional `IPlanReader`) and registry |
 | `src/Squill.Data.Sqlite`, `.Postgres`, `.MySql`, `.SqlServer` | One provider per database (execute, stream, read schema) |
 | `src/Squill.Sql` | Per-dialect tokenizers, hand-written parser, completion, diagnostics, hover, signature help, formatter, highlighter |
 | `src/Squill.Platform` | Secret stores (DPAPI, libsecret, Keychain), app paths, profile/history/snippet/settings stores, SSH tunnel |
@@ -133,7 +148,7 @@ Dependency graph: `Core` <- `Data` <- `Data.<Driver>`; `Core` <- `Sql`; `Core` <
 
 - [Architecture note and risks](docs/architecture.md)
 - [Testing](docs/testing.md), [column types per engine](docs/column-types.md), [verification reports](docs/verification/sqlite.md)
-- ADRs: [0001 target framework](docs/adr/0001-target-framework.md), [0002 editor and terminal components](docs/adr/0002-editor-and-terminal-components.md), [0003 SQL parser](docs/adr/0003-sql-parser.md), [0004 schema designer](docs/adr/0004-schema-designer.md), [0005 grid editing](docs/adr/0005-grid-editing.md), [0006 visual conformance](docs/adr/0006-visual-conformance.md), [0007 localization](docs/adr/0007-localization.md), [0008 engine parity](docs/adr/0008-engine-parity.md)
+- ADRs: [0001 target framework](docs/adr/0001-target-framework.md), [0002 editor and terminal components](docs/adr/0002-editor-and-terminal-components.md), [0003 SQL parser](docs/adr/0003-sql-parser.md), [0004 schema designer](docs/adr/0004-schema-designer.md), [0005 grid editing](docs/adr/0005-grid-editing.md), [0006 visual conformance](docs/adr/0006-visual-conformance.md), [0007 localization](docs/adr/0007-localization.md), [0008 engine parity](docs/adr/0008-engine-parity.md), [0009 release and auto-update](docs/adr/0009-release-and-auto-update.md), [0010 execution plan](docs/adr/0010-execution-plan.md), [0011 SQL completion](docs/adr/0011-sql-completion.md)
 - Proofs of concept: [AOT drivers](docs/poc/aot-drivers.md), [grid](docs/poc/grid.md), [editor](docs/poc/editor.md)
 - [Task cards](docs/tasks/README.md)
 

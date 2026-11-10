@@ -41,6 +41,7 @@ public sealed partial class CatalogTests
         "designer.onDelete", // SQL clause
         "designer.onUpdate", // SQL clause
         "er.types", // same word
+        "menu.macServices", // macOS menu name, same word
         "er.tables", // TABLES · {0} / {1}, same word
         "er.title", // ER - {0}, same text
         "settings.update.channel.stable", // proper name
@@ -50,6 +51,10 @@ public sealed partial class CatalogTests
         "about.runtime", // .NET version, not translated
         "about.runtime.jit", // .NET version, not translated
         "er.relationFrom", // only symbols and placeholders
+        "plan.prop.workers", // engine term kept as is
+        "tab.plan", // the name is the same word in both languages
+        "plan.raw", // the name is the same word in both languages
+        "plan.explainShortcut", // key chord
     ];
 
     private static Dictionary<string, string> Fr => UiTextCatalogFr.Entries.ToDictionary(e => e.Key, e => e.Value);

@@ -31,7 +31,7 @@ public sealed class ErDiagramCanvas : Control
     public static readonly DirectProperty<ErDiagramCanvas, DiagramTabViewModel?> DiagramProperty =
         AvaloniaProperty.RegisterDirect<ErDiagramCanvas, DiagramTabViewModel?>(nameof(Diagram), o => o.Diagram, (o, v) => o.Diagram = v);
 
-    private static readonly FontFamily Mono = new("avares://Squill.App.Avalonia/Assets/Fonts#JetBrains Mono, Cascadia Code, monospace");
+    internal static readonly FontFamily Mono = new("avares://Squill.App.Avalonia/Assets/Fonts#JetBrains Mono, Cascadia Code, monospace");
     private static readonly Typeface Face = new(Mono);
     private static readonly Typeface BoldFace = new(Mono, weight: FontWeight.SemiBold);
     private static readonly ErLayoutOptions Metrics = new(MeasureText);

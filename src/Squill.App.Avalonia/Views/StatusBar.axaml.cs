@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Squill.Core;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Plans;
 using Squill.Presentation.Results;
 using Squill.Presentation.Query;
 using Squill.Presentation.Workspace;
@@ -15,6 +16,7 @@ public sealed partial class StatusBar : UserControl
 {
     private WorkspaceViewModel? _workspace;
     private QueryTabViewModel? _tab;
+    private PlanTabViewModel? _plan;
 
     /// <summary>Creates the view.</summary>
     public StatusBar()
@@ -32,6 +34,20 @@ public sealed partial class StatusBar : UserControl
         if (_workspace is not null)
             _workspace.PropertyChanged += OnWorkspaceChanged;
         AttachTab(_workspace?.ActiveTab);
+        Refresh();
+    }
+
+    /// <summary>Shows the plan status line and figures (node count, time, server version) in place of the run status and cursor position while a plan tab is active.</summary>
+    /// <param name="plan">The active plan tab, or <see langword="null"/> when another kind of tab is shown.</param>
+    public void ShowPlan(PlanTabViewModel? plan)
+    {
+        if (ReferenceEquals(_plan, plan))
+            return;
+        if (_plan is not null)
+            _plan.PropertyChanged -= OnTabChanged;
+        _plan = plan;
+        if (_plan is not null)
+            _plan.PropertyChanged += OnTabChanged;
         Refresh();
     }
 
@@ -67,7 +83,8 @@ public sealed partial class StatusBar : UserControl
         RefreshEnvironment();
         var profile = _workspace?.ActiveSession?.Profile;
         ConnectionText.Text = profile is null ? UiText.Get("status.notConnected") : ConnectionLabel(profile);
-        ServerVersionText.Text = _workspace?.ActiveSession?.Connection.ServerVersion;
+        ServerVersionText.Text = _plan?.ServerVersion ?? _workspace?.ActiveSession?.Connection.ServerVersion;
+        EncodingSegment.IsVisible = _plan is null;
         RefreshRunStatus();
         RefreshPosition();
     }
@@ -103,6 +120,14 @@ public sealed partial class StatusBar : UserControl
 
     private void RefreshRunStatus()
     {
+        if (_plan is { } plan)
+        {
+            StatusSegment.Text = plan.Plan.StatusLine;
+            StatusSegment.Foreground = Brush("SquillFg2Brush");
+            ElapsedSegment.Text = null;
+            return;
+        }
+
         var tab = _tab;
         if (tab is null)
         {
@@ -126,6 +151,12 @@ public sealed partial class StatusBar : UserControl
 
     private void RefreshPosition()
     {
+        if (_plan is { } plan)
+        {
+            PositionText.Text = plan.SummaryText;
+            return;
+        }
+
         if (_tab is not { } tab)
         {
             PositionText.Text = null;

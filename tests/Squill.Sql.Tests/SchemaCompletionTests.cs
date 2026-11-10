@@ -66,9 +66,9 @@ public sealed class SchemaCompletionTests
     public void SelectList_OffersColumnsOfEverySourceAndTheirNames()
     {
         var items = At("select | from users u join orders o on o.user_id = u.id");
-        Assert.Contains(items, i => i is { Label: "name", Kind: CompletionKind.Field, Detail: "text", SortText: "0name" });
+        Assert.Contains(items, i => i is { Label: "name", Kind: CompletionKind.Field, Detail: "text", SortText: "02name" });
         Assert.Contains(items, i => i is { Label: "user_id", Detail: "int" });
-        Assert.Contains(items, i => i is { Label: "u", Kind: CompletionKind.Class, SortText: "1u" });
+        Assert.Contains(items, i => i is { Label: "u", Kind: CompletionKind.Class, SortText: "03u" });
         Assert.Contains(items, i => i.Label == "o");
     }
 
@@ -164,5 +164,24 @@ public sealed class SchemaCompletionTests
         var item = Assert.Single(At(marked, dialect, schema), i => i.Label == "MixedCase");
         Assert.Equal(insert, item.InsertText);
         Assert.Equal(rangeStart, item.ReplaceRange.Start);
+    }
+
+    [Fact]
+    public void TableOutsideDefaultSchemaWithDuplicateName_IsInsertedQualified_AndLabelledWithItsSchema()
+    {
+        var schema = new SchemaSnapshot("public", [Table("public", "log", TableKind.Table, ("a", "int")), Table("audit", "log", TableKind.Table, ("b", "int"))]);
+        var items = At("select * from |", schema: schema).Where(i => i.Label == "log").OrderBy(i => i.InsertText, StringComparer.Ordinal).ToArray();
+        Assert.Equal(["audit.log", "log"], items.Select(i => i.InsertText));
+        Assert.Equal(["table (audit)", "table"], items.Select(i => i.Detail));
+        Assert.All(items, i => Assert.Equal("log", i.FilterText));
+    }
+
+    [Fact]
+    public void AfterSchemaDot_TheBareNameIsInserted()
+    {
+        var schema = new SchemaSnapshot("public", [Table("public", "log", TableKind.Table, ("a", "int")), Table("audit", "log", TableKind.Table, ("b", "int"))]);
+        var item = Assert.Single(At("select * from audit.|", schema: schema));
+        Assert.Equal("log", item.InsertText);
+        Assert.Equal("table", item.Detail);
     }
 }

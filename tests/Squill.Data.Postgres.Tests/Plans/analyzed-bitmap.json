@@ -1,0 +1,77 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Bitmap Heap Scan",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Relation Name": "orders",
+      "Alias": "orders",
+      "Startup Cost": 18.15,
+      "Total Cost": 280.69,
+      "Plan Rows": 98,
+      "Plan Width": 16,
+      "Actual Startup Time": 0.019,
+      "Actual Total Time": 0.067,
+      "Actual Rows": 68,
+      "Actual Loops": 1,
+      "Recheck Cond": "((customer_id = ANY ('{5,6,7,8}'::integer[])) AND (placed_on > '2024-06-01'::date))",
+      "Rows Removed by Index Recheck": 0,
+      "Exact Heap Blocks": 17,
+      "Lossy Heap Blocks": 0,
+      "Shared Hit Blocks": 19,
+      "Shared Read Blocks": 0,
+      "Shared Dirtied Blocks": 0,
+      "Shared Written Blocks": 0,
+      "Local Hit Blocks": 0,
+      "Local Read Blocks": 0,
+      "Local Dirtied Blocks": 0,
+      "Local Written Blocks": 0,
+      "Temp Read Blocks": 0,
+      "Temp Written Blocks": 0,
+      "Plans": [
+        {
+          "Node Type": "Bitmap Index Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Index Name": "orders_customer_placed",
+          "Startup Cost": 0.00,
+          "Total Cost": 18.13,
+          "Plan Rows": 98,
+          "Plan Width": 0,
+          "Actual Startup Time": 0.012,
+          "Actual Total Time": 0.012,
+          "Actual Rows": 68,
+          "Actual Loops": 1,
+          "Index Cond": "((customer_id = ANY ('{5,6,7,8}'::integer[])) AND (placed_on > '2024-06-01'::date))",
+          "Shared Hit Blocks": 2,
+          "Shared Read Blocks": 0,
+          "Shared Dirtied Blocks": 0,
+          "Shared Written Blocks": 0,
+          "Local Hit Blocks": 0,
+          "Local Read Blocks": 0,
+          "Local Dirtied Blocks": 0,
+          "Local Written Blocks": 0,
+          "Temp Read Blocks": 0,
+          "Temp Written Blocks": 0
+        }
+      ]
+    },
+    "Planning": {
+      "Shared Hit Blocks": 140,
+      "Shared Read Blocks": 0,
+      "Shared Dirtied Blocks": 0,
+      "Shared Written Blocks": 0,
+      "Local Hit Blocks": 0,
+      "Local Read Blocks": 0,
+      "Local Dirtied Blocks": 0,
+      "Local Written Blocks": 0,
+      "Temp Read Blocks": 0,
+      "Temp Written Blocks": 0
+    },
+    "Planning Time": 0.467,
+    "Triggers": [
+    ],
+    "Execution Time": 0.100
+  }
+]
