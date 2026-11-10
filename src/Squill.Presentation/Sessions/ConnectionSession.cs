@@ -1,5 +1,7 @@
 using Squill.Core;
+using Squill.Core.Plans;
 using Squill.Data;
+using Squill.Presentation.Localization;
 using Squill.Platform.Ssh;
 
 namespace Squill.Presentation.Sessions;
@@ -41,6 +43,22 @@ public sealed class ConnectionSession : IAsyncDisposable
 
     /// <summary>Gets the open database connection.</summary>
     public IDatabaseConnection Connection { get; }
+
+    /// <summary>Gets which plans the engine of this session can produce.</summary>
+    public PlanSupport PlanSupport => Connection is IPlanReader r ? new PlanSupport(true, r.SupportsActualPlan) : new PlanSupport(false, false);
+
+    /// <summary>Gets the plan of a statement; an estimated plan does not execute it, an actual plan does.</summary>
+    /// <param name="statement">One statement vetted by <c>PlanEligibility</c>.</param>
+    /// <param name="parameters">The parameters of a normal run of the statement.</param>
+    /// <param name="mode">Estimated or actual.</param>
+    /// <param name="ct">Cancels the request.</param>
+    /// <returns>The plan.</returns>
+    /// <exception cref="PlanUnavailableException">The engine has no plan reader, or refuses this statement.</exception>
+    /// <exception cref="PlanParseException">The engine output could not be understood.</exception>
+    public ValueTask<QueryPlan> ExplainAsync(string statement, IReadOnlyList<QueryParameter> parameters, PlanMode mode, CancellationToken ct) =>
+        Connection is IPlanReader r
+            ? r.ExplainAsync(statement, parameters, mode, ct)
+            : throw new PlanUnavailableException("engine", UiText.Get("plan.unavailable.engine"));
 
     /// <summary>Gets the schema as of the last read.</summary>
     public SchemaSnapshot Schema { get; private set; }
@@ -100,3 +118,8 @@ public sealed class ConnectionSession : IAsyncDisposable
         }
     }
 }
+
+/// <summary>What a session can do about query plans.</summary>
+/// <param name="CanExplain">An estimated plan can be requested.</param>
+/// <param name="CanAnalyze">An actual plan (which executes the statement) can be requested.</param>
+public readonly record struct PlanSupport(bool CanExplain, bool CanAnalyze);

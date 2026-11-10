@@ -54,6 +54,31 @@ public sealed class WorkspaceViewModelTests
         Assert.Empty(_dialogs.Confirms);
     }
 
+    [Fact]
+    public async Task ClosingTheQueryTab_ClosesItsPlanTab_AndOpenPlanIsIdempotent()
+    {
+        await ConnectAsync();
+        var tab = _workspace.Tabs[0];
+        var plan = new Squill.Core.Plans.QueryPlan(
+            DatabaseDialect.PostgreSql, Squill.Core.Plans.PlanMode.Estimated, "select 1",
+            new Squill.Core.Plans.PlanNode(0, "Result", Squill.Core.Plans.PlanNodeKind.Result, null, null, null, null, null, null, null, null, null, [], [], false, []),
+            [], [], null, null, null, false, Squill.Core.Plans.PlanSourceFormat.Text, "Result");
+        var planTab = new Squill.Presentation.Plans.PlanTabViewModel(tab, Squill.Presentation.Plans.PlanViewModel.Create(plan), "select 1", [], Squill.Core.Plans.PlanMode.Estimated, "");
+
+        _workspace.OpenPlan(planTab);
+        _workspace.OpenPlan(planTab);
+        Assert.Single(_workspace.Plans);
+        Assert.Same(planTab, _workspace.ActivePlan);
+
+        planTab.CloseCommand.Execute(null);
+        Assert.Empty(_workspace.Plans);
+        Assert.Null(_workspace.ActivePlan);
+
+        _workspace.OpenPlan(planTab);
+        await _workspace.CloseTabCommand.ExecuteAsync(tab);
+        Assert.Empty(_workspace.Plans);
+    }
+
     private static ConnectionProfile Profile() =>
         new(Guid.NewGuid(), "p", DatabaseDialect.PostgreSql, "h", 1, "d", "u", null, null);
 

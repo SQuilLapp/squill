@@ -1,6 +1,6 @@
 # P13-14 - Presentation: Expliquer / Analyser commands and the plan tab
 
-Status: todo
+Status: done
 Depends on: P13-12, P13-13, P13-03, P13-04
 
 ## Goal
@@ -18,8 +18,8 @@ The query tab can produce a plan of the statement under the caret; the workspace
 - Any drawing (heads), plan comparison, saving a plan.
 
 ## Tasks
-- [ ] Session method, command and state on `QueryTabViewModel`, `PlanTabViewModel`, workspace integration, strings fr/en (`plan.reason.*`, `plan.unavailable.*`, `plan.analyze.confirm.*`, `tab.plan`, button labels `Expliquer`, `Analyser`, `Relancer`, `Arbre`, `Graphique`, `Texte`, column titles).
-- [ ] Tests with the fake provider of P13-04: statement under caret is the one passed; write statement refused for analyze with the reason text; SQLite-like fake disables analyze; production asks confirmation (declined -> nothing called, accepted -> called once); parse failure opens Text mode; closing the query tab closes its plan tab; re-run uses the stored statement even after the editor changed; explain while a run is in progress is disabled; cancel mid-explain; no history entry written.
+- [x] Session method, command and state on `QueryTabViewModel`, `PlanTabViewModel`, workspace integration, strings fr/en (`plan.reason.*`, `plan.unavailable.*`, `plan.analyze.confirm.*`, `tab.plan`, button labels `Expliquer`, `Analyser`, `Relancer`, `Arbre`, `Graphique`, `Texte`, column titles).
+- [x] Tests with the fake provider of P13-04: statement under caret is the one passed; write statement refused for analyze with the reason text; SQLite-like fake disables analyze; production asks confirmation (declined -> nothing called, accepted -> called once); parse failure opens Text mode; closing the query tab closes its plan tab; re-run uses the stored statement even after the editor changed; explain while a run is in progress is disabled; cancel mid-explain; no history entry written.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5; localization guards green.

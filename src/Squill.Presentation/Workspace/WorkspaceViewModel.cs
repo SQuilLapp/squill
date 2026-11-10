@@ -12,6 +12,7 @@ using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Explorer;
+using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Terminal;
@@ -117,6 +118,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     /// <summary>Gets the open ER diagram tabs, at most one per session.</summary>
     public ObservableCollection<DiagramTabViewModel> Diagrams { get; } = [];
 
+    /// <summary>Gets the open plan tabs, at most one per query tab.</summary>
+    public ObservableCollection<PlanTabViewModel> Plans { get; } = [];
+
     /// <summary>Gets or sets the session shown in the explorer and used by new tabs.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DisconnectCommand))]
@@ -139,6 +143,42 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     /// <summary>Gets or sets the diagram shown.</summary>
     [ObservableProperty]
     public partial DiagramTabViewModel? ActiveDiagram { get; set; }
+
+    /// <summary>Gets or sets the plan tab shown.</summary>
+    [ObservableProperty]
+    public partial PlanTabViewModel? ActivePlan { get; set; }
+
+    /// <summary>Shows a plan tab, adding it first when it is not open; a query tab keeps one plan tab whose content is replaced by each new plan.</summary>
+    /// <param name="plan">The plan tab of a query tab.</param>
+    public void OpenPlan(PlanTabViewModel plan)
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+        if (!Plans.Contains(plan))
+        {
+            plan.CloseRequested += RemovePlan;
+            Plans.Add(plan);
+        }
+
+        ActivePlan = plan;
+    }
+
+    [RelayCommand]
+    private void ClosePlan(PlanTabViewModel? plan)
+    {
+        if (plan is not null)
+            RemovePlan(plan);
+    }
+
+    private void RemovePlan(PlanTabViewModel plan)
+    {
+        var index = Plans.IndexOf(plan);
+        if (index < 0)
+            return;
+        Plans.RemoveAt(index);
+        plan.CloseRequested -= RemovePlan;
+        if (ActivePlan == plan)
+            ActivePlan = Plans.Count == 0 ? null : Plans[Math.Min(index, Plans.Count - 1)];
+    }
 
     /// <summary>Gets the environment of <see cref="ActiveSession"/>, or <see cref="ConnectionEnvironment.None"/> when not connected.</summary>
     public ConnectionEnvironment ActiveEnvironment => ActiveSession?.Profile.Environment ?? ConnectionEnvironment.None;
@@ -180,7 +220,10 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         if (ActiveSession?.Root is not { } session)
             return;
         foreach (var tab in Tabs.Where(t => t.Session.Root == session).ToList())
+        {
             Tabs.Remove(tab);
+            RemovePlansOf(tab);
+        }
         foreach (var designer in Designers.Where(d => d.Session.Root == session).ToList())
             RemoveDesigner(designer);
         foreach (var diagram in Diagrams.Where(d => d.Session.Root == session).ToList())
@@ -210,6 +253,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
             return;
         var index = Tabs.IndexOf(tab);
         Tabs.RemoveAt(index);
+        RemovePlansOf(tab);
         if (ActiveTab == tab)
             ActiveTab = Tabs.Count == 0 ? null : Tabs[Math.Min(index, Tabs.Count - 1)];
     }
@@ -279,6 +323,12 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     public async Task<bool> ConfirmCloseAsync() =>
         !Designers.Any(d => d.HasChanges)
         || await _dialogs.ConfirmAsync(UiText.Get("workspace.closeDesigner"), UiText.Get("workspace.discardUnsaved"));
+
+    private void RemovePlansOf(QueryTabViewModel tab)
+    {
+        foreach (var plan in Plans.Where(p => p.Source == tab).ToList())
+            RemovePlan(plan);
+    }
 
     private void RemoveDesigner(TableDesignerViewModel designer)
     {
@@ -439,6 +489,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
                 : UiText.Format("tab.queryOn", _tabCounters[session], session.Profile.Name, session.Profile.Database),
         };
         tab.ScriptRequested += script => AddTab(session, script);
+        tab.PlanReady += OpenPlan;
         Tabs.Add(tab);
         ActiveTab = tab;
         return tab;
