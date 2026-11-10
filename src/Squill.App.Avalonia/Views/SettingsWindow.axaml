@@ -116,7 +116,7 @@
             <StackPanel Margin="20,10">
               <Grid Classes="row" ColumnDefinitions="*,Auto">
                 <TextBlock Classes="rowTitle" VerticalAlignment="Center" Text="{loc:Text settings.language}" />
-                <ComboBox Name="LanguageBox" Grid.Column="1" Width="180" VerticalAlignment="Center"
+                <ComboBox Name="LanguageBox" Grid.Column="1" Width="230" VerticalAlignment="Center"
                           ItemsSource="{Binding LanguageOptions}" DisplayMemberBinding="{Binding Label}"
                           SelectedValueBinding="{Binding Value}" SelectedValue="{Binding Language, Mode=TwoWay}" />
               </Grid>
@@ -128,7 +128,7 @@
               <TextBlock Classes="rowTitle" Text="{loc:Text settings.update.title}" />
               <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
                 <TextBlock Foreground="{DynamicResource SquillFgBrush}" VerticalAlignment="Center" Text="{loc:Text settings.update.frequency}" />
-                <ComboBox Name="FrequencyBox" Grid.Column="1" Width="180" VerticalAlignment="Center" AutomationProperties.Name="{loc:Text settings.update.frequency}"
+                <ComboBox Name="FrequencyBox" Grid.Column="1" Width="230" VerticalAlignment="Center" AutomationProperties.Name="{loc:Text settings.update.frequency}"
                           ItemsSource="{Binding FrequencyOptions}" DisplayMemberBinding="{Binding Label}"
                           SelectedValueBinding="{Binding Value}" SelectedValue="{Binding UpdateFrequency, Mode=TwoWay}" />
               </Grid>
@@ -198,7 +198,7 @@
                   <TextBlock Text="{loc:Text settings.keywordCaseTitle}" Foreground="{DynamicResource SquillFgBrush}" />
                   <TextBlock Classes="rowDesc" Text="{loc:Text settings.keywordCaseDesc}" />
                 </StackPanel>
-                <ComboBox Name="KeywordCaseBox" Grid.Column="1" Width="180" VerticalAlignment="Center" SelectedItem="{Binding FormatterKeywordCase, Mode=TwoWay}" />
+                <ComboBox Name="KeywordCaseBox" Grid.Column="1" Width="230" VerticalAlignment="Center" SelectedItem="{Binding FormatterKeywordCase, Mode=TwoWay}" />
               </Grid>
             </StackPanel>
           </Border>

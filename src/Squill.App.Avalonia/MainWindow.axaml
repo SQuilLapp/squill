@@ -102,7 +102,7 @@
       <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
   </Window.Styles>
-  <Grid RowDefinitions="41,Auto,*,Auto" ColumnDefinitions="45,270,Auto,*,Auto">
+  <Grid Name="RootGrid" RowDefinitions="41,Auto,*,Auto" ColumnDefinitions="45,270,Auto,*,Auto">
     <Border Name="TitleBar" Grid.ColumnSpan="5" Background="{DynamicResource SquillBgBaseBrush}"
             BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
       <Grid Name="TitleGrid" ColumnDefinitions="Auto,*,0">
@@ -244,7 +244,7 @@
                           BorderThickness="0,2,0,0" Padding="12,0,6,0" Height="35">
                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                       <Border Classes="envsquare" Width="8" Height="8" CornerRadius="2" />
-                      <TextBlock Text="{Binding Title}" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
+                      <TextBlock Text="{Binding Title}" FontSize="13" MaxWidth="240" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
                       <TextBlock Text="{Binding Suffix}" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SquillFg3Brush}" IsVisible="{Binding HasSuffix}" />
                       <Ellipse Width="6" Height="6" Fill="{DynamicResource SquillFg3Brush}" IsVisible="{Binding IsDirty}" VerticalAlignment="Center" />
                       <Button Classes="ghost close" Width="20" Height="20" MinHeight="20" Padding="0" CornerRadius="4" Click="OnCloseTabClicked">
@@ -264,7 +264,10 @@
       <v:PlanTabView Grid.Row="1" Name="PlanArea" IsVisible="False" />
       <Grid Name="TerminalArea" Grid.Row="1" IsVisible="False" Background="{DynamicResource SquillBgBaseBrush}" />
     </Grid>
-    <v:PropertiesPanel Grid.Row="2" Grid.Column="4" Name="Properties" />
+    <!-- Hidden on a narrow window (MainWindow.TitleLayout.cs) so the editor keeps its room. -->
+    <Panel Grid.Row="2" Grid.Column="4" Name="PropertiesHost">
+      <v:PropertiesPanel Name="Properties" />
+    </Panel>
     <v:StatusBar Grid.Row="3" Name="Status" Grid.ColumnSpan="5" />
   </Grid>
 </Window>
