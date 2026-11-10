@@ -5,13 +5,14 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Squill.Core;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
+using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
 using Squill.Presentation.Terminal;
 using Squill.Presentation.Workspace;
 
 namespace Squill.App.Avalonia.Views;
 
-/// <summary>One entry of the tab strip: a query, terminal, diagram or table designer tab of the workspace.</summary>
+/// <summary>One entry of the tab strip: a query, terminal, diagram, plan or table designer tab of the workspace.</summary>
 public sealed partial class WorkspaceTab : ObservableObject
 {
     /// <summary>Creates the entry.</summary>
@@ -28,6 +29,13 @@ public sealed partial class WorkspaceTab : ObservableObject
     /// <summary>Gets the title shown on the tab.</summary>
     [ObservableProperty]
     public partial string Title { get; private set; } = "";
+
+    /// <summary>Gets the muted text after the title (the localized " · Plan" of a plan tab), empty for other tabs.</summary>
+    [ObservableProperty]
+    public partial string Suffix { get; private set; } = "";
+
+    /// <summary>Gets whether <see cref="Suffix"/> is shown.</summary>
+    public bool HasSuffix => Suffix.Length > 0;
 
     /// <summary>Gets the environment of the tab's connection, <see cref="ConnectionEnvironment.None"/> for terminals.</summary>
     public ConnectionEnvironment Environment { get; private set; }
@@ -56,14 +64,17 @@ public sealed partial class WorkspaceTab : ObservableObject
             QueryTabViewModel q => (q.Title, q.Session.Profile.Environment, q.IsModified),
             TableDesignerViewModel d => (d.Title, d.Session.Profile.Environment, d.HasChanges),
             DiagramTabViewModel g => (g.Title, g.Session.Profile.Environment, false),
+            PlanTabViewModel p => (p.Source.Title, p.Environment, false),
             TerminalTabViewModel t => (t.Title, ConnectionEnvironment.None, false),
             _ => ("", ConnectionEnvironment.None, false),
         };
+        Suffix = Source is PlanTabViewModel plan && plan.Title.StartsWith(Title, StringComparison.Ordinal) ? plan.Title[Title.Length..] : "";
+        OnPropertyChanged(nameof(HasSuffix));
     }
 }
 
 /// <summary>
-/// The four tab lists of the workspace merged into one for the tab strip: queries, terminals, diagrams, then designers.
+/// The tab lists of the workspace merged into one for the tab strip: queries, terminals, diagrams, plans, then designers.
 /// Keeps the selection in step with the workspace's active tab, designer and diagram.
 /// </summary>
 public sealed partial class WorkspaceTabList : ObservableObject
@@ -80,6 +91,7 @@ public sealed partial class WorkspaceTabList : ObservableObject
         workspace.Tabs.CollectionChanged += OnSourcesChanged;
         workspace.Terminals.CollectionChanged += OnSourcesChanged;
         workspace.Diagrams.CollectionChanged += OnSourcesChanged;
+        workspace.Plans.CollectionChanged += OnSourcesChanged;
         workspace.Designers.CollectionChanged += OnSourcesChanged;
         workspace.PropertyChanged += OnWorkspaceChanged;
         Sync(null);
@@ -98,6 +110,10 @@ public sealed partial class WorkspaceTabList : ObservableObject
         {
             case QueryTabViewModel query:
                 _workspace.ActiveTab = query;
+                _workspace.ActivePlan = null; // lets re-opening the same plan tab raise a change
+                break;
+            case PlanTabViewModel plan:
+                _workspace.ActivePlan = plan;
                 break;
             case TableDesignerViewModel designer:
                 _workspace.ActiveDesigner = designer;
@@ -123,6 +139,9 @@ public sealed partial class WorkspaceTabList : ObservableObject
             case DiagramTabViewModel diagram:
                 _workspace.CloseDiagramCommand.Execute(diagram);
                 break;
+            case PlanTabViewModel plan:
+                plan.CloseCommand.Execute(null);
+                break;
             case TerminalTabViewModel terminal:
                 _workspace.CloseTerminalCommand.Execute(terminal);
                 break;
@@ -136,6 +155,7 @@ public sealed partial class WorkspaceTabList : ObservableObject
             nameof(WorkspaceViewModel.ActiveTab) => _workspace.ActiveTab,
             nameof(WorkspaceViewModel.ActiveDesigner) => _workspace.ActiveDesigner,
             nameof(WorkspaceViewModel.ActiveDiagram) => _workspace.ActiveDiagram,
+            nameof(WorkspaceViewModel.ActivePlan) => _workspace.ActivePlan,
             _ => null,
         };
         if (source is not null && _bySource.TryGetValue(source, out var tab))
@@ -158,6 +178,7 @@ public sealed partial class WorkspaceTabList : ObservableObject
             .. _workspace.Tabs,
             .. _workspace.Terminals,
             .. _workspace.Diagrams,
+            .. _workspace.Plans,
             .. _workspace.Designers,
         ];
         foreach (var stale in _bySource.Keys.Where(k => !desired.Contains(k)).ToList())

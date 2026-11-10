@@ -1,10 +1,11 @@
 using MySqlConnector;
 using Squill.Core;
+using Squill.Core.Plans;
 
 namespace Squill.Data.MySql;
 
 /// <summary>MySQL implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class MySqlDatabaseConnection(MySqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection
+internal sealed class MySqlDatabaseConnection(MySqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader
 {
     /// <inheritdoc />
     public string ServerVersion => connection.ServerVersion;
@@ -30,6 +31,13 @@ internal sealed class MySqlDatabaseConnection(MySqlConnection connection, int co
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public bool SupportsActualPlan => true;
+
+    /// <inheritdoc />
+    public ValueTask<QueryPlan> ExplainAsync(string sql, IReadOnlyList<QueryParameter> parameters, PlanMode mode, CancellationToken cancellationToken) =>
+        MySqlPlanReader.ExplainAsync(connection, commandTimeoutSeconds, sql, parameters, mode, cancellationToken);
 
     /// <inheritdoc />
     public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>

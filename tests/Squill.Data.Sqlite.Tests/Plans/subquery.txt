@@ -1,0 +1,3 @@
+2	0	91	SEARCH customers USING INTEGER PRIMARY KEY (rowid=?)
+6	0	0	LIST SUBQUERY 1
+8	6	213	SCAN orders USING COVERING INDEX orders_customer_placed

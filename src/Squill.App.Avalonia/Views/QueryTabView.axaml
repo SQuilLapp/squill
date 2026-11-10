@@ -72,6 +72,13 @@
               <Border Classes="kbd"><TextBlock Text="{loc:Text editor.scriptShortcut}" /></Border>
             </StackPanel>
           </Button>
+          <Button Name="ExplainButton" Height="28" MinHeight="28" Content="{loc:Text plan.action.explain}" Command="{Binding ExplainCommand}" />
+          <Button Name="AnalyzeButton" Height="28" MinHeight="28" Command="{Binding AnalyzeCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="{loc:Text plan.action.analyze}" />
+              <Border Classes="kbd"><TextBlock Text="{loc:Text plan.analyzeShortcut}" /></Border>
+            </StackPanel>
+          </Button>
           <Button Name="StopButton" Height="28" MinHeight="28" Content="{loc:Text editor.stop}"
                   IsEnabled="{Binding IsRunning}" Command="{Binding CancelCommand}" />
         </StackPanel>

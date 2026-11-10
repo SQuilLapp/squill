@@ -245,6 +245,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                       <Border Classes="envsquare" Width="8" Height="8" CornerRadius="2" />
                       <TextBlock Text="{Binding Title}" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SquillFgBrush}" />
+                      <TextBlock Text="{Binding Suffix}" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SquillFg3Brush}" IsVisible="{Binding HasSuffix}" />
                       <Ellipse Width="6" Height="6" Fill="{DynamicResource SquillFg3Brush}" IsVisible="{Binding IsDirty}" VerticalAlignment="Center" />
                       <Button Classes="ghost close" Width="20" Height="20" MinHeight="20" Padding="0" CornerRadius="4" Click="OnCloseTabClicked">
                         <Path Classes="icon" Width="10" Height="10" Data="{StaticResource SquillIconClose}" />
@@ -260,6 +261,7 @@
       <v:QueryTabView Grid.Row="1" Name="ActiveTabView" DataContext="{Binding ActiveTab}" />
       <v:DiagramTabView Grid.Row="1" Name="DiagramArea" IsVisible="False" />
       <v:TableDesignerView Grid.Row="1" Name="DesignerArea" IsVisible="False" />
+      <v:PlanTabView Grid.Row="1" Name="PlanArea" IsVisible="False" />
       <Grid Name="TerminalArea" Grid.Row="1" IsVisible="False" Background="{DynamicResource SquillBgBaseBrush}" />
     </Grid>
     <v:PropertiesPanel Grid.Row="2" Grid.Column="4" Name="Properties" />

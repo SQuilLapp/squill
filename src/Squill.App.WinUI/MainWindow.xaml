@@ -12,6 +12,8 @@
       <KeyboardAccelerator Key="T" Modifiers="Control" Invoked="OnNewTabAccelerator" />
       <KeyboardAccelerator Key="W" Modifiers="Control" Invoked="OnCloseTabAccelerator" />
       <KeyboardAccelerator Key="S" Modifiers="Control" Invoked="OnApplyDesignerAccelerator" />
+      <KeyboardAccelerator Key="E" Modifiers="Control" Invoked="OnExplainAccelerator" />
+      <KeyboardAccelerator Key="E" Modifiers="Control,Shift" Invoked="OnAnalyzeAccelerator" />
     </Grid.KeyboardAccelerators>
     <Grid.RowDefinitions>
       <RowDefinition Height="41" />
@@ -101,6 +103,7 @@
       <v:QueryTabView x:Name="ActiveTabView" Grid.Row="1" />
       <v:DiagramTabView x:Name="DiagramArea" Grid.Row="1" Visibility="Collapsed" />
       <v:TableDesignerView x:Name="DesignerArea" Grid.Row="1" Visibility="Collapsed" />
+      <v:PlanTabView x:Name="PlanArea" Grid.Row="1" Visibility="Collapsed" />
       <Grid x:Name="TerminalArea" Grid.Row="1" Visibility="Collapsed" />
     </Grid>
     <v:PropertiesPanel x:Name="Properties" Grid.Row="2" Grid.Column="4" />
