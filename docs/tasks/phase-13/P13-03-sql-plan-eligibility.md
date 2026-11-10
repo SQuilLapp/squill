@@ -1,6 +1,6 @@
 # P13-03 - Sql: which statements can be explained or analyzed
 
-Status: todo
+Status: done
 Depends on: P13-01
 
 ## Goal
@@ -17,7 +17,7 @@ One place decides, per dialect, whether a statement may be explained (`Expliquer
 - Rewriting a statement, running anything.
 
 ## Tasks
-- [ ] `PlanEligibility` and tests per dialect (`tests/Squill.Sql.Tests/Plans/PlanEligibilityTests.cs`): select, cte-select, cte-with-delete (explain yes, analyze no), `select ... into`, insert/update/delete, `exec`, ddl, `explain select`, empty, comment only, lowercase, leading comments, SQLite analyze always false.
+- [x] `PlanEligibility` and tests per dialect (`tests/Squill.Sql.Tests/Plans/PlanEligibilityTests.cs`): select, cte-select, cte-with-delete (explain yes, analyze no), `select ... into`, insert/update/delete, `exec`, ddl, `explain select`, empty, comment only, lowercase, leading comments, SQLite analyze always false.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5.
