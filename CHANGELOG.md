@@ -6,7 +6,18 @@
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+
+- macOS: the menu moves to the system menu bar, with a SQuilL application menu (About, Settings, Check for updates, Hide, Quit) and Cmd shortcuts.
+- macOS: a double click on the title bar zooms the window.
+
+### Changed
+
+- On a narrow window the Properties panel hides below 1280 px, toolbars scroll sideways and the designer's column table scrolls instead of squeezing its columns.
+
+### Fixed
+
+- Texts drawn over each other or cut without an ellipsis in the table designer, the toolbars, the connection editor and Settings.
 
 ## [0.1.0] - 2026-11-09
 
