@@ -1,6 +1,6 @@
 # P14-06 - Sql: alias generation
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -15,8 +15,8 @@ A pure generator proposes a short alias for a table that does not collide with a
 - Renaming existing aliases, a user-configurable alias style, using the alias elsewhere in the script.
 
 ## Tasks
-- [ ] Tests first (`tests/Squill.Sql.Tests/Completion/AliasGeneratorTests.cs`): the examples above, camelCase, acronym, digits/leading symbol, collision chain to `2`, reserved words per dialect (`or`, `on`, `as`, `by`, `is`, `in` never produced; one two-letter initials result that is reserved in one dialect's set and free in another, picked by reading the sets, asserted for both dialects), case-insensitive `taken`; `IsAliasNeeded` for each of the three reasons and for the all-false case (`customers c` visible and `orders` new -> true because of the alias; `customers` visible without alias and `orders` new -> false; `orders` visible and `orders` new -> true; schema compared only when both given).
-- [ ] Implement, XML docs.
+- [x] Tests first (`tests/Squill.Sql.Tests/Completion/AliasGeneratorTests.cs`): the examples above, camelCase, acronym, digits/leading symbol, collision chain to `2`, reserved words per dialect (`or`, `on`, `as`, `by`, `is`, `in` never produced; one two-letter initials result that is reserved in one dialect's set and free in another, picked by reading the sets, asserted for both dialects), case-insensitive `taken`; `IsAliasNeeded` for each of the three reasons and for the all-false case (`customers c` visible and `orders` new -> true because of the alias; `customers` visible without alias and `orders` new -> false; `orders` visible and `orders` new -> true; schema compared only when both given).
+- [x] Implement, XML docs.
 
 ## Acceptance criteria
 - Recipe section 4.
