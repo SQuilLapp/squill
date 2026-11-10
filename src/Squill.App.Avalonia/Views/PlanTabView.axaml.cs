@@ -11,10 +11,17 @@ namespace Squill.App.Avalonia.Views;
 public sealed partial class PlanTabView : UserControl
 {
     private PlanTabViewModel? _tab;
+    private readonly PlanTable _table = new();
     private PlanViewModel? _plan;
 
     /// <summary>Creates the view.</summary>
-    public PlanTabView() => InitializeComponent();
+    public PlanTabView()
+    {
+        InitializeComponent();
+        Grid.SetRow(_table, 2);
+        PlanBody.Children.Add(_table);
+        ActualThemeVariantChanged += (_, _) => Refresh();
+    }
 
     /// <inheritdoc />
     protected override void OnDataContextChanged(EventArgs e)
@@ -56,6 +63,21 @@ public sealed partial class PlanTabView : UserControl
         MessageText.IsVisible = tab.MessageLine.Length > 0;
         if (RawText.Text != plan.SourceText)
             RawText.Text = plan.SourceText;
+
+        var text = plan.ViewMode == PlanViewMode.Text;
+        RawText.IsVisible = text;
+        PlanBody.IsVisible = !text;
+        var graph = plan.ViewMode == PlanViewMode.Graph;
+        if (graph != PlanSplitter.IsVisible)
+        {
+            // Entering the graph view restores the 62 / 38 split; the table takes the whole body in the tree view.
+            PlanBody.RowDefinitions[0].Height = graph ? new GridLength(62, GridUnitType.Star) : new GridLength(0);
+            PlanBody.RowDefinitions[2].Height = new GridLength(38, GridUnitType.Star);
+            PlanSplitter.IsVisible = graph;
+            GraphHost.IsVisible = graph;
+        }
+
+        _table.Bind(tab, plan);
     }
 
     private void OnViewClicked(object? sender, RoutedEventArgs e)

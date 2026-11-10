@@ -120,6 +120,34 @@ public sealed class PlanUiTests
         });
     }
 
+    [Fact]
+    public async Task TreeView_ShowsTableAndDetails_FollowingSelection_AndTextViewShowsRawOnly()
+    {
+        await WithPlanAsync(async (window, services) =>
+        {
+            await services.Workspace.ActiveTab!.ExplainCommand.ExecuteAsync(null);
+            var plan = services.Workspace.ActivePlan!.Plan;
+            var view = window.GetLogicalDescendants().OfType<PlanTabView>().Single();
+            plan.ViewMode = Squill.Presentation.Plans.PlanViewMode.Tree;
+            await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { }, global::Avalonia.Threading.DispatcherPriority.Background);
+
+            var texts = () => view.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
+            Assert.True(view.FindControl<Grid>("PlanBody")!.IsVisible);
+            Assert.False(view.FindControl<TextBox>("RawText")!.IsVisible);
+            foreach (var row in plan.Rows)
+                Assert.Contains(row.Label, texts());
+
+            plan.SelectedRow = plan.Rows[^1];
+            await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { }, global::Avalonia.Threading.DispatcherPriority.Background);
+            Assert.Contains(plan.Details.Title, texts());
+
+            plan.ViewMode = Squill.Presentation.Plans.PlanViewMode.Text;
+            await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { }, global::Avalonia.Threading.DispatcherPriority.Background);
+            Assert.True(view.FindControl<TextBox>("RawText")!.IsVisible);
+            Assert.False(view.FindControl<Grid>("PlanBody")!.IsVisible);
+        });
+    }
+
     private static byte[] Render(Window window)
     {
         var size = new PixelSize((int)window.Width, (int)window.Height);

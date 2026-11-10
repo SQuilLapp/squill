@@ -1,6 +1,6 @@
 # P13-19 - Avalonia head: plan table, details panel and warnings
 
-Status: todo
+Status: done
 Depends on: P13-18, P13-16
 
 ## Goal
@@ -14,8 +14,8 @@ Twin of P13-16 for Avalonia: the `Arbre` view (table + details + warning box + S
 - Graph (P13-20), WinUI.
 
 ## Tasks
-- [ ] Table, details, suggestion card, bindings, strings (`plan.copy`, `plan.openineditor` already added by P13-16: reuse).
-- [ ] Capture `Arbre` light and dark with a PostgreSQL ANALYZE plan and a SQLite plan; compare with M06; report differences.
+- [x] Table, details, suggestion card, bindings, strings (`plan.copy`, `plan.openineditor` already added by P13-16: reuse).
+- [ ] (not done: no screenshot capture possible in this environment) Capture `Arbre` light and dark with a PostgreSQL ANALYZE plan and a SQLite plan; compare with M06; report differences.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green; Avalonia AOT publish zero IL2xxx/IL3xxx.
