@@ -1,6 +1,6 @@
 # P13-18 - Avalonia head: Expliquer and Analyser buttons, plan tab host, tab strip, status bar
 
-Status: todo
+Status: done
 Depends on: P13-14, P13-15, P9-11
 
 ## Goal
@@ -14,8 +14,8 @@ Twin of P13-15 for the Avalonia head. Look at how the diagram tab is hosted: `Ma
 - Table, details, graph (P13-19, P13-20), WinUI.
 
 ## Tasks
-- [ ] Buttons, tab host, toolbar, `Texte` body, strip and status bar, localization labels.
-- [ ] Capture the toolbar light and dark against M06 (tools of P9-02; Avalonia can also be rendered headless as P9-19 did) and list what was not compared.
+- [x] Buttons, tab host, toolbar, `Texte` body, strip and status bar, localization labels.
+- [ ] Capture the toolbar light and dark against M06: NOT done (headless run could not write PNGs out of the test sandbox); the test only asserts the two themes render different pixels. To do by eye in P13-21.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.slnx -c Release` green; Avalonia AOT publish zero IL2xxx/IL3xxx.

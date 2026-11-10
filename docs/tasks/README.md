@@ -269,7 +269,7 @@ Depends on: <card ids, ranges allowed>
 | [P13-15](phase-13/P13-15-winui-plan-host-and-toolbar.md) | WinUI head: Expliquer and Analyser buttons, plan tab host, tab strip, status bar | P13-14, P9-12 | done |
 | [P13-16](phase-13/P13-16-winui-plan-table-and-details.md) | WinUI head: plan table, details panel and warnings | P13-15 | done |
 | [P13-17](phase-13/P13-17-winui-plan-graph.md) | WinUI head: plan graph canvas | P13-13, P13-16 | done |
-| [P13-18](phase-13/P13-18-avalonia-plan-host-and-toolbar.md) | Avalonia head: Expliquer and Analyser buttons, plan tab host, tab strip, status bar | P13-14, P13-15, P9-11 | todo |
+| [P13-18](phase-13/P13-18-avalonia-plan-host-and-toolbar.md) | Avalonia head: Expliquer and Analyser buttons, plan tab host, tab strip, status bar | P13-14, P13-15, P9-11 | done |
 | [P13-19](phase-13/P13-19-avalonia-plan-table-and-details.md) | Avalonia head: plan table, details panel and warnings | P13-16, P13-18 | todo |
 | [P13-20](phase-13/P13-20-avalonia-plan-graph.md) | Avalonia head: plan graph canvas | P13-17, P13-19 | todo |
 | [P13-21](phase-13/P13-21-verify-plan.md) | End-to-end verification: execution plan on the four engines | P13-11, P13-17, P13-20 | todo |
