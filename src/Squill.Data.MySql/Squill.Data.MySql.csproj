@@ -1,5 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <InternalsVisibleTo Include="Squill.Data.MySql.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="MySqlConnector" />
     <ProjectReference Include="..\Squill.Data\Squill.Data.csproj" />
   </ItemGroup>

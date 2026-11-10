@@ -1,6 +1,6 @@
 # P13-07 - Data.MySql: EXPLAIN FORMAT=JSON (estimated)
 
-Status: todo
+Status: done
 Depends on: P13-04, P13-02, P11-03
 
 ## Goal
@@ -22,9 +22,9 @@ Depends on: P13-04, P13-02, P11-03
 - `EXPLAIN ANALYZE` (P13-08), optimizer trace, MariaDB.
 
 ## Tasks
-- [ ] Reader, parser, samples from `mysql:8.4` under `tests/Squill.Data.MySql.Tests/Plans/` (single table, join of two and three tables, order by + group by, union, subquery in where, derived table).
-- [ ] Unit tests of the parser (left-deep join chain, wrapper nesting, numeric strings, unknown key survives, truncated JSON -> `PlanParseException`).
-- [ ] Docker-gated tests: plan of the sample-schema join statement; parameters (`?` / `@p` as the driver binds them: if `EXPLAIN` rejects bound parameters throw `PlanUnavailableException("parameters")`); normal statement afterwards.
+- [x] Reader, parser, samples from `mysql:8.4` under `tests/Squill.Data.MySql.Tests/Plans/` (single table, join of two and three tables, order by + group by, union, subquery in where, derived table).
+- [x] Unit tests of the parser (left-deep join chain, wrapper nesting, numeric strings, unknown key survives, truncated JSON -> `PlanParseException`).
+- [x] Docker-gated tests: plan of the sample-schema join statement; parameters (`?` / `@p` as the driver binds them: if `EXPLAIN` rejects bound parameters throw `PlanUnavailableException("parameters")`); normal statement afterwards.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5, Docker run for mysql green, AOT probe `tools/Squill.AotProbe.MySql` clean.

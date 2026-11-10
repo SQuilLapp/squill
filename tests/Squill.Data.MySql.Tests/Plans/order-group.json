@@ -1,0 +1,70 @@
+{
+  "query_block": {
+    "select_id": 1,
+    "cost_info": {
+      "query_cost": "18004.27"
+    },
+    "ordering_operation": {
+      "using_filesort": true,
+      "grouping_operation": {
+        "using_temporary_table": true,
+        "using_filesort": false,
+        "nested_loop": [
+          {
+            "table": {
+              "table_name": "c",
+              "access_type": "ALL",
+              "possible_keys": [
+                "PRIMARY"
+              ],
+              "rows_examined_per_scan": 2000,
+              "rows_produced_per_join": 2000,
+              "filtered": "100.00",
+              "cost_info": {
+                "read_cost": "1.75",
+                "eval_cost": "200.00",
+                "prefix_cost": "201.75",
+                "data_read_per_join": "2M"
+              },
+              "used_columns": [
+                "id",
+                "name"
+              ]
+            }
+          },
+          {
+            "table": {
+              "table_name": "o",
+              "access_type": "ref",
+              "possible_keys": [
+                "orders_customer_placed"
+              ],
+              "key": "orders_customer_placed",
+              "used_key_parts": [
+                "customer_id"
+              ],
+              "key_length": "4",
+              "ref": [
+                "squill.c.id"
+              ],
+              "rows_examined_per_scan": 25,
+              "rows_produced_per_join": 50864,
+              "filtered": "100.00",
+              "cost_info": {
+                "read_cost": "12716.09",
+                "eval_cost": "5086.43",
+                "prefix_cost": "18004.27",
+                "data_read_per_join": "1M"
+              },
+              "used_columns": [
+                "id",
+                "customer_id",
+                "total"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "query_block": {
+    "union_result": {
+      "using_temporary_table": true,
+      "select_id": 3,
+      "table_name": "<union1,2>",
+      "access_type": "ALL",
+      "query_specifications": [
+        {
+          "dependent": false,
+          "cacheable": true,
+          "query_block": {
+            "select_id": 1,
+            "cost_info": {
+              "query_cost": "201.75"
+            },
+            "table": {
+              "table_name": "customers",
+              "access_type": "index",
+              "key": "email",
+              "used_key_parts": [
+                "email"
+              ],
+              "key_length": "803",
+              "rows_examined_per_scan": 2000,
+              "rows_produced_per_join": 2000,
+              "filtered": "100.00",
+              "using_index": true,
+              "cost_info": {
+                "read_cost": "1.75",
+                "eval_cost": "200.00",
+                "prefix_cost": "201.75",
+                "data_read_per_join": "2M"
+              },
+              "used_columns": [
+                "id"
+              ]
+            }
+          }
+        },
+        {
+          "dependent": false,
+          "cacheable": true,
+          "query_block": {
+            "select_id": 2,
+            "cost_info": {
+              "query_cost": "5083.45"
+            },
+            "table": {
+              "table_name": "orders",
+              "access_type": "index",
+              "key": "orders_customer_placed",
+              "used_key_parts": [
+                "customer_id",
+                "placed_on"
+              ],
+              "key_length": "7",
+              "rows_examined_per_scan": 50432,
+              "rows_produced_per_join": 50432,
+              "filtered": "100.00",
+              "using_index": true,
+              "cost_info": {
+                "read_cost": "40.25",
+                "eval_cost": "5043.20",
+                "prefix_cost": "5083.45",
+                "data_read_per_join": "1M"
+              },
+              "used_columns": [
+                "id"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}
