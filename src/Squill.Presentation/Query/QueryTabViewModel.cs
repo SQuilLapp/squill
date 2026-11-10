@@ -15,6 +15,7 @@ using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Analysis;
 using Squill.Sql.Completion;
+using Squill.Sql.Functions;
 using Squill.Sql.Editing;
 using Squill.Sql.Formatting;
 using Squill.Sql.Plans;
@@ -32,6 +33,9 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     private readonly ISettingsStore _settings;
     private readonly IUiDispatcher _dispatcher;
     private readonly IDialogService _dialogs;
+    private readonly TimeProvider _time;
+    private KeywordCase _keywordCase = KeywordCase.Upper;
+    private DateTimeOffset _keywordCaseLoadedAt;
     private readonly Dictionary<string, ParameterValue> _lastValues = [];
     private Action? _cancel;
     private string _baselineText;
@@ -52,13 +56,15 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     /// <param name="settings">Provides the grid row limit.</param>
     /// <param name="dispatcher">Used by the grids to raise change notifications on the UI thread.</param>
     /// <param name="dialogs">Used to report failures that are not statement errors.</param>
+    /// <param name="time">Clock that dates the keyword-case refresh; defaults to <see cref="TimeProvider.System"/>.</param>
     public QueryTabViewModel(
         ConnectionSession session,
         ISqlEditor editor,
         IQueryHistoryStore history,
         ISettingsStore settings,
         IUiDispatcher dispatcher,
-        IDialogService dialogs)
+        IDialogService dialogs,
+        TimeProvider? time = null)
     {
         ArgumentNullException.ThrowIfNull(session);
         ArgumentNullException.ThrowIfNull(editor);
@@ -72,10 +78,13 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         _settings = settings;
         _dispatcher = dispatcher;
         _dialogs = dialogs;
+        _time = time ?? TimeProvider.System;
         _baselineText = editor.Text;
 
+        _ = LoadKeywordCaseAsync();
+        _keywordCaseLoadedAt = _time.GetUtcNow();
         editor.SetDialect(session.Profile.Dialect);
-        editor.SetCompletionProvider(new SessionCompletionProvider(session));
+        editor.SetCompletionProvider(new SessionCompletionProvider(session, CurrentKeywordCase));
         editor.SetHoverProvider(r => SqlHoverProvider.GetHover(r with { Schema = session.Schema }) is { } h ? h with { Markdown = IssueText.Format(h.Code, h.Args, h.Markdown) } : null);
         editor.TextChanged += (_, _) =>
         {
@@ -494,14 +503,38 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             new SqlRequest(_editor.Text, _editor.CaretOffset, _session.Profile.Dialect, _session.Schema))
             .Select(d => d with { Message = IssueText.Format(d.MessageCode, d.Args, d.Message) })]);
 
-    /// <summary>Completes keywords and schema objects against the schema of the tab's current session.</summary>
-    private sealed class SessionCompletionProvider(ConnectionSession session) : ISqlCompletionProvider
+    /// <summary>Returns the keyword case of the settings; a value older than five seconds is refreshed in the background, so a change shows up in the next popup.</summary>
+    private KeywordCase CurrentKeywordCase()
+    {
+        if (_time.GetUtcNow() - _keywordCaseLoadedAt > TimeSpan.FromSeconds(5))
+        {
+            _keywordCaseLoadedAt = _time.GetUtcNow();
+            _ = LoadKeywordCaseAsync();
+        }
+
+        return _keywordCase;
+    }
+
+    private async Task LoadKeywordCaseAsync()
+    {
+        try
+        {
+            _keywordCase = (await _settings.LoadAsync(CancellationToken.None)).FormatterKeywordCase;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // keeps the previous value (Upper by default)
+        }
+    }
+
+    /// <summary>Completes keywords, functions and schema objects against the schema of the tab's current session.</summary>
+    private sealed class SessionCompletionProvider(ConnectionSession session, Func<KeywordCase> keywordCase) : ISqlCompletionProvider
     {
         private static readonly CompositeCompletionProvider Inner =
-            new(new KeywordCompletionProvider(), new SchemaCompletionProvider());
+            new(new KeywordCompletionProvider(), new SchemaCompletionProvider(), new FunctionCompletionProvider());
 
         /// <inheritdoc />
         public IReadOnlyList<CompletionItem> GetCompletions(SqlRequest request) =>
-            Inner.GetCompletions(request with { Schema = session.Schema });
+            Inner.GetCompletions(request with { Schema = session.Schema, KeywordCase = keywordCase() });
     }
 }

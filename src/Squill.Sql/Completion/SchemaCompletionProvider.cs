@@ -71,7 +71,7 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
             // Join rows go above the plain rows.
             if (qualifiers.Count == 0 && previous!.Equals("JOIN", StringComparison.OrdinalIgnoreCase))
             {
-                tables.InsertRange(0, JoinRows.Build(schema, join, request.Dialect, range));
+                tables.InsertRange(0, JoinRows.Build(schema, join, request.Dialect, range, KeywordCasing.UseLowerKeywords(request, start, offset - start)));
             }
 
             return tables;

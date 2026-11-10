@@ -70,7 +70,12 @@ public sealed class KeywordCompletionProvider : ISqlCompletionProvider
         var previous = Previous(text[..start], request.Dialect);
         var scope = SqlScopeResolver.Resolve(SqlParser.Parse(text, request.Dialect), offset);
         var words = Words(scope.Clause, previous, request.Dialect, text[..start]);
-        return [.. words.Distinct().Select(w => new CompletionItem(w, CompletionKind.Keyword, w, null, CompletionOrder.Keyword + w, range))];
+        var lower = KeywordCasing.UseLowerKeywords(request, start, offset - start);
+        return [.. words.Distinct().Select(w =>
+        {
+            var written = lower ? w.ToLowerInvariant() : w;
+            return new CompletionItem(written, CompletionKind.Keyword, written, null, CompletionOrder.Keyword + w, range, w);
+        })];
     }
 
     private static bool IsWordChar(char c) => char.IsLetterOrDigit(c) || c is '_' or '$';

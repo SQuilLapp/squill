@@ -111,7 +111,7 @@ internal static class OnClauseRows
                 continue;
             }
 
-            var condition = JoinConditionText.Build(relation, existingName, newName, request.Dialect);
+            var condition = JoinConditionText.Build(relation, existingName, newName, request.Dialect, KeywordCasing.UseLowerKeywords(request, wordStart, request.Offset - wordStart));
             items.Add(new CompletionItem(
                 condition,
                 CompletionKind.Snippet,

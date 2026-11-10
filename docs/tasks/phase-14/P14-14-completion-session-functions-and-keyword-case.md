@@ -1,6 +1,6 @@
 # P14-14 - Sql and Presentation: functions in the popup and the keyword-case setting
 
-Status: todo
+Status: done
 Depends on: P14-07, P14-13
 
 ## Goal
@@ -17,8 +17,8 @@ The popup of a query tab offers the built-in and stored functions (today they ar
 - A separate completion-only setting, identifier case, a settings UI change.
 
 ## Tasks
-- [ ] Tests first: Sql (`tests/Squill.Sql.Tests/Completion/KeywordCasingTests.cs`): Upper, Lower, Preserve with an upper script, a lower script, a mixed script (majority), an empty script with typed `sel` / `SEL`; multi-word keyword; `AND` / `ON` in generated join text follow the case; default request (no `KeywordCase`) behaves as before. Presentation (`tests/Squill.Presentation.Tests`, fake `ISettingsStore`): functions present, keyword case taken from the store, refresh after the staleness window (inject a clock or a `TimeProvider`, already used elsewhere in the project: check), error in the store keeps `Upper`.
-- [ ] Implement, XML docs. Update `KeywordCompletionTests` only if an expectation depended on the old constructor.
+- [x] Tests first: Sql (`tests/Squill.Sql.Tests/Completion/KeywordCasingTests.cs`): Upper, Lower, Preserve with an upper script, a lower script, a mixed script (majority), an empty script with typed `sel` / `SEL`; multi-word keyword; `AND` / `ON` in generated join text follow the case; default request (no `KeywordCase`) behaves as before. Presentation (`tests/Squill.Presentation.Tests`, fake `ISettingsStore`): functions present, keyword case taken from the store, refresh after the staleness window (inject a clock or a `TimeProvider`, already used elsewhere in the project: check), error in the store keeps `Upper`.
+- [x] Implement, XML docs. Update `KeywordCompletionTests` only if an expectation depended on the old constructor.
 
 ## Acceptance criteria
 - Recipe section 4.

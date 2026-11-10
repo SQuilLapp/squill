@@ -10,8 +10,9 @@ internal static class JoinConditionText
     /// <param name="existingName">Unquoted alias or table name of the table already in the FROM list.</param>
     /// <param name="newName">Unquoted alias or table name of the new table.</param>
     /// <param name="dialect">The dialect that decides the identifier quoting.</param>
+    /// <param name="lowerKeywords">Whether <c>AND</c> is written in lower case.</param>
     /// <returns>The condition text.</returns>
-    public static string Build(TableRelation relation, string existingName, string newName, DatabaseDialect dialect)
+    public static string Build(TableRelation relation, string existingName, string newName, DatabaseDialect dialect, bool lowerKeywords = false)
     {
         var left = IdentifierQuoting.Quote(existingName, dialect);
         var right = IdentifierQuoting.Quote(newName, dialect);
@@ -22,7 +23,7 @@ internal static class JoinConditionText
                 + " = " + right + "." + IdentifierQuoting.Quote(relation.OtherColumns[i], dialect);
         }
 
-        return string.Join(" AND ", parts);
+        return string.Join(lowerKeywords ? " and " : " AND ", parts);
     }
 
     /// <summary>Describes a relation in a short human text, for documentation and tests.</summary>

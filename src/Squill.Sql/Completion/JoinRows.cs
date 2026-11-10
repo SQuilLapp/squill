@@ -12,8 +12,9 @@ internal static class JoinRows
     /// <param name="join">The join context at the caret.</param>
     /// <param name="dialect">The dialect that decides the quoting.</param>
     /// <param name="range">The prefix being typed.</param>
+    /// <param name="lowerKeywords">Whether <c>ON</c> and <c>AND</c> are written in lower case.</param>
     /// <returns>The rows, best first; empty when no condition is wanted or no relation exists.</returns>
-    public static IReadOnlyList<CompletionItem> Build(SchemaSnapshot schema, JoinContext join, DatabaseDialect dialect, TextRange range)
+    public static IReadOnlyList<CompletionItem> Build(SchemaSnapshot schema, JoinContext join, DatabaseDialect dialect, TextRange range, bool lowerKeywords = false)
     {
         if (!join.IsJoin || join.Kind is JoinKind.Cross or JoinKind.Comma || join.IsNatural || join.IsApply || join.HasCondition)
         {
@@ -101,7 +102,7 @@ internal static class JoinRows
         var items = new List<CompletionItem>(ordered.Count);
         for (var rank = 0; rank < ordered.Count; rank++)
         {
-            items.Add(Row(schema, left, ordered[rank].Relation, taken, dialect, range, rank));
+            items.Add(Row(schema, left, ordered[rank].Relation, taken, dialect, range, rank, lowerKeywords));
         }
 
         return items;
@@ -117,7 +118,7 @@ internal static class JoinRows
         return candidate.Columns.Any(c => leftPkNames.Contains(c.Name) || (c.IsPrimaryKey && leftColumnNames.Contains(c.Name)));
     }
 
-    private static CompletionItem Row(SchemaSnapshot schema, IReadOnlyList<VisibleSource> left, TableRelation relation, List<string> taken, DatabaseDialect dialect, TextRange range, int rank)
+    private static CompletionItem Row(SchemaSnapshot schema, IReadOnlyList<VisibleSource> left, TableRelation relation, List<string> taken, DatabaseDialect dialect, TextRange range, int rank, bool lowerKeywords)
     {
         var candidate = relation.Other;
         var existingTable = schema.FindTable(relation.Existing.Schema, relation.Existing.Name);
@@ -128,7 +129,8 @@ internal static class JoinRows
         var newName = alias ?? candidate.Name;
         var table = TableReference.Insert(candidate, schema, dialect);
         var label = alias is null ? table : table + " " + IdentifierQuoting.Quote(alias, dialect);
-        var condition = JoinConditionText.Build(relation, relation.Existing.Alias ?? relation.Existing.Name, newName, dialect);
+        var condition = JoinConditionText.Build(relation, relation.Existing.Alias ?? relation.Existing.Name, newName, dialect, lowerKeywords);
+        var on = lowerKeywords ? "on " : "ON ";
 
         var documentation = JoinConditionText.Describe(relation);
         if (relation.Origin == RelationOrigin.ForeignKey)
@@ -143,8 +145,8 @@ internal static class JoinRows
         return new CompletionItem(
             label,
             CompletionKind.Struct,
-            label + " ON " + condition,
-            "ON " + condition,
+            label + " " + on + condition,
+            on + condition,
             CompletionOrder.Relation + rank.ToString("D6", System.Globalization.CultureInfo.InvariantCulture),
             range,
             candidate.Name,
