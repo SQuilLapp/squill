@@ -274,7 +274,7 @@ Depends on: <card ids, ranges allowed>
 | [P13-20](phase-13/P13-20-avalonia-plan-graph.md) | Avalonia head: plan graph canvas | P13-17, P13-19 | done |
 | [P13-21](phase-13/P13-21-verify-plan.md) | End-to-end verification: execution plan on the four engines | P13-11, P13-17, P13-20 | automated done, manual pending |
 | [P13-22](phase-13/P13-22-docs-and-adr.md) | Documentation: execution plan ADR 0010, README and architecture note | P13-21 | done |
-| [P14-01](phase-14/P14-01-sql-completion-item-fields.md) | Sql: filter text, documentation and snippet flag on completion items | none | todo |
+| [P14-01](phase-14/P14-01-sql-completion-item-fields.md) | Sql: filter text, documentation and snippet flag on completion items | none | done |
 | [P14-02](phase-14/P14-02-heads-map-completion-fields.md) | Heads: map the new completion fields to LoomEditor and the plain editor | P14-01 | todo |
 | [P14-03](phase-14/P14-03-sql-schema-qualified-tables.md) | Sql: tables outside the default schema are inserted qualified | none | todo |
 | [P14-04](phase-14/P14-04-sql-join-context.md) | Sql: join context at the caret (kind, left sources, existing condition) | none | todo |

@@ -1,6 +1,6 @@
 # P14-01 - Sql: filter text, documentation and snippet flag on completion items
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -16,8 +16,8 @@ Give `CompletionItem` the three members later cards need (`FilterText`, `Documen
 - Mapping to the editors (P14-02), any new item.
 
 ## Tasks
-- [ ] Tests first (`tests/Squill.Sql.Tests/Completion/CompletionItemTests.cs`): defaults (`FilterText` null, `IsSnippet` false), `with` keeps the new members, `CompletionFilter` matches by `FilterText` (item `orders o` / filter text `orders`, prefix `ord` keeps it, prefix `o ` does not), existing `CompletionFilter` cases unchanged; `SnippetText.Escape` / `ToPlain` round trip on `a$b`, `x}y`, `c\d`, `SELECT ${1:cols} FROM ${2:table}$0` -> `SELECT cols FROM table`.
-- [ ] Implement, XML docs.
+- [x] Tests first (`tests/Squill.Sql.Tests/Completion/CompletionItemTests.cs`): defaults (`FilterText` null, `IsSnippet` false), `with` keeps the new members, `CompletionFilter` matches by `FilterText` (item `orders o` / filter text `orders`, prefix `ord` keeps it, prefix `o ` does not), existing `CompletionFilter` cases unchanged; `SnippetText.Escape` / `ToPlain` round trip on `a$b`, `x}y`, `c\d`, `SELECT ${1:cols} FROM ${2:table}$0` -> `SELECT cols FROM table`.
+- [x] Implement, XML docs.
 
 ## Acceptance criteria
 - Recipe section 4. Existing tests untouched and green.
