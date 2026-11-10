@@ -1,6 +1,6 @@
 # P13-11 - Data: one plan scenario run on every engine
 
-Status: todo
+Status: done
 Depends on: P13-05, P13-06, P13-08, P13-10
 
 ## Goal
@@ -18,10 +18,15 @@ A shared scenario (the way `MultiResultScenario` and `CancelScenario` are shared
 - Presentation, UI.
 
 ## Tasks
-- [ ] Scenario file, four test classes, any fix of a provider bug the scenario finds (under ~30 lines with a regression test; otherwise a new card `P13-23` onwards, added to the index).
+- [x] Scenario file, four test classes, any fix of a provider bug the scenario finds (under ~30 lines with a regression test; otherwise a new card `P13-23` onwards, added to the index).
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5; `rtk pwsh eng/run-docker-tests.ps1 -Engine all` green; no container left.
 
 ## Suggested commit message
 Prove query plans on every engine with a shared scenario
+
+## Notes from the implementation
+- Engine exceptions are data in `PlanSpec` (not skipped asserts): SQLite lists nested loops as plain steps (`HasJoinNode: false`) and has no cost; MySQL's actual plan of a primary-key lookup is `Rows fetched before execution` without a table (`ActualFoldsConstantLookup`).
+- Two real engine facts the scenario encodes in code comments: the `EXPLAIN ANALYZE` tree of MySQL gives no estimate on `Limit`/`Sort` nodes or on its `<temporary>` grouping table, so the root cost is required of estimated plans only.
+- The sample tables are seeded with three customers and orders so every optimizer plans against non-empty tables; statements use full table names (no aliases) because SQLite and MySQL print the alias as the target.
