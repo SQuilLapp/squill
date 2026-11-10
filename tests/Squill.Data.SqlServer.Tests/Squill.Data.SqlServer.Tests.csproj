@@ -25,6 +25,7 @@
     <Compile Include="../Shared/ScenarioStubs.cs" Link="ScenarioStubs.cs" />
     <Compile Include="../Shared/CancelScenario.cs" Link="CancelScenario.cs" />
     <Compile Include="../Shared/MultiResultScenario.cs" Link="MultiResultScenario.cs" />
+    <Content Include="Plans/*.xml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../Shared/SampleSchema/sqlserver.sql" Link="SampleSchema/sqlserver.sql" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../Shared/SqlCorpusScenario.cs" Link="SqlCorpusScenario.cs" />
     <Compile Include="../Shared/SqlCorpus.cs" Link="SqlCorpus.cs" />

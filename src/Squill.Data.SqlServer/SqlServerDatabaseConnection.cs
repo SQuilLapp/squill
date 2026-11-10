@@ -1,10 +1,11 @@
 using Microsoft.Data.SqlClient;
 using Squill.Core;
+using Squill.Core.Plans;
 
 namespace Squill.Data.SqlServer;
 
 /// <summary>SQL Server implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection
+internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader
 {
     /// <inheritdoc />
     public string ServerVersion => connection.ServerVersion;
@@ -37,6 +38,15 @@ internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int 
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public bool SupportsActualPlan => false;
+
+    /// <inheritdoc />
+    public ValueTask<QueryPlan> ExplainAsync(string sql, IReadOnlyList<QueryParameter> parameters, PlanMode mode, CancellationToken cancellationToken) =>
+        mode == PlanMode.Actual
+            ? throw new PlanUnavailableException("engine", "Actual plans are not available on SQL Server yet.")
+            : SqlServerPlanReader.ExplainAsync(connection, commandTimeoutSeconds, sql, parameters, cancellationToken);
 
     /// <inheritdoc />
     public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>

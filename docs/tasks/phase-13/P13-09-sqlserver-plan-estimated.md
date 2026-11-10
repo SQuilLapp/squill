@@ -1,6 +1,6 @@
 # P13-09 - Data.SqlServer: SHOWPLAN_XML (estimated)
 
-Status: todo
+Status: done
 Depends on: P13-04, P13-02, P11-04
 
 ## Goal
@@ -19,12 +19,16 @@ Depends on: P13-04, P13-02, P11-04
 - Actual plans (P13-10), query hints, plan guides, `STATISTICS PROFILE`.
 
 ## Tasks
-- [ ] Reader, parser, samples from the 2022 image under `tests/Squill.Data.SqlServer.Tests/Plans/` (single table, join + aggregate + sort + top, a seek with key lookup, a statement with a missing-index suggestion, a spill/convert warning if reproducible, else hand-edit one and say so).
-- [ ] Unit tests (nesting through wrapper elements, kind mapping, suggestion text, quoting, warnings, malformed XML -> `PlanParseException`).
-- [ ] Docker-gated: plan of the sample-schema join; **normal statement runs after a successful explain, after an explain of invalid SQL, and after a cancelled explain**; parameters.
+- [x] Reader, parser, samples from the 2022 image under `tests/Squill.Data.SqlServer.Tests/Plans/` (single table, join + aggregate + sort + top, a seek with key lookup, a statement with a missing-index suggestion, a spill/convert warning if reproducible, else hand-edit one and say so).
+- [x] Unit tests (nesting through wrapper elements, kind mapping, suggestion text, quoting, warnings, malformed XML -> `PlanParseException`).
+- [x] Docker-gated: plan of the sample-schema join; **normal statement runs after a successful explain, after an explain of invalid SQL, and after a cancelled explain**; parameters.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5, Docker run for sqlserver green, AOT probe `tools/Squill.AotProbe.SqlServer` clean.
 
 ## Suggested commit message
 Read the SQL Server estimated plan
+
+## Notes from the implementation
+- Bound parameters: SqlClient binds them through `sp_executesql`; under `SHOWPLAN_XML ON` the server returns no operator tree for that RPC (and a bare `EXEC sp_executesql` batch yields one `EXECUTE PROC` statement without `RelOp`). The reader therefore throws `PlanUnavailableException("parameters")` when parameters are present and the answer has no `RelOp`; proven by a Docker test.
+- The spill and `NoJoinPredicate` warnings are covered by hand-edited samples (not reproducible on a tiny dataset); the other samples are real captures from `mssql/server:2022-latest`.
