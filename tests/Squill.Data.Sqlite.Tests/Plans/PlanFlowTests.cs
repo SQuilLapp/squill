@@ -13,11 +13,11 @@ public sealed class PlanFlowTests
         var file = Path.Combine(Path.GetTempPath(), $"squill-pf-{Guid.NewGuid():N}.db");
         try
         {
-            await PlanFlowScenario.RunAsync(
+            Assert.Null(await Record.ExceptionAsync(async () => await PlanFlowScenario.RunAsync(
                 new SqliteDatabaseProvider(),
                 new ConnectionProfile(Guid.NewGuid(), "t", DatabaseDialect.Sqlite, null, null, null, null, file, null),
                 null,
-                new PlanFlowSpec(false, "", ":", null, null));
+                new PlanFlowSpec(false, "", ":", null, null))));
         }
         finally
         {
