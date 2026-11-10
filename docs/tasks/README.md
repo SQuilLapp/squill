@@ -252,7 +252,7 @@ Depends on: <card ids, ranges allowed>
 | [P12-19](phase-12/P12-19-verify-install-and-update.md) | End-to-end verification: install, update from N to N+1, uninstall | P12-05, P12-06, P12-09, P12-14, P12-15, P12-16 | done (manual checklist pending the owner) |
 | [P12-20](phase-12/P12-20-docs-and-adr.md) | Documentation: release guide, ADR 0009, README and architecture note | P12-17 ... P12-19 | done |
 | [P12-21](phase-12/P12-21-avalonia-linux-macos-packaging.md) | Avalonia head: Linux and macOS packaging with Velopack (optional) | P12-15, P12-16, P12-20 | todo |
-| [P13-01](phase-13/P13-01-core-plan-model.md) | Core: engine-neutral query plan model | none | todo |
+| [P13-01](phase-13/P13-01-core-plan-model.md) | Core: engine-neutral query plan model | none | done |
 | [P13-02](phase-13/P13-02-core-plan-analysis.md) | Core: plan analysis (relative cost, severity, warnings) | P13-01 | todo |
 | [P13-03](phase-13/P13-03-sql-plan-eligibility.md) | Sql: which statements can be explained or analyzed | P13-01 | todo |
 | [P13-04](phase-13/P13-04-data-plan-contract.md) | Data: plan reader contract | P13-01 | todo |

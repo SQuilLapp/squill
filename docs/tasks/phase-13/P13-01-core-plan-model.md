@@ -1,6 +1,6 @@
 # P13-01 - Core: engine-neutral query plan model
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -23,8 +23,8 @@ Namespace `Squill.Core.Plans`, folder `src/Squill.Core/Plans/`, all `public seal
 - Computation of percentages and warnings (P13-02), any parsing (P13-05 ...).
 
 ## Tasks
-- [ ] Records, enums, `Flatten`, `Find`, `PlanIds.Assign`.
-- [ ] `tests/Squill.Core.Tests/Plans/PlanModelTests.cs`: `Flatten` order on a 3-level tree, `Find` hit/miss, `Assign` gives 0..n-1 pre-order and does not mutate the input (records are rebuilt).
+- [x] Records, enums, `Flatten`, `Find`, `PlanIds.Assign`.
+- [x] `tests/Squill.Core.Tests/Plans/PlanModelTests.cs`: `Flatten` order on a 3-level tree, `Find` hit/miss, `Assign` gives 0..n-1 pre-order and does not mutate the input (records are rebuilt).
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5. Core still references nothing new.
