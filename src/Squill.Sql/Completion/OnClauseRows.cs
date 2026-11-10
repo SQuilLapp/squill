@@ -117,7 +117,7 @@ internal static class OnClauseRows
                 CompletionKind.Snippet,
                 condition,
                 relation.ForeignKeyName ?? "same column name",
-                "00" + items.Count.ToString("D6", System.Globalization.CultureInfo.InvariantCulture),
+                CompletionOrder.Relation + items.Count.ToString("D6", System.Globalization.CultureInfo.InvariantCulture),
                 range,
                 Documentation: JoinConditionText.Describe(relation)));
         }

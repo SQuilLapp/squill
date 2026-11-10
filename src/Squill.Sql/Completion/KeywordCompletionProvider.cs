@@ -31,7 +31,7 @@ public sealed class KeywordCompletionProvider : ISqlCompletionProvider
         var previous = Previous(text[..start], request.Dialect);
         var scope = SqlScopeResolver.Resolve(SqlParser.Parse(text, request.Dialect), offset);
         var words = Words(scope.Clause, previous, request.Dialect);
-        return [.. words.Distinct().Select(w => new CompletionItem(w, CompletionKind.Keyword, w, null, null, range))];
+        return [.. words.Distinct().Select(w => new CompletionItem(w, CompletionKind.Keyword, w, null, CompletionOrder.Keyword + w, range))];
     }
 
     private static bool IsWordChar(char c) => char.IsLetterOrDigit(c) || c is '_' or '$';

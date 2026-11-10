@@ -66,9 +66,9 @@ public sealed class SchemaCompletionTests
     public void SelectList_OffersColumnsOfEverySourceAndTheirNames()
     {
         var items = At("select | from users u join orders o on o.user_id = u.id");
-        Assert.Contains(items, i => i is { Label: "name", Kind: CompletionKind.Field, Detail: "text", SortText: "0name" });
+        Assert.Contains(items, i => i is { Label: "name", Kind: CompletionKind.Field, Detail: "text", SortText: "02name" });
         Assert.Contains(items, i => i is { Label: "user_id", Detail: "int" });
-        Assert.Contains(items, i => i is { Label: "u", Kind: CompletionKind.Class, SortText: "1u" });
+        Assert.Contains(items, i => i is { Label: "u", Kind: CompletionKind.Class, SortText: "03u" });
         Assert.Contains(items, i => i.Label == "o");
     }
 

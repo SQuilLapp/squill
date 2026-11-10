@@ -58,17 +58,20 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
 
         if (qualifiers.Count == 0 && InsertTarget(tokens, end) is var (insertSchema, insertTable) && schema.FindTable(insertSchema, insertTable) is { } target)
         {
-            return [.. target.Columns.Select(c => new CompletionItem(c.Name, CompletionKind.Field, IdentifierQuoting.Quote(c.Name, request.Dialect), c.DataType, "0" + c.Name, range))];
+            return [.. target.Columns.Select(c => new CompletionItem(c.Name, CompletionKind.Field, IdentifierQuoting.Quote(c.Name, request.Dialect), c.DataType, CompletionOrder.Column + c.Name, range))];
         }
 
         if (tablePosition)
         {
-            var tables = Tables(schema, qualifiers, request.Dialect, range);
+            // A typed schema qualifier hides the join context from the analyzer, so no join rows (and no relatedness) are offered then.
+            var join = qualifiers.Count == 0 ? JoinContextAnalyzer.Analyze(request, start, offset) : JoinContext.None;
+            var related = join.IsJoin ? CompletionOrder.Related(schema, join.LeftSources) : [];
+            var tables = Tables(schema, qualifiers, request.Dialect, range, CompletionOrder.Usage(request, range), related);
 
-            // Join rows go above the plain rows; a typed schema qualifier hides the join context from the analyzer, so none are offered then.
+            // Join rows go above the plain rows.
             if (qualifiers.Count == 0 && previous!.Equals("JOIN", StringComparison.OrdinalIgnoreCase))
             {
-                tables.InsertRange(0, JoinRows.Build(schema, JoinContextAnalyzer.Analyze(request, start, offset), request.Dialect, range));
+                tables.InsertRange(0, JoinRows.Build(schema, join, request.Dialect, range));
             }
 
             return tables;
@@ -77,7 +80,7 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
         if (scope.Clause is ClauseKind.Select or ClauseKind.Where or ClauseKind.On or ClauseKind.GroupBy
             or ClauseKind.Having or ClauseKind.OrderBy or ClauseKind.Set)
         {
-            var columns = Columns(schema, scope, qualifiers, request.Dialect, range);
+            var columns = Columns(schema, scope, qualifiers, request.Dialect, range, KeyColumns(request, schema, scope, qualifiers, start));
             if (scope.Clause == ClauseKind.On && qualifiers.Count == 0)
             {
                 columns.InsertRange(0, OnClauseRows.Build(request, schema, scope, start, range));
@@ -115,7 +118,47 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
         return j >= 0 && tokens[j].Text.Equals("INTO", StringComparison.OrdinalIgnoreCase) ? (owner, name) : null;
     }
 
-    private static List<CompletionItem> Tables(SchemaSnapshot schema, List<string> qualifiers, DatabaseDialect dialect, TextRange range)
+    /// <summary>Finds the key columns to rank first: inside <c>ON</c> those of the foreign keys between the new table and the earlier ones, elsewhere primary and foreign key columns of the source nearest to the caret.</summary>
+    private static Dictionary<VisibleSource, HashSet<string>> KeyColumns(SqlRequest request, SchemaSnapshot schema, ScopeInfo scope, List<string> qualifiers, int wordStart)
+    {
+        var keys = new Dictionary<VisibleSource, HashSet<string>>();
+        var local = scope.Sources.Take(scope.LocalCount).ToList();
+        TableInfo? Real(VisibleSource s) => s.DerivedColumns is null ? schema.FindTable(s.Schema, s.Name) : null;
+
+        if (scope.Clause == ClauseKind.On && qualifiers.Count == 0 && OnClauseRows.AnalyzeOn(request, wordStart, local) is { } on)
+        {
+            if (Real(on.New) is { } added)
+            {
+                keys[on.New] = [.. on.LeftSources.Select(Real).OfType<TableInfo>().SelectMany(e => CompletionOrder.KeyColumnsWith(added, e))];
+                foreach (var earlier in on.LeftSources)
+                {
+                    if (Real(earlier) is { } table)
+                    {
+                        keys[earlier] = [.. CompletionOrder.KeyColumnsWith(table, added)];
+                    }
+                }
+            }
+
+            return keys;
+        }
+
+        foreach (var source in qualifiers.Count == 0 ? local.TakeLast(1) : local)
+        {
+            if (Real(source) is { } table)
+            {
+                keys[source] =
+                [
+                    .. table.Columns.Where(c => c.IsPrimaryKey).Select(c => c.Name),
+                    .. table.ForeignKeys.SelectMany(fk => fk.Columns),
+                    .. local.Where(o => o != source).Select(Real).OfType<TableInfo>().SelectMany(o => CompletionOrder.KeyColumnsWith(table, o)),
+                ];
+            }
+        }
+
+        return keys;
+    }
+
+    private static List<CompletionItem> Tables(SchemaSnapshot schema, List<string> qualifiers, DatabaseDialect dialect, TextRange range, Dictionary<string, int> usage, HashSet<TableInfo> related)
     {
         var items = new List<CompletionItem>();
         if (qualifiers.Count > 0)
@@ -123,24 +166,24 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
             var owner = qualifiers[^1];
             foreach (var t in schema.Tables.Where(t => string.Equals(t.Schema, owner, StringComparison.OrdinalIgnoreCase)))
             {
-                items.Add(Table(t, null, dialect, range));
+                items.Add(Table(t, null, dialect, range, CompletionOrder.TableSort(t, usage, related)));
             }
 
             return items;
         }
 
-        items.AddRange(schema.Tables.Select(t => Table(t, schema, dialect, range)));
+        items.AddRange(schema.Tables.Select(t => Table(t, schema, dialect, range, CompletionOrder.TableSort(t, usage, related))));
         var schemas = schema.Tables.Select(t => t.Schema).OfType<string>().Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         if (schemas.Count > 1)
         {
-            items.AddRange(schemas.Select(s => new CompletionItem(s, CompletionKind.Module, IdentifierQuoting.Quote(s, dialect), "schema", "1" + s, range)));
+            items.AddRange(schemas.Select(s => new CompletionItem(s, CompletionKind.Module, IdentifierQuoting.Quote(s, dialect), "schema", CompletionOrder.Schema + s, range)));
         }
 
         return items;
     }
 
     // snapshot is null after "schema.": the schema is already typed, so the bare name is inserted.
-    private static CompletionItem Table(TableInfo t, SchemaSnapshot? snapshot, DatabaseDialect dialect, TextRange range)
+    private static CompletionItem Table(TableInfo t, SchemaSnapshot? snapshot, DatabaseDialect dialect, TextRange range, string sortText)
     {
         var kind = t.Kind.IsViewLike() ? "view" : "table";
         var qualified = snapshot is not null && TableReference.NeedsSchema(t, snapshot);
@@ -149,12 +192,12 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
             CompletionKind.Struct,
             snapshot is null ? IdentifierQuoting.Quote(t.Name, dialect) : TableReference.Insert(t, snapshot, dialect),
             qualified ? $"{kind} ({t.Schema})" : kind,
-            "0" + t.Name,
+            sortText,
             range,
             t.Name);
     }
 
-    private static List<CompletionItem> Columns(SchemaSnapshot schema, ScopeInfo scope, List<string> qualifiers, DatabaseDialect dialect, TextRange range)
+    private static List<CompletionItem> Columns(SchemaSnapshot schema, ScopeInfo scope, List<string> qualifiers, DatabaseDialect dialect, TextRange range, Dictionary<VisibleSource, HashSet<string>> keys)
     {
         var sources = scope.Sources.Where(s => Matches(s, qualifiers)).ToList();
         var columns = sources.Select(s => (Source: s, Columns: ColumnsOf(schema, s))).ToList();
@@ -177,7 +220,8 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
                     insert = IdentifierQuoting.Quote(owner, dialect) + "." + insert;
                 }
 
-                items.Add(new CompletionItem(name, CompletionKind.Field, insert, detail, "0" + name, range, name));
+                var group = keys.TryGetValue(source, out var key) && key.Contains(name) ? CompletionOrder.KeyColumn : CompletionOrder.Column;
+                items.Add(new CompletionItem(name, CompletionKind.Field, insert, detail, group + name, range, name));
             }
         }
 
@@ -186,7 +230,7 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
             foreach (var source in sources.Where(s => s.Name.Length > 0 || s.Alias is not null))
             {
                 var label = source.Alias ?? source.Name;
-                items.Add(new CompletionItem(label, CompletionKind.Class, IdentifierQuoting.Quote(label, dialect), source.Alias is null ? "table" : "alias", "1" + label, range));
+                items.Add(new CompletionItem(label, CompletionKind.Class, IdentifierQuoting.Quote(label, dialect), source.Alias is null ? "table" : "alias", CompletionOrder.Qualifier + label, range));
             }
         }
 

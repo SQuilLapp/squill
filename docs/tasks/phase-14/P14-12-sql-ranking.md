@@ -1,6 +1,6 @@
 # P14-12 - Sql: ranking by relevance (keys first, tables already used, related tables)
 
-Status: todo
+Status: done
 Depends on: P14-08, P14-09
 
 ## Goal
@@ -17,8 +17,8 @@ The order of the popup reflects what the user is likely to want, using only data
 - Persisted usage statistics, machine ranking, changing Loom's scorer.
 
 ## Tasks
-- [ ] Tests first (`tests/Squill.Sql.Tests/Completion/RankingTests.cs`): `select * from orders o where |` puts `o.customer_id` (foreign key) and `o.id` (primary key) before `o.note`; after `from customers c, |` tables related to `customers` come before unrelated ones; a table used twice in the statement is above one used once; `insert into |` has no relatedness ordering; ON columns of the key pair first; group order constants asserted in one test; ordering stable (same input, same output).
-- [ ] Implement `CompletionOrder`, switch the providers to it, update tests that asserted the old `"0"` / `"1"` / `"2"` prefixes, reason in the commit message.
+- [x] Tests first (`tests/Squill.Sql.Tests/Completion/RankingTests.cs`): `select * from orders o where |` puts `o.customer_id` (foreign key) and `o.id` (primary key) before `o.note`; after `from customers c, |` tables related to `customers` come before unrelated ones; a table used twice in the statement is above one used once; `insert into |` has no relatedness ordering; ON columns of the key pair first; group order constants asserted in one test; ordering stable (same input, same output).
+- [x] Implement `CompletionOrder`, switch the providers to it, update tests that asserted the old `"0"` / `"1"` / `"2"` prefixes, reason in the commit message.
 
 ## Acceptance criteria
 - Recipe section 4.

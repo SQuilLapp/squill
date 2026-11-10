@@ -108,7 +108,7 @@ public sealed class JoinRowsTests
     {
         var items = At("select * from customers c join |");
         Assert.DoesNotContain(Rows("select * from customers c join |"), r => r.FilterText == "tags");
-        Assert.Contains(items, i => i is { Label: "tags", SortText: "0tags" });
+        Assert.Contains(items, i => i is { Label: "tags", SortText: "05tags" });
     }
 
     [Fact]

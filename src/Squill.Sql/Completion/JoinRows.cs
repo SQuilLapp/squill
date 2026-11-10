@@ -145,7 +145,7 @@ internal static class JoinRows
             CompletionKind.Struct,
             label + " ON " + condition,
             "ON " + condition,
-            "00" + rank.ToString("D6", System.Globalization.CultureInfo.InvariantCulture),
+            CompletionOrder.Relation + rank.ToString("D6", System.Globalization.CultureInfo.InvariantCulture),
             range,
             candidate.Name,
             documentation);
