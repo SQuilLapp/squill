@@ -159,14 +159,25 @@ public sealed class SchemaCompletionProvider : ISqlCompletionProvider
         var sources = scope.Sources.Where(s => Matches(s, qualifiers)).ToList();
         var columns = sources.Select(s => (Source: s, Columns: ColumnsOf(schema, s))).ToList();
         var items = new List<CompletionItem>();
-        foreach (var (source, cols) in columns)
+
+        // Without a typed qualifier a name shared by two sources of the innermost statement must be written qualified, or the server rejects it as ambiguous.
+        var local = qualifiers.Count == 0 ? columns.Take(scope.LocalCount).ToList() : [];
+        for (var i = 0; i < columns.Count; i++)
         {
+            var (source, cols) = columns[i];
             var owner = source.Alias ?? source.Name;
+            var canQualify = i < local.Count && owner.Length > 0;
             foreach (var (name, type) in cols)
             {
                 var shared = columns.Count(c => c.Columns.Any(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))) > 1;
                 var detail = shared ? (type is null ? owner : owner + "." + type) : type;
-                items.Add(new CompletionItem(name, CompletionKind.Field, IdentifierQuoting.Quote(name, dialect), detail, "0" + name, range));
+                var insert = IdentifierQuoting.Quote(name, dialect);
+                if (canQualify && local.Count(c => c.Columns.Any(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))) > 1)
+                {
+                    insert = IdentifierQuoting.Quote(owner, dialect) + "." + insert;
+                }
+
+                items.Add(new CompletionItem(name, CompletionKind.Field, insert, detail, "0" + name, range, name));
             }
         }
 

@@ -1,6 +1,6 @@
 # P14-11 - Sql: a column shared by two tables is inserted qualified
 
-Status: todo
+Status: done
 Depends on: P14-01, P14-04
 
 ## Goal
@@ -16,9 +16,9 @@ Accepting `id` when two visible tables have an `id` column writes `o.id` (or `or
 - Rewriting an already typed bare column, `*` expansion.
 
 ## Tasks
-- [ ] Tests first (`tests/Squill.Sql.Tests/Completion/QualifiedColumnTests.cs`): `select | from users u join orders o on ...` gives `u.id` and `o.id` with details `u.int`, `o.int` and bare `name`, `user_id`; no alias uses the table name; single table stays bare; qualifier typed stays bare; quoting of a qualifier needing quotes per dialect; CTE column shared with a table; derived table without alias stays bare; subquery sources do not qualify against the outer statement.
-- [ ] Update existing tests whose expectation was the bare ambiguous column, reason in the commit message.
-- [ ] Implement, XML docs.
+- [x] Tests first (`tests/Squill.Sql.Tests/Completion/QualifiedColumnTests.cs`): `select | from users u join orders o on ...` gives `u.id` and `o.id` with details `u.int`, `o.int` and bare `name`, `user_id`; no alias uses the table name; single table stays bare; qualifier typed stays bare; quoting of a qualifier needing quotes per dialect; CTE column shared with a table; derived table without alias stays bare; subquery sources do not qualify against the outer statement.
+- [x] Update existing tests whose expectation was the bare ambiguous column, reason in the commit message.
+- [x] Implement, XML docs.
 
 ## Acceptance criteria
 - Recipe section 4.
