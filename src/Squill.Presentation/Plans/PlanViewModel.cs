@@ -20,6 +20,16 @@ public sealed partial class PlanViewModel : ViewModelBase
         var rows = new List<PlanRowViewModel>();
         Collect(plan.Root, 0);
         Rows = rows;
+        ColumnsShown =
+        [
+            true,
+            rows.Any(r => r.RelativeShare is not null),
+            rows.Any(r => r.Node.EstimatedCost is not null),
+            rows.Any(r => r.Node.EstimatedRows is not null),
+            rows.Any(r => r.Node.ActualRows is not null),
+            rows.Any(r => r.Node.ActualTimeMs is not null),
+            rows.Any(r => r.Node.Loops is not null),
+        ];
         ViewMode = PlanViewMode.Graph;
         SelectedRow = rows.Where(r => r.RelativeShare is > 0).MaxBy(r => r.RelativeShare) ?? rows[0];
         Details = new PlanDetailsViewModel(SelectedRow, plan);
@@ -70,6 +80,9 @@ public sealed partial class PlanViewModel : ViewModelBase
 
     /// <summary>Gets one row per node in pre-order, helpers included.</summary>
     public IReadOnlyList<PlanRowViewModel> Rows { get; }
+
+    /// <summary>Gets whether each table column (node, relative cost, total cost, estimated rows, actual rows, time, loops) has a value on at least one row; a column without one is hidden, never filled with invented figures.</summary>
+    public IReadOnlyList<bool> ColumnsShown { get; }
 
     /// <summary>Gets or sets the selected row; the default is the node with the highest share, else the root.</summary>
     [ObservableProperty]

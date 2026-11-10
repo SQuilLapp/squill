@@ -81,22 +81,12 @@ internal sealed partial class PlanTable : UserControl
     private void BuildTable(PlanViewModel plan)
     {
         var rows = plan.Rows;
-        bool Any(Func<PlanNode, bool> has) => rows.Any(r => has(r.Node));
-        var shown = new[]
-        {
-            true,
-            rows.Any(r => r.RelativeShare is not null),
-            Any(n => n.EstimatedCost is not null),
-            Any(n => n.EstimatedRows is not null),
-            Any(n => n.ActualRows is not null),
-            Any(n => n.ActualTimeMs is not null),
-            Any(n => n.Loops is not null),
-        };
+        var shown = plan.ColumnsShown;
         var widths = new double[] { 0, 150, 90, 100, 110, 80, 70 };
         Grid NewGrid()
         {
             var grid = new Grid { Padding = new Thickness(12, 0, 12, 0) };
-            for (var c = 0; c < shown.Length; c++)
+            for (var c = 0; c < shown.Count; c++)
             {
                 if (shown[c])
                     grid.ColumnDefinitions.Add(new ColumnDefinition { Width = c == 0 ? new GridLength(1, GridUnitType.Star) : new GridLength(widths[c]), MinWidth = c == 0 ? 220 : 0 });
@@ -109,7 +99,7 @@ internal sealed partial class PlanTable : UserControl
         {
             if (!shown[column])
                 return;
-            Grid.SetColumn(cell, shown[..column].Count(s => s));
+            Grid.SetColumn(cell, shown.Take(column).Count(s => s));
             cell.Margin = new Thickness(column == 0 ? 0 : 8, 0, 0, 0);
             grid.Children.Add(cell);
         }
@@ -160,11 +150,8 @@ internal sealed partial class PlanTable : UserControl
                 Place(grid, 1, relative);
             }
 
-            Place(grid, 2, Text(row.TotalCost, ink, mono: true, right: true));
-            Place(grid, 3, Text(row.EstimatedRows, ink, mono: true, right: true));
-            Place(grid, 4, Text(row.ActualRows, row.MisestimateText.Length > 0 ? warning : ink, mono: true, right: true));
-            Place(grid, 5, Text(row.Time, ink, mono: true, right: true));
-            Place(grid, 6, Text(row.Loops, ink, mono: true, right: true));
+            for (var c = 0; c < row.NumericCells.Count; c++)
+                Place(grid, c + 2, Text(row.NumericCells[c], c == 2 && row.MisestimateText.Length > 0 ? warning : ink, mono: true, right: true));
 
             var element = new Border { Height = RowHeight, Child = grid };
             var captured = row;

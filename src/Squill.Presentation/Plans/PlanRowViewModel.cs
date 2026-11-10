@@ -56,6 +56,9 @@ public sealed class PlanRowViewModel
     /// <summary>Gets the number of executions of the node.</summary>
     public string Loops { get; }
 
+    /// <summary>Gets the numeric table cells after the relative-cost column: total cost, estimated rows, actual rows, time, loops.</summary>
+    public IReadOnlyList<string> NumericCells => [TotalCost, EstimatedRows, ActualRows, Time, Loops];
+
     /// <summary>Gets the severity driving the border color of the node.</summary>
     public PlanSeverity Severity => Stats.Severity;
 

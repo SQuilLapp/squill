@@ -49,6 +49,18 @@ public sealed class PlanViewModelTests
     }
 
     [Fact]
+    public void ColumnsShown_HidesColumnsWithoutFigures_AndCellsFollowTheColumnOrder()
+    {
+        var sqlite = PlanViewModel.Create(Sqlite());
+        Assert.Equal([true, false, false, false, false, false, false], sqlite.ColumnsShown);
+
+        var postgres = PlanViewModel.Create(Postgres());
+        Assert.True(postgres.ColumnsShown[1] && postgres.ColumnsShown[2] && postgres.ColumnsShown[5]);
+        var row = postgres.Rows[0];
+        Assert.Equal([row.TotalCost, row.EstimatedRows, row.ActualRows, row.Time, row.Loops], row.NumericCells);
+    }
+
+    [Fact]
     public void NoFigures_SelectsTheRoot_InventsNothing_AndShowsNoPills()
     {
         var vm = PlanViewModel.Create(Sqlite());
