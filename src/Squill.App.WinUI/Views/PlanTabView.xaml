@@ -32,8 +32,22 @@
           <RowDefinition x:Name="SplitterRow" Height="Auto" />
           <RowDefinition x:Name="TableRow" Height="38*" />
         </Grid.RowDefinitions>
-        <!-- P13-17 puts the graph canvas in GraphHost. -->
-        <Grid x:Name="GraphHost" />
+        <Grid x:Name="GraphHost">
+          <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="12" Padding="10,6" CornerRadius="6" BorderThickness="1" IsHitTestVisible="False"
+                  Background="{ThemeResource SquillBgSurfaceBrush}" BorderBrush="{ThemeResource SquillBorderBrush}" Canvas.ZIndex="1">
+            <StackPanel Orientation="Horizontal" Spacing="14">
+              <TextBlock x:Name="LegendThickness" Foreground="{ThemeResource SquillFg2Brush}" />
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Border Width="10" Height="10" CornerRadius="2" VerticalAlignment="Center" Background="{ThemeResource SquillWarningBrush}" />
+                <TextBlock x:Name="LegendAlert" Foreground="{ThemeResource SquillFg2Brush}" />
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Border Width="10" Height="10" CornerRadius="2" VerticalAlignment="Center" Background="{ThemeResource SquillDangerBrush}" />
+                <TextBlock x:Name="LegendCritical" Foreground="{ThemeResource SquillFg2Brush}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </Grid>
       </Grid>
       <TextBox x:Name="RawText" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap" BorderThickness="0" CornerRadius="0" Padding="12"
                FontFamily="{StaticResource SquillFontMono}" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />

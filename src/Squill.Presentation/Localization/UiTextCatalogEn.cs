@@ -578,5 +578,9 @@ internal static class UiTextCatalogEn
         ("plan.suggestion.title", "Index suggestion"),
         ("plan.copy", "Copy"),
         ("plan.openineditor", "Open in editor"),
+        ("plan.legend.thickness", "Thickness = rows"),
+        ("plan.legend.alert", "> 30% or alert"),
+        ("plan.legend.critical", "> 60%"),
+        ("plan.graph.misestimate", "est. {0} · actual {1} {2}"),
     ];
 }

@@ -23,6 +23,10 @@ public sealed partial class PlanTabView : UserControl
         TreeButton.Content = UiText.Get("plan.view.tree");
         GraphButton.Content = UiText.Get("plan.view.graph");
         TextButton.Content = UiText.Get("plan.view.text");
+        GraphHost.Children.Insert(0, new PlanGraphCanvas());
+        LegendThickness.Text = UiText.Get("plan.legend.thickness");
+        LegendAlert.Text = UiText.Get("plan.legend.alert");
+        LegendCritical.Text = UiText.Get("plan.legend.critical");
         Grid.SetRow(_splitter, 1);
         Grid.SetRow(_table, 2);
         PlanBody.Children.Add(_splitter);
@@ -111,6 +115,7 @@ public sealed partial class PlanTabView : UserControl
             GraphHost.Visibility = _splitter.Visibility;
         }
 
+        ((PlanGraphCanvas)GraphHost.Children[0]).Plan = graph ? plan : null;
         _table.Bind(tab, plan);
     }
 

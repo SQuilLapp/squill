@@ -1,6 +1,6 @@
 # P13-17 - WinUI head: plan graph canvas
 
-Status: todo
+Status: done
 Depends on: P13-16, P13-13
 
 ## Goal
@@ -15,8 +15,8 @@ The `Graphique` view of the WinUI plan tab: node cards, pills and edges drawn fr
 - Collapse/expand, drag of nodes, export of the graph, Avalonia.
 
 ## Tasks
-- [ ] Canvas, icons, legend, bindings, interaction.
-- [ ] Capture light and dark with the PostgreSQL ANALYZE plan and compare with M06 (cards, edges, pills, legend, glow); SQLite plan too (no bars/percent/time/extra lines; flat edges). Differences listed in the report.
+- [x] Canvas, icons, legend, bindings, interaction.
+- [ ] (not done, see report) Capture light and dark with the PostgreSQL ANALYZE plan and compare with M06 (cards, edges, pills, legend, glow); SQLite plan too (no bars/percent/time/extra lines; flat edges). Differences listed in the report.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green; WinUI AOT publish zero IL2xxx/IL3xxx (Win2D under AOT is already proven by the grid and ER canvases).

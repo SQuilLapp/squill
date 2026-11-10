@@ -17,6 +17,7 @@ public sealed class PlanRowViewModel
         Time = PlanText.Milliseconds(node.ActualTimeMs);
         Loops = PlanText.Count(node.Loops);
         MisestimateText = PlanText.Factor(stats.MisestimateFactor);
+        WarningTexts = [.. stats.Warnings.Where(w => w.Code != PlanMessageCodes.Misestimate).Select(PlanText.Warning)];
     }
 
     /// <summary>Gets the plan node of this row.</summary>
@@ -60,6 +61,9 @@ public sealed class PlanRowViewModel
 
     /// <summary>Gets the estimate error as a multiplier (<c>x590</c>), empty when the estimate was close.</summary>
     public string MisestimateText { get; }
+
+    /// <summary>Gets the texts of the warnings other than the estimate error, which the graph card shows on its own line.</summary>
+    public IReadOnlyList<string> WarningTexts { get; }
 
     /// <summary>Gets a value indicating whether the graph draws this node as an edge pill instead of a card.</summary>
     public bool IsHelper => Node.IsHelper;
