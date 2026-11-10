@@ -1,10 +1,11 @@
 using Npgsql;
 using Squill.Core;
+using Squill.Core.Plans;
 
 namespace Squill.Data.Postgres;
 
 /// <summary>Postgres implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, NpgsqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection
+internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, NpgsqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader
 {
     /// <inheritdoc />
     public string ServerVersion => connection.PostgreSqlVersion.ToString();
@@ -30,6 +31,13 @@ internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, Np
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public bool SupportsActualPlan => true;
+
+    /// <inheritdoc />
+    public ValueTask<QueryPlan> ExplainAsync(string sql, IReadOnlyList<QueryParameter> parameters, PlanMode mode, CancellationToken cancellationToken) =>
+        PostgresPlanReader.ExplainAsync(connection, commandTimeoutSeconds, sql, parameters, mode, cancellationToken);
 
     /// <inheritdoc />
     public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>

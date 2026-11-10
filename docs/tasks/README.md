@@ -257,7 +257,7 @@ Depends on: <card ids, ranges allowed>
 | [P13-03](phase-13/P13-03-sql-plan-eligibility.md) | Sql: which statements can be explained or analyzed | P13-01 | done |
 | [P13-04](phase-13/P13-04-data-plan-contract.md) | Data: plan reader contract | P13-01 | done |
 | [P13-05](phase-13/P13-05-sqlite-plan.md) | Data.Sqlite: EXPLAIN QUERY PLAN | P13-02, P13-04 | done |
-| [P13-06](phase-13/P13-06-postgres-plan.md) | Data.Postgres: EXPLAIN (FORMAT JSON), estimated and analyze | P13-02, P13-04, P11-02 | todo |
+| [P13-06](phase-13/P13-06-postgres-plan.md) | Data.Postgres: EXPLAIN (FORMAT JSON), estimated and analyze | P13-02, P13-04, P11-02 | done |
 | [P13-07](phase-13/P13-07-mysql-plan-estimated.md) | Data.MySql: EXPLAIN FORMAT=JSON (estimated) | P13-02, P13-04, P11-03 | todo |
 | [P13-08](phase-13/P13-08-mysql-plan-analyze.md) | Data.MySql: EXPLAIN ANALYZE (actual) | P13-07 | todo |
 | [P13-09](phase-13/P13-09-sqlserver-plan-estimated.md) | Data.SqlServer: SHOWPLAN_XML (estimated) | P13-02, P13-04, P11-04 | todo |

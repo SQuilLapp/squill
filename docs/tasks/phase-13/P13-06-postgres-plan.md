@@ -1,6 +1,6 @@
 # P13-06 - Data.Postgres: EXPLAIN (FORMAT JSON), estimated and analyze
 
-Status: todo
+Status: done
 Depends on: P13-04, P13-02, P11-02
 
 ## Goal
@@ -22,9 +22,9 @@ Depends on: P13-04, P13-02, P11-02
 - JIT section, triggers section (kept in `Properties` of the root only as text), `auto_explain`, `EXPLAIN (GENERIC_PLAN)`.
 
 ## Tasks
-- [ ] Reader, parser, samples captured from `postgres:17-alpine` under `tests/Squill.Data.Postgres.Tests/Plans/` (estimated join+aggregate+sort+limit; analyze of the same; a bitmap heap scan; a parallel plan with `Gather`; a sort spilled to disk with `set work_mem = '64kB'`).
-- [ ] Unit tests of the parser (shapes, per-loop conversion, spill warnings, helper node, unknown node type, truncated JSON -> `PlanParseException` with source text).
-- [ ] Docker-gated tests: estimated and analyze plans of the sample schema statement; analyze of a `select` calling a writing function fails and leaves no row; analyze inside a user `BEGIN` keeps the user's transaction; parameters; the connection runs a normal statement after each case and after a cancel.
+- [x] Reader, parser, samples captured from `postgres:17-alpine` under `tests/Squill.Data.Postgres.Tests/Plans/` (estimated join+aggregate+sort+limit; analyze of the same; a bitmap heap scan; a parallel plan with `Gather`; a sort spilled to disk with `set work_mem = '64kB'`).
+- [x] Unit tests of the parser (shapes, per-loop conversion, spill warnings, helper node, unknown node type, truncated JSON -> `PlanParseException` with source text).
+- [x] Docker-gated tests: estimated and analyze plans of the sample schema statement; analyze of a `select` calling a writing function fails and leaves no row; analyze inside a user `BEGIN` keeps the user's transaction; parameters; the connection runs a normal statement after each case and after a cancel.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 5, Docker run for postgres green, AOT probe `tools/Squill.AotProbe.Postgres` publishes clean.
