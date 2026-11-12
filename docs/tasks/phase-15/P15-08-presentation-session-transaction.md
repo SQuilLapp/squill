@@ -1,6 +1,6 @@
 # P15-08 - Presentation: the session transaction (mode, state, pending count, journal)
 
-Status: todo
+Status: done
 Depends on: P15-01, P15-02, P15-03
 
 ## Goal
@@ -26,8 +26,8 @@ Depends on: P15-01, P15-02, P15-03
 - Calling it from the query tab, the grid commit, the designer (P15-09, P15-10), dialogs and closing (P15-14), heads.
 
 ## Tasks
-- [ ] `SessionTransaction`, `PendingStatement`, `ConnectionSession.Transaction`, dispose order, strings fr/en.
-- [ ] `tests/Squill.Presentation.Tests/Sessions/SessionTransactionTests.cs` with a recording fake connection (statements sent, scripted errors, a scripted probe): every row of the transition table of recipe decision 3; lazy begin only for a not-read-only statement in `Manual` and never for `SELECT`; the count and the journal limits (500 characters, 200 entries, count past 200); `Commit` / `Rollback` text per dialect (`START TRANSACTION` on MySQL, `BEGIN TRANSACTION` on SQL Server); PostgreSQL error -> `Failed`, `Rollback` clears it, `Commit` refused; non-PostgreSQL error -> probe called; probe says "ended by server" -> `None` and the event; refusal of `AutoCommit` while `Open`; `IsBusy` while an operation is held (commit throws); typed `BEGIN` / `COMMIT` / `ROLLBACK` / `START TRANSACTION` transitions; MySQL implicit-commit statement while `Open` -> `None`; `StatusText` for the four situations in both languages; dispose sends `ROLLBACK` once and swallows its failure; Oracle-like connection (no probe) -> `IsSupported` false and `SetModeAsync(Manual)` refused.
+- [x] `SessionTransaction`, `PendingStatement`, `ConnectionSession.Transaction`, dispose order, strings fr/en.
+- [x] `tests/Squill.Presentation.Tests/Sessions/SessionTransactionTests.cs` with a recording fake connection (statements sent, scripted errors, a scripted probe): every row of the transition table of recipe decision 3; lazy begin only for a not-read-only statement in `Manual` and never for `SELECT`; the count and the journal limits (500 characters, 200 entries, count past 200); `Commit` / `Rollback` text per dialect (`START TRANSACTION` on MySQL, `BEGIN TRANSACTION` on SQL Server); PostgreSQL error -> `Failed`, `Rollback` clears it, `Commit` refused; non-PostgreSQL error -> probe called; probe says "ended by server" -> `None` and the event; refusal of `AutoCommit` while `Open`; `IsBusy` while an operation is held (commit throws); typed `BEGIN` / `COMMIT` / `ROLLBACK` / `START TRANSACTION` transitions; MySQL implicit-commit statement while `Open` -> `None`; `StatusText` for the four situations in both languages; dispose sends `ROLLBACK` once and swallows its failure; Oracle-like connection (no probe) -> `IsSupported` false and `SetModeAsync(Manual)` refused.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9; localization guards green.

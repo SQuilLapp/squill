@@ -12,8 +12,9 @@ public sealed class ConnectionSession : IAsyncDisposable
     private readonly ISshTunnel? _tunnel;
     private readonly Dictionary<string, Task<ConnectionSession>> _derived = new(StringComparer.OrdinalIgnoreCase);
 
-    internal ConnectionSession(ConnectionProfile profile, IDatabaseConnection connection, SchemaSnapshot schema, ISshTunnel? tunnel)
+    internal ConnectionSession(ConnectionProfile profile, IDatabaseConnection connection, SchemaSnapshot schema, ISshTunnel? tunnel, TimeProvider? time = null)
     {
+        Transaction = new SessionTransaction(connection, profile.Dialect, time ?? TimeProvider.System);
         Profile = profile;
         Connection = connection;
         Schema = schema;
@@ -40,6 +41,9 @@ public sealed class ConnectionSession : IAsyncDisposable
 
     /// <summary>Gets the profile the session was opened from (with the original host, not the tunnel's).</summary>
     public ConnectionProfile Profile { get; }
+
+    /// <summary>Gets the transaction of this session, shared by every tab that uses its connection.</summary>
+    public SessionTransaction Transaction { get; }
 
     /// <summary>Gets the open database connection.</summary>
     public IDatabaseConnection Connection { get; }
@@ -109,6 +113,7 @@ public sealed class ConnectionSession : IAsyncDisposable
                 }
             }
             _derived.Clear();
+            await Transaction.DisposeAsync();
             await Connection.DisposeAsync();
         }
         finally
