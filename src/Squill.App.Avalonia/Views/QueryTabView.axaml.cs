@@ -34,6 +34,8 @@ public sealed partial class QueryTabView : UserControl
     public QueryTabView()
     {
         InitializeComponent();
+        Preview.OpenChanged += (_, open) => SyncPreviewColumn(open);
+        SyncPreviewColumn(false);
         Empty.Text = UiText.Get("results.empty");
         IsVisible = false;
         Toolbar.SizeChanged += (_, _) => LayoutToolbar();
@@ -313,6 +315,16 @@ public sealed partial class QueryTabView : UserControl
         ResultGrid.Selection = result?.Selection ?? new GridSelection();
         ResultGrid.EditController = result?.EditController;
         ResultGrid.DataSource = result?.DisplayGrid;
+        Preview.Attach(result?.Preview);
+    }
+
+    // A closed pane gives its whole column back (the width the user dragged stays in Width, only the limits change).
+    private void SyncPreviewColumn(bool open)
+    {
+        PreviewSplitter.IsVisible = open;
+        var column = ResultBody.ColumnDefinitions[2];
+        column.MinWidth = open ? 160 : 0;
+        column.MaxWidth = open ? double.PositiveInfinity : 0;
     }
 
     private void OnExportCsv(object? sender, RoutedEventArgs e) => Export(new CsvResultExporter());

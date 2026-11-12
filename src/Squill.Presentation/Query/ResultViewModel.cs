@@ -23,8 +23,13 @@ public sealed partial class ResultViewModel : ViewModelBase
         {
             ReadOnlyReason = "loading";
             grid.Changed += (_, _) => UpdateHeader();
+            Selection = new GridSelection();
+            Preview = new CellPreviewViewModel(this);
         }
     }
+
+    /// <summary>Gets the preview of the selected cell's full value, or <see langword="null"/> for a message.</summary>
+    public CellPreviewViewModel? Preview { get; }
 
     /// <summary>Gets the tab header: the title, then the loaded row count and a <c>+</c> when the row limit truncated the result.</summary>
     [ObservableProperty]
@@ -41,7 +46,7 @@ public sealed partial class ResultViewModel : ViewModelBase
     /// <summary>Gets the keyboard and cell-edit logic shared by the heads; set together with <see cref="Editor"/>.</summary>
     public GridEditController? EditController { get; private set; }
 
-    /// <summary>Gets the selection the heads and <see cref="EditController"/> share; set together with <see cref="Editor"/>.</summary>
+    /// <summary>Gets the selection the heads and <see cref="EditController"/> share; <see langword="null"/> for a message.</summary>
     public GridSelection? Selection { get; private set; }
 
     /// <summary>Gets why the grid cannot be edited (<c>loading</c> while it streams), or <see langword="null"/> when it is editable or a message.</summary>
@@ -68,7 +73,7 @@ public sealed partial class ResultViewModel : ViewModelBase
 
     internal void SetEditor(ResultEditorViewModel editor)
     {
-        Selection = new GridSelection();
+        Selection ??= new GridSelection();
         EditController = new GridEditController(editor, Selection);
         Editor = editor;
         ReadOnlyReason = null;

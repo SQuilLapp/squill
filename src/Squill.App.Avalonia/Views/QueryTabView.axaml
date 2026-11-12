@@ -216,12 +216,14 @@
         </DockPanel>
       </Border>
       <ProgressBar Grid.Row="2" IsIndeterminate="True" Height="2" IsVisible="{Binding IsRunning}" />
-      <Grid Grid.Row="3">
+      <Grid Name="ResultBody" Grid.Row="3" ColumnDefinitions="*,Auto,340">
         <c:DataGridView Name="ResultGrid" />
         <SelectableTextBlock Name="Message" Margin="12" TextWrapping="Wrap" IsVisible="False"
                    Foreground="{DynamicResource SquillFgBrush}" />
         <TextBlock Name="Empty" Margin="12" Text=""
                    Foreground="{DynamicResource SquillFg3Brush}" />
+        <GridSplitter Name="PreviewSplitter" Grid.Column="1" Width="4" IsVisible="False" Background="{DynamicResource SquillBorderBrush}" />
+        <v:CellPreviewPanel Name="Preview" Grid.Column="2" />
       </Grid>
       <Border Name="Footer" Grid.Row="4" Height="26" Padding="12,0" IsVisible="False" Background="{DynamicResource SquillBgSurfaceBrush}"
               BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,1,0,0">
