@@ -29,8 +29,9 @@
       <ColumnDefinition Width="Auto" />
       <ColumnDefinition Width="*" />
       <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="264" />
     </Grid.ColumnDefinitions>
-    <Border x:Name="TitleBar" Grid.ColumnSpan="5" BorderThickness="0,0,0,1">
+    <Border x:Name="TitleBar" Grid.ColumnSpan="6" BorderThickness="0,0,0,1">
       <Grid x:Name="TitleGrid" ColumnDefinitions="Auto,*,0">
         <StackPanel Orientation="Horizontal" Margin="14,0,0,0" HorizontalAlignment="Left">
           <Image x:Name="TitleIcon" Width="16" Height="16" Margin="0,0,8,0" />
@@ -59,7 +60,7 @@
         </Border>
       </Grid>
     </Border>
-    <InfoBar x:Name="UpdateBar" Grid.Row="1" Grid.ColumnSpan="5" IsOpen="False" IsClosable="True" Severity="Informational" CornerRadius="0" Closed="OnUpdateBarClosed" />
+    <InfoBar x:Name="UpdateBar" Grid.Row="1" Grid.ColumnSpan="6" IsOpen="False" IsClosable="True" Severity="Informational" CornerRadius="0" Closed="OnUpdateBarClosed" />
     <Border x:Name="ActivityRail" Grid.Row="2" BorderThickness="0,0,1,0">
       <Grid>
         <StackPanel Spacing="4" Margin="0,4,0,0" VerticalAlignment="Top">
@@ -108,7 +109,7 @@
       <v:PlanTabView x:Name="PlanArea" Grid.Row="1" Visibility="Collapsed" />
       <Grid x:Name="TerminalArea" Grid.Row="1" Visibility="Collapsed" />
     </Grid>
-    <v:PropertiesPanel x:Name="Properties" Grid.Row="2" Grid.Column="4" />
-    <v:StatusBar x:Name="Status" Grid.Row="3" Grid.ColumnSpan="5" />
+    <v:PropertiesPanel x:Name="Properties" Grid.Row="2" Grid.Column="5" />
+    <v:StatusBar x:Name="Status" Grid.Row="3" Grid.ColumnSpan="6" />
   </Grid>
 </Window>

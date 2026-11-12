@@ -15,11 +15,30 @@ public sealed partial class MainWindow
 
     private void InitializeTitleLayout()
     {
-        RootGrid.SizeChanged += (_, e) => PropertiesHost.IsVisible = e.NewSize.Width >= PropertiesMinWindowWidth;
+        RootGrid.SizeChanged += (_, e) =>
+        {
+            PropertiesHost.IsVisible = e.NewSize.Width >= PropertiesMinWindowWidth;
+            SyncPropertiesColumn();
+        };
+        Properties.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == IsVisibleProperty)
+                SyncPropertiesColumn();
+        };
         if (OperatingSystem.IsMacOS())
             return;
         TitleBar.SizeChanged += (_, _) => UpdateTitleLayout();
         Opened += (_, _) => UpdateTitleLayout();
+    }
+
+    // A hidden Properties panel gives its whole column back (the width the user dragged stays in Width, only the limits change).
+    private void SyncPropertiesColumn()
+    {
+        var shown = PropertiesHost.IsVisible && Properties.IsVisible;
+        PropertiesSplitter.IsVisible = shown;
+        var column = RootGrid.ColumnDefinitions[5];
+        column.MinWidth = shown ? 120 : 0;
+        column.MaxWidth = shown ? double.PositiveInfinity : 0;
     }
 
     // The search box keeps at least 200 px; when the menu bar would leave it less, the menu items move into the hamburger flyout (moved, not copied, so bindings stay).
