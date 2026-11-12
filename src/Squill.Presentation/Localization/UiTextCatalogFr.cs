@@ -604,5 +604,18 @@ internal static class UiTextCatalogFr
         ("tx.implicitCommit.title", "Valider la transaction en cours ?"),
         ("tx.implicitCommit.message", "Cette modification de schéma valide implicitement la transaction ouverte sur ce serveur. Valider et appliquer ?"),
         ("tx.failed.refresh", "Transaction en échec : le schéma n'a pas été relu. Annulez la transaction."),
+        ("tx.cannotRun", "Cette instruction ({0}) ne peut pas s'exécuter dans une transaction : validez ou annulez d'abord."),
+        ("tx.committed", "Transaction validée"),
+        ("tx.rolledBack", "Transaction annulée"),
+        ("tx.resolveFirst", "Validez ou annulez la transaction avant de repasser en auto-commit."),
+        ("tx.button.commit", "Valider"),
+        ("tx.button.rollback", "Annuler"),
+        ("tx.mode.auto", "Auto-commit"),
+        ("tx.mode.manual", "Manuel"),
+        ("tx.pill.one", "{0} instruction non validée"),
+        ("tx.pill.other", "{0} instructions non validées"),
+        ("tx.tooltip.commit", "Valider la transaction (Ctrl+Alt+C)"),
+        ("tx.tooltip.rollback", "Annuler la transaction (Ctrl+Alt+Z)"),
+        ("tx.tooltip.mode", "Mode de transaction de la connexion"),
     ];
 }

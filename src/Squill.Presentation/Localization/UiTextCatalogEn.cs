@@ -604,5 +604,18 @@ internal static class UiTextCatalogEn
         ("tx.implicitCommit.title", "Commit the open transaction?"),
         ("tx.implicitCommit.message", "This schema change implicitly commits the transaction open on this server. Commit and apply?"),
         ("tx.failed.refresh", "Transaction failed: the schema was not read again. Roll the transaction back."),
+        ("tx.cannotRun", "This statement ({0}) cannot run inside a transaction: commit or roll back first."),
+        ("tx.committed", "Transaction committed"),
+        ("tx.rolledBack", "Transaction rolled back"),
+        ("tx.resolveFirst", "Commit or roll back the transaction before switching back to auto-commit."),
+        ("tx.button.commit", "Commit"),
+        ("tx.button.rollback", "Roll back"),
+        ("tx.mode.auto", "Autocommit"),
+        ("tx.mode.manual", "Manual"),
+        ("tx.pill.one", "{0} uncommitted statement"),
+        ("tx.pill.other", "{0} uncommitted statements"),
+        ("tx.tooltip.commit", "Commit the transaction (Ctrl+Alt+C)"),
+        ("tx.tooltip.rollback", "Roll the transaction back (Ctrl+Alt+Z)"),
+        ("tx.tooltip.mode", "Transaction mode of the connection"),
     ];
 }

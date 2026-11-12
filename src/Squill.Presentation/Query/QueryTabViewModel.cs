@@ -19,6 +19,7 @@ using Squill.Sql.Completion;
 using Squill.Sql.Functions;
 using Squill.Sql.Editing;
 using Squill.Sql.Formatting;
+using Squill.Sql.Transactions;
 using Squill.Sql.Plans;
 
 namespace Squill.Presentation.Query;
@@ -93,9 +94,25 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             RefreshPlanState();
         };
         editor.CaretChanged += (_, _) => RefreshPlanState();
+        _session.Transaction.PropertyChanged += (_, _) => NotifyTransactionCommands();
         UpdateDiagnostics();
         RefreshPlanState();
     }
+
+    /// <summary>The keyboard shortcut of <see cref="CommitCommand"/>, read by the heads.</summary>
+    public const string CommitShortcut = "Ctrl+Alt+C";
+
+    /// <summary>The keyboard shortcut of <see cref="RollbackCommand"/>, read by the heads.</summary>
+    public const string RollbackShortcut = "Ctrl+Alt+Z";
+
+    /// <summary>Gets the transaction of the session, shared with every other tab of it; the heads bind to it directly.</summary>
+    public SessionTransaction Transaction => _session.Transaction;
+
+    /// <summary>Gets whether <see cref="CommitCommand"/> can run: a transaction is open and nothing else runs on the session.</summary>
+    public bool CanCommit => !IsRunning && Transaction.CanCommit;
+
+    /// <summary>Gets whether <see cref="RollbackCommand"/> can run: a transaction is open or failed and nothing else runs on the session.</summary>
+    public bool CanRollback => !IsRunning && Transaction.CanRollback;
 
     /// <summary>Gets the session the statements run on.</summary>
     public ConnectionSession Session => _session;
@@ -114,7 +131,19 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool IsRunning { get; private set; }
 
-    partial void OnIsRunningChanged(bool value) => RefreshPlanState();
+    partial void OnIsRunningChanged(bool value)
+    {
+        RefreshPlanState();
+        NotifyTransactionCommands();
+    }
+
+    private void NotifyTransactionCommands()
+    {
+        OnPropertyChanged(nameof(CanCommit));
+        OnPropertyChanged(nameof(CanRollback));
+        CommitCommand.NotifyCanExecuteChanged();
+        RollbackCommand.NotifyCanExecuteChanged();
+    }
 
     /// <summary>Gets whether <see cref="ExplainCommand"/> can produce a plan now: the engine reads plans, the statement under the caret is explainable and nothing is running.</summary>
     [ObservableProperty]
@@ -180,6 +209,73 @@ public sealed partial class QueryTabViewModel : ViewModelBase
 
     [RelayCommand]
     private void Cancel() => _cancel?.Invoke();
+
+    /// <summary>Commits the transaction of the session and writes a <c>COMMIT</c> history entry.</summary>
+    [RelayCommand(CanExecute = nameof(CanCommit))]
+    private async Task CommitAsync()
+    {
+        if (!CanCommit || !await ConfirmCommitAsync())
+            return;
+        await RunControlAsync(true);
+    }
+
+    /// <summary>Rolls the transaction of the session back and writes a <c>ROLLBACK</c> history entry.</summary>
+    [RelayCommand(CanExecute = nameof(CanRollback))]
+    private async Task RollbackAsync()
+    {
+        if (CanRollback)
+            await RunControlAsync(false);
+    }
+
+    /// <summary>Switches the session between auto-commit and manual transactions.</summary>
+    /// <param name="mode">The mode to switch to.</param>
+    [RelayCommand]
+    private async Task SetModeAsync(TransactionMode mode)
+    {
+        if (mode == TransactionMode.AutoCommit && Transaction.State != TransactionState.None)
+        {
+            StatusText = UiText.Get("tx.resolveFirst");
+            return;
+        }
+
+        try
+        {
+            await Transaction.SetModeAsync(mode, CancellationToken.None);
+        }
+        catch (InvalidOperationException ex)
+        {
+            StatusText = ex.Message;
+        }
+    }
+
+    // Seam of the production confirmation of Valider (P15-12).
+    private static ValueTask<bool> ConfirmCommitAsync() => ValueTask.FromResult(true);
+
+    private async Task RunControlAsync(bool commit)
+    {
+        IsRunning = true;
+        var clock = Stopwatch.StartNew();
+        var succeeded = false;
+        try
+        {
+            if (commit)
+                await Transaction.CommitAsync(CancellationToken.None);
+            else
+                await Transaction.RollbackAsync(CancellationToken.None);
+            succeeded = true;
+            StatusText = UiText.Get(commit ? "tx.committed" : "tx.rolledBack");
+        }
+        catch (Exception ex)
+        {
+            StatusText = ex.Message;
+            AddResult(ResultViewModel.ForMessage(NextTitle(), ex.Message, _dialogs));
+        }
+        finally
+        {
+            await _history.AppendAsync(new HistoryEntry(DateTimeOffset.UtcNow, _session.Profile.Id, commit ? "COMMIT" : "ROLLBACK", succeeded, null, clock.Elapsed), CancellationToken.None);
+            IsRunning = false;
+        }
+    }
 
     /// <summary>Shows the estimated plan of the statement under the caret; the statement is not executed. A plan is not a run and writes no history entry.</summary>
     [RelayCommand]
@@ -310,10 +406,17 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     {
         if (IsRunning || statements.Count == 0)
             return;
+        if (Transaction.IsBusy)
+        {
+            StatusText = UiText.Get("tx.busy");
+            return;
+        }
+
         if (HasPendingChanges && !await _dialogs.ConfirmAsync(UiText.Get("query.run.title"), UiText.Get("query.run.discardChanges")))
             return;
         _baselineText = _editor.Text;
         IsRunning = true;
+        using var operation = Transaction.BeginOperation();
         Results.Clear();
         SelectedResult = null;
         StatusText = UiText.Get("query.running");
@@ -386,8 +489,26 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         var clock = Stopwatch.StartNew();
         long? rows = null;
         var succeeded = false;
+        var traits = StatementClassifier.Classify(original, dialect);
         try
         {
+            var tx = Transaction;
+            if (tx.State == TransactionState.Failed && traits.Control is not (TransactionControl.Rollback or TransactionControl.RollbackToSavepoint))
+            {
+                AddResult(ResultViewModel.ForMessage(NextTitle(), UiText.Get("tx.failed"), _dialogs));
+                return false;
+            }
+
+            if (traits.CannotRunInTransaction && tx.State != TransactionState.None)
+            {
+                AddResult(ResultViewModel.ForMessage(NextTitle(), UiText.Format("tx.cannotRun", traits.Kind.ToString().ToUpperInvariant()), _dialogs));
+                return false;
+            }
+
+            if (traits.ImplicitCommit && tx.State != TransactionState.None
+                && !await _dialogs.ConfirmAsync(UiText.Get("tx.implicitCommit.title"), UiText.Get("tx.implicitCommit.message")))
+                throw new OperationCanceledException();
+            await tx.EnsureOpenAsync(traits, ct);
             var reader = await _session.Connection.ExecuteAsync(sql, parameters, ct);
             try
             {
@@ -433,17 +554,23 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             }
 
             succeeded = true;
+            Transaction.ObserveSuccess(original, traits, rows ?? 0, Title);
+            if (traits.MayChangeTransaction)
+                await Transaction.ResyncAsync(ct);
             if (IsSchemaChange(original))
                 await RefreshAfterSchemaChangeAsync();
             return true;
         }
         catch (OperationCanceledException)
         {
+            if (Transaction.State != TransactionState.None)
+                await Transaction.ResyncAsync(CancellationToken.None);
             throw;
         }
         catch (Exception ex)
         {
             AddResult(ResultViewModel.ForMessage(NextTitle(), ex.Message, _dialogs));
+            await Transaction.ObserveFailureAsync(ex, traits, CancellationToken.None);
             return false;
         }
         finally

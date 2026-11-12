@@ -1,6 +1,6 @@
 # P15-10 - Presentation: transactions in the query tab (run path, Valider, Annuler, mode)
 
-Status: todo
+Status: done
 Depends on: P15-08, P15-09
 
 ## Goal
@@ -24,8 +24,8 @@ Depends on: P15-08, P15-09
 - Production confirmation (P15-12, P15-13), the question on close / mode switch / exit (P15-14), drawing.
 
 ## Tasks
-- [ ] Commands, run-path integration, history entries, strings fr/en.
-- [ ] `tests/Squill.Presentation.Tests/Query/QueryTabTransactionTests.cs` with the fake connection: `Manual` mode: `SELECT` sends no begin, `INSERT` sends begin then the statement, a second `INSERT` no second begin, pending count 2; `AutoCommit` mode: nothing changes versus today (no begin, count 0); script of three statements stops at the first error and the count excludes it; PostgreSQL error -> `Failed`, next statement refused with `tx.failed` and not sent, `ROLLBACK` typed clears it; `CannotRunInTransaction` refused; MySQL `CREATE TABLE` inside `Open` asks, declined sends nothing, accepted sends and state `None`; typed `BEGIN` in `AutoCommit` -> `Open` with `Valider` enabled; `CommitCommand` / `RollbackCommand` send the right text per dialect, write history entries, reset the count; commit error keeps the state and shows the message; commands disabled while running; a second tab of the same session sees the same state; cancellation inside `Open` calls the probe; shortcuts constants.
+- [x] Commands, run-path integration, history entries, strings fr/en.
+- [x] `tests/Squill.Presentation.Tests/Query/QueryTabTransactionTests.cs` with the fake connection: `Manual` mode: `SELECT` sends no begin, `INSERT` sends begin then the statement, a second `INSERT` no second begin, pending count 2; `AutoCommit` mode: nothing changes versus today (no begin, count 0); script of three statements stops at the first error and the count excludes it; PostgreSQL error -> `Failed`, next statement refused with `tx.failed` and not sent, `ROLLBACK` typed clears it; `CannotRunInTransaction` refused; MySQL `CREATE TABLE` inside `Open` asks, declined sends nothing, accepted sends and state `None`; typed `BEGIN` in `AutoCommit` -> `Open` with `Valider` enabled; `CommitCommand` / `RollbackCommand` send the right text per dialect, write history entries, reset the count; commit error keeps the state and shows the message; commands disabled while running; a second tab of the same session sees the same state; cancellation inside `Open` calls the probe; shortcuts constants.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9; localization guards green; all existing `QueryTabViewModelTests` pass unchanged.
