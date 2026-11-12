@@ -1,6 +1,6 @@
 # P15-12 - Presentation: production confirmation contract, guard, and its use by Run and Valider
 
-Status: todo
+Status: done
 Depends on: P15-10, P15-11
 
 ## Goal
@@ -23,8 +23,8 @@ On a Production connection, `Run`, `Run all` and `Valider` ask the M15 confirmat
 - Grid commit and designer (P15-13), the real dialogs (P15-16, P15-18), a setting to turn it off.
 
 ## Tasks
-- [ ] Types, guard, request builder, `IDialogService` member + temporary head fallbacks + every test fake, run-path and commit integration, strings.
-- [ ] Tests `tests/Squill.Presentation.Tests/Safety/`: guard truth table (environment x kind x destructive x read-only x `Call` x typed `COMMIT`), `RequiredText` for the three cases, `Matches`; builder output for each title / label rule in both languages (exact strings), figure formatting (`1 248 310` fr, `1,248,310` en), six statements -> five listed + `+ 1 autres`; query-tab flow with a fake dialog: Production `SELECT` no dialog, Staging `DELETE` no dialog, Production `DELETE` without `WHERE` asks with `RequiredText` and the estimate, declined sends nothing and writes no history, confirmed + option switches to `Manual` and begins a transaction, confirmed without option sends auto-committed, `Manual` mode locks the option, script of two statements asks once, `Valider` on Production asks with the journal and a decline keeps the transaction, estimator failure still asks (no figure), `ImplicitCommit` statement hides the option.
+- [x] Types, guard, request builder, `IDialogService` member + temporary head fallbacks + every test fake, run-path and commit integration, strings.
+- [x] Tests `tests/Squill.Presentation.Tests/Safety/`: guard truth table (environment x kind x destructive x read-only x `Call` x typed `COMMIT`), `RequiredText` for the three cases, `Matches`; builder output for each title / label rule in both languages (exact strings), figure formatting (`1 248 310` fr, `1,248,310` en), six statements -> five listed + `+ 1 autres`; query-tab flow with a fake dialog: Production `SELECT` no dialog, Staging `DELETE` no dialog, Production `DELETE` without `WHERE` asks with `RequiredText` and the estimate, declined sends nothing and writes no history, confirmed + option switches to `Manual` and begins a transaction, confirmed without option sends auto-committed, `Manual` mode locks the option, script of two statements asks once, `Valider` on Production asks with the journal and a decline keeps the transaction, estimator failure still asks (no figure), `ImplicitCommit` statement hides the option.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9; localization guards green; existing `Analyser` confirmation tests unchanged.

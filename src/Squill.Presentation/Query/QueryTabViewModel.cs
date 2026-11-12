@@ -12,6 +12,7 @@ using Squill.Presentation.Editing;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Plans;
+using Squill.Presentation.Safety;
 using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Analysis;
@@ -248,8 +249,40 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         }
     }
 
-    // Seam of the production confirmation of Valider (P15-12).
-    private static ValueTask<bool> ConfirmCommitAsync() => ValueTask.FromResult(true);
+    // A declined commit leaves everything open; the close dialog of P15-14 is itself the confirmation and does not come through here.
+    private async ValueTask<bool> ConfirmCommitAsync()
+    {
+        if (_session.Profile.Environment != ConnectionEnvironment.Production)
+            return true;
+        var request = ProductionRequestBuilder.ForCommit(_session.Profile, Transaction.Journal, Transaction.PendingCount);
+        return (await _dialogs.ConfirmProductionAsync(request)).Confirmed;
+    }
+
+    /// <summary>Asks the production confirmation for a run; returns <see langword="null"/> when declined, else whether the statements must run in a new manual transaction.</summary>
+    private async Task<bool?> ConfirmRunAsync(IReadOnlyList<string> statements, Dictionary<string, ParameterValue> values, CancellationToken ct)
+    {
+        var requirement = ProductionGuard.Evaluate(_session.Profile, statements);
+        if (!requirement.Required)
+            return false;
+        long? estimate = null;
+        if (statements.Count == 1 && !ParameterScanner.HasPositional(statements[0], _session.Profile.Dialect))
+        {
+            var original = statements[0];
+            var dialect = _session.Profile.Dialect;
+            List<QueryParameter> parameters = [];
+            foreach (var name in ParameterScanner.Scan(original, dialect))
+                parameters.Add(new QueryParameter(name, values.TryGetValue(name, out var v) && !v.IsNull ? v.Text : null));
+            estimate = (await ImpactEstimator.EstimateAsync(_session, ParameterScanner.Rewrite(original, dialect), parameters, ct))?.Rows;
+        }
+
+        var request = ProductionRequestBuilder.ForRun(_session.Profile, statements, requirement, Transaction.Mode, estimate);
+        if (!Transaction.IsSupported)
+            request = request with { ShowTransactionOption = false, TransactionOptionLocked = false };
+        var answer = await _dialogs.ConfirmProductionAsync(request);
+        if (!answer.Confirmed)
+            return null;
+        return answer.UseTransaction && request.ShowTransactionOption && Transaction.Mode == TransactionMode.AutoCommit;
+    }
 
     private async Task RunControlAsync(bool commit)
     {
@@ -429,6 +462,10 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             var values = await PromptValuesAsync(statements);
             if (values is null)
                 throw new OperationCanceledException();
+            if (await ConfirmRunAsync(statements, values, cts.Token) is not { } switchToManual)
+                throw new OperationCanceledException();
+            if (switchToManual)
+                await Transaction.SetModeAsync(TransactionMode.Manual, cts.Token);
             var completed = 0;
             foreach (var sql in statements)
             {

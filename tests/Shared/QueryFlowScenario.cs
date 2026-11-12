@@ -208,6 +208,9 @@ public static class QueryFlowScenario
 
         public string? SavePath { get; set; }
 
+        public ValueTask<Squill.Presentation.Safety.ProductionConfirmationResult> ConfirmProductionAsync(Squill.Presentation.Safety.ProductionConfirmationRequest request) =>
+            ValueTask.FromResult(new Squill.Presentation.Safety.ProductionConfirmationResult(true, false));
+
         public ValueTask<bool> ConfirmAsync(string title, string message) => ValueTask.FromResult(true);
 
         public ValueTask<string?> PromptAsync(string title, string message, string? initial) => ValueTask.FromResult(initial);

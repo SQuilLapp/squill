@@ -185,6 +185,9 @@ public sealed class ConnectionUiTests
 
     private sealed class Dialogs : IDialogService
     {
+        public ValueTask<Squill.Presentation.Safety.ProductionConfirmationResult> ConfirmProductionAsync(Squill.Presentation.Safety.ProductionConfirmationRequest request) =>
+            ValueTask.FromResult(new Squill.Presentation.Safety.ProductionConfirmationResult(true, false));
+
         public ValueTask<bool> ConfirmAsync(string title, string message) => ValueTask.FromResult(true);
         public ValueTask<string?> PromptAsync(string title, string message, string? initial) => ValueTask.FromResult<string?>(null);
         public ValueTask<string?> PickSaveFileAsync(string suggestedName, string extension) => ValueTask.FromResult<string?>(null);

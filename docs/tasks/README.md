@@ -304,7 +304,7 @@ Depends on: <card ids, ranges allowed>
 | [P15-09](phase-15/P15-09-presentation-short-transactions-and-plans.md) | Presentation: grid commit, designer apply, schema refresh and plans inside an open transaction | P15-08 | done |
 | [P15-10](phase-15/P15-10-presentation-query-tab-transactions.md) | Presentation: transactions in the query tab (run path, Valider, Annuler, mode) | P15-08, P15-09 | done |
 | [P15-11](phase-15/P15-11-presentation-impact-estimate.md) | Presentation: estimated impact of a modifying statement | P15-01 | done |
-| [P15-12](phase-15/P15-12-presentation-production-confirmation.md) | Presentation: production confirmation contract, guard, Run and Valider | P15-10, P15-11 | todo |
+| [P15-12](phase-15/P15-12-presentation-production-confirmation.md) | Presentation: production confirmation contract, guard, Run and Valider | P15-10, P15-11 | done |
 | [P15-13](phase-15/P15-13-presentation-production-grid-and-designer.md) | Presentation: production confirmation for the grid commit and the designer apply | P15-09, P15-12 | todo |
 | [P15-14](phase-15/P15-14-presentation-close-disconnect-exit.md) | Presentation: open transaction on tab close, disconnect, mode switch and exit | P15-10, P15-12 | todo |
 | [P15-15](phase-15/P15-15-winui-transaction-toolbar-and-status.md) | WinUI head: transaction toolbar group and status bar segment | P15-10, P15-14, P9-12 | todo |

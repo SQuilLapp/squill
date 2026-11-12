@@ -22,6 +22,10 @@ internal sealed class WinUiDialogService : IDialogService
         await ShowAsync(title, message, null, UiText.Get("dialog.ok"), UiText.Get("dialog.cancel")) == ContentDialogResult.Primary;
 
     /// <inheritdoc />
+    public async ValueTask<Squill.Presentation.Safety.ProductionConfirmationResult> ConfirmProductionAsync(Squill.Presentation.Safety.ProductionConfirmationRequest request) =>
+        new(await ConfirmAsync(request.Title, request.Message), false); // temporary until the M15 dialog (P15-16 / P15-18)
+
+    /// <inheritdoc />
     public async ValueTask<string?> PromptAsync(string title, string message, string? initial)
     {
         var box = new TextBox { Text = initial ?? "" };
