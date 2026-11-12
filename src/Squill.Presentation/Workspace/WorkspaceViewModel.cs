@@ -53,6 +53,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable
     /// <param name="diagramStore">Persists ER diagram layouts; <see langword="null"/> disables the diagram.</param>
     /// <param name="measureText">Text measurer of the head's diagram font; <see langword="null"/> disables the diagram.</param>
     /// <param name="time">Clock of the 30-second refresh of the transaction duration; defaults to <see cref="TimeProvider.System"/>.</param>
+    /// <param name="tableFilters">Persists the tables the explorer hides; <see langword="null"/> keeps them for the run only.</param>
     public WorkspaceViewModel(
         SessionManager manager,
         ConnectionListViewModel connectionList,
@@ -66,7 +67,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable
         Func<string, string?>? findOnPath = null,
         IDiagramLayoutStore? diagramStore = null,
         Func<string, double>? measureText = null,
-        TimeProvider? time = null)
+        TimeProvider? time = null,
+        ITableFilterStore? tableFilters = null)
     {
         ArgumentNullException.ThrowIfNull(manager);
         ArgumentNullException.ThrowIfNull(connectionList);
@@ -90,7 +92,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable
         _measureText = measureText;
         // shortcut: the timer runs for the life of the workspace instead of starting when a transaction opens; the tick is one cheap pass.
         _elapsedTimer = (time ?? TimeProvider.System).CreateTimer(_ => _dispatcher.Post(RefreshElapsed), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
-        Explorer = new ExplorerTreeViewModel(connectionList, manager.Sessions);
+        Explorer = new ExplorerTreeViewModel(connectionList, manager.Sessions, tableFilters);
         Explorer.OpenTableRequested += (_, r) => _ = OpenTableOnAsync(r.Session, r.Table);
         Explorer.DesignTableRequested += (_, r) => DesignTableOn(r.Session, r.Table);
         Explorer.DropTableRequested += (_, r) =>

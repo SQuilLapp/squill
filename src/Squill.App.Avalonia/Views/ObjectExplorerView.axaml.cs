@@ -50,6 +50,8 @@ public sealed partial class ObjectExplorerView : UserControl
         Tree.SelectedItem = node;
         var connection = node.Kind == ExplorerNodeKind.Connection;
         var table = node.Kind == ExplorerNodeKind.Table;
+        var listed = node.Kind is ExplorerNodeKind.Table or ExplorerNodeKind.View or ExplorerNodeKind.MaterializedView && node.Table is not null;
+        var database = node is { Kind: ExplorerNodeKind.Database or ExplorerNodeKind.Schema, Session: not null };
         var definition = HasDefinition(node.Kind);
         var shown = 0;
         foreach (var item in menu.Items.OfType<MenuItem>())
@@ -59,6 +61,9 @@ public sealed partial class ObjectExplorerView : UserControl
                 "NewItem" or "EditItem" or "DeleteItem" => connection,
                 "ConnectItem" => connection && !node.IsConnected,
                 "DisconnectItem" => connection && node.IsConnected,
+                "ChooseTablesItem" => database,
+                "ShowAllItem" => database && node.Kind == ExplorerNodeKind.Database && node.HiddenCount > 0,
+                "HideTableItem" => listed,
                 "RefreshItem" => node is { Kind: ExplorerNodeKind.Database, Session: not null },
                 "DefinitionItem" => definition,
                 _ => table,
@@ -78,6 +83,24 @@ public sealed partial class ObjectExplorerView : UserControl
     private void OnConnectClicked(object? sender, RoutedEventArgs e) => Workspace?.ConnectCommand.Execute((sender as Control)?.DataContext is ExplorerNode node ? node.Profile : null);
 
     private void OnDisconnectClicked(object? sender, RoutedEventArgs e) => Workspace?.DisconnectCommand.Execute(null);
+
+    private void OnChooseTablesClicked(object? sender, RoutedEventArgs e)
+    {
+        if ((sender as Control)?.DataContext is ExplorerNode node)
+            Explorer?.ChooseTablesCommand.Execute(node);
+    }
+
+    private void OnShowAllClicked(object? sender, RoutedEventArgs e)
+    {
+        if ((sender as Control)?.DataContext is ExplorerNode node)
+            Explorer?.ShowAllTablesCommand.Execute(node);
+    }
+
+    private void OnHideTableClicked(object? sender, RoutedEventArgs e)
+    {
+        if ((sender as Control)?.DataContext is ExplorerNode node)
+            Explorer?.HideTableCommand.Execute(node);
+    }
 
     private void OnRefreshClicked(object? sender, RoutedEventArgs e)
     {

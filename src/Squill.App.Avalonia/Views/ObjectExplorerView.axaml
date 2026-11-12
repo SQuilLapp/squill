@@ -30,6 +30,9 @@
                 <MenuItem Name="DeleteItem" Header="{loc:Text explorer.delete}" Click="OnDeleteClicked" />
                 <MenuItem Name="ConnectItem" Header="{loc:Text explorer.connect}" Click="OnConnectClicked" />
                 <MenuItem Name="DisconnectItem" Header="{loc:Text explorer.disconnect}" Click="OnDisconnectClicked" />
+                <MenuItem Name="ChooseTablesItem" Header="{loc:Text explorer.chooseTables}" Click="OnChooseTablesClicked" />
+                <MenuItem Name="ShowAllItem" Header="{loc:Text explorer.showAllTables}" Click="OnShowAllClicked" />
+                <MenuItem Name="HideTableItem" Header="{loc:Text explorer.hideTable}" Click="OnHideTableClicked" />
                 <MenuItem Name="RefreshItem" Header="{loc:Text explorer.refresh}" Click="OnRefreshClicked" />
                 <MenuItem Name="DesignItem" Header="{loc:Text explorer.designTable}" Click="OnDesignClicked" />
                 <MenuItem Name="ScriptItem" Header="{loc:Text explorer.scriptCreateTable}" Click="OnScriptCreateClicked" />

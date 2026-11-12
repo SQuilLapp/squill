@@ -83,6 +83,7 @@ public sealed partial class MainWindow : Window
         AttachDiagrams(services.Workspace);
         AttachTerminals(services.Workspace);
         Sidebar.Attach(services.Workspace, services.History, services.Snippets);
+        services.Workspace.Explorer.Picker = new Services.WinUiTablePicker(() => Content?.XamlRoot);
         ActiveTabView.AttachPanels(services.History, services.Snippets);
         ActiveTabView.SetEnvironment(services.Workspace.ActiveEnvironment);
         Sidebar.SelectedNodeChanged += (_, node) => Properties.Show(node, services.Workspace);
