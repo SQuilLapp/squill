@@ -49,6 +49,7 @@ src/Squill.Presentation/Designer/TableDesignerViewModel.cs|The foreign key '{fk.
 src/Squill.Presentation/Designer/TableDesignerViewModel.cs|Views depending on this table are not recreated.|English fallback of a coded issue, rendered through issue.design.viewsNotRecreated
 src/Squill.Presentation/Designer/TableDesignerViewModel.cs|\n|line separator between warnings
 src/Squill.Presentation/Diagram/ErSvgExporter.cs| stroke-dasharray=\"6 4\"|SVG markup
+src/Squill.Presentation/Editing/CellEditorKind.cs|yyyy-MM-dd HH:mm:ss|format hint, not translated
 src/Squill.Presentation/Editing/ChangeSetBuilder.cs|duplicate key in pending rows|English fallback of a coded issue, rendered through issue.edit.duplicateKey
 src/Squill.Presentation/Editing/ChangeSetBuilder.cs|{c.Definition.Name} cannot be NULL|English fallback of a coded issue, rendered through issue.edit.columnNull
 src/Squill.Presentation/Editing/ChangeSetBuilder.cs|{d.Name} is required|English fallback of a coded issue, rendered through issue.edit.columnRequired

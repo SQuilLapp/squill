@@ -139,15 +139,26 @@ public sealed partial class SidebarView : UserControl
             else
                 Add(UiText.Get("explorer.connect"), () => _workspace.ConnectCommand.Execute(node.Profile));
         }
+        else if (node is { Kind: ExplorerNodeKind.Database or ExplorerNodeKind.Schema, Session: not null })
+        {
+            Add(UiText.Get("explorer.chooseTables"), () => explorer.ChooseTablesCommand.Execute(node));
+            if (node is { Kind: ExplorerNodeKind.Database, HiddenCount: > 0 })
+                Add(UiText.Get("explorer.showAllTables"), () => explorer.ShowAllTablesCommand.Execute(node));
+            if (node.Kind == ExplorerNodeKind.Database)
+                Add(UiText.Get("explorer.refresh"), () => explorer.RefreshDatabaseCommand.Execute(node));
+        }
         else if (node.Kind == ExplorerNodeKind.Table)
         {
             Add(UiText.Get("explorer.designTable"), () => explorer.DesignCommand.Execute(node));
             Add(UiText.Get("explorer.scriptCreateTable"), () => explorer.ScriptCreateTableCommand.Execute(node));
             Add(UiText.Get("explorer.dropTable"), () => explorer.DropCommand.Execute(node));
+            Add(UiText.Get("explorer.hideTable"), () => explorer.HideTableCommand.Execute(node));
         }
         else if (node.Kind is ExplorerNodeKind.View or ExplorerNodeKind.MaterializedView or ExplorerNodeKind.Function or ExplorerNodeKind.Procedure or ExplorerNodeKind.Trigger)
         {
             Add(UiText.Get("explorer.openDefinition"), () => explorer.OpenDefinitionCommand.Execute(node));
+            if (node.Table is not null)
+                Add(UiText.Get("explorer.hideTable"), () => explorer.HideTableCommand.Execute(node));
         }
         else
         {

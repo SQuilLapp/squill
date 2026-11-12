@@ -4,6 +4,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
+using Squill.Platform.Storage;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
@@ -30,16 +31,20 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     private readonly ConnectionListViewModel _list;
     private readonly ObservableCollection<ConnectionSession> _sessions;
     private readonly HashSet<Guid> _expanded = [];
+    private readonly ITableFilterStore? _filters;
+    private readonly Dictionary<Guid, Dictionary<string, HashSet<string>>> _hidden = [];
 
     /// <summary>Creates the tree and keeps it in step with the saved connections and the open sessions.</summary>
     /// <param name="list">The saved connections.</param>
     /// <param name="sessions">The open sessions.</param>
-    public ExplorerTreeViewModel(ConnectionListViewModel list, ObservableCollection<ConnectionSession> sessions)
+    /// <param name="filters">Persists the tables the user hides, per connection and database; <see langword="null"/> keeps them for the run only.</param>
+    public ExplorerTreeViewModel(ConnectionListViewModel list, ObservableCollection<ConnectionSession> sessions, ITableFilterStore? filters = null)
     {
         ArgumentNullException.ThrowIfNull(list);
         ArgumentNullException.ThrowIfNull(sessions);
         _list = list;
         _sessions = sessions;
+        _filters = filters;
         list.Profiles.CollectionChanged += (_, _) => Rebuild();
         sessions.CollectionChanged += OnSessionsChanged;
         Rebuild();
@@ -56,6 +61,9 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
 
     /// <summary>Raised when the user opens the definition of an object or scripts a table as <c>CREATE TABLE</c>.</summary>
     public event EventHandler<ScriptRequest>? ScriptRequested;
+
+    /// <summary>Gets or sets the dialog that chooses the tables to show; set by the head, without it <see cref="ChooseTablesCommand"/> does nothing.</summary>
+    public ITableVisibilityPicker? Picker { get; set; }
 
     /// <summary>Raised when the user activates a disconnected connection node.</summary>
     public event EventHandler<ConnectionProfile>? ConnectRequested;
@@ -95,14 +103,19 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
         ArgumentNullException.ThrowIfNull(session);
         if (FindConnection(session.Root.Profile.Id) is not { } node)
             return;
-        if (session.Parent is null)
+        if (node.Children.FirstOrDefault(c => c.Session == session) is { } database)
+            FillDatabase(database, session);
+        else if (session.Parent is null)
             Populate(node);
-        else if (node.Children.FirstOrDefault(c => c.Session == session) is { } database)
-        {
-            database.Children.Clear();
-            PopulateDatabase(database, session);
-        }
         ApplyFilter();
+    }
+
+    private void FillDatabase(ExplorerNode database, ConnectionSession session)
+    {
+        database.Children.Clear();
+        var hidden = PopulateDatabase(database, session);
+        database.HiddenCount = hidden;
+        database.Detail = hidden > 0 ? UiText.FormatPlural("explorer.hiddenTables", hidden) : null;
     }
 
     [RelayCommand]
@@ -117,10 +130,52 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task ChooseTablesAsync(ExplorerNode? node, CancellationToken ct)
+    {
+        if (node?.Session is not { } session || Picker is not { } picker)
+            return;
+        var hidden = HiddenOf(session);
+        var choices = session.Schema.Tables
+            .OrderBy(t => t.Schema, StringComparer.OrdinalIgnoreCase).ThenBy(t => t.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(t => new TableChoice(KeyOf(t), t.Kind.IsViewLike(), hidden is null || !hidden.Contains(KeyOf(t))))
+            .ToList();
+        var shown = await picker.PickVisibleAsync(session.Profile.Database is { Length: > 0 } name ? name : session.Profile.Name, choices);
+        if (shown is null)
+            return;
+        var visible = new HashSet<string>(shown, StringComparer.OrdinalIgnoreCase);
+        SetHidden(session, choices.Select(c => c.Key).Where(k => !visible.Contains(k)), ct);
+    }
+
+    [RelayCommand]
+    private void HideTable(ExplorerNode? node)
+    {
+        if (node is { Table: { } table, Session: { } session })
+            SetHidden(session, (HiddenOf(session) ?? []).Append(KeyOf(table)), CancellationToken.None);
+    }
+
+    [RelayCommand]
+    private void ShowAllTables(ExplorerNode? node)
+    {
+        if (node?.Session is { } session)
+            SetHidden(session, [], CancellationToken.None);
+    }
+
+    [RelayCommand]
+    private async Task RefreshDatabaseAsync(ExplorerNode? node, CancellationToken ct)
+    {
+        if (node is not { Kind: ExplorerNodeKind.Database, Session: { } session })
+            return;
+        await session.RefreshSchemaAsync(ct);
+        Reload(session);
+    }
+
+    [RelayCommand]
     private void Activate(ExplorerNode? node)
     {
         if (node is { Kind: ExplorerNodeKind.Connection, Session: null, Profile: { } profile })
             ConnectRequested?.Invoke(this, profile);
+        else if (node is { Kind: ExplorerNodeKind.Database, Session: null })
+            node.IsExpanded = true; // Expanding opens the database.
         else if (node is { Kind: ExplorerNodeKind.Table or ExplorerNodeKind.View or ExplorerNodeKind.MaterializedView, Table: { } table, Session: { } session })
             OpenTableRequested?.Invoke(this, new TableRequest(session, table));
     }
@@ -246,7 +301,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
             Session = session,
             IsExpanded = true,
         };
-        PopulateDatabase(database, session);
+        FillDatabase(database, session);
         connection.Children.Add(database);
         foreach (var other in session.Databases.Where(d => !string.Equals(d, profile.Database, StringComparison.OrdinalIgnoreCase)))
         {
@@ -254,8 +309,13 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
             if (session.FindDatabase(other) is { } opened)
             {
                 node.Session = opened;
-                PopulateDatabase(node, opened);
+                FillDatabase(node, opened);
                 node.IsExpanded = true;
+            }
+            else
+            {
+                // A node without children shows no expander in either tree control, so the database could never be opened.
+                node.Children.Add(new ExplorerNode("…", ExplorerNodeKind.Folder));
             }
             node.PropertyChanged += (_, e) =>
             {
@@ -264,6 +324,8 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
             };
             connection.Children.Add(node);
         }
+
+        LoadFilter(profile.Id); // last: a filter that loads at once reloads the nodes added above
     }
 
     private async Task OpenDatabaseAsync(ExplorerNode node, ConnectionSession parent)
@@ -273,7 +335,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
         {
             var opened = await parent.OpenDatabaseAsync(node.Title, CancellationToken.None);
             // Populate before publishing the session: a session set means the children are there.
-            PopulateDatabase(node, opened);
+            FillDatabase(node, opened);
             node.Session = opened;
             ApplyFilter();
         }
@@ -284,15 +346,19 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
         }
     }
 
-    private static void PopulateDatabase(ExplorerNode database, ConnectionSession session)
+    // Fills the database node and returns how many tables and views the user hid.
+    private int PopulateDatabase(ExplorerNode database, ConnectionSession session)
     {
         var snapshot = session.Schema;
-        var schemas = snapshot.Tables.Select(t => t.Schema ?? "").Concat(snapshot.Routines.Select(r => r.Schema)).Distinct(StringComparer.Ordinal).ToList();
+        var hidden = HiddenOf(session);
+        var allTables = snapshot.Tables;
+        var shownTables = hidden is { Count: > 0 } ? allTables.Where(t => !hidden.Contains(KeyOf(t))).ToList() : allTables;
+        var schemas = shownTables.Select(t => t.Schema ?? "").Concat(snapshot.Routines.Select(r => r.Schema)).Distinct(StringComparer.Ordinal).ToList();
         foreach (var key in schemas)
         {
             // Engines without schemas (SQLite) put their tables straight under the database.
             var parent = database;
-            var tables = snapshot.Tables.Where(t => (t.Schema ?? "") == key).ToList();
+            var tables = shownTables.Where(t => (t.Schema ?? "") == key).ToList();
             var routines = snapshot.Routines.Where(r => r.Schema == key).ToList();
             var triggers = snapshot.Triggers.Where(t => t.Schema == key).ToList();
             if (key.Length > 0)
@@ -309,11 +375,65 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
             AddFolder(parent, session, "explorer.triggers", triggers.Select(t => new ExplorerNode(t.Name, ExplorerNodeKind.Trigger, t.Table)
                 { Profile = session.Profile, Session = session, Trigger = t }));
         }
+
+        return allTables.Count - shownTables.Count;
+    }
+
+    private static string KeyOf(TableInfo table) => string.IsNullOrEmpty(table.Schema) ? table.Name : $"{table.Schema}.{table.Name}";
+
+    private HashSet<string>? HiddenOf(ConnectionSession session) =>
+        _hidden.TryGetValue(session.Profile.Id, out var databases) && databases.TryGetValue(session.Profile.Database ?? "", out var keys) ? keys : null;
+
+    private void SetHidden(ConnectionSession session, IEnumerable<string> keys, CancellationToken ct)
+    {
+        var id = session.Profile.Id;
+        if (!_hidden.TryGetValue(id, out var databases))
+            _hidden[id] = databases = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        databases[session.Profile.Database ?? ""] = new HashSet<string>(keys, StringComparer.OrdinalIgnoreCase);
+        Reload(session);
+        if (_filters is not null)
+        {
+            var snapshot = new TableFilter(databases.Where(d => d.Value.Count > 0).ToDictionary(d => d.Key, d => (IReadOnlyList<string>)[.. d.Value.Order(StringComparer.OrdinalIgnoreCase)], StringComparer.OrdinalIgnoreCase));
+            _ = SaveFilterAsync(id, snapshot, ct);
+        }
+    }
+
+    private async Task SaveFilterAsync(Guid id, TableFilter filter, CancellationToken ct)
+    {
+        try
+        {
+            await _filters!.SaveAsync(id, filter, ct);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // A filter that cannot be saved still applies for this run.
+        }
+    }
+
+    // The saved filter of a connection is read once, when its first session opens; the tree is rebuilt when it hides something.
+    private void LoadFilter(Guid id)
+    {
+        if (_filters is null || _hidden.ContainsKey(id))
+            return;
+        _hidden[id] = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        _ = LoadFilterAsync(id);
+    }
+
+    private async Task LoadFilterAsync(Guid id)
+    {
+        var saved = await _filters!.LoadAsync(id, CancellationToken.None);
+        if (saved is null || saved.Hidden.Count == 0)
+            return;
+        var databases = _hidden[id];
+        foreach (var (database, keys) in saved.Hidden)
+            databases.TryAdd(database, new HashSet<string>(keys, StringComparer.OrdinalIgnoreCase));
+        foreach (var session in _sessions.Where(s => s.Profile.Id == id).SelectMany(s => s.OpenedDatabases.Prepend(s)).ToList())
+            Reload(session);
     }
 
     private static void AddGroup(ExplorerNode parent, ConnectionSession session, string titleKey, IEnumerable<TableInfo> tables, bool expanded)
     {
-        var list = tables.ToList();
+        var list = tables.OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase).ThenBy(t => t.Name, StringComparer.Ordinal).ToList();
         var folder = Node(UiText.Get(titleKey), ExplorerNodeKind.Folder, session, count: list.Count);
         foreach (var table in list)
             folder.Children.Add(TableNode(session, table));

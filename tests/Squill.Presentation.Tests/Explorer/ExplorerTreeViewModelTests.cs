@@ -3,6 +3,7 @@ using System.Globalization;
 using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
+using Squill.Platform.Storage;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Explorer;
 using Squill.Presentation.Sessions;
@@ -372,6 +373,33 @@ public sealed class ExplorerTreeViewModelTests
     }
 
     [Fact]
+    public void Populate_SortsTablesAndViewsAlphabetically_IgnoringCase()
+    {
+        var profile = Profile("p");
+        _list.Profiles.Add(profile);
+        var node = Connect(profile, Table("public", "zebra"), Table("public", "Beta"), Table("public", "alpha"));
+
+        var folder = Descendants(node).First(d => d.Kind == ExplorerNodeKind.Folder && d.Children.Any(c => c.Kind == ExplorerNodeKind.Table));
+
+        Assert.Equal(["alpha", "Beta", "zebra"], folder.Children.Select(c => c.Title));
+    }
+
+    [Fact]
+    public async Task UnopenedDatabase_HasAChildSoTheTreeShowsAnExpander_AndActivatingItOpensIt()
+    {
+        var (connection, _, opened) = ConnectServer(Profile("p"));
+        var other = connection.Children[1];
+
+        Assert.NotEmpty(other.Children);
+        _tree.ActivateCommand.Execute(other);
+        await WaitAsync(() => other.Session is not null);
+
+        Assert.Single(opened);
+        Assert.DoesNotContain(other.Children, c => c.Title == "…");
+        Assert.Contains(Descendants(other), n => n.Title == "remote");
+    }
+
+    [Fact]
     public async Task ExpandOtherDatabase_OpensDerivedSession_ShowsItsSchema_AndReusesItAfterRebuild()
     {
         var (connection, root, opened) = ConnectServer(Profile("p"));
@@ -403,6 +431,23 @@ public sealed class ExplorerTreeViewModelTests
     }
 
     [Fact]
+    public async Task RefreshDatabaseCommand_RebuildsOnlyThatDatabase()
+    {
+        var (connection, _, _) = ConnectServer(Profile("p"));
+        var other = connection.Children[1];
+        other.IsExpanded = true;
+        await WaitAsync(() => other.Session is not null);
+        var own = connection.Children[0];
+        var ownChildren = own.Children.ToList();
+
+        await _tree.RefreshDatabaseCommand.ExecuteAsync(other);
+
+        Assert.Same(other.Session, connection.Children[1].Session);
+        Assert.Equal(ownChildren, own.Children);
+        Assert.Contains(Descendants(connection.Children[1]), n => n.Title == "remote");
+    }
+
+    [Fact]
     public async Task RefreshCommand_OnDerivedNode_RefreshesOnlyThatSession()
     {
         var (connection, root, _) = ConnectServer(Profile("p"));
@@ -416,6 +461,107 @@ public sealed class ExplorerTreeViewModelTests
         Assert.Same(other.Session, connection.Children[1].Session);
         Assert.Contains(Descendants(connection.Children[1]), n => n.Title == "remote");
         Assert.Contains(Descendants(connection.Children[0]), n => n.Title == "own");
+    }
+
+    private sealed class MemoryFilters : ITableFilterStore
+    {
+        public Dictionary<Guid, TableFilter> Saved { get; } = [];
+
+        public ValueTask<TableFilter?> LoadAsync(Guid profileId, CancellationToken ct) => ValueTask.FromResult(Saved.GetValueOrDefault(profileId));
+
+        public ValueTask SaveAsync(Guid profileId, TableFilter filter, CancellationToken ct)
+        {
+            Saved[profileId] = filter;
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class FixedPicker(params string[] shown) : ITableVisibilityPicker
+    {
+        public IReadOnlyList<TableChoice>? Offered { get; private set; }
+
+        public ValueTask<IReadOnlyList<string>?> PickVisibleAsync(string title, IReadOnlyList<TableChoice> choices)
+        {
+            Offered = choices;
+            return ValueTask.FromResult<IReadOnlyList<string>?>(shown);
+        }
+    }
+
+    private (ExplorerTreeViewModel Tree, ExplorerNode Database, MemoryFilters Filters, ConnectionProfile Profile) Filtered(MemoryFilters? filters = null)
+    {
+        filters ??= new MemoryFilters();
+        var tree = new ExplorerTreeViewModel(_list, _sessions, filters);
+        var profile = Profile("f");
+        _list.Profiles.Add(profile);
+        _sessions.Add(Session(profile, new SchemaSnapshot(null, [Table("public", "users"), Table("public", "logs"), Table("public", "v", TableKind.View)])));
+        return (tree, tree.Roots.Single(n => n.Profile == profile).Children.Single(), filters, profile);
+    }
+
+    private static IEnumerable<string> TableTitles(ExplorerNode database) =>
+        Descendants(database).Where(n => n.Kind is ExplorerNodeKind.Table or ExplorerNodeKind.View).Select(n => n.Title);
+
+    [Fact]
+    public async Task ChooseTables_HidesTheUnchecked_ShowsACount_AndSavesPerDatabase()
+    {
+        var (tree, database, filters, profile) = Filtered();
+        var picker = new FixedPicker("public.users", "public.v");
+        tree.Picker = picker;
+
+        await tree.ChooseTablesCommand.ExecuteAsync(database);
+
+        Assert.Equal(["public.logs", "public.users", "public.v"], picker.Offered!.Select(c => c.Key));
+        Assert.Equal(["users", "v"], TableTitles(database));
+        Assert.Equal(1, database.HiddenCount);
+        Assert.Equal(UiText.FormatPlural("explorer.hiddenTables", 1), database.Trailing);
+        Assert.Equal(["public.logs"], filters.Saved[profile.Id].Hidden["d"]);
+    }
+
+    [Fact]
+    public void HideTable_ThenShowAll_RoundTrips()
+    {
+        var (tree, database, _, _) = Filtered();
+        var users = Descendants(database).First(n => n.Title == "users");
+
+        tree.HideTableCommand.Execute(users);
+        Assert.DoesNotContain("users", TableTitles(database));
+
+        tree.ShowAllTablesCommand.Execute(database);
+        Assert.Contains("users", TableTitles(database));
+        Assert.Equal(0, database.HiddenCount);
+        Assert.Null(database.Trailing);
+    }
+
+    [Fact]
+    public async Task SavedFilter_IsAppliedWhenTheConnectionOpens()
+    {
+        var saved = new MemoryFilters();
+        var profile = Profile("g");
+        saved.Saved[profile.Id] = new TableFilter(new Dictionary<string, IReadOnlyList<string>> { ["d"] = ["public.logs"] });
+        var tree = new ExplorerTreeViewModel(_list, _sessions, saved);
+        _list.Profiles.Add(profile);
+
+        _sessions.Add(Session(profile, new SchemaSnapshot(null, [Table("public", "users"), Table("public", "logs")])));
+        var database = tree.Roots.Single(n => n.Profile == profile).Children.Single();
+        await WaitAsync(() => database.HiddenCount == 1);
+
+        Assert.Equal(["users"], TableTitles(database));
+    }
+
+    [Fact]
+    public async Task CancelledPicker_ChangesNothing()
+    {
+        var (tree, database, filters, _) = Filtered();
+        tree.Picker = new CancelPicker();
+
+        await tree.ChooseTablesCommand.ExecuteAsync(database);
+
+        Assert.Empty(filters.Saved);
+        Assert.Equal(3, TableTitles(database).Count());
+    }
+
+    private sealed class CancelPicker : ITableVisibilityPicker
+    {
+        public ValueTask<IReadOnlyList<string>?> PickVisibleAsync(string title, IReadOnlyList<TableChoice> choices) => ValueTask.FromResult<IReadOnlyList<string>?>(null);
     }
 
     private sealed class FakeStore : IProfileStore

@@ -5,6 +5,9 @@ namespace Squill.Presentation.Results;
 /// <summary>Cell, rectangle or whole-column selection of a grid, independent of any UI.</summary>
 public sealed class GridSelection
 {
+    /// <summary>Raised after every change of the selection.</summary>
+    public event EventHandler? Changed;
+
     /// <summary>Gets whether anything is selected.</summary>
     public bool HasSelection { get; private set; }
 
@@ -50,7 +53,11 @@ public sealed class GridSelection
     public bool ContainsColumn(int column) => HasSelection && WholeColumns && column >= FirstColumn && column <= LastColumn;
 
     /// <summary>Clears the selection.</summary>
-    public void Clear() => HasSelection = WholeColumns = false;
+    public void Clear()
+    {
+        HasSelection = WholeColumns = false;
+        Raise();
+    }
 
     /// <summary>Selects a single cell, or extends the rectangle from the anchor.</summary>
     /// <param name="row">The row index.</param>
@@ -68,6 +75,7 @@ public sealed class GridSelection
         ActiveRow = row;
         ActiveColumn = column;
         HasSelection = true;
+        Raise();
     }
 
     /// <summary>Selects a whole column, or extends the column range from the anchor.</summary>
@@ -82,6 +90,7 @@ public sealed class GridSelection
         ActiveColumn = column;
         WholeColumns = true;
         HasSelection = true;
+        Raise();
     }
 
     /// <summary>Selects every loaded cell.</summary>
@@ -101,6 +110,7 @@ public sealed class GridSelection
         ActiveColumn = columnCount - 1;
         WholeColumns = true;
         HasSelection = true;
+        Raise();
     }
 
     /// <summary>Moves the active cell, clamped to the grid.</summary>
@@ -122,10 +132,15 @@ public sealed class GridSelection
         var row = Math.Clamp(ActiveRow + rowDelta, 0, rowCount - 1);
         var column = (int)Math.Clamp(ActiveColumn + columnDelta, 0, columnCount - 1);
         if (WholeColumns && extend)
+        {
             ActiveColumn = column;
+            Raise();
+        }
         else
             SelectCell(row, column, extend);
     }
+
+    private void Raise() => Changed?.Invoke(this, EventArgs.Empty);
 
     /// <summary>Formats the selection as tab-separated text, nulls as empty cells.</summary>
     /// <param name="source">The data the selection refers to.</param>

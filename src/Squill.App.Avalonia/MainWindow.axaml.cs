@@ -95,6 +95,7 @@ public sealed partial class MainWindow : Window
     public void Attach(AppServices services, string dataDirectory)
     {
         Sidebar.Attach(services.History, services.Snippets);
+        services.Workspace.Explorer.Picker = new Services.AvaloniaTablePicker(() => this);
         ActiveTabView.AttachPanels(services.History, services.Snippets);
         services.Workspace.PropertyChanged += (_, e) =>
         {

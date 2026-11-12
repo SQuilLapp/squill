@@ -3,7 +3,7 @@
              xmlns:v="using:Squill.App.Avalonia.Views"
              xmlns:loc="using:Squill.App.Avalonia.Localization"
              x:Class="Squill.App.Avalonia.Views.PropertiesPanel"
-             IsVisible="False" Width="264">
+             IsVisible="False">
   <Border Background="{DynamicResource SquillBgSurfaceBrush}" BorderBrush="{DynamicResource SquillBorderSubtleBrush}"
           BorderThickness="1,0,0,0">
     <DockPanel>

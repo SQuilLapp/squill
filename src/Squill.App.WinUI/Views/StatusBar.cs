@@ -130,7 +130,7 @@ public sealed partial class StatusBar : UserControl
 
     private void OnWorkspaceChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(WorkspaceViewModel.ActiveTab) or nameof(WorkspaceViewModel.ActiveSession))
+        if (e.PropertyName is nameof(WorkspaceViewModel.ActiveTab) or nameof(WorkspaceViewModel.ActiveSession) or nameof(WorkspaceViewModel.ActiveEnvironment))
             Refresh();
     }
 

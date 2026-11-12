@@ -102,8 +102,8 @@
       <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
   </Window.Styles>
-  <Grid Name="RootGrid" RowDefinitions="41,Auto,*,Auto" ColumnDefinitions="45,270,Auto,*,Auto">
-    <Border Name="TitleBar" Grid.ColumnSpan="5" Background="{DynamicResource SquillBgBaseBrush}"
+  <Grid Name="RootGrid" RowDefinitions="41,Auto,*,Auto" ColumnDefinitions="45,270,Auto,*,Auto,264">
+    <Border Name="TitleBar" Grid.ColumnSpan="6" Background="{DynamicResource SquillBgBaseBrush}"
             BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
       <Grid Name="TitleGrid" ColumnDefinitions="Auto,*,0">
         <StackPanel Name="TitleStart" Orientation="Horizontal" Margin="14,0,0,0">
@@ -163,7 +163,7 @@
         </Border>
       </Grid>
     </Border>
-    <Border Name="UpdateBar" Grid.Row="1" Grid.ColumnSpan="5" IsVisible="False" Padding="14,8,8,8" Background="{DynamicResource SquillAccentSoftBrush}"
+    <Border Name="UpdateBar" Grid.Row="1" Grid.ColumnSpan="6" IsVisible="False" Padding="14,8,8,8" Background="{DynamicResource SquillAccentSoftBrush}"
             BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
       <DockPanel>
         <Button DockPanel.Dock="Right" Name="BannerClose" Classes="ghost" Width="28" Height="28" MinHeight="28" Padding="0" VerticalAlignment="Center"
@@ -265,9 +265,10 @@
       <Grid Name="TerminalArea" Grid.Row="1" IsVisible="False" Background="{DynamicResource SquillBgBaseBrush}" />
     </Grid>
     <!-- Hidden on a narrow window (MainWindow.TitleLayout.cs) so the editor keeps its room. -->
-    <Panel Grid.Row="2" Grid.Column="4" Name="PropertiesHost">
+    <GridSplitter Grid.Row="2" Grid.Column="4" Name="PropertiesSplitter" Width="4" IsVisible="False" Background="{DynamicResource SquillBorderBrush}" />
+    <Panel Grid.Row="2" Grid.Column="5" Name="PropertiesHost">
       <v:PropertiesPanel Name="Properties" />
     </Panel>
-    <v:StatusBar Grid.Row="3" Name="Status" Grid.ColumnSpan="5" />
+    <v:StatusBar Grid.Row="3" Name="Status" Grid.ColumnSpan="6" />
   </Grid>
 </Window>

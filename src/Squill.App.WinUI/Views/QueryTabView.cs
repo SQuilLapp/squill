@@ -54,6 +54,7 @@ public sealed partial class QueryTabView : UserControl
     private readonly Border _historyTabBar = new() { BorderThickness = new Thickness(0, 0, 0, 2) };
     private readonly Border _snippetsTabBar = new() { BorderThickness = new Thickness(0, 0, 0, 2) };
     private readonly DataGridView _grid = new();
+    private readonly CellPreviewPanel _preview = new();
     private readonly TextBlock _message = new() { Margin = new Thickness(12), TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true, Foreground = Brush("SquillFgBrush"), Visibility = Visibility.Collapsed };
     private readonly TextBlock _empty = new() { Margin = new Thickness(12), Text = UiText.Get("results.empty"), Foreground = Brush("SquillFg3Brush") };
     private readonly ProgressBar _progress = new() { IsIndeterminate = true, Height = 2, Visibility = Visibility.Collapsed };
@@ -128,7 +129,23 @@ public sealed partial class QueryTabView : UserControl
         results.Children.Add(_editBar);
         results.Children.Add(_progress);
         results.Children.Add(_footer);
-        var body = new Grid { Children = { _grid, _message, _empty } };
+        var body = new Grid
+        {
+            ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto }, new ColumnDefinition { Width = new GridLength(340), MaxWidth = 0 } },
+            Children = { _grid, _message, _empty },
+        };
+        var previewSplitter = new Splitter(true) { ResizeBefore = false, Visibility = Visibility.Collapsed };
+        Grid.SetColumn(previewSplitter, 1);
+        Grid.SetColumn(_preview, 2);
+        body.Children.Add(previewSplitter);
+        body.Children.Add(_preview);
+        // A closed pane gives its whole column back (the width the user dragged stays in Width, only the limits change).
+        _preview.OpenChanged += (_, open) =>
+        {
+            previewSplitter.Visibility = open ? Visibility.Visible : Visibility.Collapsed;
+            body.ColumnDefinitions[2].MinWidth = open ? 160 : 0;
+            body.ColumnDefinitions[2].MaxWidth = open ? double.PositiveInfinity : 0;
+        };
         Grid.SetRow(body, 3);
         results.Children.Add(body);
 
@@ -672,6 +689,7 @@ public sealed partial class QueryTabView : UserControl
         _grid.Selection = result?.Selection ?? new GridSelection();
         _grid.EditController = result?.EditController;
         _grid.DataSource = result?.DisplayGrid;
+        _preview.Attach(result?.Preview);
     }
 
     private sealed record IssueItem(EditIssue Issue, string Text)

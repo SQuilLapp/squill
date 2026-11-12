@@ -109,6 +109,29 @@ public sealed class GridEditControllerTests
     }
 
     [Fact]
+    public void NumberColumn_RefusesLetters_ChecksWhileTyping_AndStepsWithTheArrows()
+    {
+        var f = new Fixture().At(0, 3);
+        Assert.True(f.Controller.Begin());
+        Assert.Equal(CellEditorKind.Whole, f.Controller.EditorKind);
+
+        f.Controller.SetText("4a2");
+        Assert.Equal("42", f.Controller.EditText);
+        Assert.Null(f.Controller.Error);
+
+        f.Controller.SetText("-");
+        Assert.NotNull(f.Controller.Error);
+
+        f.Controller.SetText("9");
+        f.Controller.Step(1);
+        Assert.Equal("10", f.Controller.EditText);
+        f.Controller.Step(-1);
+        f.Controller.Step(-1);
+        Assert.Equal("8", f.Controller.EditText);
+        Assert.True(f.Controller.Commit(EditMove.None));
+    }
+
+    [Fact]
     public void Begin_NullCellStartsEmpty()
     {
         var f = new Fixture().At(0, 2);
@@ -173,7 +196,7 @@ public sealed class GridEditControllerTests
     public void Commit_ErrorKeepsEditing()
     {
         var f = new Fixture().At(1, 3);
-        f.Controller.Begin("abc");
+        f.Controller.Begin("1-");
 
         Assert.False(f.Controller.Commit(EditMove.Down));
 

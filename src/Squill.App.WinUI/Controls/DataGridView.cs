@@ -124,6 +124,12 @@ public sealed partial class DataGridView : Grid
             case VirtualKey.Escape:
                 c.Cancel();
                 break;
+            case VirtualKey.Up or VirtualKey.Down when c.EditorKind is not (CellEditorKind.Text or CellEditorKind.Json or CellEditorKind.Time or CellEditorKind.DateTime):
+                c.Step(e.Key == VirtualKey.Up ? 1 : -1);
+                break;
+            case VirtualKey.Space when c.EditorKind == CellEditorKind.Boolean:
+                c.Step(1);
+                break;
             default:
                 return;
         }
@@ -157,7 +163,10 @@ public sealed partial class DataGridView : Grid
             if (_editor.Text != c.EditText)
             {
                 _editor.Text = c.EditText;
+                _editor.SelectionStart = _editor.Text.Length;
             }
+
+            _editor.PlaceholderText = c.EditHint ?? "";
 
             var danger = c.Error is not null;
             _editorFrame.BorderBrush = (Brush)Application.Current.Resources[danger ? "SquillDangerBrush" : "SquillAccentBrush"];

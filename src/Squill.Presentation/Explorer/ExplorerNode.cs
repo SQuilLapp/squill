@@ -65,8 +65,14 @@ public sealed partial class ExplorerNode(string title, ExplorerNodeKind kind, st
     /// <summary>Gets the text shown for the node.</summary>
     public string Title { get; } = title;
 
-    /// <summary>Gets the secondary text, or <see langword="null"/>.</summary>
-    public string? Detail { get; } = detail;
+    /// <summary>Gets or sets the secondary text, or <see langword="null"/>.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Trailing))]
+    public partial string? Detail { get; set; } = detail;
+
+    /// <summary>Gets or sets how many tables and views of a database node the user hid.</summary>
+    [ObservableProperty]
+    public partial int HiddenCount { get; set; }
 
     /// <summary>Gets the number of objects under a schema or folder node, or <see langword="null"/>. Static: the filter does not change it.</summary>
     public int? Count { get; } = count;

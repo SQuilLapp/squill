@@ -106,6 +106,7 @@ public sealed partial class WorkspaceTabList : ObservableObject
 
     partial void OnSelectedChanged(WorkspaceTab? value)
     {
+        _workspace.ShowTab(value?.Source);
         switch (value?.Source)
         {
             case QueryTabViewModel query:

@@ -53,6 +53,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable
     /// <param name="diagramStore">Persists ER diagram layouts; <see langword="null"/> disables the diagram.</param>
     /// <param name="measureText">Text measurer of the head's diagram font; <see langword="null"/> disables the diagram.</param>
     /// <param name="time">Clock of the 30-second refresh of the transaction duration; defaults to <see cref="TimeProvider.System"/>.</param>
+    /// <param name="tableFilters">Persists the tables the explorer hides; <see langword="null"/> keeps them for the run only.</param>
     public WorkspaceViewModel(
         SessionManager manager,
         ConnectionListViewModel connectionList,
@@ -66,7 +67,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable
         Func<string, string?>? findOnPath = null,
         IDiagramLayoutStore? diagramStore = null,
         Func<string, double>? measureText = null,
-        TimeProvider? time = null)
+        TimeProvider? time = null,
+        ITableFilterStore? tableFilters = null)
     {
         ArgumentNullException.ThrowIfNull(manager);
         ArgumentNullException.ThrowIfNull(connectionList);
@@ -90,7 +92,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable
         _measureText = measureText;
         // shortcut: the timer runs for the life of the workspace instead of starting when a transaction opens; the tick is one cheap pass.
         _elapsedTimer = (time ?? TimeProvider.System).CreateTimer(_ => _dispatcher.Post(RefreshElapsed), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
-        Explorer = new ExplorerTreeViewModel(connectionList, manager.Sessions);
+        Explorer = new ExplorerTreeViewModel(connectionList, manager.Sessions, tableFilters);
         Explorer.OpenTableRequested += (_, r) => _ = OpenTableOnAsync(r.Session, r.Table);
         Explorer.DesignTableRequested += (_, r) => DesignTableOn(r.Session, r.Table);
         Explorer.DropTableRequested += (_, r) =>
@@ -218,13 +220,53 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable
             ActivePlan = Plans.Count == 0 ? null : Plans[Math.Min(index, Plans.Count - 1)];
     }
 
-    /// <summary>Gets the environment of <see cref="ActiveSession"/>, or <see cref="ConnectionEnvironment.None"/> when not connected.</summary>
-    public ConnectionEnvironment ActiveEnvironment => ActiveSession?.Profile.Environment ?? ConnectionEnvironment.None;
+    /// <summary>Gets the environment of the tab on screen, else of <see cref="ActiveSession"/>, or <see cref="ConnectionEnvironment.None"/> when not connected.</summary>
+    public ConnectionEnvironment ActiveEnvironment => (_shownSession ?? ActiveSession)?.Profile.Environment ?? ConnectionEnvironment.None;
+
+    /// <summary>
+    /// Records which tab is on screen, so the environment colour and the status bar follow the tab and not the explorer selection;
+    /// the session of the tab also becomes <see cref="ActiveSession"/>, the one new tabs open on.
+    /// </summary>
+    /// <param name="tab">A query, designer, diagram or plan tab view-model; anything else (a terminal, <see langword="null"/>) has no session.</param>
+    public void ShowTab(object? tab)
+    {
+        var session = tab switch
+        {
+            QueryTabViewModel q => q.Session,
+            TableDesignerViewModel d => d.Session,
+            DiagramTabViewModel g => g.Session,
+            PlanTabViewModel p => p.Source.Session,
+            _ => null,
+        };
+        _shownSession = session;
+        if (session is not null && !ReferenceEquals(ActiveSession, session))
+            ActiveSession = session; // raises ActiveEnvironment
+        else
+            OnPropertyChanged(nameof(ActiveEnvironment));
+    }
 
     partial void OnActiveSessionChanged(ConnectionSession? value)
     {
+        if (value is null)
+            _shownSession = null; // not connected: no tab can be on screen
         OnPropertyChanged(nameof(ActiveEnvironment));
     }
+
+    partial void OnActiveTabChanged(QueryTabViewModel? value) => ShowTabIfAny(value);
+
+    partial void OnActiveDesignerChanged(TableDesignerViewModel? value) => ShowTabIfAny(value);
+
+    partial void OnActiveDiagramChanged(DiagramTabViewModel? value) => ShowTabIfAny(value);
+
+    partial void OnActivePlanChanged(PlanTabViewModel? value) => ShowTabIfAny(value);
+
+    private void ShowTabIfAny(object? tab)
+    {
+        if (tab is not null)
+            ShowTab(tab);
+    }
+
+    private ConnectionSession? _shownSession;
 
     private bool HasSession() => ActiveSession is not null;
 
@@ -275,7 +317,10 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable
         foreach (var opened in session.OpenedDatabases.Prepend(session))
             _tabCounters.Remove(opened);
         await _manager.CloseAsync(session);
+        if (_shownSession?.Root == session)
+            _shownSession = null;
         ActiveSession = Sessions.LastOrDefault();
+        OnPropertyChanged(nameof(ActiveEnvironment));
         ActiveTab = Tabs.LastOrDefault(t => t.Session == ActiveSession);
     }
 

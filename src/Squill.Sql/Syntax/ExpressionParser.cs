@@ -122,7 +122,9 @@ internal sealed class ExpressionParser(SqlParserCore core)
             {
                 "=" or "==" or "<>" or "!=" or "<" or ">" or "<=" or ">=" or "<=>" => (text, Comparison, 1),
                 "~" or "~*" or "!~" or "!~*" or "@>" or "<@" or "&&" => (text, Comparison, 1),
-                "->" or "->>" => (text, Arrow, 1),
+                "->" or "->>" or "#>" or "#>>" => (text, Arrow, 1),
+                "@?" or "@@" or "?" or "?|" or "?&" => (text, Comparison, 1),
+                "#-" => (text, Concat, 1),
                 "&" or "|" or "^" or "<<" or ">>" => (text, Additive, 1),
                 ":=" => (text, Or, 1),
                 "||" => (text, Concat, 1),

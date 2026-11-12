@@ -132,6 +132,12 @@ public sealed class DataGridView : Grid
             case Key.Escape:
                 c.Cancel();
                 break;
+            case Key.Up or Key.Down when c.EditorKind is not (CellEditorKind.Text or CellEditorKind.Json or CellEditorKind.Time or CellEditorKind.DateTime):
+                c.Step(e.Key == Key.Up ? 1 : -1);
+                break;
+            case Key.Space when c.EditorKind == CellEditorKind.Boolean:
+                c.Step(1);
+                break;
             default:
                 handled = false;
                 break;
@@ -171,7 +177,10 @@ public sealed class DataGridView : Grid
             if ((_editor.Text ?? "") != c.EditText)
             {
                 _editor.Text = c.EditText;
+                _editor.CaretIndex = _editor.Text.Length;
             }
+
+            _editor.PlaceholderText = c.EditHint;
 
             var danger = c.Error is not null;
             _editor.Bind(TemplatedControl.BorderBrushProperty, _editor.GetResourceObservable(danger ? "SquillDangerBrush" : "SquillAccentBrush"));

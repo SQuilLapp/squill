@@ -44,6 +44,22 @@ public sealed partial class MainWindow : Window
         Grid.SetRow(splitter, 2);
         Grid.SetColumn(splitter, 2);
         Root.Children.Add(splitter);
+        // The right panel is resized like the left one; a hidden panel gives its whole column back (the dragged width is kept in Width).
+        var propertiesSplitter = new Splitter(true) { ResizeBefore = false, Visibility = Visibility.Collapsed };
+        Grid.SetRow(propertiesSplitter, 2);
+        Grid.SetColumn(propertiesSplitter, 4);
+        Root.Children.Add(propertiesSplitter);
+        void SyncProperties()
+        {
+            var column = Root.ColumnDefinitions[5];
+            var shown = Properties.Visibility == Visibility.Visible;
+            propertiesSplitter.Visibility = Properties.Visibility;
+            column.MinWidth = shown ? 120 : 0;
+            column.MaxWidth = shown ? double.PositiveInfinity : 0;
+        }
+
+        Properties.RegisterPropertyChangedCallback(UIElement.VisibilityProperty, (_, _) => SyncProperties());
+        SyncProperties();
     }
 
     /// <summary>Connects the window to the shared view-models and loads the saved connections and settings.</summary>
@@ -67,6 +83,7 @@ public sealed partial class MainWindow : Window
         AttachDiagrams(services.Workspace);
         AttachTerminals(services.Workspace);
         Sidebar.Attach(services.Workspace, services.History, services.Snippets);
+        services.Workspace.Explorer.Picker = new Services.WinUiTablePicker(() => Content?.XamlRoot);
         ActiveTabView.AttachPanels(services.History, services.Snippets);
         ActiveTabView.SetEnvironment(services.Workspace.ActiveEnvironment);
         Sidebar.SelectedNodeChanged += (_, node) => Properties.Show(node, services.Workspace);
@@ -189,6 +206,7 @@ public sealed partial class MainWindow : Window
     {
         if (_syncing)
             return;
+        Workspace.ShowTab((Tabs.SelectedItem as TabViewItem)?.Tag);
         switch ((Tabs.SelectedItem as TabViewItem)?.Tag)
         {
             case QueryTabViewModel tab:
