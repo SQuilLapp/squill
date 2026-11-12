@@ -108,10 +108,9 @@ internal static class ProductionConfirmDialog
     private static Border Statements(ProductionConfirmationRequest request, Func<string, Microsoft.UI.Xaml.Media.Brush> brush, Microsoft.UI.Xaml.Media.FontFamily mono)
     {
         var list = new StackPanel { Spacing = 6 };
-        foreach (var statement in request.Statements.Take(5))
+        // The request already holds at most five statements and the localized "+ N others" line.
+        foreach (var statement in request.Statements)
             list.Children.Add(new TextBlock { Text = statement.Text, FontFamily = mono, FontSize = 12, TextWrapping = TextWrapping.Wrap, MaxLines = 4, TextTrimming = TextTrimming.CharacterEllipsis, Foreground = brush("SquillFgBrush") });
-        if (request.Statements.Count > 5)
-            list.Children.Add(new TextBlock { Text = UiText.Format("prod.more", request.Statements.Count - 5), FontSize = 12, Foreground = brush("SquillFg3Brush") });
         return new Border { Background = brush("SquillBgBaseBrush"), BorderBrush = brush("SquillDangerBrush"), BorderThickness = new Thickness(3, 0, 0, 0), Padding = new Thickness(12, 10, 12, 10), Child = list };
     }
 }

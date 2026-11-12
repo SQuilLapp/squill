@@ -15,7 +15,7 @@ High-fidelity screens exported by the project owner. They are the visual referen
 | M03 Workspace | Main window: menu bar, search, activity rail, object explorer, tabs, editor, results, properties panel, status bar | workspace shell |
 | M04 Editeur | Editor with completion, signature help, inline diagnostic, history panel, query parameters panel | editor, history, snippets |
 | M05 Grille | Result grid: pending edits banner, row states, filter bar, column menu, row panel, export menu, footer | grid and edit bar (partial) |
-| M06 Plan | Query plan graph, tree, node detail | plan tab, `Expliquer` / `Analyser` (phase 13, [ADR 0010](../adr/0010-execution-plan.md)); `Comparer...` not drawn |
+| M06 Plan | Query plan graph, tree, node detail | plan tab, `Expliquer` / `Analyser` (phase 13, [ADR 0010](../../adr/0010-execution-plan.md)); `Comparer...` not drawn |
 | M07 Table | Table designer: columns, tabs, selected column, impact, DDL preview | table designer |
 | M08 ER | ER diagram: layout toolbar, table list, nodes, relations, tooltip, minimap, export menu | ER diagram |
 | M09 Comparaison | Schema compare and migration script | no such feature |
@@ -24,4 +24,4 @@ High-fidelity screens exported by the project owner. They are the visual referen
 | M12 Sessions | Sessions and locks monitor | no such feature |
 | M13 Palette | Command palette | no such feature |
 | M14 Parametres | Settings: appearance, shortcuts, SQL formatting, drivers | settings (partial) |
-| M15 Confirmation | Production confirmation of a destructive statement | no such feature |
+| M15 Confirmation | Production confirmation of a destructive statement | production confirmation dialog, transaction question and manual transaction controls (phase 15, [ADR 0012](../../adr/0012-transactions-and-production-confirmation.md)) |

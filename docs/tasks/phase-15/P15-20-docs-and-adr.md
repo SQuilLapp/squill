@@ -1,6 +1,6 @@
 # P15-20 - Documentation: transactions ADR 0012, README and architecture note
 
-Status: todo
+Status: done
 Depends on: P15-19
 
 ## Goal
@@ -15,7 +15,7 @@ Record what phase 15 decided and what it left out, and update the user-facing do
 - New features.
 
 ## Tasks
-- [ ] ADR, spec, README, architecture, task index status.
+- [x] ADR, spec, README, architecture, task index status.
 
 ## Acceptance criteria
 - Build and test green (docs only, but run them); links in the touched files resolve (check with a grep for the new file names).
