@@ -1,6 +1,6 @@
 # P15-03 - Core and Data: transaction model and probe contract
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -15,7 +15,7 @@ The vocabulary (mode, state) and the optional connection capability that tells t
 - Implementations (P15-04 ... P15-07).
 
 ## Tasks
-- [ ] Types, XML docs, a `tests/Squill.Core.Tests` test for `Unknown`.
+- [x] Types, XML docs, a `tests/Squill.Core.Tests` test for `Unknown`.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9.
