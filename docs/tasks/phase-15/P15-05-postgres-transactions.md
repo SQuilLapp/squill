@@ -1,6 +1,6 @@
 # P15-05 - Data.Postgres: transaction probe and engine proof
 
-Status: todo
+Status: done
 Depends on: P15-04, P11-02
 
 ## Goal
@@ -16,7 +16,7 @@ PostgreSQL implements `ITransactionProbe`; the shared scenario of P15-04 passes 
 - Presentation, other engines.
 
 ## Tasks
-- [ ] Probe, test class using `TransactionScenario`, the extra cases, AOT publish of `tools/Squill.AotProbe.Postgres`, Docker run.
+- [x] Probe, test class using `TransactionScenario`, the extra cases, AOT publish of `tools/Squill.AotProbe.Postgres`, Docker run.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9 (Docker run green, nothing skipped, no container left).

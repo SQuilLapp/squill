@@ -1,11 +1,12 @@
 using Npgsql;
 using Squill.Core;
 using Squill.Core.Plans;
+using Squill.Core.Transactions;
 
 namespace Squill.Data.Postgres;
 
 /// <summary>Postgres implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, NpgsqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader
+internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, NpgsqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader, ITransactionProbe
 {
     /// <inheritdoc />
     public string ServerVersion => connection.PostgreSqlVersion.ToString();
@@ -48,6 +49,26 @@ internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, Np
     {
         await using var reader = await ExecuteAsync("select datname from pg_database where not datistemplate and datallowconn order by 1", [], cancellationToken);
         return [.. (await reader.ReadAllAsync(256, cancellationToken)).Select(r => (string)r[0]!)];
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<TransactionProbeResult> ProbeAsync(CancellationToken cancellationToken)
+    {
+        // Npgsql exposes no public transaction status: a SELECT 1 only tells whether the transaction is aborted (25P02).
+        try
+        {
+            await using var command = new NpgsqlCommand("SELECT 1", connection) { CommandTimeout = commandTimeoutSeconds };
+            await command.ExecuteScalarAsync(cancellationToken);
+            return TransactionProbeResult.Unknown;
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.InFailedSqlTransaction)
+        {
+            return new TransactionProbeResult(true, true);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return TransactionProbeResult.Unknown;
+        }
     }
 
     /// <inheritdoc />

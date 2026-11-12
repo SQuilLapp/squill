@@ -297,7 +297,7 @@ Depends on: <card ids, ranges allowed>
 | [P15-02](phase-15/P15-02-sql-transaction-text.md) | Sql: transaction statement text and savepoints per dialect | none | done |
 | [P15-03](phase-15/P15-03-core-data-transaction-contract.md) | Core and Data: transaction model and probe contract | none | done |
 | [P15-04](phase-15/P15-04-sqlite-transactions.md) | Data.Sqlite: transaction probe and the shared engine scenario | P15-02, P15-03 | done |
-| [P15-05](phase-15/P15-05-postgres-transactions.md) | Data.Postgres: transaction probe and engine proof | P15-04, P11-02 | todo |
+| [P15-05](phase-15/P15-05-postgres-transactions.md) | Data.Postgres: transaction probe and engine proof | P15-04, P11-02 | done |
 | [P15-06](phase-15/P15-06-mysql-transactions.md) | Data.MySql: transaction probe, implicit commit proof | P15-04, P11-03 | todo |
 | [P15-07](phase-15/P15-07-sqlserver-transactions.md) | Data.SqlServer: transaction probe and engine proof | P15-04, P11-04 | todo |
 | [P15-08](phase-15/P15-08-presentation-session-transaction.md) | Presentation: the session transaction (mode, state, pending count, journal) | P15-01, P15-02, P15-03 | todo |
