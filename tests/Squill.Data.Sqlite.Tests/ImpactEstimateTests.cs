@@ -9,6 +9,6 @@ public sealed class ImpactEstimateTests
     [Fact]
     public async Task PlannerEstimateIsWithinAFactorOfTwoAndNothingIsWritten()
     {
-        await ImpactEstimateScenario.RunAsync(new SqliteDatabaseProvider(), new ConnectionProfile(Guid.NewGuid(), "t", DatabaseDialect.Sqlite, null, null, null, null, ":memory:", null), null);
+        Assert.Null(await Record.ExceptionAsync(() => ImpactEstimateScenario.RunAsync(new SqliteDatabaseProvider(), new ConnectionProfile(Guid.NewGuid(), "t", DatabaseDialect.Sqlite, null, null, null, null, ":memory:", null), null)));
     }
 }

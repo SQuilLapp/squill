@@ -36,6 +36,6 @@ public sealed class TransactionTests : IDisposable
             ProbeKnowsTransactions: true,
             ProbeKnowsFailure: false,
             SupportsActualPlan: false);
-        await TransactionScenario.RunAsync(provider, () => provider.OpenAsync(profile, null, CancellationToken.None), expectations);
+        Assert.Null(await Record.ExceptionAsync(() => TransactionScenario.RunAsync(provider, () => provider.OpenAsync(profile, null, CancellationToken.None), expectations)));
     }
 }

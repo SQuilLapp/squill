@@ -398,16 +398,20 @@ public static class TransactionFlowScenario
 
         public StubSqlEditor Editor => (StubSqlEditor)Tab.Editor;
 
-        public static async Task<Rig> OpenAsync(IDatabaseProvider provider, ConnectionProfile profile, string? password)
+        private static (SessionManager Manager, WorkspaceViewModel Workspace) BuildWorkspace(IDatabaseProvider provider, ScenarioProfileStore store, Dialogs dialogs, Recorder history)
         {
             var registry = new ProviderRegistry();
             registry.Register(provider);
-            var store = new ScenarioProfileStore(password);
+            var list = new ConnectionListViewModel(store, registry, dialogs);
+            var manager = new SessionManager(registry, store, new ScenarioTunnelFactory());
+            return (manager, new WorkspaceViewModel(manager, list, history, new ScenarioSettings(), new ImmediateDispatcher(), dialogs, () => new StubSqlEditor(), store));
+        }
+
+        public static async Task<Rig> OpenAsync(IDatabaseProvider provider, ConnectionProfile profile, string? password)
+        {
             var dialogs = new Dialogs();
             var history = new Recorder();
-            var manager = new SessionManager(registry, store, new ScenarioTunnelFactory());
-            var workspace = new WorkspaceViewModel(
-                manager, new ConnectionListViewModel(store, registry, dialogs), history, new ScenarioSettings(), new ImmediateDispatcher(), dialogs, () => new StubSqlEditor(), store);
+            var (manager, workspace) = BuildWorkspace(provider, new ScenarioProfileStore(password), dialogs, history);
             workspace.ConnectionList.Profiles.Add(profile);
             await workspace.ConnectCommand.ExecuteAsync(profile);
             var other = new Connection(await provider.OpenAsync(profile, password, Ct));

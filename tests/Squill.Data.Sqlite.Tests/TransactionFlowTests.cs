@@ -13,11 +13,11 @@ public sealed class TransactionFlowTests
         var file = Path.Combine(Path.GetTempPath(), name);
         try
         {
-            await TransactionFlowScenario.RunAsync(
+            Assert.Null(await Record.ExceptionAsync(() => TransactionFlowScenario.RunAsync(
                 new SqliteDatabaseProvider(),
                 new ConnectionProfile(Guid.NewGuid(), "t", DatabaseDialect.Sqlite, null, null, null, null, file, null),
                 null,
-                new TransactionFlowSpec("begin", "vacuum", false, false, false, false, name));
+                new TransactionFlowSpec("begin", "vacuum", false, false, false, false, name))));
         }
         finally
         {
