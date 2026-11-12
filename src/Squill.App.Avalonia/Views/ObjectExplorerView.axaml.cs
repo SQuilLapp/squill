@@ -59,6 +59,7 @@ public sealed partial class ObjectExplorerView : UserControl
                 "NewItem" or "EditItem" or "DeleteItem" => connection,
                 "ConnectItem" => connection && !node.IsConnected,
                 "DisconnectItem" => connection && node.IsConnected,
+                "RefreshItem" => node is { Kind: ExplorerNodeKind.Database, Session: not null },
                 "DefinitionItem" => definition,
                 _ => table,
             };
@@ -77,6 +78,12 @@ public sealed partial class ObjectExplorerView : UserControl
     private void OnConnectClicked(object? sender, RoutedEventArgs e) => Workspace?.ConnectCommand.Execute((sender as Control)?.DataContext is ExplorerNode node ? node.Profile : null);
 
     private void OnDisconnectClicked(object? sender, RoutedEventArgs e) => Workspace?.DisconnectCommand.Execute(null);
+
+    private void OnRefreshClicked(object? sender, RoutedEventArgs e)
+    {
+        if ((sender as Control)?.DataContext is ExplorerNode node)
+            Explorer?.RefreshDatabaseCommand.Execute(node);
+    }
 
     private void OnDesignClicked(object? sender, RoutedEventArgs e)
     {

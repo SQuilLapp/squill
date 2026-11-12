@@ -117,6 +117,15 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task RefreshDatabaseAsync(ExplorerNode? node, CancellationToken ct)
+    {
+        if (node is not { Kind: ExplorerNodeKind.Database, Session: { } session })
+            return;
+        await session.RefreshSchemaAsync(ct);
+        Reload(session);
+    }
+
+    [RelayCommand]
     private void Activate(ExplorerNode? node)
     {
         if (node is { Kind: ExplorerNodeKind.Connection, Session: null, Profile: { } profile })

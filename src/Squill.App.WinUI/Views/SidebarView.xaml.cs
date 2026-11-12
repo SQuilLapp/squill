@@ -139,6 +139,10 @@ public sealed partial class SidebarView : UserControl
             else
                 Add(UiText.Get("explorer.connect"), () => _workspace.ConnectCommand.Execute(node.Profile));
         }
+        else if (node is { Kind: ExplorerNodeKind.Database, Session: not null })
+        {
+            Add(UiText.Get("explorer.refresh"), () => explorer.RefreshDatabaseCommand.Execute(node));
+        }
         else if (node.Kind == ExplorerNodeKind.Table)
         {
             Add(UiText.Get("explorer.designTable"), () => explorer.DesignCommand.Execute(node));

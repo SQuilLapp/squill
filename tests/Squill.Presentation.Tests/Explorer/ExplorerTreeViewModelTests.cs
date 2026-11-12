@@ -430,6 +430,23 @@ public sealed class ExplorerTreeViewModelTests
     }
 
     [Fact]
+    public async Task RefreshDatabaseCommand_RebuildsOnlyThatDatabase()
+    {
+        var (connection, _, _) = ConnectServer(Profile("p"));
+        var other = connection.Children[1];
+        other.IsExpanded = true;
+        await WaitAsync(() => other.Session is not null);
+        var own = connection.Children[0];
+        var ownChildren = own.Children.ToList();
+
+        await _tree.RefreshDatabaseCommand.ExecuteAsync(other);
+
+        Assert.Same(other.Session, connection.Children[1].Session);
+        Assert.Equal(ownChildren, own.Children);
+        Assert.Contains(Descendants(connection.Children[1]), n => n.Title == "remote");
+    }
+
+    [Fact]
     public async Task RefreshCommand_OnDerivedNode_RefreshesOnlyThatSession()
     {
         var (connection, root, _) = ConnectServer(Profile("p"));
