@@ -33,6 +33,15 @@ public sealed partial class MainWindow : Window
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.OemComma, KeyModifiers.Control), Command = new RelayCommand(OpenSettings) });
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.E, KeyModifiers.Control), Command = new RelayCommand(OnExplainKey) });
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.E, KeyModifiers.Control | KeyModifiers.Shift), Command = new RelayCommand(OnAnalyzeKey) });
+        KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.C, KeyModifiers.Control | KeyModifiers.Alt), Command = new RelayCommand(() => RunTransactionCommand(q => q.CommitCommand)) });
+        KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.Z, KeyModifiers.Control | KeyModifiers.Alt), Command = new RelayCommand(() => RunTransactionCommand(q => q.RollbackCommand)) });
+    }
+
+    // Only while a query tab is active (a plan tab or the designer has no transaction group).
+    private void RunTransactionCommand(Func<QueryTabViewModel, IAsyncRelayCommand> pick)
+    {
+        if (!PlanArea.IsVisible && _tabs?.Selected?.Source is QueryTabViewModel { } query && pick(query) is { } command && command.CanExecute(null))
+            command.Execute(null);
     }
 
     /// <summary>Connects the history, snippets and settings view-models and the data directory the File menu opens.</summary>

@@ -98,6 +98,25 @@ public sealed class WindowChromeTests
             Assert.False(block.IsVisible);
         });
 
+    [Fact]
+    public async Task StatusBar_TransactionSegment_FollowsTheSessionTransaction() =>
+        await WithWindow(async (window, workspace, dir) =>
+        {
+            var status = window.FindControl<StatusBar>("Status")!;
+            var segment = status.FindControl<Border>("TransactionSegment")!;
+            Assert.False(segment.IsVisible);
+
+            await workspace.ConnectCommand.ExecuteAsync(Profile(dir, ConnectionEnvironment.None));
+            Assert.False(segment.IsVisible);
+
+            await workspace.ActiveTab!.SetModeCommand.ExecuteAsync(Squill.Core.Transactions.TransactionMode.Manual);
+            Assert.True(segment.IsVisible);
+            Assert.Equal(UiText.Get("tx.status.manual"), status.FindControl<TextBlock>("TransactionText")!.Text);
+
+            await workspace.ActiveTab!.SetModeCommand.ExecuteAsync(Squill.Core.Transactions.TransactionMode.AutoCommit);
+            Assert.False(segment.IsVisible);
+        });
+
     [Theory]
     [InlineData(ConnectionEnvironment.Production, "SquillEnvProdBrush", "status.production", true)]
     [InlineData(ConnectionEnvironment.Staging, "SquillEnvStagingBrush", "status.staging", false)]

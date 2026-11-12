@@ -3,6 +3,8 @@ using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Squill.Core;
+using Squill.Core.Transactions;
+using Squill.Presentation.Sessions;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Results;
@@ -17,6 +19,7 @@ public sealed partial class StatusBar : UserControl
     private WorkspaceViewModel? _workspace;
     private QueryTabViewModel? _tab;
     private PlanTabViewModel? _plan;
+    private SessionTransaction? _transaction;
 
     /// <summary>Creates the view.</summary>
     public StatusBar()
@@ -65,6 +68,12 @@ public sealed partial class StatusBar : UserControl
             _tab.PropertyChanged += OnTabChanged;
             _tab.Editor.CaretChanged += OnCaretChanged;
         }
+
+        if (_transaction is not null)
+            _transaction.PropertyChanged -= OnTabChanged;
+        _transaction = _tab?.Transaction;
+        if (_transaction is not null)
+            _transaction.PropertyChanged += OnTabChanged;
     }
 
     private void OnWorkspaceChanged(object? sender, PropertyChangedEventArgs e)
@@ -85,6 +94,7 @@ public sealed partial class StatusBar : UserControl
         ConnectionText.Text = profile is null ? UiText.Get("status.notConnected") : ConnectionLabel(profile);
         ServerVersionText.Text = _plan?.ServerVersion ?? _workspace?.ActiveSession?.Connection.ServerVersion;
         EncodingSegment.IsVisible = _plan is null;
+        RefreshTransaction();
         RefreshRunStatus();
         RefreshPosition();
     }
@@ -117,6 +127,17 @@ public sealed partial class StatusBar : UserControl
     }
 
     private IBrush? Brush(string key) => this.TryFindResource(key, ActualThemeVariant, out var value) ? value as IBrush : null;
+
+    // The transaction belongs to the session of the active query tab: nothing is shown for plans and other kinds of tab.
+    private void RefreshTransaction()
+    {
+        var text = _plan is null ? _transaction?.StatusText ?? "" : "";
+        TransactionSegment.IsVisible = text.Length > 0;
+        TransactionText.Text = text;
+        var brush = Brush(_transaction?.State == TransactionState.Failed ? "SquillDangerBrush" : "SquillWarningBrush");
+        TransactionDot.Fill = brush;
+        TransactionText.Foreground = brush;
+    }
 
     private void RefreshRunStatus()
     {

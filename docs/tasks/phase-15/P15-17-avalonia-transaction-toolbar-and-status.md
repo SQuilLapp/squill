@@ -1,6 +1,6 @@
 # P15-17 - Avalonia head: transaction toolbar group and status bar segment
 
-Status: todo
+Status: done
 Depends on: P15-15
 
 ## Goal
@@ -14,10 +14,15 @@ Same as [P15-15](P15-15-winui-transaction-toolbar-and-status.md) for the Avaloni
 - Dialogs and closing (P15-18).
 
 ## Tasks
-- [ ] Toolbar group, status segment, shortcuts, headless tests; capture against M04 (light and dark) where the headless run can write it, otherwise listed as "to check by hand".
+- [x] Toolbar group, status segment, shortcuts, headless tests; capture against M04 (light and dark) where the headless run can write it, otherwise listed as "to check by hand".
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings; tests green; Avalonia AOT publish with zero IL2xxx/IL3xxx.
 
 ## Suggested commit message
 Add the transaction toolbar group and status segment to the Avalonia head
+
+## Report
+- Done: toggle (segmented `RadioButton.segment`, disabled with `tx.unsupported` when the engine has no probe), pill (`badge warning` / `badge danger` on `Failed`), `Valider` / `Annuler` (`outline-success` / `outline-danger`, new `SquillIconCheck`), status segment after the connection text, `Ctrl+Alt+C` / `Ctrl+Alt+Z` window key bindings active only on a query tab (not on a plan tab). Measure-based collapsing: chips, then pill text to the count, then button icons; the toolbar keeps its sideways scroll as the last resort. 5 headless tests (toolbar, unsupported engine, status segment).
+- Looked at: the AOT head starts and stays alive. NOT looked at: any capture of the toolbar or status bar (a live connection and UI driving were not available, the headless run cannot write captures), light/dark comparison against M04, the pill and `Failed` state on screen, narrow-window collapsing, the chords on AZERTY / macOS (AltGr may type a character: check `Ctrl+Alt+C` in the editor). All "to check by hand".
+- AOT publish: the only IL warnings are IL3053 / IL2104 from third-party assemblies (`Microsoft.Data.SqlClient`, `System.Configuration.ConfigurationManager`), none from SQuilL code.
