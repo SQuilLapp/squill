@@ -1,6 +1,6 @@
 # P15-06 - Data.MySql: transaction probe, implicit commit proof
 
-Status: todo
+Status: done
 Depends on: P15-04, P11-03
 
 ## Goal
@@ -16,10 +16,15 @@ MySQL implements `ITransactionProbe`; the shared scenario passes on MySQL 8.4 an
 - Presentation, MyISAM / non-transactional engines (documented only).
 
 ## Tasks
-- [ ] Probe with the stop rule, test class using `TransactionScenario`, the implicit-commit cases, AOT publish of `tools/Squill.AotProbe.MySql`, Docker run.
+- [x] Probe with the stop rule, test class using `TransactionScenario`, the implicit-commit cases, AOT publish of `tools/Squill.AotProbe.MySql`, Docker run.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9. The report states which probe query was kept and what the tests showed.
 
 ## Suggested commit message
 Add the MySQL transaction probe and prove implicit commits
+
+## Result (recorded by the implementing session)
+- Probe query: **none kept, the probe is always `Unknown`** (stop rule). On MySQL 8.4 (a) `performance_schema.events_transactions_current` is reliable (also after a `SELECT` only, and with `SET autocommit=0`) but is denied (`SELECT command denied`) to a user with `ALL` on its own schema; (b) `information_schema.innodb_trx` needs `PROCESS` and shows 0 for a transaction that only read. `ProbeKnowsTransactions: false`; P15-08 stays correct without it. (a) could be tried first with `Unknown` on error if the owner wants a best-effort probe for privileged users.
+- Observed: `SET autocommit = 1` commits only when autocommit was `0`, not after `START TRANSACTION` in autocommit mode; the classifier (`ImplicitCommit` true) is conservative and asks in both cases.
+- `MySqlDatabaseConnection.DisposeAsync` now sends a best-effort `ROLLBACK` (MySqlConnector pools: an open transaction and its metadata locks otherwise survive the dispose and blocked the scenario for minutes).

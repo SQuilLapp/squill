@@ -28,6 +28,7 @@
     <Compile Include="../Shared/PlanScenario.cs" Link="PlanScenario.cs" />
     <Compile Include="../Shared/JoinCompletionScenario.cs" Link="JoinCompletionScenario.cs" />
     <Compile Include="../Shared/PlanFlowScenario.cs" Link="PlanFlowScenario.cs" />
+    <Compile Include="../Shared/TransactionScenario.cs" Link="TransactionScenario.cs" />
     <Content Include="Plans/*.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Plans/*.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../Shared/SampleSchema/mysql.sql" Link="SampleSchema/mysql.sql" CopyToOutputDirectory="PreserveNewest" />
