@@ -1,6 +1,6 @@
 # P15-11 - Presentation: estimated impact of a modifying statement
 
-Status: todo
+Status: done
 Depends on: P15-01
 
 ## Goal
@@ -17,12 +17,18 @@ The production dialog can say "elle supprimera environ 1 248 310 lignes (estimat
 - The dialog and the decision to ask (P15-12), caching estimates, estimates for DDL, `INSERT ... VALUES` (no figure).
 
 ## Tasks
-- [ ] `ImpactEstimate`, `ImpactEstimator`.
-- [ ] Unit tests with a fake `IPlanReader` connection: each kind returns / skips as above, SQLite and `Failed` state return null without a call, a throwing reader returns null, a reader slower than 3 s (fake clock or short injected cap through an `internal` overload taking the `TimeSpan`) returns null, the caller's cancellation propagates, a root with rows 0 and a child with 1000 returns 1000, nothing found returns null.
-- [ ] Docker-gated, `tests/Shared/ImpactEstimateScenario.cs` per server engine (PostgreSQL, MySQL, SQL Server; SQLite asserts null): table of 1000 rows with statistics up to date (`ANALYZE`; SQL Server `UPDATE STATISTICS`), then `DELETE` without `WHERE`, `UPDATE ... WHERE <range>`, `INSERT ... SELECT`, each estimate within a factor of 2 of the real count (run the statement in a transaction and roll back to get the real count), and the table unchanged afterwards (estimation never executes). Record the observed figures in the card report. MySQL: if `EXPLAIN FORMAT=JSON DELETE` carries no usable rows figure the engine returns `null` and the test asserts that, with a note in the report and in the ADR.
+- [x] `ImpactEstimate`, `ImpactEstimator`.
+- [x] Unit tests with a fake `IPlanReader` connection: each kind returns / skips as above, SQLite and `Failed` state return null without a call, a throwing reader returns null, a reader slower than 3 s (fake clock or short injected cap through an `internal` overload taking the `TimeSpan`) returns null, the caller's cancellation propagates, a root with rows 0 and a child with 1000 returns 1000, nothing found returns null.
+- [x] Docker-gated, `tests/Shared/ImpactEstimateScenario.cs` per server engine (PostgreSQL, MySQL, SQL Server; SQLite asserts null): table of 1000 rows with statistics up to date (`ANALYZE`; SQL Server `UPDATE STATISTICS`), then `DELETE` without `WHERE`, `UPDATE ... WHERE <range>`, `INSERT ... SELECT`, each estimate within a factor of 2 of the real count (run the statement in a transaction and roll back to get the real count), and the table unchanged afterwards (estimation never executes). Record the observed figures in the card report. MySQL: if `EXPLAIN FORMAT=JSON DELETE` carries no usable rows figure the engine returns `null` and the test asserts that, with a note in the report and in the ADR.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9 (Docker run for all engines green, nothing skipped).
 
 ## Suggested commit message
 Estimate the rows a modifying statement will touch from the planner
+
+## Observed figures (containers, 1000 rows, statistics fresh)
+- PostgreSQL 17: DELETE 1000 / real 1000; UPDATE ... WHERE 500 / 500; INSERT ... SELECT 1000 / 1000.
+- SQL Server 2022: same as PostgreSQL.
+- MySQL 8.4: DELETE 1000 / 1000; UPDATE ... WHERE (no index) 1000 / 500; INSERT ... SELECT gives no figure (null), asserted by the scenario.
+- SQLite: always null.
