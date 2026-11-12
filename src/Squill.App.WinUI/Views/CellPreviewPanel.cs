@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -87,25 +86,13 @@ public sealed partial class CellPreviewPanel : UserControl
     /// <param name="model">The preview view-model of the result on screen.</param>
     public void Attach(CellPreviewViewModel? model)
     {
-        if (_model is not null)
-        {
-            _model.PropertyChanged -= OnModelChanged;
-            _model.ApplyCommand.CanExecuteChanged -= OnApplyChanged;
-        }
-
+        _model?.ViewChanged -= OnModelChanged;
         _model = model;
-        if (model is not null)
-        {
-            model.PropertyChanged += OnModelChanged;
-            model.ApplyCommand.CanExecuteChanged += OnApplyChanged;
-        }
-
+        model?.ViewChanged += OnModelChanged;
         Sync();
     }
 
-    private void OnModelChanged(object? sender, PropertyChangedEventArgs e) => Sync();
-
-    private void OnApplyChanged(object? sender, EventArgs e) => Sync();
+    private void OnModelChanged(object? sender, EventArgs e) => Sync();
 
     private void Sync()
     {
@@ -121,10 +108,10 @@ public sealed partial class CellPreviewPanel : UserControl
                     _text.Text = m.Text;
                 _text.IsReadOnly = !m.CanEdit;
                 _error.Text = m.Error ?? "";
-                _error.Visibility = string.IsNullOrEmpty(m.Error) ? Visibility.Collapsed : Visibility.Visible;
-                _format.Visibility = m.IsJson || m.CanEdit ? Visibility.Visible : Visibility.Collapsed;
+                _error.Visibility = m.HasError ? Visibility.Visible : Visibility.Collapsed;
+                _format.Visibility = m.ShowFormat ? Visibility.Visible : Visibility.Collapsed;
                 _format.IsEnabled = m.IsJson;
-                _apply.Visibility = m.CanEdit ? Visibility.Visible : Visibility.Collapsed;
+                _apply.Visibility = m.ShowApply ? Visibility.Visible : Visibility.Collapsed;
                 _apply.IsEnabled = m.ApplyCommand.CanExecute(null);
             }
             finally

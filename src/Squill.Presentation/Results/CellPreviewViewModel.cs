@@ -42,8 +42,22 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
             if (e.PropertyName == nameof(ResultViewModel.DisplayGrid))
                 Watch();
         };
+        PropertyChanged += (_, _) => ViewChanged?.Invoke(this, EventArgs.Empty);
+        ApplyCommand.CanExecuteChanged += (_, _) => ViewChanged?.Invoke(this, EventArgs.Empty);
         Watch();
     }
+
+    /// <summary>Raised when anything a head shows changed: a property, or whether <see cref="ApplyCommand"/> can run.</summary>
+    public event EventHandler? ViewChanged;
+
+    /// <summary>Gets whether the format button is shown.</summary>
+    public bool ShowFormat => IsJson || CanEdit;
+
+    /// <summary>Gets whether the apply button is shown.</summary>
+    public bool ShowApply => CanEdit;
+
+    /// <summary>Gets whether <see cref="Error"/> has a message to show.</summary>
+    public bool HasError => !string.IsNullOrEmpty(Error);
 
     /// <summary>Gets whether the pane is shown: the selected cell holds a long or JSON value and the user has not closed the pane.</summary>
     [ObservableProperty]

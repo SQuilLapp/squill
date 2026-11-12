@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -77,25 +76,13 @@ public sealed class CellPreviewPanel : Border
     /// <param name="model">The preview view-model of the result on screen.</param>
     public void Attach(CellPreviewViewModel? model)
     {
-        if (_model is not null)
-        {
-            _model.PropertyChanged -= OnModelChanged;
-            _model.ApplyCommand.CanExecuteChanged -= OnApplyChanged;
-        }
-
+        _model?.ViewChanged -= OnModelChanged;
         _model = model;
-        if (model is not null)
-        {
-            model.PropertyChanged += OnModelChanged;
-            model.ApplyCommand.CanExecuteChanged += OnApplyChanged;
-        }
-
+        model?.ViewChanged += OnModelChanged;
         Sync();
     }
 
-    private void OnModelChanged(object? sender, PropertyChangedEventArgs e) => Sync();
-
-    private void OnApplyChanged(object? sender, EventArgs e) => Sync();
+    private void OnModelChanged(object? sender, EventArgs e) => Sync();
 
     private void Sync()
     {
@@ -111,10 +98,10 @@ public sealed class CellPreviewPanel : Border
                     _text.Text = m.Text;
                 _text.IsReadOnly = !m.CanEdit;
                 _error.Text = m.Error;
-                _error.IsVisible = !string.IsNullOrEmpty(m.Error);
-                _format.IsVisible = m.IsJson || m.CanEdit;
+                _error.IsVisible = m.HasError;
+                _format.IsVisible = m.ShowFormat;
                 _format.IsEnabled = m.IsJson;
-                _apply.IsVisible = m.CanEdit;
+                _apply.IsVisible = m.ShowApply;
                 _apply.IsEnabled = m.ApplyCommand.CanExecute(null);
             }
             finally
