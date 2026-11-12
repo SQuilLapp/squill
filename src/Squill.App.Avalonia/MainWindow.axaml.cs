@@ -47,7 +47,7 @@ public sealed partial class MainWindow : Window
         if (!NeedsExitQuestion())
             return;
         e.Cancel = true;
-        AskThenClose();
+        _ = AskThenCloseAsync();
     }
 
     /// <summary>Asks about open transactions when the application is asked to quit (the macOS application-menu Quit does not always close the main window first).</summary>
@@ -58,12 +58,12 @@ public sealed partial class MainWindow : Window
         if (!NeedsExitQuestion())
             return;
         e.Cancel = true;
-        AskThenClose();
+        _ = AskThenCloseAsync();
     }
 
     private bool NeedsExitQuestion() => !_exitConfirmed && DataContext is WorkspaceViewModel { HasOpenTransaction: true };
 
-    private async void AskThenClose()
+    private async Task AskThenCloseAsync()
     {
         if (_askingToExit || DataContext is not WorkspaceViewModel workspace)
             return;
