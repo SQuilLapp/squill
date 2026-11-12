@@ -1,6 +1,6 @@
 # P15-19 - End-to-end verification: transactions and production confirmation on the four engines
 
-Status: todo
+Status: automated done, manual pending
 Depends on: P15-07, P15-09, P15-11, P15-13, P15-14, P15-16, P15-18
 
 ## Goal
@@ -15,7 +15,7 @@ Prove the whole path (query tab -> session -> transaction -> provider -> workspa
 - Docs and ADR (P15-20).
 
 ## Tasks
-- [ ] Scenario and one test class per driver test project, `docs/verification/transactions.md`, clean-up (`podman ps -a` empty, `dotnet build-server shutdown`).
+- [x] Scenario and one test class per driver test project, `docs/verification/transactions.md`, clean-up (`podman ps -a` empty, `dotnet build-server shutdown`).
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9, Docker run for all engines green with nothing skipped, no container left. The card status is `automated done, manual pending` until the owner ticks the checklist.

@@ -29,6 +29,7 @@
     <Compile Include="../Shared/PlanScenario.cs" Link="PlanScenario.cs" />
     <Compile Include="../Shared/JoinCompletionScenario.cs" Link="JoinCompletionScenario.cs" />
     <Compile Include="../Shared/PlanFlowScenario.cs" Link="PlanFlowScenario.cs" />
+    <Compile Include="../Shared/TransactionFlowScenario.cs" Link="TransactionFlowScenario.cs" />
     <Compile Include="../Shared/TransactionScenario.cs" Link="TransactionScenario.cs" />
     <Content Include="Plans/*.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../Shared/SampleSchema/postgres.sql" Link="SampleSchema/postgres.sql" CopyToOutputDirectory="PreserveNewest" />
