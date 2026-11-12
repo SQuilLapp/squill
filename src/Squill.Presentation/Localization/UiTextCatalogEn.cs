@@ -643,5 +643,13 @@ internal static class UiTextCatalogEn
         ("prod.hint", "Enter = Cancel"),
         ("prod.more", "+ {0} more"),
         ("prod.manualActive", "Manual transaction"),
+        ("prod.title.gridEdit.one", "Write {0} change on production?"),
+        ("prod.title.gridEdit.other", "Write {0} changes on production?"),
+        ("prod.title.schema.one", "Apply {0} schema change on production?"),
+        ("prod.title.schema.other", "Apply {0} schema changes on production?"),
+        ("prod.message.write", "The grid changes will be written to {0}."),
+        ("prod.message.schema", "The schema of {0} will be changed."),
+        ("prod.confirm.write", "Write"),
+        ("prod.confirm.apply", "Apply"),
     ];
 }

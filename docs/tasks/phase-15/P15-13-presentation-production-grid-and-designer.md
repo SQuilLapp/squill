@@ -1,6 +1,6 @@
 # P15-13 - Presentation: production confirmation for the grid commit and the designer apply
 
-Status: todo
+Status: done
 Depends on: P15-09, P15-12
 
 ## Goal
@@ -17,8 +17,8 @@ Grid edits and table-designer changes on a Production connection ask the same co
 - The dialog drawing (P15-16, P15-18), a "do not ask again" option.
 
 ## Tasks
-- [ ] Statement preview before execution in `ResultEditorViewModel` / `EditCommitter` and `TableDesignerViewModel` (extract the generation from the execution step if they are fused, keeping behavior), guard + request + dialog, strings `prod.title.gridEdit`, `prod.title.schema`, `prod.confirm.write`, `prod.confirm.apply`.
-- [ ] Tests (fake dialog, fake connection): Production grid commit asks once with the generated statements and the count, declined sends nothing and keeps pending edits, accepted sends them (inside the savepoint when a transaction is open); Staging does not ask; designer with `DROP COLUMN` on Production requires the database name, `ADD COLUMN` does not; `Manual` mode message contains the transaction sentence; existing grid and designer tests pass (their fake dialog answers the new request with "confirmed" through a default in the shared test fake).
+- [x] Statement preview before execution in `ResultEditorViewModel` / `EditCommitter` and `TableDesignerViewModel` (extract the generation from the execution step if they are fused, keeping behavior), guard + request + dialog, strings `prod.title.gridEdit`, `prod.title.schema`, `prod.confirm.write`, `prod.confirm.apply`.
+- [x] Tests (fake dialog, fake connection): Production grid commit asks once with the generated statements and the count, declined sends nothing and keeps pending edits, accepted sends them (inside the savepoint when a transaction is open); Staging does not ask; designer with `DROP COLUMN` on Production requires the database name, `ADD COLUMN` does not; `Manual` mode message contains the transaction sentence; existing grid and designer tests pass (their fake dialog answers the new request with "confirmed" through a default in the shared test fake).
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9; localization guards green.

@@ -70,6 +70,27 @@ internal static class ProductionRequestBuilder
             UiText.Get("prod.confirm.commit"));
     }
 
+    /// <summary>Asks the production confirmation of a grid commit or a designer apply; <see langword="true"/> when nothing needs asking or the user confirmed.</summary>
+    internal static async ValueTask<bool> ConfirmWriteAsync(IDialogService dialogs, ConnectionProfile profile, ConfirmationKind kind, IReadOnlyList<string> statements, int count, string table, TransactionMode mode)
+    {
+        var requirement = ProductionGuard.Evaluate(profile, statements);
+        if (!requirement.Required)
+            return true;
+        var grid = kind == ConfirmationKind.GridEdit;
+        var message = UiText.Format(grid ? "prod.message.write" : "prod.message.schema", table);
+        if (mode == TransactionMode.Manual)
+            message += " " + UiText.Get("prod.message.manual");
+        var listed = statements.Take(Listed).Select((s, i) => new ConfirmedStatement(s, requirement.Traits[i].Target, requirement.Traits[i].Kind)).ToList();
+        if (statements.Count > Listed)
+            listed.Add(new ConfirmedStatement(UiText.Format("prod.more", statements.Count - Listed), null, StatementKind.Empty));
+        var request = new ProductionConfirmationRequest(
+            kind, profile.Name, DatabaseName(profile), listed, null,
+            requirement.RequiresTyping ? ProductionGuard.RequiredText(profile) : null, false, false,
+            UiText.FormatPlural(grid ? "prod.title.gridEdit" : "prod.title.schema", count), message,
+            UiText.Get(grid ? "prod.confirm.write" : "prod.confirm.apply"));
+        return (await dialogs.ConfirmProductionAsync(request)).Confirmed;
+    }
+
     private static string DatabaseName(ConnectionProfile profile) =>
         profile.Dialect == DatabaseDialect.Sqlite ? ProductionGuard.RequiredText(profile) : profile.Database ?? "";
 

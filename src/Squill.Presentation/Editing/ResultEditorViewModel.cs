@@ -5,6 +5,7 @@ using Squill.Core;
 using Squill.Core.Editing;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
+using Squill.Presentation.Safety;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Ddl;
 using Squill.Sql.Editing;
@@ -149,6 +150,11 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
             if (!await _dialogs.ConfirmAsync(UiText.Get("results.deleteRows.title"), UiText.FormatPlural("results.deleteRows.confirm", deletes, table)))
                 return;
         }
+
+        var texts = set.Edits.Select(p => DmlGenerator.Generate(p.Edit, Target, _dialect).Sql).ToList();
+        if (!await ProductionRequestBuilder.ConfirmWriteAsync(_dialogs, _session.Profile, ConfirmationKind.GridEdit, texts, texts.Count,
+                SqlQuoting.QualifiedName(Target.Schema, Target.Table, _dialect), _session.Transaction.Mode))
+            return;
 
         IsCommitting = true;
         using var cts = new CancellationTokenSource();

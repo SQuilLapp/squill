@@ -4,6 +4,7 @@ using Squill.Data;
 using Squill.Presentation.Editing;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
+using Squill.Presentation.Safety;
 using Squill.Presentation.Sessions;
 using Xunit;
 
@@ -105,11 +106,11 @@ public sealed class ResultEditorViewModelTests
 
     private sealed class Fixture
     {
-        public Fixture(int rows = 5, bool complete = true)
+        public Fixture(int rows = 5, bool complete = true, ConnectionEnvironment env = ConnectionEnvironment.None)
         {
             Grid = new EditableGridDataSource(new Fake(rows, complete), Target);
             Session = new ConnectionSession(
-                new ConnectionProfile(Guid.NewGuid(), "p", DatabaseDialect.Sqlite, "h", 1, "d", "u", null, null),
+                new ConnectionProfile(Guid.NewGuid(), "p", DatabaseDialect.Sqlite, "h", 1, "d", "u", null, null, env),
                 Connection, SchemaSnapshot.Empty, null);
             Vm = new ResultEditorViewModel(Grid, Target, Session, Dialogs, () => Busy);
         }
@@ -235,6 +236,54 @@ public sealed class ResultEditorViewModelTests
         Assert.Equal(77, f.Grid.GetCell(row, 0));
         Assert.False(f.Vm.IsCommitting);
         Assert.Empty(f.Dialogs.Errors);
+    }
+
+    [Fact]
+    public async Task Production_commit_asks_once_with_the_generated_statements_and_the_count()
+    {
+        using var _ = UiText.Override(UiLanguage.English);
+        var f = new Fixture(env: ConnectionEnvironment.Production);
+        f.Vm.TrySetCell(0, 1, "x");
+        f.Vm.TrySetCell(1, 1, "y");
+
+        await f.Vm.CommitCommand.ExecuteAsync(null);
+
+        var request = Assert.Single(f.Dialogs.ProductionRequests);
+        Assert.Equal(ConfirmationKind.GridEdit, request.Kind);
+        Assert.Equal("Write 2 changes on production?", request.Title);
+        Assert.Equal("Write", request.ConfirmLabel);
+        Assert.Equal(2, request.Statements.Count);
+        Assert.All(request.Statements, st => Assert.StartsWith("UPDATE", st.Text, StringComparison.Ordinal));
+        Assert.Null(request.RequiredText);
+        Assert.False(request.ShowTransactionOption);
+        Assert.Contains("T", request.Message, StringComparison.Ordinal);
+        Assert.Equal(2, f.Connection.Sql.Count(q => q.StartsWith("UPDATE", StringComparison.Ordinal)));
+    }
+
+    [Fact]
+    public async Task Production_commit_declined_sends_nothing_and_keeps_the_pending_edits()
+    {
+        var f = new Fixture(env: ConnectionEnvironment.Production);
+        f.Dialogs.ProductionResult = new(false, false);
+        f.Vm.TrySetCell(0, 1, "x");
+
+        await f.Vm.CommitCommand.ExecuteAsync(null);
+
+        Assert.Empty(f.Connection.Sql);
+        Assert.True(f.Vm.HasPendingChanges);
+        Assert.False(f.Vm.IsCommitting);
+    }
+
+    [Fact]
+    public async Task Staging_commit_does_not_ask()
+    {
+        var f = new Fixture(env: ConnectionEnvironment.Staging);
+        f.Vm.TrySetCell(0, 1, "x");
+
+        await f.Vm.CommitCommand.ExecuteAsync(null);
+
+        Assert.Empty(f.Dialogs.ProductionRequests);
+        Assert.False(f.Vm.HasPendingChanges);
     }
 
     [Fact]

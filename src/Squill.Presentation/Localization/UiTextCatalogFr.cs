@@ -643,5 +643,13 @@ internal static class UiTextCatalogFr
         ("prod.hint", "Entrée = Annuler"),
         ("prod.more", "+ {0} autres"),
         ("prod.manualActive", "Transaction manuelle"),
+        ("prod.title.gridEdit.one", "Écrire {0} modification en production ?"),
+        ("prod.title.gridEdit.other", "Écrire {0} modifications en production ?"),
+        ("prod.title.schema.one", "Appliquer {0} changement de schéma en production ?"),
+        ("prod.title.schema.other", "Appliquer {0} changements de schéma en production ?"),
+        ("prod.message.write", "Les modifications de la grille seront écrites dans {0}."),
+        ("prod.message.schema", "Le schéma de {0} sera modifié."),
+        ("prod.confirm.write", "Écrire"),
+        ("prod.confirm.apply", "Appliquer"),
     ];
 }

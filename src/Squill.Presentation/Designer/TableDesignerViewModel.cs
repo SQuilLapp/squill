@@ -6,6 +6,7 @@ using Squill.Core;
 using Squill.Core.Design;
 using Squill.Core.Transactions;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Safety;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Ddl;
 using Squill.Sql.Transactions;
@@ -232,6 +233,9 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         var tx = _session.Transaction;
         if (!DdlGenerators.UsesTransactionalDdl(_dialect) && tx.State == TransactionState.Open
             && !await _dialogs.ConfirmAsync(UiText.Get("tx.implicitCommit.title"), UiText.Get("tx.implicitCommit.message")))
+            return;
+
+        if (!await ProductionRequestBuilder.ConfirmWriteAsync(_dialogs, _session.Profile, ConfirmationKind.SchemaChange, _statements, _statements.Count, Design.Name, tx.Mode))
             return;
 
         IsApplying = true;
