@@ -38,6 +38,12 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
     /// <summary>Gets the column of the cell being edited.</summary>
     public int EditColumn { get; private set; }
 
+    /// <summary>Gets the kind of editor the cell being edited gets.</summary>
+    public CellEditorKind EditorKind { get; private set; }
+
+    /// <summary>Gets a format hint for an empty editor, or <see langword="null"/>.</summary>
+    public string? EditHint => CellEditorKinds.Hint(EditorKind);
+
     /// <summary>Gets the text typed so far.</summary>
     public string EditText { get; private set; } = "";
 
@@ -61,21 +67,72 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
 
         EditRow = selection.ActiveRow;
         EditColumn = selection.ActiveColumn;
-        EditText = initialText ?? CellFormatter.Format(grid.GetCell(EditRow, EditColumn), grid.Columns[EditColumn]) ?? "";
-        Error = null;
+        EditorKind = CellEditorKinds.For(grid.Columns[EditColumn]);
+        EditText = CellEditorKinds.Sanitize(EditorKind, initialText ?? CellFormatter.Format(grid.GetCell(EditRow, EditColumn), grid.Columns[EditColumn]) ?? "");
+        Error = Validate(EditText);
         IsEditing = true;
         Raise();
         return true;
     }
 
-    /// <summary>Replaces the typed text and clears the error.</summary>
+    /// <summary>Replaces the typed text (without the characters the column type refuses) and checks it, so a bad value shows while typing.</summary>
     /// <param name="text">The new text.</param>
     public void SetText(string text)
     {
-        EditText = text;
-        Error = null;
+        EditText = CellEditorKinds.Sanitize(EditorKind, text);
+        Error = Validate(EditText);
         Raise();
     }
+
+    /// <summary>Moves the value of a boolean, number or date cell by one step: next choice, plus or minus one, next or previous day.</summary>
+    /// <param name="direction">1 for up, -1 for down.</param>
+    public void Step(int direction)
+    {
+        if (!IsEditing)
+            return;
+        var column = editor.Grid.Columns[EditColumn];
+        switch (EditorKind)
+        {
+            case CellEditorKind.Boolean:
+                var choices = CellEditorKinds.BooleanChoices;
+                var at = 0;
+                for (var i = 0; i < choices.Count; i++)
+                {
+                    if (string.Equals(choices[i].Text, EditText.Trim(), StringComparison.OrdinalIgnoreCase))
+                        at = i;
+                }
+
+                SetText(choices[(at + direction + choices.Count) % choices.Count].Text);
+                break;
+            case CellEditorKind.Whole or CellEditorKind.Fractional
+                when CellValueParser.TryParse(EditText.Trim().Length == 0 ? "0" : EditText, column, out var number, out _) && number is not null:
+                SetText(CellFormatter.Format(Add(number, direction), column) ?? "");
+                break;
+            case CellEditorKind.Date when CellValueParser.TryParse(EditText, column, out var date, out _) && date is DateOnly day:
+                SetText(CellFormatter.Format(day.AddDays(direction), column) ?? "");
+                break;
+        }
+    }
+
+    private static object Add(object number, int delta) => number switch
+    {
+        byte v => (byte)Math.Clamp(v + delta, byte.MinValue, byte.MaxValue),
+        sbyte v => (sbyte)Math.Clamp(v + delta, sbyte.MinValue, sbyte.MaxValue),
+        short v => (short)Math.Clamp(v + delta, short.MinValue, short.MaxValue),
+        ushort v => (ushort)Math.Clamp(v + delta, ushort.MinValue, ushort.MaxValue),
+        int v => (int)Math.Clamp((long)v + delta, int.MinValue, int.MaxValue),
+        uint v => (uint)Math.Clamp((long)v + delta, uint.MinValue, uint.MaxValue),
+        long v => (v == long.MaxValue && delta > 0) || (v == long.MinValue && delta < 0) ? v : v + delta,
+        ulong v => delta < 0 ? (v == 0 ? v : v - 1) : (v == ulong.MaxValue ? v : v + 1),
+        float v => v + delta,
+        double v => v + delta,
+        decimal v => v + delta,
+        _ => number,
+    };
+
+    // A refusal of the text as it stands, or null; empty text is valid (NULL).
+    private string? Validate(string text) =>
+        text.Length == 0 || CellValueParser.TryParse(text, editor.Grid.Columns[EditColumn], out _, out var error) ? null : error;
 
     /// <summary>Records the typed text and moves the selection.</summary>
     /// <param name="move">Where the selection goes on success.</param>
