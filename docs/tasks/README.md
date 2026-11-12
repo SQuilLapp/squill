@@ -293,7 +293,7 @@ Depends on: <card ids, ranges allowed>
 | [P14-17](phase-14/P14-17-data-join-completion-on-every-engine.md) | Data: generated join conditions run on every engine | P14-08, P14-09, P14-11 | done |
 | [P14-18](phase-14/P14-18-verify-completion.md) | End-to-end verification: completion through the query tab, and the manual checklist | P14-08 ... P14-17 | automated done, manual pending |
 | [P14-19](phase-14/P14-19-docs-and-adr.md) | Documentation: completion ADR 0011, README and architecture note | P14-18 | done |
-| [P15-01](phase-15/P15-01-sql-statement-traits.md) | Sql: statement traits (read-only, data, schema, destructive, transaction control) | none | todo |
+| [P15-01](phase-15/P15-01-sql-statement-traits.md) | Sql: statement traits (read-only, data, schema, destructive, transaction control) | none | done |
 | [P15-02](phase-15/P15-02-sql-transaction-text.md) | Sql: transaction statement text and savepoints per dialect | none | todo |
 | [P15-03](phase-15/P15-03-core-data-transaction-contract.md) | Core and Data: transaction model and probe contract | none | todo |
 | [P15-04](phase-15/P15-04-sqlite-transactions.md) | Data.Sqlite: transaction probe and the shared engine scenario | P15-02, P15-03 | todo |

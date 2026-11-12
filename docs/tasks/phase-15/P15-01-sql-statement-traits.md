@@ -1,6 +1,6 @@
 # P15-01 - Sql: statement traits (what a statement does to data, schema and the transaction)
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -22,8 +22,8 @@ One pure classifier answers, for a single statement and a dialect, everything ph
 - Using the classifier anywhere (P15-08 ...), parsing, multi-statement input (callers pass one statement from `RunTarget`).
 
 ## Tasks
-- [ ] `Squill.Sql/Transactions` types and classifier, shared scan helper extracted from `PlanEligibility`.
-- [ ] `tests/Squill.Sql.Tests/Transactions/StatementClassifierTests.cs`: table-driven per dialect (about 120 rows): every kind, `WITH` forms, `SELECT ... INTO`, `FOR UPDATE`, comments before the head, `;` and several statements (first only), `UPDATE` / `DELETE` with and without `WHERE` (also `WHERE` only inside a subquery = no top-level `WHERE`), `ALTER TABLE ... DROP COLUMN`, all `Control` forms per dialect, MySQL implicit-commit list (positive and `CREATE TEMPORARY TABLE` negative), the not-allowed-in-transaction lists, `Call` / `Other` not read-only. Existing `PlanEligibility` tests stay green.
+- [x] `Squill.Sql/Transactions` types and classifier, shared scan helper extracted from `PlanEligibility`.
+- [x] `tests/Squill.Sql.Tests/Transactions/StatementClassifierTests.cs`: table-driven per dialect (about 120 rows): every kind, `WITH` forms, `SELECT ... INTO`, `FOR UPDATE`, comments before the head, `;` and several statements (first only), `UPDATE` / `DELETE` with and without `WHERE` (also `WHERE` only inside a subquery = no top-level `WHERE`), `ALTER TABLE ... DROP COLUMN`, all `Control` forms per dialect, MySQL implicit-commit list (positive and `CREATE TEMPORARY TABLE` negative), the not-allowed-in-transaction lists, `Call` / `Other` not read-only. Existing `PlanEligibility` tests stay green.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9.
