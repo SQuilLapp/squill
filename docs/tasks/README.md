@@ -293,6 +293,26 @@ Depends on: <card ids, ranges allowed>
 | [P14-17](phase-14/P14-17-data-join-completion-on-every-engine.md) | Data: generated join conditions run on every engine | P14-08, P14-09, P14-11 | done |
 | [P14-18](phase-14/P14-18-verify-completion.md) | End-to-end verification: completion through the query tab, and the manual checklist | P14-08 ... P14-17 | automated done, manual pending |
 | [P14-19](phase-14/P14-19-docs-and-adr.md) | Documentation: completion ADR 0011, README and architecture note | P14-18 | done |
+| [P15-01](phase-15/P15-01-sql-statement-traits.md) | Sql: statement traits (read-only, data, schema, destructive, transaction control) | none | todo |
+| [P15-02](phase-15/P15-02-sql-transaction-text.md) | Sql: transaction statement text and savepoints per dialect | none | todo |
+| [P15-03](phase-15/P15-03-core-data-transaction-contract.md) | Core and Data: transaction model and probe contract | none | todo |
+| [P15-04](phase-15/P15-04-sqlite-transactions.md) | Data.Sqlite: transaction probe and the shared engine scenario | P15-02, P15-03 | todo |
+| [P15-05](phase-15/P15-05-postgres-transactions.md) | Data.Postgres: transaction probe and engine proof | P15-04, P11-02 | todo |
+| [P15-06](phase-15/P15-06-mysql-transactions.md) | Data.MySql: transaction probe, implicit commit proof | P15-04, P11-03 | todo |
+| [P15-07](phase-15/P15-07-sqlserver-transactions.md) | Data.SqlServer: transaction probe and engine proof | P15-04, P11-04 | todo |
+| [P15-08](phase-15/P15-08-presentation-session-transaction.md) | Presentation: the session transaction (mode, state, pending count, journal) | P15-01, P15-02, P15-03 | todo |
+| [P15-09](phase-15/P15-09-presentation-short-transactions-and-plans.md) | Presentation: grid commit, designer apply, schema refresh and plans inside an open transaction | P15-08 | todo |
+| [P15-10](phase-15/P15-10-presentation-query-tab-transactions.md) | Presentation: transactions in the query tab (run path, Valider, Annuler, mode) | P15-08, P15-09 | todo |
+| [P15-11](phase-15/P15-11-presentation-impact-estimate.md) | Presentation: estimated impact of a modifying statement | P15-01 | todo |
+| [P15-12](phase-15/P15-12-presentation-production-confirmation.md) | Presentation: production confirmation contract, guard, Run and Valider | P15-10, P15-11 | todo |
+| [P15-13](phase-15/P15-13-presentation-production-grid-and-designer.md) | Presentation: production confirmation for the grid commit and the designer apply | P15-09, P15-12 | todo |
+| [P15-14](phase-15/P15-14-presentation-close-disconnect-exit.md) | Presentation: open transaction on tab close, disconnect, mode switch and exit | P15-10, P15-12 | todo |
+| [P15-15](phase-15/P15-15-winui-transaction-toolbar-and-status.md) | WinUI head: transaction toolbar group and status bar segment | P15-10, P15-14, P9-12 | todo |
+| [P15-16](phase-15/P15-16-winui-production-dialogs-and-closing.md) | WinUI head: production confirmation dialog, transaction question, window closing | P15-12, P15-14, P15-15 | todo |
+| [P15-17](phase-15/P15-17-avalonia-transaction-toolbar-and-status.md) | Avalonia head: transaction toolbar group and status bar segment | P15-15 | todo |
+| [P15-18](phase-15/P15-18-avalonia-production-dialogs-and-closing.md) | Avalonia head: production confirmation window, transaction question, window closing | P15-16, P15-17 | todo |
+| [P15-19](phase-15/P15-19-verify-transactions.md) | End-to-end verification: transactions and production confirmation on the four engines | P15-07, P15-09, P15-11, P15-13, P15-14, P15-16, P15-18 | todo |
+| [P15-20](phase-15/P15-20-docs-and-adr.md) | Documentation: transactions ADR 0012, README and architecture note | P15-19 | todo |
 
 ### Phase 9 - Visual conformance
 
@@ -343,3 +363,11 @@ Goal: picking a table after `JOIN` in the completion popup also writes the alias
 - Branch: implement phase 14 on the branch `phase-14-completion`; do not create another branch.
 - Order: foundations P14-01 / P14-02 (item fields and head mapping), P14-03 (qualified tables), then the join pipeline P14-04 ... P14-09 (context, relations, alias, text, rows, ON clause), then P14-10 (auto-open after a space), P14-11 ... P14-16 (columns, ranking, keywords, functions and keyword case, documentation, snippets; each independent after its dependencies), the engine proof P14-17 (Podman, see [verification-recipe.md](phase-11/verification-recipe.md)), verification P14-18, docs P14-19. WinUI and Avalonia share the provider code, so there are no per-head cards beyond the field mapping.
 - Riskiest cards: P14-08 (largest; performance guard on 5,000 tables) and P14-10 (a trigger character on space must not accept items nor slow typing). Bugs found by P14-17 / P14-18 too big for the card get `P14-20` onwards (added to this index).
+
+### Phase 15 - Transactions and production confirmation (mockups M03, M04, M15)
+
+Goal: a query tab can run in manual-transaction mode with explicit `Valider` / `Annuler`, a visible "transaction open" state with the pending statement count, and a guard on every way out (close, disconnect, quit); on a Production connection every modifying statement, commit, grid commit and designer apply asks the M15 confirmation (statement, connection / database, planner estimate when cheap, typed database name for destructive statements). Decisions (final, details in [transactions-recipe.md](phase-15/transactions-recipe.md) and in ADR 0012 written by P15-20): the transaction belongs to the **session** (the connection is shared by every tab, so the toggle and buttons mirror it; per-tab connections are rejected for now); auto-commit is the default everywhere; in manual mode `BEGIN` is issued lazily before the first statement that is not read-only; PostgreSQL gets a `Failed` state after any error; MySQL DDL implicit commits ask first and statements that cannot run in a transaction are refused; the grid commit and the designer use savepoints inside an open transaction (they used to send `BEGIN`, which breaks a user transaction on every engine); a connection probe resynchronises the app's state with the server; typed confirmation only for `DELETE` / `UPDATE` without `WHERE`, `TRUNCATE` and `DROP`; `Entrée` always cancels; `Analyser` keeps its plain confirmation. Not built (no feature behind it): isolation levels, per-profile default mode, `Staging` confirmation, idle timeouts, Oracle, MariaDB.
+
+- Branch: implement phase 15 on the existing branch `phase-15-transactions`; do not create another branch.
+- Order: vocabulary and pure logic P15-01 ... P15-03, the four providers P15-04 (SQLite, also writes the shared scenario) ... P15-07 (PostgreSQL, MySQL, SQL Server need Podman, see [verification-recipe.md](phase-11/verification-recipe.md)), Presentation P15-08 ... P15-14 (P15-11 is independent after P15-01), WinUI P15-15 / P15-16 before Avalonia P15-17 / P15-18, verification P15-19, docs P15-20.
+- Riskiest cards: P15-09 (changes how the grid commit and the designer bracket their statements; behavior on every engine must be proven), P15-06 (the MySQL probe may have to be "unknown"; stop rule in the card), P15-11 (planner estimates differ per engine; child-node rule proven on containers), P15-16 / P15-18 (`Entrée` must never confirm; window closing with an async question, nothing exists today). Bugs found by P15-19 too big for the card get `P15-21` onwards (added to this index).
