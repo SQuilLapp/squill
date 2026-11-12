@@ -39,6 +39,7 @@ public sealed partial class QueryTabView : UserControl
     private readonly Border _toolbarSeparator = new() { Width = 1, Height = 18, Margin = new Thickness(4, 0, 4, 0), VerticalAlignment = VerticalAlignment.Center };
     private readonly List<FrameworkElement> _chips = [];
     private readonly List<FrameworkElement> _txIcons = [];
+    private readonly List<FrameworkElement> _txLabels = [];
     private StackPanel _toolbarLeft = null!;
     private StackPanel _toolbarRight = null!;
     private Grid _toolbarRow = null!;
@@ -315,7 +316,9 @@ public sealed partial class QueryTabView : UserControl
         glyph.VerticalAlignment = VerticalAlignment.Center;
         _txIcons.Add(glyph);
         var panel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { glyph } };
-        panel.Children.Add(new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center });
+        var label = new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center };
+        _txLabels.Add(label);
+        panel.Children.Add(label);
         var chip = new ContentControl { Content = hint, Style = Res("KeyboardChipStyle"), VerticalAlignment = VerticalAlignment.Center };
         _chips.Add(chip);
         panel.Children.Add(chip);
@@ -365,13 +368,15 @@ public sealed partial class QueryTabView : UserControl
         var tx = _transaction;
         var full = tx is null ? "" : tx.State == TransactionState.Failed ? UiText.Get("tx.status.failed") : UiText.FormatPlural("tx.pill", tx.PendingCount);
         var count = tx?.PendingCount.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "";
-        for (var level = 0; level <= 4; level++)
+        for (var level = 0; level <= 5; level++)
         {
             foreach (var chip in _chips)
                 chip.Visibility = level >= 1 ? Visibility.Collapsed : Visibility.Visible;
             _pillText.Text = level >= 2 ? count : full;
             foreach (var icon in _txIcons)
-                icon.Visibility = level >= 3 ? Visibility.Collapsed : Visibility.Visible;
+                icon.Visibility = level is 3 or 4 ? Visibility.Collapsed : Visibility.Visible;
+            foreach (var label in _txLabels)
+                label.Visibility = level >= 5 ? Visibility.Collapsed : Visibility.Visible;
             _stop.Visibility = level >= 4 && _tab?.IsRunning != true ? Visibility.Collapsed : Visibility.Visible;
             _toolbarLeft.Measure(new Windows.Foundation.Size(double.PositiveInfinity, 38));
             _toolbarRight.Measure(new Windows.Foundation.Size(double.PositiveInfinity, 38));

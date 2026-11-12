@@ -1,6 +1,6 @@
 # P15-16 - WinUI head: production confirmation dialog, transaction question and window closing
 
-Status: todo
+Status: done
 Depends on: P15-12, P15-14, P15-15
 
 ## Goal
@@ -17,8 +17,8 @@ The WinUI head draws M15 for real, asks the three-way transaction question, and 
 - Avalonia (P15-18).
 
 ## Tasks
-- [ ] Both dialogs, the service implementations, the closing hook, strings if a head label is missing.
-- [ ] Capture the production dialog (both themes, with and without the typed field, locked checkbox) against M15 and the transaction question; anything not drivable goes to the report as "to check by hand".
+- [x] Both dialogs, the service implementations, the closing hook, strings if a head label is missing.
+- [x] Capture the production dialog (both themes, with and without the typed field, locked checkbox) against M15 and the transaction question; anything not drivable goes to the report as "to check by hand".
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; tests green; WinUI AOT publish with zero IL2xxx/IL3xxx.
@@ -26,3 +26,8 @@ The WinUI head draws M15 for real, asks the three-way transaction question, and 
 
 ## Suggested commit message
 Add the production confirmation dialog, the transaction question and exit guard to the WinUI head
+
+## Report
+- Driven for real (AOT head, SQLite profile marked Production, French, light theme): `DELETE FROM clients;` shows M15 with the typed field `ventes.db`, the confirm button disabled until the word matches, `Entrée` cancels (also with the word typed); a `WHERE` update in manual mode shows the dialog without field and with the transaction checkbox checked and locked, focus on `Annuler`; confirming gives `Transaction ouverte ... 1 instruction`; closing the window asks `Quitter SQuilL ?`, `Retour` keeps the app open, `Annuler les modifications` rolls back and exits.
+- NOT looked at: dark theme, the estimated-row figure in danger mono (SQLite gives no estimate, the splitting logic only styles the figure when it appears exactly once), the `+ N autres` line, the `Failed` variant (no `Valider`), the comparison with the M15 PNGs side by side, the environment stripe of the question for Staging/Development.
+- Deviations: ContentDialog padding keeps the red band inset by 24 px instead of flush (M15 draws it flush); no read-only statement highlighter exists in `Editors/` for a plain box, so the statements are plain mono; `Quitter` has no menu item in the WinUI head, only the window close button exists.

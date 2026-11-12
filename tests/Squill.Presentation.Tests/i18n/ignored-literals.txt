@@ -25,6 +25,8 @@ src/Squill.App.WinUI/Views/ConnectionEditorFormat.cs|SQL Server|product name, no
 src/Squill.App.WinUI/Views/ConnectionEditorWindow.xaml.cs|SquillFg3Brush|resource key
 src/Squill.App.WinUI/Views/ConnectionEditorWindow.xaml.cs|SquillFgBrush|resource key
 src/Squill.App.WinUI/Views/DiagramTabView.xaml|Ctrl+0|keyboard accelerator text, not translated
+src/Squill.App.WinUI/Views/ProductionConfirmDialog.cs|SquillDangerBrush|resource key
+src/Squill.App.WinUI/Views/ProductionConfirmDialog.cs|SquillFgBrush|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFg2Brush|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFg3Brush|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFontMono|resource key
@@ -32,6 +34,8 @@ src/Squill.App.WinUI/Views/QueryTabView.cs|SquillIconCollapse|resource key
 src/Squill.App.WinUI/Views/TableDesignerView.xaml|Ctrl+S|keyboard accelerator text, not translated
 src/Squill.App.WinUI/Views/TableDesignerView.xaml|ON DELETE|SQL keyword, not translated
 src/Squill.App.WinUI/Views/TableDesignerView.xaml|ON UPDATE|SQL keyword, not translated
+src/Squill.App.WinUI/Views/TransactionAskDialog.cs|SquillFg2Brush|resource key
+src/Squill.App.WinUI/Views/TransactionAskDialog.cs|SquillFgBrush|resource key
 src/Squill.Core/Design/DesignValidator.cs|Changing the type of '{a.After.Name}' may fail or lose data.|English fallback of a coded issue, rendered through issue.design.typeChangeRisk
 src/Squill.Core/Design/DesignValidator.cs|Data in column '{d.Name}' is lost.|English fallback of a coded issue, rendered through issue.design.dropColumnDataLoss
 src/Squill.Core/Design/DesignValidator.cs|Existing NULLs make '{a.After.Name}' fail to become non-nullable.|English fallback of a coded issue, rendered through issue.design.nullsBlockNotNull
