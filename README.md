@@ -1,6 +1,6 @@
 # SQuilL
 
-SQuilL is a SQL client built on .NET 11 (RC3) and Native AOT. The Windows head uses WinUI 3, the macOS/Linux head uses Avalonia. Both share one view-model layer (`Squill.Presentation`).
+SQuilL is a SQL client built on .NET 11 and Native AOT. The Windows head uses WinUI 3, the macOS/Linux head uses Avalonia. Both share one view-model layer (`Squill.Presentation`).
 
 ## Install
 
@@ -65,7 +65,7 @@ See [ADR 0005](docs/adr/0005-grid-editing.md) for the design and what is not cov
 The version is written once, in [eng/Version.props](eng/Version.props) (`SquillVersion`); the release tag is `v` + that value.
 `pwsh eng/get-version.ps1 [-Tag v0.1.0]` prints it and checks a tag against it.
 
-Prerequisite: the .NET SDK pinned in [global.json](global.json) (11.0.100-rc.3).
+Prerequisite: the .NET SDK pinned in [global.json](global.json) (11.0.100).
 
 ```bash
 dotnet build Squill.slnx -c Release -warnaserror

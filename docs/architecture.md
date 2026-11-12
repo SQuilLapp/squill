@@ -2,7 +2,7 @@
 
 ## Starting point (2026-10-29)
 
-- SDK: .NET 11.0.100-rc.3 (target chosen by the project owner, see [ADR 0001](adr/0001-target-framework.md)). Design system and mockups: found (shared canvas), tokens extracted to `tokens/squill.tokens.json`.
+- SDK: .NET 11.0.100 GA (target chosen by the project owner, see [ADR 0001](adr/0001-target-framework.md)). Design system and mockups: found (shared canvas), tokens extracted to `tokens/squill.tokens.json`.
 
 ## Verified stable versions (NuGet)
 
@@ -15,7 +15,7 @@
 | Npgsql | 10.0.3 | `NpgsqlSlimDataSourceBuilder` |
 | MySqlConnector | 2.6.2 | |
 | Microsoft.Data.SqlClient | 7.1.1 | High AOT risk |
-| Microsoft.Data.Sqlite | 11.0.0-rc.3.26522.148 (10.0.14 stable) | Pinned in `Directory.Packages.props`; NuGet only resolves the full RC version string |
+| Microsoft.Data.Sqlite | 11.0.0 | Pinned in `Directory.Packages.props` (GA; was 11.0.0-rc.3.26522.148 until the GA migration) |
 | Antlr4.Runtime.Standard | 4.13.1 | |
 | SSH.NET | 2026.0.0 | AOT to validate |
 | Testcontainers | 4.16.0 | |

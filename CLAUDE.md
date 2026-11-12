@@ -1,6 +1,6 @@
 # SQuilL - agent guidelines
 
-SQL client on .NET 11 (RC3), Native AOT, WinUI 3 / Avalonia. Task cards live in `docs/tasks/` and are implemented one at a time with the `next-task` skill (`.claude/skills/next-task/`).
+SQL client on .NET 11, Native AOT, WinUI 3 / Avalonia. Task cards live in `docs/tasks/` and are implemented one at a time with the `next-task` skill (`.claude/skills/next-task/`).
 
 ## Language and code
 
