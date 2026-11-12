@@ -117,6 +117,28 @@ public sealed class WindowChromeTests
             Assert.False(segment.IsVisible);
         });
 
+    [Fact]
+    public async Task ShutdownRequest_IsHeldWhileATransactionIsOpen_AndPassesOtherwise() =>
+        await WithWindow(async (window, workspace, dir) =>
+        {
+            var idle = new global::Avalonia.Controls.ApplicationLifetimes.ShutdownRequestedEventArgs();
+            window.OnShutdownRequested(null, idle);
+            Assert.False(idle.Cancel);
+
+            await workspace.ConnectCommand.ExecuteAsync(Profile(dir, ConnectionEnvironment.None));
+            var tab = workspace.ActiveTab!;
+            await tab.SetModeCommand.ExecuteAsync(Squill.Core.Transactions.TransactionMode.Manual);
+            var insert = "INSERT INTO t VALUES (1)";
+            var traits = Squill.Sql.Transactions.StatementClassifier.Classify(insert, DatabaseDialect.Sqlite);
+            await tab.Transaction.EnsureOpenAsync(traits, CancellationToken.None);
+            tab.Transaction.ObserveSuccess(insert, traits, 1, "t");
+            Assert.True(workspace.HasOpenTransaction);
+
+            var held = new global::Avalonia.Controls.ApplicationLifetimes.ShutdownRequestedEventArgs();
+            window.OnShutdownRequested(null, held);
+            Assert.True(held.Cancel);
+        });
+
     [Theory]
     [InlineData(ConnectionEnvironment.Production, "SquillEnvProdBrush", "status.production", true)]
     [InlineData(ConnectionEnvironment.Staging, "SquillEnvStagingBrush", "status.staging", false)]

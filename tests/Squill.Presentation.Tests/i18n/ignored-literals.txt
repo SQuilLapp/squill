@@ -13,9 +13,13 @@ src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|PostgreSQL|product na
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SQL Server|product name, not translated
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SQLite|product name, not translated
 src/Squill.App.Avalonia/Views/DiagramTabView.axaml|Ctrl+0|keyboard accelerator text, not translated
+src/Squill.App.Avalonia/Views/ProductionConfirmWindow.cs|SquillFg3Brush|resource key
+src/Squill.App.Avalonia/Views/ProductionConfirmWindow.cs|SquillFgBrush|resource key
 src/Squill.App.Avalonia/Views/QueryTabView.axaml|CSV|file format name
 src/Squill.App.Avalonia/Views/QueryTabView.axaml|JSON|file format name
 src/Squill.App.Avalonia/Views/TableDesignerView.axaml|Ctrl+S|keyboard accelerator text, not translated
+src/Squill.App.Avalonia/Views/TransactionAskWindow.cs|SquillFg2Brush|resource key
+src/Squill.App.Avalonia/Views/TransactionAskWindow.cs|SquillFgBrush|resource key
 src/Squill.App.WinUI/Editors/PlainSqlEditor.cs|Cascadia Code, Consolas|font family list
 src/Squill.App.WinUI/MainWindow.xaml|Ctrl+K|keyboard accelerator text, not translated
 src/Squill.App.WinUI/MainWindow.xaml|SQuilL|product name, not translated
