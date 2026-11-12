@@ -281,7 +281,7 @@ public sealed class QueryTabTransactionTests
     }
 
     [Fact]
-    public async Task Switching_to_auto_commit_with_an_open_transaction_asks_to_resolve_it_first()
+    public async Task Switching_to_auto_commit_with_an_open_transaction_asks_and_Back_keeps_manual_mode()
     {
         var r = new Rig();
         await Manual(r);
@@ -290,7 +290,8 @@ public sealed class QueryTabTransactionTests
         await r.Tab.SetModeCommand.ExecuteAsync(TransactionMode.AutoCommit);
 
         Assert.Equal(TransactionMode.Manual, r.Session.Transaction.Mode);
-        Assert.Equal(UiText.Get("tx.resolveFirst"), r.Tab.StatusText);
+        var request = Assert.Single(r.Dialogs.TransactionRequests);
+        Assert.Equal(UiText.Get("tx.ask.switchMode"), request.Title);
         await r.Tab.RollbackCommand.ExecuteAsync(null);
         await r.Tab.SetModeCommand.ExecuteAsync(TransactionMode.AutoCommit);
         Assert.Equal(TransactionMode.AutoCommit, r.Session.Transaction.Mode);

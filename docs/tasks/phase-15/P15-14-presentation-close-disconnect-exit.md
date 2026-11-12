@@ -1,6 +1,6 @@
 # P15-14 - Presentation: open transaction on tab close, disconnect, mode switch and application exit
 
-Status: todo
+Status: done
 Depends on: P15-10, P15-12
 
 ## Goal
@@ -21,8 +21,8 @@ An open transaction is never lost silently: closing the last tab of a session, d
 - The dialog and the closing hook in the heads (P15-16, P15-18), saving a draft of the pending statements.
 
 ## Tasks
-- [ ] `TransactionChoice`, request, `IDialogService` member + fallbacks + fakes, `TransactionPrompt`, the four call sites, `PrepareExitAsync`, timer, strings.
-- [ ] Tests (`tests/Squill.Presentation.Tests/Workspace` and `Safety`): closing the last tab with an open transaction asks and `Retour` keeps the tab, `Annuler` rolls back then closes, `Valider` commits then closes (and a failing commit keeps the tab and shows the error); closing a tab while a second tab of the session remains asks nothing; `Disconnect` with a derived session that has a transaction asks for it by name and aborts everything on `Retour`; mode switch back to `AutoCommit` asks; `PrepareExitAsync` with two sessions asks twice, aborts on the first `Retour`, returns true when nothing is open; `Manual` + `Open` + count 0 is rolled back silently; `Failed` request carries the failed state; elapsed refresh raised by the timer with a fake `TimeProvider`; Production session `Valider` answer does not call `ConfirmProductionAsync`.
+- [x] `TransactionChoice`, request, `IDialogService` member + fallbacks + fakes, `TransactionPrompt`, the four call sites, `PrepareExitAsync`, timer, strings.
+- [x] Tests (`tests/Squill.Presentation.Tests/Workspace` and `Safety`): closing the last tab with an open transaction asks and `Retour` keeps the tab, `Annuler` rolls back then closes, `Valider` commits then closes (and a failing commit keeps the tab and shows the error); closing a tab while a second tab of the session remains asks nothing; `Disconnect` with a derived session that has a transaction asks for it by name and aborts everything on `Retour`; mode switch back to `AutoCommit` asks; `PrepareExitAsync` with two sessions asks twice, aborts on the first `Retour`, returns true when nothing is open; `Manual` + `Open` + count 0 is rolled back silently; `Failed` request carries the failed state; elapsed refresh raised by the timer with a fake `TimeProvider`; Production session `Valider` answer does not call `ConfirmProductionAsync`.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9; localization guards green.

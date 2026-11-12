@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Squill.Presentation.Tests.Workspace;
 
-public sealed class WorkspaceDesignerTests
+public sealed class WorkspaceDesignerTests : IDisposable
 {
     private static readonly TableInfo Users = new(null, "users", TableKind.Table, [new ColumnDefinition("id", "integer", false, true, null)], [], []);
     private static readonly TableInfo Recent = new(null, "recent", TableKind.View, [], [], []);
@@ -46,6 +46,8 @@ public sealed class WorkspaceDesignerTests
             diagramStore: withDiagram ? new FakeLayouts() : null,
             measureText: withDiagram ? text => text.Length * 7 : null);
     }
+
+    public void Dispose() => _workspace.Dispose();
 
     private static ConnectionProfile Profile() =>
         new(Guid.NewGuid(), "p", DatabaseDialect.PostgreSql, "h", 1, "d", "u", null, null);

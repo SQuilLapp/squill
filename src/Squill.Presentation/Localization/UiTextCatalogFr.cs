@@ -651,5 +651,17 @@ internal static class UiTextCatalogFr
         ("prod.message.schema", "Le schéma de {0} sera modifié."),
         ("prod.confirm.write", "Écrire"),
         ("prod.confirm.apply", "Appliquer"),
+        ("tx.ask.closeTab", "Fermer le dernier onglet de la connexion ?"),
+        ("tx.ask.disconnect", "Se déconnecter ?"),
+        ("tx.ask.switchMode", "Repasser en auto-commit ?"),
+        ("tx.ask.exit", "Quitter SQuilL ?"),
+        ("tx.ask.message.one", "La connexion {1} ({2}) a une transaction ouverte avec {0} instruction non validée."),
+        ("tx.ask.message.other", "La connexion {1} ({2}) a une transaction ouverte avec {0} instructions non validées."),
+        ("tx.ask.failed", "La transaction est en erreur : seule l'annulation est possible."),
+        ("tx.ask.commit", "Valider"),
+        ("tx.ask.rollback", "Annuler les modifications"),
+        ("tx.ask.back", "Retour"),
+        ("tx.ask.commitFailed", "La validation a échoué"),
+        ("tx.ask.rollbackFailed", "L'annulation a échoué"),
     ];
 }

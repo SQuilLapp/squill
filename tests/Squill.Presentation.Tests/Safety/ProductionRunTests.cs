@@ -225,4 +225,36 @@ public sealed class ProductionRunTests
         Assert.Empty(r.Dialogs.ProductionRequests);
         Assert.Equal(TransactionState.None, r.Session.Transaction.State);
     }
+
+    [Fact]
+    public async Task The_commit_answer_of_the_mode_switch_dialog_is_the_confirmation_on_production()
+    {
+        var r = new Rig();
+        await r.Session.Transaction.SetModeAsync(TransactionMode.Manual, CancellationToken.None);
+        await r.RunAsync("insert into t values (1)");
+        var asked = r.Dialogs.ProductionRequests.Count;
+        r.Dialogs.TransactionChoices.Enqueue(TransactionChoice.Commit);
+
+        await r.Tab.SetModeCommand.ExecuteAsync(TransactionMode.AutoCommit);
+
+        Assert.Equal(asked, r.Dialogs.ProductionRequests.Count);
+        Assert.Contains("COMMIT", r.Connection.Sql);
+        Assert.Equal(TransactionMode.AutoCommit, r.Session.Transaction.Mode);
+        Assert.Contains(r.History.Entries, e => e.Sql == "COMMIT");
+    }
+
+    [Fact]
+    public async Task A_manual_open_transaction_with_nothing_written_is_rolled_back_silently()
+    {
+        var r = new Rig();
+        await r.Session.Transaction.SetModeAsync(TransactionMode.Manual, CancellationToken.None);
+        r.Session.Transaction.ObserveSuccess("BEGIN", Squill.Sql.Transactions.StatementClassifier.Classify("BEGIN", DatabaseDialect.PostgreSql), -1, "Q1");
+        Assert.Equal(0, r.Session.Transaction.PendingCount);
+
+        await r.Tab.SetModeCommand.ExecuteAsync(TransactionMode.AutoCommit);
+
+        Assert.Empty(r.Dialogs.TransactionRequests);
+        Assert.Contains("ROLLBACK", r.Connection.Sql);
+        Assert.Equal(TransactionMode.AutoCommit, r.Session.Transaction.Mode);
+    }
 }

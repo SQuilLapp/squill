@@ -41,6 +41,9 @@ public sealed class EditBarUiTests
         public ValueTask<Squill.Presentation.Safety.ProductionConfirmationResult> ConfirmProductionAsync(Squill.Presentation.Safety.ProductionConfirmationRequest request) =>
             ValueTask.FromResult(new Squill.Presentation.Safety.ProductionConfirmationResult(true, false));
 
+        public ValueTask<Squill.Presentation.Safety.TransactionChoice> AskTransactionAsync(Squill.Presentation.Safety.TransactionCloseRequest request) =>
+            ValueTask.FromResult(Squill.Presentation.Safety.TransactionChoice.Rollback);
+
         public ValueTask<bool> ConfirmAsync(string title, string message) => ValueTask.FromResult(true);
         public ValueTask<string?> PromptAsync(string title, string message, string? initial) => ValueTask.FromResult<string?>(null);
 

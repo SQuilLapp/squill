@@ -27,6 +27,16 @@ internal sealed class FakeDialogService : IDialogService
         return ValueTask.FromResult(ProductionResult);
     }
 
+    public Queue<TransactionChoice> TransactionChoices { get; } = [];
+
+    public List<TransactionCloseRequest> TransactionRequests { get; } = [];
+
+    public ValueTask<TransactionChoice> AskTransactionAsync(TransactionCloseRequest request)
+    {
+        TransactionRequests.Add(request);
+        return ValueTask.FromResult(TransactionChoices.Count > 0 ? TransactionChoices.Dequeue() : TransactionChoice.Cancel);
+    }
+
     public ValueTask<bool> ConfirmAsync(string title, string message)
     {
         Confirms.Add((title, message));

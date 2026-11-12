@@ -42,4 +42,9 @@ public interface IDialogService
     /// <param name="request">The localized content; the head draws it and adds nothing.</param>
     /// <returns>Whether the user confirmed and whether the transaction option was checked.</returns>
     ValueTask<ProductionConfirmationResult> ConfirmProductionAsync(ProductionConfirmationRequest request);
+
+    /// <summary>Asks what to do with an open transaction before the session is closed or changed.</summary>
+    /// <param name="request">The localized question.</param>
+    /// <returns>The choice; <see cref="TransactionChoice.Cancel"/> when the dialog was dismissed.</returns>
+    ValueTask<TransactionChoice> AskTransactionAsync(TransactionCloseRequest request);
 }

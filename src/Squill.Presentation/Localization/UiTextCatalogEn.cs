@@ -651,5 +651,17 @@ internal static class UiTextCatalogEn
         ("prod.message.schema", "The schema of {0} will be changed."),
         ("prod.confirm.write", "Write"),
         ("prod.confirm.apply", "Apply"),
+        ("tx.ask.closeTab", "Close the last tab of the connection?"),
+        ("tx.ask.disconnect", "Disconnect?"),
+        ("tx.ask.switchMode", "Switch back to auto-commit?"),
+        ("tx.ask.exit", "Quit SQuilL?"),
+        ("tx.ask.message.one", "The connection {1} ({2}) has an open transaction with {0} uncommitted statement."),
+        ("tx.ask.message.other", "The connection {1} ({2}) has an open transaction with {0} uncommitted statements."),
+        ("tx.ask.failed", "The transaction has failed: only a rollback is possible."),
+        ("tx.ask.commit", "Commit"),
+        ("tx.ask.rollback", "Roll back changes"),
+        ("tx.ask.back", "Back"),
+        ("tx.ask.commitFailed", "The commit failed"),
+        ("tx.ask.rollbackFailed", "The rollback failed"),
     ];
 }

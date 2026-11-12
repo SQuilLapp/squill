@@ -233,11 +233,8 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     [RelayCommand]
     private async Task SetModeAsync(TransactionMode mode)
     {
-        if (mode == TransactionMode.AutoCommit && Transaction.State != TransactionState.None)
-        {
-            StatusText = UiText.Get("tx.resolveFirst");
+        if (mode == TransactionMode.AutoCommit && !await TransactionPrompt.ResolveAsync(_session, _dialogs, _history, "tx.ask.switchMode", CancellationToken.None))
             return;
-        }
 
         try
         {
@@ -287,25 +284,20 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     private async Task RunControlAsync(bool commit)
     {
         IsRunning = true;
-        var clock = Stopwatch.StartNew();
-        var succeeded = false;
         try
         {
-            if (commit)
-                await Transaction.CommitAsync(CancellationToken.None);
+            if (await TransactionPrompt.FinishAsync(_session, _history, commit, CancellationToken.None) is { } ex)
+            {
+                StatusText = ex.Message;
+                AddResult(ResultViewModel.ForMessage(NextTitle(), ex.Message, _dialogs));
+            }
             else
-                await Transaction.RollbackAsync(CancellationToken.None);
-            succeeded = true;
-            StatusText = UiText.Get(commit ? "tx.committed" : "tx.rolledBack");
-        }
-        catch (Exception ex)
-        {
-            StatusText = ex.Message;
-            AddResult(ResultViewModel.ForMessage(NextTitle(), ex.Message, _dialogs));
+            {
+                StatusText = UiText.Get(commit ? "tx.committed" : "tx.rolledBack");
+            }
         }
         finally
         {
-            await _history.AppendAsync(new HistoryEntry(DateTimeOffset.UtcNow, _session.Profile.Id, commit ? "COMMIT" : "ROLLBACK", succeeded, null, clock.Elapsed), CancellationToken.None);
             IsRunning = false;
         }
     }

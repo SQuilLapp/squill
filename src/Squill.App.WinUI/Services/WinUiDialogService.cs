@@ -26,6 +26,10 @@ internal sealed class WinUiDialogService : IDialogService
         new(await ConfirmAsync(request.Title, request.Message), false); // temporary until the M15 dialog (P15-16 / P15-18)
 
     /// <inheritdoc />
+    public async ValueTask<Squill.Presentation.Safety.TransactionChoice> AskTransactionAsync(Squill.Presentation.Safety.TransactionCloseRequest request) =>
+        await ConfirmAsync(request.Title, request.Message) ? Squill.Presentation.Safety.TransactionChoice.Rollback : Squill.Presentation.Safety.TransactionChoice.Cancel; // temporary until P15-16 / P15-18
+
+    /// <inheritdoc />
     public async ValueTask<string?> PromptAsync(string title, string message, string? initial)
     {
         var box = new TextBox { Text = initial ?? "" };
