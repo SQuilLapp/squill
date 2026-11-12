@@ -321,7 +321,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
 
     private static void AddGroup(ExplorerNode parent, ConnectionSession session, string titleKey, IEnumerable<TableInfo> tables, bool expanded)
     {
-        var list = tables.ToList();
+        var list = tables.OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase).ThenBy(t => t.Name, StringComparer.Ordinal).ToList();
         var folder = Node(UiText.Get(titleKey), ExplorerNodeKind.Folder, session, count: list.Count);
         foreach (var table in list)
             folder.Children.Add(TableNode(session, table));

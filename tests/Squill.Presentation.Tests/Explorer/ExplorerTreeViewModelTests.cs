@@ -372,6 +372,18 @@ public sealed class ExplorerTreeViewModelTests
     }
 
     [Fact]
+    public void Populate_SortsTablesAndViewsAlphabetically_IgnoringCase()
+    {
+        var profile = Profile("p");
+        _list.Profiles.Add(profile);
+        var node = Connect(profile, Table("public", "zebra"), Table("public", "Beta"), Table("public", "alpha"));
+
+        var folder = Descendants(node).First(d => d.Kind == ExplorerNodeKind.Folder && d.Children.Any(c => c.Kind == ExplorerNodeKind.Table));
+
+        Assert.Equal(["alpha", "Beta", "zebra"], folder.Children.Select(c => c.Title));
+    }
+
+    [Fact]
     public async Task UnopenedDatabase_HasAChildSoTheTreeShowsAnExpander_AndActivatingItOpensIt()
     {
         var (connection, _, opened) = ConnectServer(Profile("p"));
