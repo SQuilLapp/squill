@@ -5,6 +5,7 @@ using Squill.Core;
 using Squill.Core.Editing;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
+using Squill.Presentation.Safety;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Ddl;
 using Squill.Sql.Editing;
@@ -17,6 +18,7 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
     private static readonly ColumnInfo AnyColumn = new("", "", typeof(object), true, 0);
 
     private readonly ConnectionSession _session;
+    private readonly string _tab;
     private readonly IDialogService _dialogs;
     private readonly Func<bool> _isConnectionBusy;
     private readonly DatabaseDialect _dialect;
@@ -29,7 +31,8 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
     /// <param name="session">The session the commit runs on.</param>
     /// <param name="dialogs">Used to confirm destructive actions and report failures.</param>
     /// <param name="isConnectionBusy">Tells whether another query is running on the session's connection.</param>
-    public ResultEditorViewModel(EditableGridDataSource grid, EditTarget target, ConnectionSession session, IDialogService dialogs, Func<bool> isConnectionBusy)
+    /// <param name="tab">The title of the tab, shown in the transaction journal.</param>
+    public ResultEditorViewModel(EditableGridDataSource grid, EditTarget target, ConnectionSession session, IDialogService dialogs, Func<bool> isConnectionBusy, string tab = "")
     {
         ArgumentNullException.ThrowIfNull(grid);
         ArgumentNullException.ThrowIfNull(target);
@@ -39,6 +42,7 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
         Grid = grid;
         Target = target;
         _session = session;
+        _tab = tab;
         _dialogs = dialogs;
         _isConnectionBusy = isConnectionBusy;
         _dialect = session.Profile.Dialect;
@@ -147,12 +151,17 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
                 return;
         }
 
+        var texts = set.Edits.Select(p => DmlGenerator.Generate(p.Edit, Target, _dialect).Sql).ToList();
+        if (!await ProductionRequestBuilder.ConfirmWriteAsync(_dialogs, _session.Profile, ConfirmationKind.GridEdit, texts, texts.Count,
+                SqlQuoting.QualifiedName(Target.Schema, Target.Table, _dialect), _session.Transaction.Mode))
+            return;
+
         IsCommitting = true;
         using var cts = new CancellationTokenSource();
         _cts = cts;
         try
         {
-            var result = await new EditCommitter(_session.Connection, _dialect).CommitAsync(Target, Grid.Columns, set.Edits, cts.Token);
+            var result = await new EditCommitter(_session.Connection, _dialect, _session.Transaction, _tab).CommitAsync(Target, Grid.Columns, set.Edits, cts.Token);
             Grid.AcceptChanges(result.GeneratedKeys);
             StatusText = UiText.FormatPlural("results.committed", result.StatementCount);
         }

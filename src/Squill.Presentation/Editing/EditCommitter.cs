@@ -49,7 +49,9 @@ public sealed class EditCommitException : Exception
 /// <summary>Executes a change set in one transaction. Non-transactional MySQL engines such as MyISAM cannot be rolled back.</summary>
 /// <param name="connection">The connection to run on.</param>
 /// <param name="dialect">The engine behind the connection.</param>
-public sealed class EditCommitter(IDatabaseConnection connection, DatabaseDialect dialect)
+/// <param name="transaction">The session transaction to respect: inside an open one the commit uses a savepoint, never its own transaction.</param>
+/// <param name="tab">The title shown in the transaction journal next to the statements.</param>
+public sealed class EditCommitter(IDatabaseConnection connection, DatabaseDialect dialect, SessionTransaction? transaction = null, string tab = "")
 {
     /// <summary>Runs the edits in the given order inside a transaction.</summary>
     /// <param name="target">The table the edits apply to.</param>
@@ -68,29 +70,32 @@ public sealed class EditCommitter(IDatabaseConnection connection, DatabaseDialec
             return new CommitResult(keys, 0);
 
         long? row = null;
+        StatementScope? scope = null;
+        using var operation = transaction?.BeginOperation();
         try
         {
-            await SqlRunner.BeginAsync(connection, dialect, ct);
+            scope = await SqlRunner.BeginScopeAsync(connection, dialect, transaction, tab, ct);
             foreach (var pending in edits)
             {
                 row = pending.Row;
-                await RunAsync(pending, target, resultColumns, keys, ct);
+                await RunAsync(pending, target, resultColumns, keys, scope, ct);
             }
 
             row = null;
-            await SqlRunner.CommitAsync(connection, dialect, ct);
+            await scope.CompleteAsync(ct);
             return new CommitResult(keys, edits.Count);
         }
         catch (Exception ex)
         {
-            await SqlRunner.RollbackAsync(connection, dialect, CancellationToken.None);
+            if (scope is not null)
+                await scope.FailAsync();
             if (ex is OperationCanceledException or EditCommitException)
                 throw;
             throw new EditCommitException(ex.Message, row, ex);
         }
     }
 
-    private async Task RunAsync(PendingEdit pending, EditTarget target, IReadOnlyList<ColumnInfo> resultColumns, Dictionary<long, object?> keys, CancellationToken ct)
+    private async Task RunAsync(PendingEdit pending, EditTarget target, IReadOnlyList<ColumnInfo> resultColumns, Dictionary<long, object?> keys, StatementScope scope, CancellationToken ct)
     {
         if (pending.Edit is InsertRow insert)
         {
@@ -99,16 +104,17 @@ public sealed class EditCommitter(IDatabaseConnection connection, DatabaseDialec
             object?[]? keyRow;
             if (plan.KeyQuery is not null)
             {
-                await SqlRunner.ExecuteAsync(connection, plan.Insert.Sql, Map(plan.Insert), ct);
+                scope.Observe(plan.Insert.Sql, await SqlRunner.ExecuteAsync(connection, plan.Insert.Sql, Map(plan.Insert), ct));
                 keyRow = await SqlRunner.QueryFirstRowAsync(connection, plan.KeyQuery.Sql, Map(plan.KeyQuery), ct);
             }
             else if (generated is not null && DmlGenerator.ReturnsKeyFromInsert(dialect))
             {
                 keyRow = await SqlRunner.QueryFirstRowAsync(connection, plan.Insert.Sql, Map(plan.Insert), ct);
+                scope.Observe(plan.Insert.Sql, -1);
             }
             else
             {
-                await SqlRunner.ExecuteAsync(connection, plan.Insert.Sql, Map(plan.Insert), ct);
+                scope.Observe(plan.Insert.Sql, await SqlRunner.ExecuteAsync(connection, plan.Insert.Sql, Map(plan.Insert), ct));
                 return;
             }
 
@@ -119,6 +125,7 @@ public sealed class EditCommitter(IDatabaseConnection connection, DatabaseDialec
 
         var statement = DmlGenerator.Generate(pending.Edit, target, dialect);
         var affected = await SqlRunner.ExecuteAsync(connection, statement.Sql, Map(statement), ct);
+        scope.Observe(statement.Sql, affected);
         if (affected == 0)
             throw new EditCommitException(UiText.Format("results.rowNotFound", pending.Row), pending.Row);
         if (affected > 1)

@@ -7,7 +7,9 @@ using ConnectionEnvironment = Squill.Core.ConnectionEnvironment;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 using Squill.Presentation.Plans;
+using Squill.Core.Transactions;
 using Squill.Presentation.Query;
+using Squill.Presentation.Sessions;
 using Squill.Presentation.Workspace;
 
 namespace Squill.App.WinUI.Views;
@@ -20,6 +22,8 @@ public sealed partial class StatusBar : UserControl
     private FrameworkElement? _environmentWarning;
     private readonly StackPanel _environmentContent = new() { Orientation = Orientation.Horizontal, Spacing = 6 };
     private readonly TextBlock _connection = Text(true);
+    private readonly TextBlock _transactionText = Text(false);
+    private readonly Microsoft.UI.Xaml.Shapes.Ellipse _transactionDot = new() { Width = 8, Height = 8, VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _status = Text(false);
     private readonly TextBlock _elapsed = Text(true);
     private readonly TextBlock _position = Text(true);
@@ -29,6 +33,7 @@ public sealed partial class StatusBar : UserControl
     private readonly List<Border> _segments = [];
     private WorkspaceViewModel? _workspace;
     private QueryTabViewModel? _tab;
+    private SessionTransaction? _transaction;
     private PlanTabViewModel? _plan;
 
     /// <summary>Creates the view.</summary>
@@ -44,6 +49,7 @@ public sealed partial class StatusBar : UserControl
             {
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition(),
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto },
@@ -53,10 +59,11 @@ public sealed partial class StatusBar : UserControl
             {
                 _environmentBlock,
                 Segment(1, _connection, right: true),
-                Segment(2, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { _status, _elapsed } }, right: false),
-                Segment(3, _position, left: true),
-                Segment(4, _encoding, left: true),
-                Segment(5, _version, left: false),
+                Segment(2, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { _transactionDot, _transactionText } }, right: true),
+                Segment(3, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { _status, _elapsed } }, right: false),
+                Segment(4, _position, left: true),
+                Segment(5, _encoding, left: true),
+                Segment(6, _version, left: false),
             },
         };
         Content = new Border
@@ -152,11 +159,21 @@ public sealed partial class StatusBar : UserControl
             }
         }
 
+        if (!ReferenceEquals(_transaction, _tab?.Transaction))
+        {
+            if (_transaction is not null)
+                _transaction.PropertyChanged -= OnTabChanged;
+            _transaction = _tab?.Transaction;
+            if (_transaction is not null)
+                _transaction.PropertyChanged += OnTabChanged;
+        }
+
         Paint();
+        RefreshTransaction();
         RefreshEnvironment(workspace.ActiveEnvironment);
         _connection.Text = ChromeFormat.Connection(workspace.ActiveSession?.Profile);
         _version.Text = _plan?.ServerVersion ?? workspace.ActiveSession?.Connection.ServerVersion ?? "";
-        _segments[3].Visibility = _plan is null ? Visibility.Visible : Visibility.Collapsed;
+        _segments[4].Visibility = _plan is null ? Visibility.Visible : Visibility.Collapsed;
         RefreshRunStatus();
         RefreshPosition();
     }
@@ -191,6 +208,17 @@ public sealed partial class StatusBar : UserControl
         _environmentWarning = warning ? Icons.Create("SquillIconWarning", 13, onEnvironment) : null;
         if (_environmentWarning is not null)
             _environmentContent.Children.Insert(0, _environmentWarning);
+    }
+
+    // The transaction belongs to the session of the active query tab: nothing is shown for plans and other kinds of tab.
+    private void RefreshTransaction()
+    {
+        var text = _plan is null ? _transaction?.StatusText ?? "" : "";
+        _segments[1].Visibility = text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+        _transactionText.Text = text;
+        var brush = Brush(_transaction?.State == TransactionState.Failed ? "SquillDangerBrush" : "SquillWarningBrush");
+        _transactionDot.Fill = brush;
+        _transactionText.Foreground = brush;
     }
 
     private void RefreshRunStatus()

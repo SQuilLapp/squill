@@ -1,5 +1,6 @@
 using System.Globalization;
 using Squill.Core;
+using Squill.Core.Transactions;
 using Squill.Data;
 using Squill.Platform.Profiles;
 using Squill.Platform.Settings;
@@ -11,6 +12,7 @@ using Squill.Presentation.Query;
 using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Ddl;
+using Squill.Sql.Transactions;
 using Xunit;
 
 namespace Squill.Data.Tests.Scenarios;
@@ -49,6 +51,7 @@ public static class GridEditScenario
             await RowDeletedByAnotherSession(rig);
             await InsertOnTableWithTrigger(rig);
             await TypedKeys(rig);
+            await CommitInsideUserTransaction(rig, session, d);
         }
         finally
         {
@@ -177,6 +180,45 @@ public static class GridEditScenario
         Assert.NotNull(key);
         Assert.Equal([$"t"], await rig.QueryAsync($"select name from {rig.T("ge_trig")} where id = {Convert.ToString(key, CultureInfo.InvariantCulture)}"));
         Assert.Equal(["t"], await rig.QueryAsync($"select msg from {rig.T("ge_audit")}"));
+    }
+
+    // A grid commit inside the user's manual transaction uses a savepoint: Annuler removes the earlier statement AND the grid edit, Valider keeps both.
+    private static async Task CommitInsideUserTransaction(Rig rig, ConnectionSession session, DatabaseDialect d)
+    {
+        var tx = session.Transaction;
+        var items = rig.T("ge_items");
+        await rig.ExecAsync($"insert into {items} (name, qty) values ('tx_a', 5)");
+        await tx.SetModeAsync(TransactionMode.Manual, Ct);
+        foreach (var commit in new[] { false, true })
+        {
+            var ed = (await rig.RunAsync($"select * from {items}")).Editor ?? throw new Xunit.Sdk.XunitException("not editable");
+            var insert = $"insert into {items} (name, qty) values ('tx_earlier', 7)";
+            await tx.EnsureOpenAsync(StatementClassifier.Classify(insert, d), Ct);
+            await rig.ExecAsync(insert);
+            tx.ObserveSuccess(insert, StatementClassifier.Classify(insert, d), 1, "scenario");
+
+            Set(ed, Find(ed, "name", "tx_a"), "name", commit ? "tx_b" : "tx_a_edited");
+            await CommitAsync(ed);
+
+            Assert.Equal(TransactionState.Open, tx.State);
+            Assert.Equal(2, tx.PendingCount);
+            Assert.Contains("tx_earlier|7", await rig.QueryAsync($"select name, qty from {items} where name like 'tx_%' order by id"));
+            if (commit)
+            {
+                await tx.CommitAsync(Ct);
+                Assert.Equal(["tx_b|5", "tx_earlier|7"], await rig.QueryAsync($"select name, qty from {items} where name like 'tx_%' order by id"));
+            }
+            else
+            {
+                await tx.RollbackAsync(Ct);
+                Assert.Equal(["tx_a|5"], await rig.QueryAsync($"select name, qty from {items} where name like 'tx_%' order by id"));
+            }
+
+            Assert.Equal(TransactionState.None, tx.State);
+        }
+
+        await tx.SetModeAsync(TransactionMode.AutoCommit, Ct);
+        await rig.ExecAsync($"delete from {items} where name like 'tx_%'");
     }
 
     private static async Task TypedKeys(Rig rig)
@@ -344,6 +386,12 @@ public static class GridEditScenario
     private sealed class Dialogs : IDialogService
     {
         public List<(string Title, string Message)> Errors { get; } = [];
+
+        public ValueTask<Squill.Presentation.Safety.ProductionConfirmationResult> ConfirmProductionAsync(Squill.Presentation.Safety.ProductionConfirmationRequest request) =>
+            ValueTask.FromResult(new Squill.Presentation.Safety.ProductionConfirmationResult(true, false));
+
+        public ValueTask<Squill.Presentation.Safety.TransactionChoice> AskTransactionAsync(Squill.Presentation.Safety.TransactionCloseRequest request) =>
+            ValueTask.FromResult(Squill.Presentation.Safety.TransactionChoice.Rollback);
 
         public ValueTask<bool> ConfirmAsync(string title, string message) => ValueTask.FromResult(true);
 

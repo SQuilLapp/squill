@@ -42,6 +42,19 @@ SQL completion (phase 14): after `JOIN` the popup offers each table with its ali
 
 MariaDB and Oracle are not supported for plans, and plan comparison and export do not exist. See [ADR 0010](docs/adr/0010-execution-plan.md) for the design and known limits; the screens still need the owner's checks of [docs/verification/plan.md](docs/verification/plan.md).
 
+## Transactions and production confirmation
+
+The query toolbar has an `Auto-commit | Manuel` toggle. In `Manuel` the first statement that writes opens a transaction (a `SELECT` never does); the toolbar then shows how many statements are not committed and `Valider` (`Ctrl+Alt+C`) / `Annuler` (`Ctrl+Alt+Z`), and the status bar shows how long it has been open. Closing the last tab, disconnecting, going back to auto-commit and quitting ask what to do with the open transaction. On a connection marked `Production`, every modifying statement, `Valider`, grid commit and designer apply asks first; a destructive statement (`DELETE` / `UPDATE` without `WHERE`, `TRUNCATE`, `DROP`) needs the database name typed, shows the planner's estimate of the rows it will touch, and `Entrée` cancels.
+
+| Engine | Manual transactions | DDL inside a transaction | Rows estimate in the confirmation |
+|---|---|---|---|
+| SQLite | yes | transactional | no |
+| PostgreSQL | yes (an error puts the transaction in the `Failed` state until `Annuler`) | transactional | yes |
+| MySQL 8.x | yes | **commits implicitly**: the app asks first | yes |
+| SQL Server | yes | transactional | yes |
+
+Oracle keeps auto-commit. See [ADR 0012](docs/adr/0012-transactions-and-production-confirmation.md) for the design and known limits; the windows still need the owner's checks of [docs/verification/transactions.md](docs/verification/transactions.md).
+
 ## Schema designer and ER diagram
 
 Open a table in the designer to create or alter columns, indexes and foreign keys: the generated DDL is previewed before it runs. The ER diagram shows the tables of a schema with their foreign keys, can be exported to SVG, and remembers box positions per connection. Both work on SQLite, PostgreSQL, MySQL / MariaDB and SQL Server.
@@ -148,7 +161,7 @@ Dependency graph: `Core` <- `Data` <- `Data.<Driver>`; `Core` <- `Sql`; `Core` <
 
 - [Architecture note and risks](docs/architecture.md)
 - [Testing](docs/testing.md), [column types per engine](docs/column-types.md), [verification reports](docs/verification/sqlite.md)
-- ADRs: [0001 target framework](docs/adr/0001-target-framework.md), [0002 editor and terminal components](docs/adr/0002-editor-and-terminal-components.md), [0003 SQL parser](docs/adr/0003-sql-parser.md), [0004 schema designer](docs/adr/0004-schema-designer.md), [0005 grid editing](docs/adr/0005-grid-editing.md), [0006 visual conformance](docs/adr/0006-visual-conformance.md), [0007 localization](docs/adr/0007-localization.md), [0008 engine parity](docs/adr/0008-engine-parity.md), [0009 release and auto-update](docs/adr/0009-release-and-auto-update.md), [0010 execution plan](docs/adr/0010-execution-plan.md), [0011 SQL completion](docs/adr/0011-sql-completion.md)
+- ADRs: [0001 target framework](docs/adr/0001-target-framework.md), [0002 editor and terminal components](docs/adr/0002-editor-and-terminal-components.md), [0003 SQL parser](docs/adr/0003-sql-parser.md), [0004 schema designer](docs/adr/0004-schema-designer.md), [0005 grid editing](docs/adr/0005-grid-editing.md), [0006 visual conformance](docs/adr/0006-visual-conformance.md), [0007 localization](docs/adr/0007-localization.md), [0008 engine parity](docs/adr/0008-engine-parity.md), [0009 release and auto-update](docs/adr/0009-release-and-auto-update.md), [0010 execution plan](docs/adr/0010-execution-plan.md), [0011 SQL completion](docs/adr/0011-sql-completion.md), [0012 transactions and production confirmation](docs/adr/0012-transactions-and-production-confirmation.md)
 - Proofs of concept: [AOT drivers](docs/poc/aot-drivers.md), [grid](docs/poc/grid.md), [editor](docs/poc/editor.md)
 - [Task cards](docs/tasks/README.md)
 

@@ -21,6 +21,7 @@ public sealed partial class CatalogTests
         "results.type.date", // same word
         "results.exportJsonDetail", // file extension
         "status.production", // environment badge
+        "prod.header", // PRODUCTION badge with the connection and database names
         "status.staging", // environment badge
         "status.dev", // environment badge
         "status.local", // environment badge

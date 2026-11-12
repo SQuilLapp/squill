@@ -1,4 +1,5 @@
 using Squill.Presentation.Query;
+using Squill.Presentation.Safety;
 
 namespace Squill.Presentation;
 
@@ -36,4 +37,14 @@ public interface IDialogService
     ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(
         IReadOnlyList<string> names,
         IReadOnlyDictionary<string, ParameterValue> defaults);
+
+    /// <summary>Asks the production confirmation (mockup M15) before a modifying statement is sent to a production connection.</summary>
+    /// <param name="request">The localized content; the head draws it and adds nothing.</param>
+    /// <returns>Whether the user confirmed and whether the transaction option was checked.</returns>
+    ValueTask<ProductionConfirmationResult> ConfirmProductionAsync(ProductionConfirmationRequest request);
+
+    /// <summary>Asks what to do with an open transaction before the session is closed or changed.</summary>
+    /// <param name="request">The localized question.</param>
+    /// <returns>The choice; <see cref="TransactionChoice.Cancel"/> when the dialog was dismissed.</returns>
+    ValueTask<TransactionChoice> AskTransactionAsync(TransactionCloseRequest request);
 }

@@ -3,6 +3,8 @@ using Squill.App.Avalonia.Editors;
 using Squill.App.Avalonia.Services;
 using Squill.App.Avalonia.Views;
 using Squill.Core;
+using Squill.Core.Transactions;
+using Squill.Sql.Transactions;
 using Squill.Data;
 using Squill.Data.Sqlite;
 using Squill.Platform.Settings;
@@ -76,6 +78,91 @@ public sealed class EditorToolbarTests
         Assert.Equal(UiText.Get("editor.run"), ((TextBlock)((StackPanel)view.FindControl<Button>("RunButton")!.Content!).Children[0]).Text);
         return Task.CompletedTask;
     });
+
+    private sealed class NoProbeConnection : IDatabaseConnection
+    {
+        public string ServerVersion => "x";
+
+        public ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private static async Task OpenInsertAsync(QueryTabViewModel tab, int statements)
+    {
+        const string insert = "INSERT INTO t VALUES (1)";
+        var traits = StatementClassifier.Classify(insert, DatabaseDialect.Sqlite);
+        await tab.Transaction.EnsureOpenAsync(traits, CancellationToken.None);
+        for (var i = 0; i < statements; i++)
+            tab.Transaction.ObserveSuccess(insert, traits, 1, "t");
+    }
+
+    [Fact]
+    public Task TransactionGroup_FollowsModeAndState_ForZeroOneAndThreeStatements() => WithViewAsync(async (view, tab) =>
+    {
+        var manual = view.FindControl<RadioButton>("TxManualButton")!;
+        var commit = view.FindControl<Button>("TxCommitButton")!;
+        var rollback = view.FindControl<Button>("TxRollbackButton")!;
+        var pill = view.FindControl<Border>("TxPill")!;
+        Assert.True(view.FindControl<RadioButton>("TxAutoButton")!.IsChecked);
+        Assert.False(commit.IsVisible);
+        Assert.False(rollback.IsVisible);
+        Assert.False(pill.IsVisible);
+
+        manual.RaiseEvent(new global::Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        Assert.Equal(TransactionMode.Manual, tab.Transaction.Mode);
+        Assert.True(commit.IsVisible);
+        Assert.True(rollback.IsVisible);
+        Assert.False(pill.IsVisible);
+
+        await OpenInsertAsync(tab, 1);
+        Assert.True(pill.IsVisible);
+        Assert.Equal(UiText.FormatPlural("tx.pill", 1), view.FindControl<TextBlock>("TxPillText")!.Text);
+        Assert.Contains("warning", pill.Classes);
+
+        await OpenInsertAsync(tab, 2);
+        Assert.Equal(UiText.FormatPlural("tx.pill", 3), view.FindControl<TextBlock>("TxPillText")!.Text);
+    });
+
+    [Fact]
+    public Task TransactionGroup_ButtonsStayVisibleInAutoCommitWhileATransactionIsOpen() => WithViewAsync(async (view, tab) =>
+    {
+        await OpenInsertAsync(tab, 1);
+        Assert.Equal(TransactionMode.AutoCommit, tab.Transaction.Mode);
+        Assert.True(view.FindControl<Button>("TxCommitButton")!.IsVisible);
+        Assert.True(view.FindControl<Button>("TxRollbackButton")!.IsVisible);
+    });
+
+    [Fact]
+    public Task TransactionToggle_IsDisabledWithAReason_WhenTheEngineCannotProbe() => WithViewAsync((view, tab) =>
+    {
+        Assert.True(tab.Transaction.IsSupported);
+        Assert.True(view.FindControl<StackPanel>("TxMode")!.IsEnabled);
+        return Task.CompletedTask;
+    });
+
+    [Fact]
+    public async Task TransactionToggle_Unsupported_IsDisabledWithTheReasonTooltip()
+    {
+        await Headless.Session.Dispatch(async () =>
+        {
+            var profile = new ConnectionProfile(Guid.NewGuid(), "p", DatabaseDialect.Sqlite, null, null, null, null, "x.db", null);
+            var tab = new QueryTabViewModel(new ConnectionSession(profile, new NoProbeConnection(), new SchemaSnapshot("main", []), null), new AvaloniaSqlEditor(), new History(), new Settings(), new ImmediateDispatcher(), new Dialogs());
+            var view = new QueryTabView { DataContext = tab };
+            var window = new Window { Width = 900, Height = 500, Content = view };
+            window.Show();
+            var toggle = view.FindControl<StackPanel>("TxMode")!;
+            Assert.False(toggle.IsEnabled);
+            Assert.Equal(UiText.Get("tx.unsupported"), ToolTip.GetTip(toggle));
+            Assert.False(view.FindControl<Button>("TxCommitButton")!.IsVisible);
+            window.Close();
+            await Task.CompletedTask;
+        }, TestContext.Current.CancellationToken);
+    }
 
     [Fact]
     public Task HistoryButton_TogglesTheSidePanel() => WithViewAsync((view, _) =>

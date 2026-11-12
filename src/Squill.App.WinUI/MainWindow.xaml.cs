@@ -30,6 +30,8 @@ public sealed partial class MainWindow : Window
     private ConnectionEditorWindow? _editorWindow;
     private SettingsWindow? _settingsWindow;
     private bool _syncing;
+    private bool _closeConfirmed;
+    private bool _askingToClose;
 
     /// <summary>Initializes the window and sets its icon.</summary>
     public MainWindow()
@@ -37,6 +39,7 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
         InitializeChrome();
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "squill.ico"));
+        AppWindow.Closing += OnAppWindowClosing;
         var splitter = new Splitter(true);
         Grid.SetRow(splitter, 2);
         Grid.SetColumn(splitter, 2);
@@ -288,6 +291,41 @@ public sealed partial class MainWindow : Window
             Accelerate(args, () => Workspace.ActivePlan?.RerunCommand.Execute(null));
         else if (ActiveTabView.Visibility == Visibility.Visible)
             Accelerate(args, () => Workspace.ActiveTab?.AnalyzeCommand.Execute(null));
+    }
+
+    // An open transaction needs an answer before the window goes away: cancel this close, ask, and close again once the user decided.
+    private async void OnAppWindowClosing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
+    {
+        if (_closeConfirmed || _workspace is not { HasOpenTransaction: true } workspace)
+            return;
+        args.Cancel = true;
+        if (_askingToClose)
+            return;
+        _askingToClose = true;
+        try
+        {
+            if (!await workspace.PrepareExitAsync(CancellationToken.None))
+                return;
+        }
+        finally
+        {
+            _askingToClose = false;
+        }
+
+        _closeConfirmed = true;
+        Close();
+    }
+
+    private void OnCommitAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (ActiveTabView.Visibility == Visibility.Visible && Workspace.ActiveTab is { } tab)
+            Accelerate(args, () => { if (tab.CommitCommand.CanExecute(null)) tab.CommitCommand.Execute(null); });
+    }
+
+    private void OnRollbackAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (ActiveTabView.Visibility == Visibility.Visible && Workspace.ActiveTab is { } tab)
+            Accelerate(args, () => { if (tab.RollbackCommand.CanExecute(null)) tab.RollbackCommand.Execute(null); });
     }
 
     private static void Accelerate(KeyboardAcceleratorInvokedEventArgs args, Action action)

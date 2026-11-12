@@ -14,6 +14,8 @@
       <KeyboardAccelerator Key="S" Modifiers="Control" Invoked="OnApplyDesignerAccelerator" />
       <KeyboardAccelerator Key="E" Modifiers="Control" Invoked="OnExplainAccelerator" />
       <KeyboardAccelerator Key="E" Modifiers="Control,Shift" Invoked="OnAnalyzeAccelerator" />
+      <KeyboardAccelerator Key="C" Modifiers="Control,Menu" Invoked="OnCommitAccelerator" />
+      <KeyboardAccelerator Key="Z" Modifiers="Control,Menu" Invoked="OnRollbackAccelerator" />
     </Grid.KeyboardAccelerators>
     <Grid.RowDefinitions>
       <RowDefinition Height="41" />

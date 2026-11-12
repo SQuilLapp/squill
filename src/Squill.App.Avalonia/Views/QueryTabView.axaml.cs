@@ -11,6 +11,8 @@ using Squill.Presentation.Localization;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
 using Squill.Core.Editing;
+using Squill.Core.Transactions;
+using Squill.Presentation.Sessions;
 using Squill.Presentation.Editing;
 using Squill.Presentation.Results;
 using Squill.App.Avalonia.Editors;
@@ -26,6 +28,7 @@ public sealed partial class QueryTabView : UserControl
     private QueryTabViewModel? _tab;
     private ResultViewModel? _result;
     private ResultEditorViewModel? _editor;
+    private SessionTransaction? _transaction;
 
     /// <summary>Creates the view.</summary>
     public QueryTabView()
@@ -33,6 +36,7 @@ public sealed partial class QueryTabView : UserControl
         InitializeComponent();
         Empty.Text = UiText.Get("results.empty");
         IsVisible = false;
+        Toolbar.SizeChanged += (_, _) => LayoutToolbar();
         ResultGrid.Dialogs = new AvaloniaDialogService();
         ResultsPanel.KeyBindings.Add(new KeyBinding
         {
@@ -98,8 +102,63 @@ public sealed partial class QueryTabView : UserControl
             _tab.PropertyChanged += OnTabPropertyChanged;
             EditorHost.Child = (_tab.Editor as AvaloniaSqlEditor)?.Control;
         }
+        if (_transaction is not null)
+            _transaction.PropertyChanged -= OnTransactionChanged;
+        _transaction = _tab?.Transaction;
+        if (_transaction is not null)
+            _transaction.PropertyChanged += OnTransactionChanged;
         ShowResult();
         ShowPlanButtons();
+        ShowTransaction();
+    }
+
+    private void OnTransactionChanged(object? sender, PropertyChangedEventArgs e) => ShowTransaction();
+
+    private async void OnModeClicked(object? sender, RoutedEventArgs e)
+    {
+        if (_tab is not { } tab)
+            return;
+        await tab.SetModeCommand.ExecuteAsync(ReferenceEquals(sender, TxManualButton) ? TransactionMode.Manual : TransactionMode.AutoCommit);
+        ShowTransaction();
+    }
+
+    // The toggle and the buttons mirror the session transaction shared by every tab of the connection.
+    private void ShowTransaction()
+    {
+        if (_transaction is not { } tx)
+            return;
+        TxAutoButton.IsChecked = tx.Mode == TransactionMode.AutoCommit;
+        TxManualButton.IsChecked = tx.Mode == TransactionMode.Manual;
+        TxMode.IsEnabled = tx.IsSupported;
+        ToolTip.SetShowOnDisabled(TxMode, true);
+        ToolTip.SetTip(TxMode, UiText.Get(tx.IsSupported ? "tx.tooltip.mode" : "tx.unsupported"));
+        var failed = tx.State == TransactionState.Failed;
+        TxPill.IsVisible = tx.PendingCount > 0 || failed;
+        TxPill.Classes.Set("warning", !failed);
+        TxPill.Classes.Set("danger", failed);
+        TxRollbackButton.IsVisible = TxCommitButton.IsVisible = tx.Mode == TransactionMode.Manual || tx.State != TransactionState.None;
+        LayoutToolbar();
+    }
+
+    // The pill and the transaction buttons widen the left group: shrink the optional parts one level at a time until it fits.
+    private void LayoutToolbar()
+    {
+        var tx = _transaction;
+        var available = Toolbar.Bounds.Width - Toolbar.Padding.Left - Toolbar.Padding.Right;
+        if (tx is null || available <= 0)
+            return;
+        var full = tx.State == TransactionState.Failed ? UiText.Get("tx.status.failed") : UiText.FormatPlural("tx.pill", tx.PendingCount);
+        var count = tx.PendingCount.ToString(CultureInfo.CurrentCulture);
+        var right = FormatButton.Bounds.Width + HistoryButton.Bounds.Width + 12;
+        for (var level = 0; level <= 3; level++)
+        {
+            TxCommitChip.IsVisible = TxRollbackChip.IsVisible = level < 1;
+            TxPillText.Text = level >= 2 ? count : full;
+            TxCommitIcon.IsVisible = TxRollbackIcon.IsVisible = level < 3;
+            ToolbarLeft.Measure(Size.Infinity);
+            if (ToolbarLeft.DesiredSize.Width <= available - right)
+                break;
+        }
     }
 
     private void OnTabPropertyChanged(object? sender, PropertyChangedEventArgs e)

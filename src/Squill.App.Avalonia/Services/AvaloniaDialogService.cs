@@ -20,6 +20,14 @@ internal sealed class AvaloniaDialogService : IDialogService
         await ShowAsync(title, message, null, (UiText.Get("dialog.ok"), true), (UiText.Get("dialog.cancel"), false)) is true;
 
     /// <inheritdoc />
+    public async ValueTask<Squill.Presentation.Safety.ProductionConfirmationResult> ConfirmProductionAsync(Squill.Presentation.Safety.ProductionConfirmationRequest request) =>
+        Owner is { } owner ? await Views.ProductionConfirmWindow.ShowAsync(owner, request) : new(false, false);
+
+    /// <inheritdoc />
+    public async ValueTask<Squill.Presentation.Safety.TransactionChoice> AskTransactionAsync(Squill.Presentation.Safety.TransactionCloseRequest request) =>
+        Owner is { } owner ? await Views.TransactionAskWindow.ShowAsync(owner, request) : Squill.Presentation.Safety.TransactionChoice.Cancel;
+
+    /// <inheritdoc />
     public async ValueTask<string?> PromptAsync(string title, string message, string? initial)
     {
         var box = new TextBox { Text = initial };

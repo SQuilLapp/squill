@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
+using Squill.Core.Transactions;
 using Squill.Core.Design;
 using Squill.Platform.Profiles;
 using Squill.Platform.Settings;
@@ -14,6 +15,7 @@ using Squill.Presentation.Editor;
 using Squill.Presentation.Explorer;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
+using Squill.Presentation.Safety;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Terminal;
 using Squill.Sql.Ddl;
@@ -21,7 +23,7 @@ using Squill.Sql.Ddl;
 namespace Squill.Presentation.Workspace;
 
 /// <summary>The shell view-model tying the connection list, the open sessions, the object explorer and the query tabs together.</summary>
-public sealed partial class WorkspaceViewModel : ViewModelBase
+public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable
 {
     private readonly SessionManager _manager;
     private readonly IQueryHistoryStore _history;
@@ -35,6 +37,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     private readonly IDiagramLayoutStore? _diagramStore;
     private readonly Func<string, double>? _measureText;
     private readonly Dictionary<ConnectionSession, int> _tabCounters = [];
+    private readonly ITimer _elapsedTimer;
 
     /// <summary>Creates the workspace.</summary>
     /// <param name="manager">Opens and closes the sessions.</param>
@@ -49,6 +52,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     /// <param name="findOnPath">Resolves CLI executables; <see langword="null"/> searches the <c>PATH</c>.</param>
     /// <param name="diagramStore">Persists ER diagram layouts; <see langword="null"/> disables the diagram.</param>
     /// <param name="measureText">Text measurer of the head's diagram font; <see langword="null"/> disables the diagram.</param>
+    /// <param name="time">Clock of the 30-second refresh of the transaction duration; defaults to <see cref="TimeProvider.System"/>.</param>
     public WorkspaceViewModel(
         SessionManager manager,
         ConnectionListViewModel connectionList,
@@ -61,7 +65,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         Func<ITerminalHost>? terminalHostFactory = null,
         Func<string, string?>? findOnPath = null,
         IDiagramLayoutStore? diagramStore = null,
-        Func<string, double>? measureText = null)
+        Func<string, double>? measureText = null,
+        TimeProvider? time = null)
     {
         ArgumentNullException.ThrowIfNull(manager);
         ArgumentNullException.ThrowIfNull(connectionList);
@@ -83,6 +88,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         _findOnPath = findOnPath ?? TerminalLauncher.FindOnPath;
         _diagramStore = diagramStore;
         _measureText = measureText;
+        // shortcut: the timer runs for the life of the workspace instead of starting when a transaction opens; the tick is one cheap pass.
+        _elapsedTimer = (time ?? TimeProvider.System).CreateTimer(_ => _dispatcher.Post(RefreshElapsed), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
         Explorer = new ExplorerTreeViewModel(connectionList, manager.Sessions);
         Explorer.OpenTableRequested += (_, r) => _ = OpenTableOnAsync(r.Session, r.Table);
         Explorer.DesignTableRequested += (_, r) => DesignTableOn(r.Session, r.Table);
@@ -102,6 +109,37 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
 
     /// <summary>Gets the saved connections.</summary>
     public ConnectionListViewModel ConnectionList { get; }
+
+    /// <summary>Gets whether any open session, or database opened from one, has a transaction that is open or failed.</summary>
+    public bool HasOpenTransaction => AllSessions().Any(s => s.Transaction.State != TransactionState.None);
+
+    /// <summary>Stops the timer that refreshes the duration of open transactions.</summary>
+    public void Dispose() => _elapsedTimer.Dispose();
+
+    /// <summary>Asks what to do with every open transaction before the application exits; closes nothing itself.</summary>
+    /// <param name="ct">Cancels a commit or rollback.</param>
+    /// <returns><see langword="false"/> when the user went back or a commit or rollback failed, <see langword="true"/> when the application may exit.</returns>
+    public async ValueTask<bool> PrepareExitAsync(CancellationToken ct)
+    {
+        foreach (var session in AllSessions().ToList())
+        {
+            if (!await TransactionPrompt.ResolveAsync(session, _dialogs, _history, "tx.ask.exit", ct))
+                return false;
+        }
+
+        return true;
+    }
+
+    private IEnumerable<ConnectionSession> AllSessions() => Sessions.SelectMany(s => s.OpenedDatabases.Prepend(s)).Distinct();
+
+    private void RefreshElapsed()
+    {
+        foreach (var session in AllSessions())
+        {
+            if (session.Transaction.State == TransactionState.Open)
+                session.Transaction.RefreshElapsed();
+        }
+    }
 
     /// <summary>Gets the open sessions.</summary>
     public ObservableCollection<ConnectionSession> Sessions => _manager.Sessions;
@@ -219,6 +257,12 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
     {
         if (ActiveSession?.Root is not { } session)
             return;
+        foreach (var opened in session.OpenedDatabases.Prepend(session).ToList())
+        {
+            if (!await TransactionPrompt.ResolveAsync(opened, _dialogs, _history, "tx.ask.disconnect", CancellationToken.None))
+                return;
+        }
+
         foreach (var tab in Tabs.Where(t => t.Session.Root == session).ToList())
         {
             Tabs.Remove(tab);
@@ -250,6 +294,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase
         if (tab.IsModified && !await _dialogs.ConfirmAsync(UiText.Get("workspace.closeTab"), UiText.Format("workspace.closeTabConfirm", tab.Title)))
             return;
         if (tab.HasPendingChanges && !await _dialogs.ConfirmAsync(UiText.Get("workspace.closeTab"), UiText.Get("workspace.discardGridChanges")))
+            return;
+        if (!Tabs.Any(t => t != tab && t.Session == tab.Session)
+            && !await TransactionPrompt.ResolveAsync(tab.Session, _dialogs, _history, "tx.ask.closeTab", CancellationToken.None))
             return;
         var index = Tabs.IndexOf(tab);
         Tabs.RemoveAt(index);

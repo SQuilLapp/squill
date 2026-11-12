@@ -1,11 +1,12 @@
 using Microsoft.Data.SqlClient;
 using Squill.Core;
 using Squill.Core.Plans;
+using Squill.Core.Transactions;
 
 namespace Squill.Data.SqlServer;
 
 /// <summary>SQL Server implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader
+internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader, ITransactionProbe
 {
     /// <inheritdoc />
     public string ServerVersion => connection.ServerVersion;
@@ -58,5 +59,43 @@ internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int 
     }
 
     /// <inheritdoc />
-    public ValueTask DisposeAsync() => connection.DisposeAsync();
+    public async ValueTask<TransactionProbeResult> ProbeAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var command = new SqlCommand("SELECT @@TRANCOUNT, XACT_STATE()", connection) { CommandTimeout = commandTimeoutSeconds };
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            if (!await reader.ReadAsync(cancellationToken))
+                return TransactionProbeResult.Unknown;
+            var transactions = Convert.ToInt32(reader.GetValue(0), System.Globalization.CultureInfo.InvariantCulture);
+            var state = Convert.ToInt32(reader.GetValue(1), System.Globalization.CultureInfo.InvariantCulture);
+            // XACT_STATE() = -1: doomed (uncommittable), only a rollback is possible.
+            return new TransactionProbeResult(transactions > 0, state == -1);
+        }
+        catch (SqlException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw new OperationCanceledException(cancellationToken);
+        }
+        catch (Exception ex) when (ex is SqlException or InvalidOperationException)
+        {
+            return TransactionProbeResult.Unknown;
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        // The pool only resets the connection on its next use: an open transaction would keep its locks until then.
+        try
+        {
+            await using var rollback = new SqlCommand("IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION", connection) { CommandTimeout = commandTimeoutSeconds };
+            await rollback.ExecuteNonQueryAsync();
+        }
+        catch (Exception ex) when (ex is SqlException or InvalidOperationException)
+        {
+            // Closing the connection below is what matters.
+        }
+
+        await connection.DisposeAsync();
+    }
 }

@@ -14,11 +14,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../Shared/DmlScenario.cs" Link="DmlScenario.cs" />
+    <Compile Include="../Shared/TransactionScenario.cs" Link="TransactionScenario.cs" />
     <Compile Include="../Shared/ErStressScenario.cs" Link="ErStressScenario.cs" />
     <Compile Include="../Shared/ColumnTypeScenario.cs" Link="ColumnTypeScenario.cs" />
     <Compile Include="../Shared/ExportSnapshotScenario.cs" Link="ExportSnapshotScenario.cs" />
     <Compile Include="../Shared/ColumnTypeEditScenario.cs" Link="ColumnTypeEditScenario.cs" />
     <Compile Include="../Shared/GridEditScenario.cs" Link="GridEditScenario.cs" />
+    <Compile Include="../Shared/ImpactEstimateScenario.cs" Link="ImpactEstimateScenario.cs" />
     <Compile Include="../Shared/QueryFlowScenario.cs" Link="QueryFlowScenario.cs" />
     <Compile Include="../Shared/ScenarioStubs.cs" Link="ScenarioStubs.cs" />
     <Compile Include="../Shared/CancelScenario.cs" Link="CancelScenario.cs" />
@@ -26,6 +28,7 @@
     <Compile Include="../Shared/PlanScenario.cs" Link="PlanScenario.cs" />
     <Compile Include="../Shared/JoinCompletionScenario.cs" Link="JoinCompletionScenario.cs" />
     <Compile Include="../Shared/PlanFlowScenario.cs" Link="PlanFlowScenario.cs" />
+    <Compile Include="../Shared/TransactionFlowScenario.cs" Link="TransactionFlowScenario.cs" />
     <Content Include="Plans/*.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../Shared/SampleSchema/sqlite.sql" Link="SampleSchema/sqlite.sql" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../Shared/SqlCorpusScenario.cs" Link="SqlCorpusScenario.cs" />

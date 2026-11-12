@@ -10,12 +10,15 @@ using Squill.Platform.Storage;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Sessions;
+using Squill.Presentation.Safety;
+using Squill.Core.Transactions;
+using Squill.Sql.Transactions;
 using Squill.Presentation.Workspace;
 using Xunit;
 
 namespace Squill.Presentation.Tests.Workspace;
 
-public sealed class WorkspaceViewModelTests
+public sealed class WorkspaceViewModelTests : IDisposable
 {
     private static readonly TableInfo Users = new(null, "users", TableKind.Table, [], [], []);
 
@@ -25,6 +28,7 @@ public sealed class WorkspaceViewModelTests
     private readonly FakeProvider _provider = new();
     private readonly List<StubSqlEditor> _editors = [];
     private readonly WorkspaceViewModel _workspace;
+    private readonly TickClock _time = new();
 
     public WorkspaceViewModelTests()
     {
@@ -44,8 +48,11 @@ public sealed class WorkspaceViewModelTests
                 _editors.Add(editor);
                 return editor;
             },
-            store);
+            store,
+            time: _time);
     }
+
+    public void Dispose() => _workspace.Dispose();
 
     [Fact]
     public async Task ConfirmClose_WithoutUnsavedDesigner_DoesNotAsk()
@@ -77,6 +84,180 @@ public sealed class WorkspaceViewModelTests
         _workspace.OpenPlan(planTab);
         await _workspace.CloseTabCommand.ExecuteAsync(tab);
         Assert.Empty(_workspace.Plans);
+    }
+
+    private sealed class TickClock : TimeProvider
+    {
+        public TimerCallback? Callback { get; private set; }
+
+        public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+        {
+            Callback = callback;
+            return new NoTimer();
+        }
+    }
+
+    private sealed class NoTimer : ITimer
+    {
+        public bool Change(TimeSpan dueTime, TimeSpan period) => true;
+        public void Dispose()
+        {
+        }
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private static void Open(ConnectionSession session, int statements)
+    {
+        var tx = session.Transaction;
+        tx.ObserveSuccess("BEGIN", StatementClassifier.Classify("BEGIN", DatabaseDialect.PostgreSql), -1, "Q");
+        for (var i = 0; i < statements; i++)
+            tx.ObserveSuccess("INSERT INTO t VALUES (1)", StatementClassifier.Classify("INSERT INTO t VALUES (1)", DatabaseDialect.PostgreSql), 1, "Q");
+    }
+
+    [Fact]
+    public async Task Closing_the_last_tab_with_an_open_transaction_asks_and_Back_keeps_the_tab()
+    {
+        await ConnectAsync();
+        var session = _workspace.Sessions[0];
+        Open(session, 2);
+        _dialogs.TransactionChoices.Enqueue(TransactionChoice.Cancel);
+
+        await _workspace.CloseTabCommand.ExecuteAsync(_workspace.Tabs[0]);
+
+        var request = Assert.Single(_dialogs.TransactionRequests);
+        Assert.Equal(2, request.PendingCount);
+        Assert.Equal(UiText.Get("tx.ask.closeTab"), request.Title);
+        Assert.Single(_workspace.Tabs);
+        Assert.Equal(TransactionState.Open, session.Transaction.State);
+    }
+
+    [Fact]
+    public async Task Rollback_then_closes_and_Commit_then_closes()
+    {
+        await ConnectAsync();
+        var session = _workspace.Sessions[0];
+        Open(session, 1);
+        _dialogs.TransactionChoices.Enqueue(TransactionChoice.Rollback);
+        await _workspace.CloseTabCommand.ExecuteAsync(_workspace.Tabs[0]);
+        Assert.Empty(_workspace.Tabs);
+        Assert.Equal(TransactionState.None, session.Transaction.State);
+        Assert.Contains("ROLLBACK", _provider.Executed);
+
+        _workspace.NewTabCommand.Execute(null);
+        Open(session, 1);
+        _dialogs.TransactionChoices.Enqueue(TransactionChoice.Commit);
+        await _workspace.CloseTabCommand.ExecuteAsync(_workspace.Tabs[0]);
+        Assert.Empty(_workspace.Tabs);
+        Assert.Contains("COMMIT", _provider.Executed);
+    }
+
+    [Fact]
+    public async Task A_failing_commit_keeps_the_tab_and_shows_the_error()
+    {
+        await ConnectAsync();
+        var session = _workspace.Sessions[0];
+        Open(session, 1);
+        _provider.FailOn = "COMMIT";
+        _dialogs.TransactionChoices.Enqueue(TransactionChoice.Commit);
+
+        await _workspace.CloseTabCommand.ExecuteAsync(_workspace.Tabs[0]);
+
+        Assert.Single(_workspace.Tabs);
+        Assert.Single(_dialogs.Errors);
+        Assert.Equal(TransactionState.Open, session.Transaction.State);
+    }
+
+    [Fact]
+    public async Task Closing_a_tab_while_another_tab_of_the_session_remains_asks_nothing()
+    {
+        await ConnectAsync();
+        var session = _workspace.Sessions[0];
+        _workspace.NewTabCommand.Execute(null);
+        Open(session, 1);
+
+        await _workspace.CloseTabCommand.ExecuteAsync(_workspace.Tabs[0]);
+
+        Assert.Empty(_dialogs.TransactionRequests);
+        Assert.Single(_workspace.Tabs);
+    }
+
+    [Fact]
+    public async Task Disconnect_asks_and_Back_aborts_before_anything_is_removed()
+    {
+        await ConnectAsync();
+        Open(_workspace.Sessions[0], 1);
+        _dialogs.TransactionChoices.Enqueue(TransactionChoice.Cancel);
+
+        await _workspace.DisconnectCommand.ExecuteAsync(null);
+
+        Assert.Equal(UiText.Get("tx.ask.disconnect"), Assert.Single(_dialogs.TransactionRequests).Title);
+        Assert.Single(_workspace.Sessions);
+        Assert.Single(_workspace.Tabs);
+
+        _dialogs.TransactionChoices.Enqueue(TransactionChoice.Rollback);
+        await _workspace.DisconnectCommand.ExecuteAsync(null);
+        Assert.Empty(_workspace.Sessions);
+    }
+
+    [Fact]
+    public async Task PrepareExit_returns_true_without_asking_when_nothing_is_open()
+    {
+        await ConnectAsync();
+        Assert.False(_workspace.HasOpenTransaction);
+        Assert.True(await _workspace.PrepareExitAsync(CancellationToken.None));
+        Assert.Empty(_dialogs.TransactionRequests);
+    }
+
+    [Fact]
+    public async Task PrepareExit_asks_per_session_and_stops_at_the_first_Back()
+    {
+        await ConnectAsync();
+        await ConnectAsync();
+        Assert.Equal(2, _workspace.Sessions.Count);
+        foreach (var s in _workspace.Sessions)
+            Open(s, 1);
+        Assert.True(_workspace.HasOpenTransaction);
+
+        _dialogs.TransactionChoices.Enqueue(TransactionChoice.Rollback);
+        _dialogs.TransactionChoices.Enqueue(TransactionChoice.Cancel);
+        Assert.False(await _workspace.PrepareExitAsync(CancellationToken.None));
+        Assert.Equal(2, _dialogs.TransactionRequests.Count);
+        Assert.All(_dialogs.TransactionRequests, r => Assert.Equal(UiText.Get("tx.ask.exit"), r.Title));
+
+        _dialogs.TransactionChoices.Enqueue(TransactionChoice.Rollback);
+        Assert.True(await _workspace.PrepareExitAsync(CancellationToken.None));
+        Assert.False(_workspace.HasOpenTransaction);
+    }
+
+    [Fact]
+    public async Task A_failed_transaction_request_carries_the_failed_state()
+    {
+        await ConnectAsync();
+        var session = _workspace.Sessions[0];
+        Open(session, 1);
+        await session.Transaction.ObserveFailureAsync(new InvalidOperationException("x"), StatementClassifier.Classify("DELETE FROM t", DatabaseDialect.PostgreSql), CancellationToken.None);
+        _dialogs.TransactionChoices.Enqueue(TransactionChoice.Cancel);
+
+        await _workspace.PrepareExitAsync(CancellationToken.None);
+
+        var request = Assert.Single(_dialogs.TransactionRequests);
+        Assert.Equal(TransactionState.Failed, request.State);
+        Assert.Equal(UiText.Get("tx.ask.failed"), request.Message);
+    }
+
+    [Fact]
+    public async Task The_timer_refreshes_the_elapsed_text_of_open_transactions()
+    {
+        await ConnectAsync();
+        var session = _workspace.Sessions[0];
+        Open(session, 1);
+        var raised = new List<string?>();
+        session.Transaction.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        _time.Callback!(null);
+
+        Assert.Contains(nameof(SessionTransaction.ElapsedText), raised);
     }
 
     private static ConnectionProfile Profile() =>
@@ -290,6 +471,7 @@ public sealed class WorkspaceViewModelTests
         public Exception? Failure { get; set; }
         public List<string> Executed { get; } = [];
         public bool ReturnGrid { get; set; }
+        public string? FailOn { get; set; }
 
         public TaskCompletionSource? Gate { get; set; }
 
@@ -308,6 +490,8 @@ public sealed class WorkspaceViewModelTests
         public ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken)
         {
             owner.Executed.Add(sql);
+            if (owner.FailOn is { } f && sql.Contains(f, StringComparison.Ordinal))
+                throw new InvalidOperationException("boom");
             return ValueTask.FromResult<IResultReader>(new FakeReader(owner.ReturnGrid));
         }
 

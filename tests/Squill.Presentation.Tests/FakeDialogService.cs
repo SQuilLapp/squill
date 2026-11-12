@@ -1,4 +1,5 @@
 using Squill.Presentation.Query;
+using Squill.Presentation.Safety;
 
 namespace Squill.Presentation.Tests;
 
@@ -15,6 +16,26 @@ internal sealed class FakeDialogService : IDialogService
     public List<(string Title, string Message)> Confirms { get; } = [];
 
     public List<(string Title, string Message)> Prompts { get; } = [];
+
+    public ProductionConfirmationResult ProductionResult { get; set; } = new(true, false);
+
+    public List<ProductionConfirmationRequest> ProductionRequests { get; } = [];
+
+    public ValueTask<ProductionConfirmationResult> ConfirmProductionAsync(ProductionConfirmationRequest request)
+    {
+        ProductionRequests.Add(request);
+        return ValueTask.FromResult(ProductionResult);
+    }
+
+    public Queue<TransactionChoice> TransactionChoices { get; } = [];
+
+    public List<TransactionCloseRequest> TransactionRequests { get; } = [];
+
+    public ValueTask<TransactionChoice> AskTransactionAsync(TransactionCloseRequest request)
+    {
+        TransactionRequests.Add(request);
+        return ValueTask.FromResult(TransactionChoices.Count > 0 ? TransactionChoices.Dequeue() : TransactionChoice.Cancel);
+    }
 
     public ValueTask<bool> ConfirmAsync(string title, string message)
     {

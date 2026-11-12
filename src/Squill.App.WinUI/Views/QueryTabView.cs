@@ -8,6 +8,8 @@ using Squill.App.WinUI.Controls;
 using Squill.App.WinUI.Editors;
 using ConnectionEnvironment = Squill.Core.ConnectionEnvironment;
 using Squill.Core.Editing;
+using Squill.Core.Transactions;
+using Squill.Presentation.Sessions;
 using Squill.Presentation.Editing;
 using Windows.System;
 using Squill.Presentation;
@@ -28,6 +30,20 @@ public sealed partial class QueryTabView : UserControl
     private readonly Button _explain = new() { Height = 28, MinHeight = 28 };
     private readonly Button _analyze = new() { Height = 28, MinHeight = 28 };
     private readonly Button _stop = new() { Height = 28, MinHeight = 28, Content = UiText.Get("editor.stop") };
+    private readonly Button _modeAuto = new() { Style = Res("VariantButtonStyle"), MinWidth = 0, Height = 28, MinHeight = 28, Padding = new Thickness(10, 0, 10, 0), CornerRadius = new CornerRadius(6, 0, 0, 6), Content = UiText.Get("tx.mode.auto") };
+    private readonly Button _modeManual = new() { Style = Res("VariantButtonStyle"), MinWidth = 0, Height = 28, MinHeight = 28, Padding = new Thickness(10, 0, 10, 0), Margin = new Thickness(-1, 0, 0, 0), CornerRadius = new CornerRadius(0, 6, 6, 0), Content = UiText.Get("tx.mode.manual") };
+    private readonly Border _pill = new() { Height = 24, Padding = new Thickness(10, 0, 10, 0), CornerRadius = new CornerRadius(12), Visibility = Visibility.Collapsed, VerticalAlignment = VerticalAlignment.Center };
+    private readonly TextBlock _pillText = new() { VerticalAlignment = VerticalAlignment.Center, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, FontSize = 12 };
+    private readonly Button _txCommit = new() { Style = Res("OutlineSuccessButtonStyle"), Height = 28, MinHeight = 28, Visibility = Visibility.Collapsed };
+    private readonly Button _txRollback = new() { Style = Res("OutlineDangerButtonStyle"), Height = 28, MinHeight = 28, Visibility = Visibility.Collapsed };
+    private readonly Border _toolbarSeparator = new() { Width = 1, Height = 18, Margin = new Thickness(4, 0, 4, 0), VerticalAlignment = VerticalAlignment.Center };
+    private readonly List<FrameworkElement> _chips = [];
+    private readonly List<FrameworkElement> _txIcons = [];
+    private readonly List<FrameworkElement> _txLabels = [];
+    private StackPanel _toolbarLeft = null!;
+    private StackPanel _toolbarRight = null!;
+    private Grid _toolbarRow = null!;
+    private SessionTransaction? _transaction;
     private readonly Button _format = new() { Style = Res("IconButtonStyle") };
     private readonly Button _historyToggle = new() { Style = Res("IconButtonStyle") };
     private readonly Border _sidePanel = new() { Width = 264, Visibility = Visibility.Collapsed, BorderThickness = new Thickness(1, 0, 0, 0) };
@@ -222,6 +238,7 @@ public sealed partial class QueryTabView : UserControl
 
         ShowActiveTab();
         ShowMarker();
+        ShowTransaction();
     }
 
     private Microsoft.UI.Xaml.Media.Brush ThemeBrush(string key) => Tokens.Brush(this, key);
@@ -262,23 +279,113 @@ public sealed partial class QueryTabView : UserControl
         ToolTipService.SetToolTip(_format, UiText.Get("menu.format"));
         ToolTipService.SetToolTip(_historyToggle, UiText.Get("editor.history"));
         _historyToggle.Click += (_, _) => ToggleSidePanel();
-        var left = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { _run, _script, _explain, _analyze, _stop } };
+        _txCommit.Content = TransactionLabel("SquillIconCheck", "SquillSuccessBrush", UiText.Get("tx.button.commit"), QueryTabViewModel.CommitShortcut);
+        _txRollback.Content = TransactionLabel("SquillIconUndo", "SquillDangerBrush", UiText.Get("tx.button.rollback"), QueryTabViewModel.RollbackShortcut);
+        ToolTipService.SetToolTip(_txCommit, UiText.Get("tx.tooltip.commit"));
+        ToolTipService.SetToolTip(_txRollback, UiText.Get("tx.tooltip.rollback"));
+        _pill.Child = _pillText;
+        _modeAuto.Click += OnModeClicked;
+        _modeManual.Click += OnModeClicked;
+        var mode = new StackPanel { Orientation = Orientation.Horizontal, Children = { _modeAuto, _modeManual } };
+        var left = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { _run, _script, _explain, _analyze, _stop, _toolbarSeparator, mode, _pill, _txCommit, _txRollback } };
         var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { _format, _historyToggle } };
         Grid.SetColumn(right, 1);
         var row = new Grid { ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } }, Children = { left, right } };
+        _toolbarLeft = left;
+        _toolbarRight = right;
+        _toolbarRow = row;
+        row.SizeChanged += (_, _) => LayoutToolbar();
         return new Border { Height = 38, Padding = new Thickness(8, 0, 8, 0), BorderThickness = new Thickness(0, 0, 0, 1), BorderBrush = Brush("SquillBorderSubtleBrush"), Background = Brush("SquillBgBaseBrush"), Child = row };
     }
 
-    private static StackPanel ButtonLabel(string text, string hint, bool chip)
+    private StackPanel ButtonLabel(string text, string hint, bool chip)
     {
         var panel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center };
         panel.Children.Add(new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center });
-        if (chip)
-            panel.Children.Add(new ContentControl { Content = hint, Style = Res("KeyboardChipStyle"), VerticalAlignment = VerticalAlignment.Center });
-        else
-            panel.Children.Add(new TextBlock { Text = hint, FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)Application.Current.Resources["SquillFontMono"], FontSize = 11, Opacity = 0.7, VerticalAlignment = VerticalAlignment.Center });
+        FrameworkElement hintElement = chip
+            ? new ContentControl { Content = hint, Style = Res("KeyboardChipStyle"), VerticalAlignment = VerticalAlignment.Center }
+            : new TextBlock { Text = hint, FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)Application.Current.Resources["SquillFontMono"], FontSize = 11, Opacity = 0.7, VerticalAlignment = VerticalAlignment.Center };
+        _chips.Add(hintElement);
+        panel.Children.Add(hintElement);
         return panel;
     }
+
+    private StackPanel TransactionLabel(string icon, string brush, string text, string hint)
+    {
+        var glyph = Track(Icons.Create(icon, 14, Brush(brush)), brush);
+        glyph.VerticalAlignment = VerticalAlignment.Center;
+        _txIcons.Add(glyph);
+        var panel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { glyph } };
+        var label = new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center };
+        _txLabels.Add(label);
+        panel.Children.Add(label);
+        var chip = new ContentControl { Content = hint, Style = Res("KeyboardChipStyle"), VerticalAlignment = VerticalAlignment.Center };
+        _chips.Add(chip);
+        panel.Children.Add(chip);
+        return panel;
+    }
+
+    private async void OnModeClicked(object sender, RoutedEventArgs e)
+    {
+        if (_tab is not { } tab)
+            return;
+        await tab.SetModeCommand.ExecuteAsync(ReferenceEquals(sender, _modeManual) ? TransactionMode.Manual : TransactionMode.AutoCommit);
+        ShowTransaction();
+    }
+
+    private void ShowTransaction()
+    {
+        _toolbarSeparator.Background = ThemeBrush("SquillBorderBrush");
+        if (_transaction is not { } tx)
+            return;
+        PaintMode(_modeAuto, tx.Mode == TransactionMode.AutoCommit);
+        PaintMode(_modeManual, tx.Mode == TransactionMode.Manual);
+        _modeAuto.IsEnabled = _modeManual.IsEnabled = tx.IsSupported;
+        var tip = tx.IsSupported ? UiText.Get("tx.tooltip.mode") : UiText.Get("tx.unsupported");
+        ToolTipService.SetToolTip(_modeAuto, tip);
+        ToolTipService.SetToolTip(_modeManual, tip);
+        var failed = tx.State == TransactionState.Failed;
+        _pill.Visibility = tx.PendingCount > 0 || failed ? Visibility.Visible : Visibility.Collapsed;
+        _pill.Background = ThemeBrush(failed ? "SquillDangerSoftBrush" : "SquillWarningSoftBrush");
+        _pillText.Foreground = ThemeBrush(failed ? "SquillDangerBrush" : "SquillWarningBrush");
+        var buttons = tx.Mode == TransactionMode.Manual || tx.State != TransactionState.None ? Visibility.Visible : Visibility.Collapsed;
+        _txCommit.Visibility = _txRollback.Visibility = buttons;
+        LayoutToolbar();
+    }
+
+    private void PaintMode(Button button, bool selected)
+    {
+        button.Background = ThemeBrush(selected ? "SquillAccentSoftBrush" : "SquillBgRaisedBrush");
+        button.BorderBrush = ThemeBrush(selected ? "SquillAccentLineBrush" : "SquillBorderBrush");
+        button.Foreground = ThemeBrush(selected ? "SquillAccentTextBrush" : "SquillFg2Brush");
+    }
+
+    // The pill and the transaction buttons make the left group wide: shrink the optional parts one level at a time until it fits next to the right group.
+    private void LayoutToolbar()
+    {
+        if (_toolbarRow is null || _toolbarRow.ActualWidth <= 0)
+            return;
+        var tx = _transaction;
+        var full = tx is null ? "" : tx.State == TransactionState.Failed ? UiText.Get("tx.status.failed") : UiText.FormatPlural("tx.pill", tx.PendingCount);
+        var count = tx?.PendingCount.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "";
+        for (var level = 0; level <= 5; level++)
+        {
+            foreach (var chip in _chips)
+                chip.Visibility = level >= 1 ? Visibility.Collapsed : Visibility.Visible;
+            _pillText.Text = level >= 2 ? count : full;
+            foreach (var icon in _txIcons)
+                icon.Visibility = level is 3 or 4 ? Visibility.Collapsed : Visibility.Visible;
+            foreach (var label in _txLabels)
+                label.Visibility = level >= 5 ? Visibility.Collapsed : Visibility.Visible;
+            _stop.Visibility = level >= 4 && _tab?.IsRunning != true ? Visibility.Collapsed : Visibility.Visible;
+            _toolbarLeft.Measure(new Windows.Foundation.Size(double.PositiveInfinity, 38));
+            _toolbarRight.Measure(new Windows.Foundation.Size(double.PositiveInfinity, 38));
+            if (_toolbarLeft.DesiredSize.Width + _toolbarRight.DesiredSize.Width + 12 <= _toolbarRow.ActualWidth)
+                break;
+        }
+    }
+
+    private void OnTransactionChanged(object? sender, PropertyChangedEventArgs e) => ShowTransaction();
 
     private Border BuildSidePanel()
     {
@@ -363,6 +470,11 @@ public sealed partial class QueryTabView : UserControl
         // A control has a single parent: release the previous editor before another tab shows its own.
         _editorHost.Child = null;
         _tab = tab;
+        if (_transaction is not null)
+            _transaction.PropertyChanged -= OnTransactionChanged;
+        _transaction = tab?.Transaction;
+        if (_transaction is not null)
+            _transaction.PropertyChanged += OnTransactionChanged;
         Visibility = tab is null ? Visibility.Collapsed : Visibility.Visible;
         if (tab is not null)
         {
@@ -376,11 +488,14 @@ public sealed partial class QueryTabView : UserControl
         _stop.Command = tab?.CancelCommand;
         _explain.Command = tab?.ExplainCommand;
         _analyze.Command = tab?.AnalyzeCommand;
+        _txCommit.Command = tab?.CommitCommand;
+        _txRollback.Command = tab?.RollbackCommand;
         _format.Command = tab?.FormatDocumentCommand;
         RebuildResultTabs();
         ShowResult();
         ShowRunning();
         ShowPlanButtons();
+        ShowTransaction();
     }
 
     private void OnResultsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildResultTabs();
@@ -473,6 +588,7 @@ public sealed partial class QueryTabView : UserControl
     {
         _progress.Visibility = _tab?.IsRunning == true ? Visibility.Visible : Visibility.Collapsed;
         _stop.IsEnabled = _tab?.IsRunning == true;
+        LayoutToolbar();
     }
 
     private void ShowResult()

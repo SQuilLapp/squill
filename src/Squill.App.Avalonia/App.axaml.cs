@@ -50,6 +50,8 @@ public sealed partial class App : Application
             desktop.MainWindow = GridBench.IsRequested(desktop.Args) ? GridBench.Start(desktop)
                 : Environment.GetEnvironmentVariable("SQUILL_STYLE_GALLERY") == "1" ? new StyleGallery()
                 : CreateMainWindow(Services);
+            if (desktop.MainWindow is MainWindow main)
+                desktop.ShutdownRequested += main.OnShutdownRequested;
         }
 
         base.OnFrameworkInitializationCompleted();

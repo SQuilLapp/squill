@@ -1,9 +1,11 @@
 using Squill.Core;
+using Squill.Core.Transactions;
 using Squill.Core.Design;
 using Squill.Data;
 using Squill.Data.Sqlite;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Safety;
 using Squill.Presentation.Sessions;
 using Xunit;
 
@@ -175,6 +177,75 @@ public sealed class TableDesignerViewModelTests
         Assert.Equal(begin, f.Connection.Executed[0]);
         Assert.StartsWith("CREATE TABLE", f.Connection.Executed[1], StringComparison.Ordinal);
         Assert.Equal(commit, f.Connection.Executed[^1]);
+    }
+
+    private static void OpenTransaction(Fixture f, DatabaseDialect d) =>
+        f.Session.Transaction.ObserveSuccess("BEGIN", Squill.Sql.Transactions.StatementClassifier.Classify("BEGIN", d), -1, "x");
+
+    [Theory]
+    [InlineData(DatabaseDialect.PostgreSql, "SAVEPOINT squill_sp_1", "RELEASE SAVEPOINT squill_sp_1")]
+    [InlineData(DatabaseDialect.SqlServer, "SAVE TRANSACTION squill_sp_1", null)]
+    public async Task Apply_InsideAnOpenTransaction_UsesASavepointAndCountsAsPending(DatabaseDialect d, string savepoint, string? release)
+    {
+        var f = new Fixture(d);
+        OpenTransaction(f, d);
+
+        await f.Vm.ApplyCommand.ExecuteAsync(null);
+
+        Assert.Equal(savepoint, f.Connection.Executed[0]);
+        Assert.StartsWith("CREATE TABLE", f.Connection.Executed[1], StringComparison.Ordinal);
+        Assert.Equal(release is null ? 2 : 3, f.Connection.Executed.Count);
+        Assert.DoesNotContain(f.Connection.Executed, s => s.StartsWith("BEGIN", StringComparison.Ordinal) || s.StartsWith("COMMIT", StringComparison.Ordinal));
+        if (release is not null)
+            Assert.Equal(release, f.Connection.Executed[^1]);
+        Assert.Equal(TransactionState.Open, f.Session.Transaction.State);
+        Assert.Equal(1, f.Session.Transaction.PendingCount);
+        Assert.Equal(f.Vm.Title, f.Session.Transaction.Journal[0].Tab);
+        Assert.False(f.Session.Transaction.IsBusy);
+    }
+
+    [Fact]
+    public async Task Apply_FailureInsideAnOpenTransaction_RollsBackToTheSavepointOnly()
+    {
+        var f = new Fixture(DatabaseDialect.PostgreSql);
+        OpenTransaction(f, DatabaseDialect.PostgreSql);
+        f.Connection.FailOn = "CREATE TABLE";
+
+        await f.Vm.ApplyCommand.ExecuteAsync(null);
+
+        Assert.Equal("ROLLBACK TO SAVEPOINT squill_sp_1", f.Connection.Executed[^1]);
+        Assert.DoesNotContain("ROLLBACK", f.Connection.Executed);
+        Assert.Equal(TransactionState.Open, f.Session.Transaction.State);
+        Assert.Equal(0, f.Session.Transaction.PendingCount);
+    }
+
+    [Fact]
+    public async Task Apply_OnAFailedTransaction_IsRefusedAndSendsNothing()
+    {
+        var f = new Fixture(DatabaseDialect.PostgreSql);
+        OpenTransaction(f, DatabaseDialect.PostgreSql);
+        await f.Session.Transaction.ObserveFailureAsync(new InvalidOperationException(), Squill.Sql.Transactions.StatementClassifier.Classify("update t set a = 1", DatabaseDialect.PostgreSql), CancellationToken.None);
+
+        await f.Vm.ApplyCommand.ExecuteAsync(null);
+
+        Assert.Empty(f.Connection.Executed);
+        Assert.Contains(f.Dialogs.Errors, e => e.Message == UiText.Get("tx.failed"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Apply_MySqlInsideAnOpenTransaction_AsksAndTheStateEndsNone(bool accept)
+    {
+        var f = new Fixture(DatabaseDialect.MySql);
+        f.Dialogs.ConfirmResult = accept;
+        OpenTransaction(f, DatabaseDialect.MySql);
+
+        await f.Vm.ApplyCommand.ExecuteAsync(null);
+
+        Assert.Contains(f.Dialogs.Confirms, c => c.Title == UiText.Get("tx.implicitCommit.title"));
+        Assert.Equal(accept, f.Connection.Executed.Count > 0);
+        Assert.Equal(accept ? TransactionState.None : TransactionState.Open, f.Session.Transaction.State);
     }
 
     [Fact]
@@ -415,5 +486,93 @@ public sealed class TableDesignerViewModelTests
     private static async Task Drain(IDatabaseConnection connection, string sql)
     {
         await using var reader = await connection.ExecuteAsync(sql, [], CancellationToken.None);
+    }
+}
+
+public sealed class TableDesignerProductionTests
+{
+    private static readonly TableInfo People = new(
+        "public", "people", TableKind.Table,
+        [new ColumnDefinition("id", "integer", false, true, null, true), new ColumnDefinition("name", "text", true, false, null)],
+        [], [], "people_pkey");
+
+    private sealed class Reader : IResultReader
+    {
+        public IReadOnlyList<ColumnInfo> Columns => [];
+        public long RecordsAffected => -1;
+        public ValueTask<object?[][]?> ReadBatchAsync(int maxRows, CancellationToken cancellationToken) => ValueTask.FromResult<object?[][]?>(null);
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private sealed class Conn : IDatabaseConnection, ITransactionProbe
+    {
+        public List<string> Executed { get; } = [];
+        public string ServerVersion => "1";
+
+        public ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken)
+        {
+            Executed.Add(sql);
+            return ValueTask.FromResult<IResultReader>(new Reader());
+        }
+
+        public ValueTask<TransactionProbeResult> ProbeAsync(CancellationToken cancellationToken) => ValueTask.FromResult(TransactionProbeResult.Unknown);
+        public ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken) => ValueTask.FromResult<IReadOnlyList<string>>([]);
+        public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) => ValueTask.FromResult(SchemaSnapshot.Empty);
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private static (TableDesignerViewModel Vm, FakeDialogService Dialogs, Conn Connection, ConnectionSession Session) Make(ConnectionEnvironment env)
+    {
+        var connection = new Conn();
+        var dialogs = new FakeDialogService();
+        var session = new ConnectionSession(
+            new ConnectionProfile(Guid.NewGuid(), "prod-pg", DatabaseDialect.PostgreSql, "h", 1, "shop", "u", null, null, env),
+            connection, new SchemaSnapshot("public", [People]), null);
+        return (new TableDesignerViewModel(session, People, dialogs, new ImmediateDispatcher()), dialogs, connection, session);
+    }
+
+    [Fact]
+    public async Task Production_drop_column_requires_the_database_name_and_declining_sends_nothing()
+    {
+        var (vm, dialogs, connection, _) = Make(ConnectionEnvironment.Production);
+        dialogs.ProductionResult = new(false, false);
+        vm.RemoveColumnCommand.Execute(vm.Columns[1]);
+
+        await vm.ApplyCommand.ExecuteAsync(null);
+
+        var request = Assert.Single(dialogs.ProductionRequests);
+        Assert.Equal(ConfirmationKind.SchemaChange, request.Kind);
+        Assert.Equal("shop", request.RequiredText);
+        Assert.False(request.ShowTransactionOption);
+        Assert.Empty(connection.Executed);
+        Assert.True(vm.HasChanges);
+    }
+
+    [Fact]
+    public async Task Production_add_column_asks_without_typing_and_applies_when_confirmed()
+    {
+        var (vm, dialogs, connection, _) = Make(ConnectionEnvironment.Production);
+        vm.AddColumnCommand.Execute(null);
+
+        await vm.ApplyCommand.ExecuteAsync(null);
+
+        var request = Assert.Single(dialogs.ProductionRequests);
+        Assert.Null(request.RequiredText);
+        Assert.Contains(connection.Executed, q => q.Contains("ADD COLUMN", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Manual_mode_adds_the_transaction_sentence_and_staging_does_not_ask()
+    {
+        var (vm, dialogs, _, session) = Make(ConnectionEnvironment.Production);
+        await session.Transaction.SetModeAsync(TransactionMode.Manual, CancellationToken.None);
+        vm.AddColumnCommand.Execute(null);
+        await vm.ApplyCommand.ExecuteAsync(null);
+        Assert.Contains(UiText.Get("prod.message.manual"), Assert.Single(dialogs.ProductionRequests).Message, StringComparison.Ordinal);
+
+        var staging = Make(ConnectionEnvironment.Staging);
+        staging.Vm.AddColumnCommand.Execute(null);
+        await staging.Vm.ApplyCommand.ExecuteAsync(null);
+        Assert.Empty(staging.Dialogs.ProductionRequests);
     }
 }

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
@@ -23,6 +24,8 @@ public sealed partial class MainWindow : Window
     private SettingsViewModel? _settings;
     private string? _dataDirectory;
     private WorkspaceTabList? _tabs;
+    private bool _exitConfirmed;
+    private bool _askingToExit;
 
     /// <summary>Creates the window.</summary>
     public MainWindow()
@@ -30,9 +33,60 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
         InitializeTitleLayout();
         InitializeMacChrome();
+        Closing += OnWindowClosing;
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.OemComma, KeyModifiers.Control), Command = new RelayCommand(OpenSettings) });
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.E, KeyModifiers.Control), Command = new RelayCommand(OnExplainKey) });
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.E, KeyModifiers.Control | KeyModifiers.Shift), Command = new RelayCommand(OnAnalyzeKey) });
+        KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.C, KeyModifiers.Control | KeyModifiers.Alt), Command = new RelayCommand(() => RunTransactionCommand(q => q.CommitCommand)) });
+        KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.Z, KeyModifiers.Control | KeyModifiers.Alt), Command = new RelayCommand(() => RunTransactionCommand(q => q.RollbackCommand)) });
+    }
+
+    // An open transaction needs an answer before the window goes away: cancel this close, ask, and close again once the user decided.
+    private void OnWindowClosing(object? sender, WindowClosingEventArgs e)
+    {
+        if (!NeedsExitQuestion())
+            return;
+        e.Cancel = true;
+        _ = AskThenCloseAsync();
+    }
+
+    /// <summary>Asks about open transactions when the application is asked to quit (the macOS application-menu Quit does not always close the main window first).</summary>
+    /// <param name="sender">The desktop lifetime.</param>
+    /// <param name="e">The shutdown request; cancelled while the question is open.</param>
+    internal void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
+    {
+        if (!NeedsExitQuestion())
+            return;
+        e.Cancel = true;
+        _ = AskThenCloseAsync();
+    }
+
+    private bool NeedsExitQuestion() => !_exitConfirmed && DataContext is WorkspaceViewModel { HasOpenTransaction: true };
+
+    private async Task AskThenCloseAsync()
+    {
+        if (_askingToExit || DataContext is not WorkspaceViewModel workspace)
+            return;
+        _askingToExit = true;
+        try
+        {
+            if (!await workspace.PrepareExitAsync(CancellationToken.None))
+                return;
+        }
+        finally
+        {
+            _askingToExit = false;
+        }
+
+        _exitConfirmed = true;
+        Close();
+    }
+
+    // Only while a query tab is active (a plan tab or the designer has no transaction group).
+    private void RunTransactionCommand(Func<QueryTabViewModel, IAsyncRelayCommand> pick)
+    {
+        if (!PlanArea.IsVisible && _tabs?.Selected?.Source is QueryTabViewModel { } query && pick(query) is { } command && command.CanExecute(null))
+            command.Execute(null);
     }
 
     /// <summary>Connects the history, snippets and settings view-models and the data directory the File menu opens.</summary>

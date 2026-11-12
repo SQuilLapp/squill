@@ -18,29 +18,8 @@ public sealed record PlanEligibility(bool CanExplain, bool CanAnalyze, string? E
     public static PlanEligibility Evaluate(string statement, DatabaseDialect dialect)
     {
         ArgumentNullException.ThrowIfNull(statement);
-        var words = new List<string>();
-        var kinds = new List<TokenKind>();
-        foreach (var token in SqlTokenizers.For(dialect).Tokenize(statement))
-        {
-            if (token.Kind is TokenKind.Whitespace or TokenKind.LineComment or TokenKind.BlockComment)
-            {
-                continue;
-            }
-
-            var text = token.Text(statement);
-            if (token.Kind == TokenKind.Punctuation && text == ";")
-            {
-                if (words.Count > 0)
-                {
-                    break;
-                }
-
-                continue;
-            }
-
-            kinds.Add(token.Kind);
-            words.Add(token.Kind is TokenKind.Keyword or TokenKind.Identifier ? text.ToUpperInvariant() : text);
-        }
+        var scan = StatementWords.Read(statement, dialect);
+        var words = scan.Words;
 
         var first = 0;
         while (first < words.Count && words[first] == "(")
@@ -69,7 +48,7 @@ public sealed record PlanEligibility(bool CanExplain, bool CanAnalyze, string? E
             return new PlanEligibility(true, false, null, PlanMessageCodes.ReasonNoAnalyze);
         }
 
-        var readOnly = head is "SELECT" or "VALUES" or "TABLE" or "WITH" && !WritesData(words, kinds);
+        var readOnly = head is "SELECT" or "VALUES" or "TABLE" or "WITH" && !scan.WritesData();
         return readOnly
             ? new PlanEligibility(true, true, null, null)
             : new PlanEligibility(true, false, null, PlanMessageCodes.ReasonWrites);
@@ -86,29 +65,4 @@ public sealed record PlanEligibility(bool CanExplain, bool CanAnalyze, string? E
         "REPLACE" => dialect is DatabaseDialect.MySql or DatabaseDialect.Sqlite,
         _ => false,
     };
-
-    // INTO catches SELECT ... INTO (creates a table); UPDATE right after FOR [NO KEY] is a lock clause, not a write.
-    private static bool WritesData(List<string> words, List<TokenKind> kinds)
-    {
-        for (var i = 0; i < words.Count; i++)
-        {
-            if (kinds[i] != TokenKind.Keyword)
-            {
-                continue;
-            }
-
-            switch (words[i])
-            {
-                case "INTO" or "DELETE" or "MERGE":
-                    return true;
-                case "UPDATE" when i == 0 || words[i - 1] is not ("FOR" or "KEY"):
-                    return true;
-                // MySQL INSERT(str, pos, len, new) is a string function.
-                case "INSERT" when i + 1 >= words.Count || words[i + 1] != "(":
-                    return true;
-            }
-        }
-
-        return false;
-    }
 }

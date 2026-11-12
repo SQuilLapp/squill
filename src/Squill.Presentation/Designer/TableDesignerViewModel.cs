@@ -4,9 +4,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
 using Squill.Core.Design;
+using Squill.Core.Transactions;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Safety;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Ddl;
+using Squill.Sql.Transactions;
 
 namespace Squill.Presentation.Designer;
 
@@ -227,7 +230,16 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         if (warnings.Count > 0 && !await _dialogs.ConfirmAsync(UiText.Get("designer.applyChanges"), string.Join("\n", warnings)))
             return;
 
+        var tx = _session.Transaction;
+        if (!DdlGenerators.UsesTransactionalDdl(_dialect) && tx.State == TransactionState.Open
+            && !await _dialogs.ConfirmAsync(UiText.Get("tx.implicitCommit.title"), UiText.Get("tx.implicitCommit.message")))
+            return;
+
+        if (!await ProductionRequestBuilder.ConfirmWriteAsync(_dialogs, _session.Profile, ConfirmationKind.SchemaChange, _statements, _statements.Count, Design.Name, tx.Mode))
+            return;
+
         IsApplying = true;
+        using var operation = tx.BeginOperation();
         StatusText = UiText.Get("designer.applying");
         using var cts = new CancellationTokenSource();
         _cts = cts;
@@ -243,30 +255,29 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
                 tail--;
         }
 
-        var inTransaction = false;
+        StatementScope? scope = null;
         try
         {
             for (var i = 0; i < statements.Count; i++)
             {
                 if (transactional && i == lead && lead < tail)
                 {
-                    await SqlRunner.BeginAsync(_session.Connection, _dialect, cts.Token);
-                    inTransaction = true;
+                    scope = await SqlRunner.BeginScopeAsync(_session.Connection, _dialect, tx, Title, cts.Token);
                 }
 
-                if (transactional && i == tail && inTransaction)
+                if (transactional && i == tail && scope is not null)
                 {
-                    await SqlRunner.CommitAsync(_session.Connection, _dialect, cts.Token);
-                    inTransaction = false;
+                    await scope.CompleteAsync(cts.Token);
+                    scope = null;
                 }
 
-                await RunAsync(statements[i], cts.Token);
+                await RunAsync(statements[i], scope, cts.Token);
             }
 
-            if (inTransaction)
+            if (scope is not null)
             {
-                await SqlRunner.CommitAsync(_session.Connection, _dialect, cts.Token);
-                inTransaction = false;
+                await scope.CompleteAsync(cts.Token);
+                scope = null;
             }
 
             await _session.RefreshSchemaAsync(cts.Token);
@@ -275,8 +286,8 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            if (inTransaction)
-                await SqlRunner.RollbackAsync(_session.Connection, _dialect, CancellationToken.None);
+            if (scope is not null)
+                await scope.FailAsync();
             if (transactional)
             {
                 // Restores what a SQLite rebuild switched off; the violation check is skipped on purpose.
@@ -312,14 +323,20 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
 
     private static bool IsPragma(string sql) => sql.AsSpan().TrimStart().StartsWith("PRAGMA", StringComparison.OrdinalIgnoreCase);
 
-    private ValueTask<long> RunAsync(string sql, CancellationToken ct) =>
-        SqlRunner.ExecuteAsync(_session.Connection, sql, [], ct);
+    private async ValueTask RunAsync(string sql, StatementScope? scope, CancellationToken ct)
+    {
+        var rows = await SqlRunner.ExecuteAsync(_session.Connection, sql, [], ct);
+        if (scope is not null)
+            scope.Observe(sql, rows);
+        else if (!IsPragma(sql))
+            _session.Transaction.ObserveSuccess(sql, StatementClassifier.Classify(sql, _dialect), rows, Title);
+    }
 
     private async Task TryRunAsync(string sql)
     {
         try
         {
-            await RunAsync(sql, CancellationToken.None);
+            await SqlRunner.ExecuteAsync(_session.Connection, sql, [], CancellationToken.None);
         }
         catch (Exception)
         {
