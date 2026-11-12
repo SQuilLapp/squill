@@ -1,5 +1,6 @@
 using Squill.Core;
 using Squill.Core.Plans;
+using Squill.Core.Transactions;
 using Squill.Data;
 using Squill.Presentation.Localization;
 using Squill.Platform.Ssh;
@@ -67,9 +68,15 @@ public sealed class ConnectionSession : IAsyncDisposable
     /// <summary>Gets the schema as of the last read.</summary>
     public SchemaSnapshot Schema { get; private set; }
 
-    /// <summary>Reads the schema again and replaces <see cref="Schema"/>.</summary>
+    /// <summary>Reads the schema again and replaces <see cref="Schema"/>; skipped while the transaction has failed, as the server would refuse every statement.</summary>
     /// <param name="ct">Cancellation token.</param>
-    public async ValueTask RefreshSchemaAsync(CancellationToken ct) => Schema = await Connection.ReadSchemaAsync(ct);
+    public async ValueTask RefreshSchemaAsync(CancellationToken ct)
+    {
+        if (Transaction.State == TransactionState.Failed)
+            return;
+        using var operation = Transaction.BeginOperation();
+        Schema = await Connection.ReadSchemaAsync(ct);
+    }
 
     /// <summary>Gets the session opened on another database of the server, or <see langword="null"/> when it is not open.</summary>
     /// <param name="database">The database name.</param>

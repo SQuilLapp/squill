@@ -31,6 +31,7 @@ public sealed class SessionTransaction : ViewModelBase, IAsyncDisposable
     private int _pending;
     private int _operations;
     private bool _running;
+    private int _savepoints;
     private DateTimeOffset? _openedAt;
 
     internal SessionTransaction(IDatabaseConnection connection, DatabaseDialect dialect, TimeProvider time)
@@ -260,6 +261,8 @@ public sealed class SessionTransaction : ViewModelBase, IAsyncDisposable
             RaiseDerived();
         }
     }
+
+    internal int NextSavepointNumber() => ++_savepoints;
 
     /// <summary>Marks an operation of another kind (run, plan, grid commit) as running; dispose it to release the session.</summary>
     /// <returns>The scope to dispose.</returns>

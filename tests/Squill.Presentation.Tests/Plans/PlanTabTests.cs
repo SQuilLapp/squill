@@ -72,19 +72,41 @@ public sealed class PlanTabTests
         public Fixture(string script, ConnectionEnvironment environment = ConnectionEnvironment.None)
         {
             Editor = new StubSqlEditor { Text = script };
-            var session = new ConnectionSession(
+            Session = new ConnectionSession(
                 new ConnectionProfile(Guid.NewGuid(), "p", DatabaseDialect.PostgreSql, "h", 1, "d", "u", null, null, environment),
                 Connection, SchemaSnapshot.Empty, null);
+            var session = Session;
             Vm = new QueryTabViewModel(session, Editor, History, new Settings(), new ImmediateDispatcher(), Dialogs) { Title = "Q1" };
             Vm.PlanReady += p => Opened.Add(p);
         }
 
+        public ConnectionSession Session { get; }
         public PlanConnection Connection { get; } = new();
         public FakeDialogService Dialogs { get; } = new();
         public StubSqlEditor Editor { get; }
         public History History { get; } = new();
         public QueryTabViewModel Vm { get; }
         public List<PlanTabViewModel> Opened { get; } = [];
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Plans_AreRefusedOnAFailedTransaction_AndRunInsideAnOpenOne(bool failed)
+    {
+        var f = new Fixture("select 1");
+        var tx = f.Session.Transaction;
+        tx.ObserveSuccess("BEGIN", Squill.Sql.Transactions.StatementClassifier.Classify("BEGIN", DatabaseDialect.PostgreSql), -1, "Q1");
+        if (failed)
+            await tx.ObserveFailureAsync(new InvalidOperationException(), Squill.Sql.Transactions.StatementClassifier.Classify("update t set a = 1", DatabaseDialect.PostgreSql), CancellationToken.None);
+
+        await f.Vm.ExplainCommand.ExecuteAsync(null);
+        await f.Vm.AnalyzeCommand.ExecuteAsync(null);
+
+        Assert.Equal(failed ? 0 : 2, f.Connection.Calls.Count);
+        if (failed)
+            Assert.Equal(UiText.Get("tx.failed"), f.Vm.StatusText);
+        Assert.False(tx.IsBusy);
     }
 
     [Fact]

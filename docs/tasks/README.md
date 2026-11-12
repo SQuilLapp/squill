@@ -301,7 +301,7 @@ Depends on: <card ids, ranges allowed>
 | [P15-06](phase-15/P15-06-mysql-transactions.md) | Data.MySql: transaction probe, implicit commit proof | P15-04, P11-03 | done |
 | [P15-07](phase-15/P15-07-sqlserver-transactions.md) | Data.SqlServer: transaction probe and engine proof | P15-04, P11-04 | done |
 | [P15-08](phase-15/P15-08-presentation-session-transaction.md) | Presentation: the session transaction (mode, state, pending count, journal) | P15-01, P15-02, P15-03 | done |
-| [P15-09](phase-15/P15-09-presentation-short-transactions-and-plans.md) | Presentation: grid commit, designer apply, schema refresh and plans inside an open transaction | P15-08 | todo |
+| [P15-09](phase-15/P15-09-presentation-short-transactions-and-plans.md) | Presentation: grid commit, designer apply, schema refresh and plans inside an open transaction | P15-08 | done |
 | [P15-10](phase-15/P15-10-presentation-query-tab-transactions.md) | Presentation: transactions in the query tab (run path, Valider, Annuler, mode) | P15-08, P15-09 | todo |
 | [P15-11](phase-15/P15-11-presentation-impact-estimate.md) | Presentation: estimated impact of a modifying statement | P15-01 | todo |
 | [P15-12](phase-15/P15-12-presentation-production-confirmation.md) | Presentation: production confirmation contract, guard, Run and Valider | P15-10, P15-11 | todo |

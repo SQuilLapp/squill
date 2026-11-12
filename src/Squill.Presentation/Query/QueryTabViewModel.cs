@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
 using Squill.Core.Plans;
+using Squill.Core.Transactions;
 using Squill.Data;
 using Squill.Platform.Settings;
 using Squill.Platform.Storage;
@@ -210,6 +211,12 @@ public sealed partial class QueryTabViewModel : ViewModelBase
     {
         if (IsRunning)
             return;
+        if (_session.Transaction.State == TransactionState.Failed)
+        {
+            StatusText = UiText.Get("tx.failed");
+            return;
+        }
+
         RefreshPlanState();
         var dialect = _session.Profile.Dialect;
         var original = PlanStatement();
@@ -231,6 +238,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             && !await _dialogs.ConfirmAsync(UiText.Get("plan.analyze.confirm.title"), UiText.Get("plan.analyze.confirm.message")))
             return;
         IsRunning = true;
+        using var operation = _session.Transaction.BeginOperation();
         StatusText = UiText.Get("query.running");
         using var cts = new CancellationTokenSource();
         _cancel = cts.Cancel;
@@ -456,7 +464,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             }
 
             var editable = new EditableGridDataSource(grid, verdict.Target);
-            var editor = new ResultEditorViewModel(editable, verdict.Target, _session, _dialogs, () => IsRunning);
+            var editor = new ResultEditorViewModel(editable, verdict.Target, _session, _dialogs, () => IsRunning, Title);
             editor.ScriptRequested += script => ScriptRequested?.Invoke(script);
             result.SetEditor(editor);
         }
@@ -468,6 +476,12 @@ public sealed partial class QueryTabViewModel : ViewModelBase
 
     private async Task RefreshAfterSchemaChangeAsync()
     {
+        if (_session.Transaction.State == TransactionState.Failed)
+        {
+            StatusText = UiText.Get("tx.failed.refresh");
+            return;
+        }
+
         try
         {
             await RefreshSchemaAsync(CancellationToken.None);

@@ -1,5 +1,8 @@
 using Squill.Core;
+using Squill.Core.Transactions;
 using Squill.Data;
+using Squill.Presentation.Localization;
+using Squill.Sql.Transactions;
 
 namespace Squill.Presentation.Sessions;
 
@@ -65,7 +68,31 @@ internal static class SqlRunner
         }
     }
 
-    /// <summary>Starts a transaction.</summary>
+    /// <summary>Opens the scope of a flow: its own transaction, or a savepoint inside the user's open transaction.</summary>
+    /// <param name="connection">The connection to run on.</param>
+    /// <param name="dialect">The dialect that picks the statement text.</param>
+    /// <param name="transaction">The session transaction, or <see langword="null"/> when there is none to respect.</param>
+    /// <param name="tab">The title shown in the journal next to the statements.</param>
+    /// <param name="ct">Cancels the begin or savepoint statement.</param>
+    /// <returns>The scope.</returns>
+    /// <exception cref="InvalidOperationException">The session transaction has failed; nothing is sent.</exception>
+    public static async ValueTask<StatementScope> BeginScopeAsync(IDatabaseConnection connection, DatabaseDialect dialect, SessionTransaction? transaction, string tab, CancellationToken ct)
+    {
+        switch (transaction?.State)
+        {
+            case TransactionState.Failed:
+                throw new InvalidOperationException(UiText.Get("tx.failed"));
+            case TransactionState.Open:
+                var name = TransactionSql.SavepointName(transaction.NextSavepointNumber());
+                await ExecuteAsync(connection, TransactionSql.Savepoint(dialect, name), [], ct);
+                return new StatementScope(connection, dialect, transaction, tab, name);
+            default:
+                await BeginAsync(connection, dialect, ct);
+                return new StatementScope(connection, dialect, transaction, tab, null);
+        }
+    }
+
+    /// <summary>Starts a transaction. Never use it, nor <see cref="CommitAsync"/> and <see cref="RollbackAsync"/>, while the session has an open transaction: use <see cref="BeginScopeAsync"/>.</summary>
     /// <param name="c">The connection to run on.</param>
     /// <param name="d">The dialect that picks the statement text.</param>
     /// <param name="ct">Cancels the execution.</param>

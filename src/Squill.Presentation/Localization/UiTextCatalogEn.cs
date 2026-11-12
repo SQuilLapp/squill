@@ -601,5 +601,8 @@ internal static class UiTextCatalogEn
         ("tx.busy", "An operation is running on this connection."),
         ("tx.none", "No transaction is open."),
         ("tx.autocommit.refused", "Commit or roll back the transaction before switching back to auto-commit."),
+        ("tx.implicitCommit.title", "Commit the open transaction?"),
+        ("tx.implicitCommit.message", "This schema change implicitly commits the transaction open on this server. Commit and apply?"),
+        ("tx.failed.refresh", "Transaction failed: the schema was not read again. Roll the transaction back."),
     ];
 }

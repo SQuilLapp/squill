@@ -601,5 +601,8 @@ internal static class UiTextCatalogFr
         ("tx.busy", "Une opération est en cours sur cette connexion."),
         ("tx.none", "Aucune transaction n'est ouverte."),
         ("tx.autocommit.refused", "Validez ou annulez la transaction avant de repasser en auto-commit."),
+        ("tx.implicitCommit.title", "Valider la transaction en cours ?"),
+        ("tx.implicitCommit.message", "Cette modification de schéma valide implicitement la transaction ouverte sur ce serveur. Valider et appliquer ?"),
+        ("tx.failed.refresh", "Transaction en échec : le schéma n'a pas été relu. Annulez la transaction."),
     ];
 }

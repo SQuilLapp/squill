@@ -1,6 +1,6 @@
 # P15-09 - Presentation: grid commit, designer apply, schema refresh and plans inside an open transaction
 
-Status: todo
+Status: done
 Depends on: P15-08
 
 ## Goal
@@ -19,9 +19,9 @@ Every other flow that uses the session connection stops breaking (or ending) the
 - The production confirmation for these flows (P15-13), the query tab run path (P15-10), heads.
 
 ## Tasks
-- [ ] `StatementScope` / `SqlRunner.BeginScopeAsync`, switch `EditCommitter` and `TableDesignerViewModel`, operation counters, schema-refresh and plan guards, strings.
-- [ ] Tests in `tests/Squill.Presentation.Tests` (fake connection recording the SQL, per dialect where the text differs): grid commit with no transaction sends `BEGIN` / `COMMIT` as before; inside an open transaction it sends `SAVEPOINT` / `RELEASE` (SQL Server: `SAVE TRANSACTION`, no release) and **never** `BEGIN` / `COMMIT`; a failing edit rolls back to the savepoint only, the user's earlier statements stay pending and the transaction stays `Open` (PostgreSQL included); grid commit and designer refused with `tx.failed` and nothing sent; MySQL designer apply asks and, declined, sends nothing; accepted, the state becomes `None`; other dialects' designer apply counts as pending; statements appear in the journal with the tab title; operation counter disables `CanCommit` during a commit of edits; schema refresh skipped on `Failed`; `Analyser` / `Expliquer` refused on `Failed`, allowed on `Open`. The existing `EditCommitter` and designer tests keep passing unchanged for the no-transaction path.
-- [ ] Docker-gated proof, `tests/Shared/GridEditScenario.cs` (extend, do not rewrite): per engine, open a transaction with `SessionTransaction`, grid commit, then `Annuler` removes **both** the earlier statement and the grid edit; `Valider` keeps both. Run with `rtk pwsh eng/run-docker-tests.ps1 -Engine all`.
+- [x] `StatementScope` / `SqlRunner.BeginScopeAsync`, switch `EditCommitter` and `TableDesignerViewModel`, operation counters, schema-refresh and plan guards, strings.
+- [x] Tests in `tests/Squill.Presentation.Tests` (fake connection recording the SQL, per dialect where the text differs): grid commit with no transaction sends `BEGIN` / `COMMIT` as before; inside an open transaction it sends `SAVEPOINT` / `RELEASE` (SQL Server: `SAVE TRANSACTION`, no release) and **never** `BEGIN` / `COMMIT`; a failing edit rolls back to the savepoint only, the user's earlier statements stay pending and the transaction stays `Open` (PostgreSQL included); grid commit and designer refused with `tx.failed` and nothing sent; MySQL designer apply asks and, declined, sends nothing; accepted, the state becomes `None`; other dialects' designer apply counts as pending; statements appear in the journal with the tab title; operation counter disables `CanCommit` during a commit of edits; schema refresh skipped on `Failed`; `Analyser` / `Expliquer` refused on `Failed`, allowed on `Open`. The existing `EditCommitter` and designer tests keep passing unchanged for the no-transaction path.
+- [x] Docker-gated proof, `tests/Shared/GridEditScenario.cs` (extend, do not rewrite): per engine, open a transaction with `SessionTransaction`, grid commit, then `Annuler` removes **both** the earlier statement and the grid edit; `Valider` keeps both. Run with `rtk pwsh eng/run-docker-tests.ps1 -Engine all`.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9 (Docker run for all engines green, nothing skipped, no container left).

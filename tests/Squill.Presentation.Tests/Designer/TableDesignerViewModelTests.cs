@@ -1,4 +1,5 @@
 using Squill.Core;
+using Squill.Core.Transactions;
 using Squill.Core.Design;
 using Squill.Data;
 using Squill.Data.Sqlite;
@@ -175,6 +176,75 @@ public sealed class TableDesignerViewModelTests
         Assert.Equal(begin, f.Connection.Executed[0]);
         Assert.StartsWith("CREATE TABLE", f.Connection.Executed[1], StringComparison.Ordinal);
         Assert.Equal(commit, f.Connection.Executed[^1]);
+    }
+
+    private static void OpenTransaction(Fixture f, DatabaseDialect d) =>
+        f.Session.Transaction.ObserveSuccess("BEGIN", Squill.Sql.Transactions.StatementClassifier.Classify("BEGIN", d), -1, "x");
+
+    [Theory]
+    [InlineData(DatabaseDialect.PostgreSql, "SAVEPOINT squill_sp_1", "RELEASE SAVEPOINT squill_sp_1")]
+    [InlineData(DatabaseDialect.SqlServer, "SAVE TRANSACTION squill_sp_1", null)]
+    public async Task Apply_InsideAnOpenTransaction_UsesASavepointAndCountsAsPending(DatabaseDialect d, string savepoint, string? release)
+    {
+        var f = new Fixture(d);
+        OpenTransaction(f, d);
+
+        await f.Vm.ApplyCommand.ExecuteAsync(null);
+
+        Assert.Equal(savepoint, f.Connection.Executed[0]);
+        Assert.StartsWith("CREATE TABLE", f.Connection.Executed[1], StringComparison.Ordinal);
+        Assert.Equal(release is null ? 2 : 3, f.Connection.Executed.Count);
+        Assert.DoesNotContain(f.Connection.Executed, s => s.StartsWith("BEGIN", StringComparison.Ordinal) || s.StartsWith("COMMIT", StringComparison.Ordinal));
+        if (release is not null)
+            Assert.Equal(release, f.Connection.Executed[^1]);
+        Assert.Equal(TransactionState.Open, f.Session.Transaction.State);
+        Assert.Equal(1, f.Session.Transaction.PendingCount);
+        Assert.Equal(f.Vm.Title, f.Session.Transaction.Journal[0].Tab);
+        Assert.False(f.Session.Transaction.IsBusy);
+    }
+
+    [Fact]
+    public async Task Apply_FailureInsideAnOpenTransaction_RollsBackToTheSavepointOnly()
+    {
+        var f = new Fixture(DatabaseDialect.PostgreSql);
+        OpenTransaction(f, DatabaseDialect.PostgreSql);
+        f.Connection.FailOn = "CREATE TABLE";
+
+        await f.Vm.ApplyCommand.ExecuteAsync(null);
+
+        Assert.Equal("ROLLBACK TO SAVEPOINT squill_sp_1", f.Connection.Executed[^1]);
+        Assert.DoesNotContain("ROLLBACK", f.Connection.Executed);
+        Assert.Equal(TransactionState.Open, f.Session.Transaction.State);
+        Assert.Equal(0, f.Session.Transaction.PendingCount);
+    }
+
+    [Fact]
+    public async Task Apply_OnAFailedTransaction_IsRefusedAndSendsNothing()
+    {
+        var f = new Fixture(DatabaseDialect.PostgreSql);
+        OpenTransaction(f, DatabaseDialect.PostgreSql);
+        await f.Session.Transaction.ObserveFailureAsync(new InvalidOperationException(), Squill.Sql.Transactions.StatementClassifier.Classify("update t set a = 1", DatabaseDialect.PostgreSql), CancellationToken.None);
+
+        await f.Vm.ApplyCommand.ExecuteAsync(null);
+
+        Assert.Empty(f.Connection.Executed);
+        Assert.Contains(f.Dialogs.Errors, e => e.Message == UiText.Get("tx.failed"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Apply_MySqlInsideAnOpenTransaction_AsksAndTheStateEndsNone(bool accept)
+    {
+        var f = new Fixture(DatabaseDialect.MySql);
+        f.Dialogs.ConfirmResult = accept;
+        OpenTransaction(f, DatabaseDialect.MySql);
+
+        await f.Vm.ApplyCommand.ExecuteAsync(null);
+
+        Assert.Contains(f.Dialogs.Confirms, c => c.Title == UiText.Get("tx.implicitCommit.title"));
+        Assert.Equal(accept, f.Connection.Executed.Count > 0);
+        Assert.Equal(accept ? TransactionState.None : TransactionState.Open, f.Session.Transaction.State);
     }
 
     [Fact]
