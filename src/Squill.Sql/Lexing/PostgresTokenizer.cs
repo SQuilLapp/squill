@@ -23,6 +23,10 @@ public sealed class PostgresTokenizer : SqlTokenizerBase
         {
             token = new Token(TokenKind.Operator, pos, 2);
         }
+        else if (JsonOperatorLength(text, pos) is > 0 and var jsonLength)
+        {
+            token = new Token(TokenKind.Operator, pos, jsonLength);
+        }
         else if (c == '/' && next == '*')
         {
             token = new Token(TokenKind.BlockComment, pos, ReadNestedComment(text, pos) - pos);
@@ -53,6 +57,20 @@ public sealed class PostgresTokenizer : SqlTokenizerBase
         }
 
         return token.Length > 0;
+    }
+
+    // jsonb operators the shared multi-character list lacks (longest first); "?" is a plain operator in PostgreSQL, never a placeholder.
+    private static readonly string[] JsonOperators = ["#>>", "#>", "#-", "@?", "@@", "?|", "?&", "?"];
+
+    private static int JsonOperatorLength(string text, int pos)
+    {
+        foreach (var op in JsonOperators)
+        {
+            if (string.CompareOrdinal(text, pos, op, 0, op.Length) == 0)
+                return op.Length;
+        }
+
+        return 0;
     }
 
     private static int ReadEscapeString(string text, int quotePos)
