@@ -162,7 +162,7 @@ public sealed class GridEditingUiTests
     {
         using var f = new Fixture().At(1, 3);
         f.Window.KeyPressQwerty(PhysicalKey.F2, RawInputModifiers.None);
-        f.View.CellEditor.Text = "not a number";
+        f.View.CellEditor.Text = "1-2"; // letters are refused while typing, a misplaced sign is only caught by the check
         f.Window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
         Assert.True(f.Controller.IsEditing);
         Assert.True(f.View.CellEditor.IsVisible);
