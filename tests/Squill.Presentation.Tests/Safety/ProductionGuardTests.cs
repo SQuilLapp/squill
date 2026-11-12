@@ -50,7 +50,7 @@ public sealed class ProductionGuardTests
     public void Required_text_is_the_database_the_file_name_or_the_profile_name()
     {
         Assert.Equal("shop", ProductionGuard.RequiredText(Profile(ConnectionEnvironment.Production)));
-        Assert.Equal("data.db", ProductionGuard.RequiredText(Profile(ConnectionEnvironment.Production, DatabaseDialect.Sqlite, null, @"C:\x\data.db")));
+        Assert.Equal("data.db", ProductionGuard.RequiredText(Profile(ConnectionEnvironment.Production, DatabaseDialect.Sqlite, null, Path.Combine(Path.GetTempPath(), "data.db"))));
         Assert.Equal("prod-pg", ProductionGuard.RequiredText(Profile(ConnectionEnvironment.Production, db: null)));
     }
 
