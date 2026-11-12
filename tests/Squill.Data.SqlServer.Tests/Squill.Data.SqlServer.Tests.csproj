@@ -28,6 +28,7 @@
     <Compile Include="../Shared/PlanScenario.cs" Link="PlanScenario.cs" />
     <Compile Include="../Shared/JoinCompletionScenario.cs" Link="JoinCompletionScenario.cs" />
     <Compile Include="../Shared/PlanFlowScenario.cs" Link="PlanFlowScenario.cs" />
+    <Compile Include="../Shared/TransactionScenario.cs" Link="TransactionScenario.cs" />
     <Content Include="Plans/*.xml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../Shared/SampleSchema/sqlserver.sql" Link="SampleSchema/sqlserver.sql" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../Shared/SqlCorpusScenario.cs" Link="SqlCorpusScenario.cs" />

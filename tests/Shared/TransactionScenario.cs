@@ -140,7 +140,7 @@ internal static class TransactionScenario
         await ExecAsync(a, TransactionSql.Savepoint(d, sp));
         await Assert.ThrowsAnyAsync<Exception>(() => ExecAsync(a, $"INSERT INTO {Table} (id, name) VALUES (1, 'dup')"));
         if (e.ProbeKnowsFailure)
-            Assert.True((await ((ITransactionProbe)a).ProbeAsync(Ct)).Failed);
+            Assert.Equal(e.ErrorAbortsTransaction, (await ((ITransactionProbe)a).ProbeAsync(Ct)).Failed);
         if (e.ErrorAbortsTransaction)
         {
             await Assert.ThrowsAnyAsync<Exception>(() => ExecAsync(a, $"INSERT INTO {Table} (id, name) VALUES (2, 'b')"));
