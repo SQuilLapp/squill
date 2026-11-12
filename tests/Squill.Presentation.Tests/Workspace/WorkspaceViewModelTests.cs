@@ -271,6 +271,30 @@ public sealed class WorkspaceViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task SelectingATab_MakesItsSessionActive_SoTheEnvironmentFollowsTheTab()
+    {
+        var prod = Profile() with { Name = "prod", Environment = ConnectionEnvironment.Production };
+        var dev = Profile() with { Name = "dev", Environment = ConnectionEnvironment.Development };
+        foreach (var profile in new[] { prod, dev })
+        {
+            _workspace.ConnectionList.Profiles.Add(profile);
+            await _workspace.ConnectCommand.ExecuteAsync(profile);
+        }
+        var prodTab = _workspace.Tabs.Single(t => t.Session.Profile.Id == prod.Id);
+        var devTab = _workspace.Tabs.Single(t => t.Session.Profile.Id == dev.Id);
+        var changes = new List<string?>();
+        _workspace.PropertyChanged += (_, e) => changes.Add(e.PropertyName);
+
+        _workspace.ActiveTab = devTab;
+        Assert.Equal(ConnectionEnvironment.Development, _workspace.ActiveEnvironment);
+        _workspace.ActiveTab = prodTab;
+
+        Assert.Same(prodTab.Session, _workspace.ActiveSession);
+        Assert.Equal(ConnectionEnvironment.Production, _workspace.ActiveEnvironment);
+        Assert.Contains(nameof(WorkspaceViewModel.ActiveEnvironment), changes);
+    }
+
+    [Fact]
     public async Task Connect_WhileOpening_MarksTheNodeAsConnectingUntilDone()
     {
         _provider.Gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

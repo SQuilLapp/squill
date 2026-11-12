@@ -205,6 +205,7 @@ public sealed partial class MainWindow : Window
     {
         if (_syncing)
             return;
+        Workspace.ShowTab((Tabs.SelectedItem as TabViewItem)?.Tag);
         switch ((Tabs.SelectedItem as TabViewItem)?.Tag)
         {
             case QueryTabViewModel tab:
