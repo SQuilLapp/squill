@@ -121,6 +121,8 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     {
         if (node is { Kind: ExplorerNodeKind.Connection, Session: null, Profile: { } profile })
             ConnectRequested?.Invoke(this, profile);
+        else if (node is { Kind: ExplorerNodeKind.Database, Session: null })
+            node.IsExpanded = true; // Expanding opens the database.
         else if (node is { Kind: ExplorerNodeKind.Table or ExplorerNodeKind.View or ExplorerNodeKind.MaterializedView, Table: { } table, Session: { } session })
             OpenTableRequested?.Invoke(this, new TableRequest(session, table));
     }
@@ -257,6 +259,11 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
                 PopulateDatabase(node, opened);
                 node.IsExpanded = true;
             }
+            else
+            {
+                // A node without children shows no expander in either tree control, so the database could never be opened.
+                node.Children.Add(new ExplorerNode("…", ExplorerNodeKind.Folder));
+            }
             node.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(ExplorerNode.IsExpanded) && node.IsExpanded && node.Session is null)
@@ -273,6 +280,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
         {
             var opened = await parent.OpenDatabaseAsync(node.Title, CancellationToken.None);
             // Populate before publishing the session: a session set means the children are there.
+            node.Children.Clear();
             PopulateDatabase(node, opened);
             node.Session = opened;
             ApplyFilter();

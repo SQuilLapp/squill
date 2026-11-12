@@ -372,6 +372,21 @@ public sealed class ExplorerTreeViewModelTests
     }
 
     [Fact]
+    public async Task UnopenedDatabase_HasAChildSoTheTreeShowsAnExpander_AndActivatingItOpensIt()
+    {
+        var (connection, _, opened) = ConnectServer(Profile("p"));
+        var other = connection.Children[1];
+
+        Assert.NotEmpty(other.Children);
+        _tree.ActivateCommand.Execute(other);
+        await WaitAsync(() => other.Session is not null);
+
+        Assert.Single(opened);
+        Assert.DoesNotContain(other.Children, c => c.Title == "…");
+        Assert.Contains(Descendants(other), n => n.Title == "remote");
+    }
+
+    [Fact]
     public async Task ExpandOtherDatabase_OpensDerivedSession_ShowsItsSchema_AndReusesItAfterRebuild()
     {
         var (connection, root, opened) = ConnectServer(Profile("p"));
