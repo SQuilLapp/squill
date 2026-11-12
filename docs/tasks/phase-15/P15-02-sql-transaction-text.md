@@ -1,6 +1,6 @@
 # P15-02 - Sql: transaction statement text and savepoints per dialect
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -15,7 +15,7 @@ One place builds the begin / commit / rollback / savepoint statements of each di
 - Executing any of it (P15-08, P15-09); changing `SqlRunner` (P15-09).
 
 ## Tasks
-- [ ] `TransactionSql` and tests `tests/Squill.Sql.Tests/Transactions/TransactionSqlTests.cs`: exact text per dialect for all six methods, `null` returns, invalid names rejected, `squill_sp_3`.
+- [x] `TransactionSql` and tests `tests/Squill.Sql.Tests/Transactions/TransactionSqlTests.cs`: exact text per dialect for all six methods, `null` returns, invalid names rejected, `squill_sp_3`.
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9.
