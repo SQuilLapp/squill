@@ -14,6 +14,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../Shared/DmlScenario.cs" Link="DmlScenario.cs" />
+    <Compile Include="../Shared/TransactionScenario.cs" Link="TransactionScenario.cs" />
     <Compile Include="../Shared/ErStressScenario.cs" Link="ErStressScenario.cs" />
     <Compile Include="../Shared/ColumnTypeScenario.cs" Link="ColumnTypeScenario.cs" />
     <Compile Include="../Shared/ExportSnapshotScenario.cs" Link="ExportSnapshotScenario.cs" />

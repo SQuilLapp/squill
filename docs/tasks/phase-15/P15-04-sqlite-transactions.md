@@ -1,6 +1,6 @@
 # P15-04 - Data.Sqlite: transaction probe and the shared engine scenario
 
-Status: todo
+Status: done
 Depends on: P15-02, P15-03
 
 ## Goal
@@ -16,7 +16,7 @@ SQLite implements `ITransactionProbe`, and the engine-neutral scenario that the 
 - The three server engines (P15-05 ... P15-07), Presentation.
 
 ## Tasks
-- [ ] Probe, scenario file, SQLite test class; AOT publish of `tools/Squill.AotProbe.Sqlite` (`rtk dotnet publish tools/Squill.AotProbe.Sqlite -c Release -r win-x64`).
+- [x] Probe, scenario file, SQLite test class; AOT publish of `tools/Squill.AotProbe.Sqlite` (`rtk dotnet publish tools/Squill.AotProbe.Sqlite -c Release -r win-x64`).
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 9, including the AOT publish of `tools/Squill.AotProbe.Sqlite`; all scenarios green with nothing skipped.

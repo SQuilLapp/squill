@@ -2,11 +2,13 @@ using System.Globalization;
 using Microsoft.Data.Sqlite;
 using Squill.Core;
 using Squill.Core.Plans;
+using Squill.Core.Transactions;
+using SQLitePCL;
 
 namespace Squill.Data.Sqlite;
 
 /// <summary>SQLite implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class SqliteDatabaseConnection(SqliteConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader
+internal sealed class SqliteDatabaseConnection(SqliteConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader, ITransactionProbe
 {
     /// <inheritdoc />
     public string ServerVersion => connection.ServerVersion;
@@ -58,5 +60,40 @@ internal sealed class SqliteDatabaseConnection(SqliteConnection connection, int 
         ValueTask.FromResult<IReadOnlyList<string>>([Path.GetFileName(connection.DataSource) is { Length: > 0 } name ? name : "main"]);
 
     /// <inheritdoc />
-    public ValueTask DisposeAsync() => connection.DisposeAsync();
+    public ValueTask<TransactionProbeResult> ProbeAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        try
+        {
+            // Autocommit mode means no transaction is open; SQLite has no aborted state.
+            return ValueTask.FromResult(connection.Handle is { } handle
+                ? new TransactionProbeResult(raw.sqlite3_get_autocommit(handle) == 0, false)
+                : TransactionProbeResult.Unknown);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return ValueTask.FromResult(TransactionProbeResult.Unknown);
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        // The Microsoft.Data.Sqlite pool keeps the connection (and its write lock) with an open transaction otherwise.
+        try
+        {
+            if (connection.Handle is { } handle && raw.sqlite3_get_autocommit(handle) == 0)
+            {
+                await using var rollback = connection.CreateCommand();
+                rollback.CommandText = "ROLLBACK";
+                await rollback.ExecuteNonQueryAsync();
+            }
+        }
+        catch (Exception ex) when (ex is SqliteException or InvalidOperationException)
+        {
+            // Closing the connection below is what matters.
+        }
+
+        await connection.DisposeAsync();
+    }
 }
