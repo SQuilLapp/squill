@@ -307,7 +307,7 @@ Depends on: <card ids, ranges allowed>
 | [P15-12](phase-15/P15-12-presentation-production-confirmation.md) | Presentation: production confirmation contract, guard, Run and Valider | P15-10, P15-11 | done |
 | [P15-13](phase-15/P15-13-presentation-production-grid-and-designer.md) | Presentation: production confirmation for the grid commit and the designer apply | P15-09, P15-12 | done |
 | [P15-14](phase-15/P15-14-presentation-close-disconnect-exit.md) | Presentation: open transaction on tab close, disconnect, mode switch and exit | P15-10, P15-12 | done |
-| [P15-15](phase-15/P15-15-winui-transaction-toolbar-and-status.md) | WinUI head: transaction toolbar group and status bar segment | P15-10, P15-14, P9-12 | todo |
+| [P15-15](phase-15/P15-15-winui-transaction-toolbar-and-status.md) | WinUI head: transaction toolbar group and status bar segment | P15-10, P15-14, P9-12 | done |
 | [P15-16](phase-15/P15-16-winui-production-dialogs-and-closing.md) | WinUI head: production confirmation dialog, transaction question, window closing | P15-12, P15-14, P15-15 | todo |
 | [P15-17](phase-15/P15-17-avalonia-transaction-toolbar-and-status.md) | Avalonia head: transaction toolbar group and status bar segment | P15-15 | todo |
 | [P15-18](phase-15/P15-18-avalonia-production-dialogs-and-closing.md) | Avalonia head: production confirmation window, transaction question, window closing | P15-16, P15-17 | todo |

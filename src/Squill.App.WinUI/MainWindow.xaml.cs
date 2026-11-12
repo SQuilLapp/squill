@@ -290,6 +290,18 @@ public sealed partial class MainWindow : Window
             Accelerate(args, () => Workspace.ActiveTab?.AnalyzeCommand.Execute(null));
     }
 
+    private void OnCommitAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (ActiveTabView.Visibility == Visibility.Visible && Workspace.ActiveTab is { } tab)
+            Accelerate(args, () => { if (tab.CommitCommand.CanExecute(null)) tab.CommitCommand.Execute(null); });
+    }
+
+    private void OnRollbackAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (ActiveTabView.Visibility == Visibility.Visible && Workspace.ActiveTab is { } tab)
+            Accelerate(args, () => { if (tab.RollbackCommand.CanExecute(null)) tab.RollbackCommand.Execute(null); });
+    }
+
     private static void Accelerate(KeyboardAcceleratorInvokedEventArgs args, Action action)
     {
         action();

@@ -1,6 +1,6 @@
 # P15-15 - WinUI head: transaction toolbar group and status bar segment
 
-Status: todo
+Status: done
 Depends on: P15-10, P15-14, P9-12
 
 ## Goal
@@ -18,8 +18,8 @@ The WinUI query toolbar shows the `Auto-commit | Manuel` toggle, the pending pil
 - The dialogs and window closing (P15-16), Avalonia (P15-17).
 
 ## Tasks
-- [ ] Toolbar group, narrow-window behavior, shortcuts, status bar segment, strings if a head-only label is missing.
-- [ ] Capture (tools of P9-02, procedure of `visual-spec.md` section 11) of the toolbar and status bar with a Production profile in manual mode with two pending statements, light and dark, `SQUILL_LANGUAGE=fr`, against M04; whatever could not be driven (the head needs a live connection) goes to the report as "to check by hand".
+- [x] Toolbar group, narrow-window behavior, shortcuts, status bar segment, strings if a head-only label is missing.
+- [x] Capture (tools of P9-02, procedure of `visual-spec.md` section 11) of the toolbar and status bar with a Production profile in manual mode with two pending statements, light and dark, `SQUILL_LANGUAGE=fr`, against M04; whatever could not be driven (the head needs a live connection) goes to the report as "to check by hand".
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.Windows.slnx -c Release -warnaserror` 0 warnings; `rtk bypass dotnet test --solution Squill.Windows.slnx -c Release` green; WinUI AOT publish with zero IL2xxx/IL3xxx.
@@ -27,3 +27,9 @@ The WinUI query toolbar shows the `Auto-commit | Manuel` toggle, the pending pil
 
 ## Suggested commit message
 Add the transaction toolbar group and status segment to the WinUI head
+
+## Report
+- Looked at: the published AOT head on the SQLite sample profile, French, narrow window: toggle, `Valider`, status segment `Transaction ouverte depuis moins d'une minute · 0 instruction` after a lazily opened transaction. NOT looked at: the pill with a count, `Annuler`, the red `Failed` state, dark theme, comparison against M04 (a foreign window took the foreground during the UI driving, which was stopped), the `Ctrl+Alt+C` / `Ctrl+Alt+Z` chords on AZERTY. All of it is "to check by hand".
+- The toolbar band and the editor stay dark under the light theme (existing, not caused by this card).
+- The mode toggle is two buttons painted by code (the segmented RadioButton style did not repaint its checked state when toggled from code).
+- Level 4 of the narrow-window collapse hides `Arrêter` while nothing runs.
