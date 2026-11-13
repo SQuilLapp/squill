@@ -1,5 +1,6 @@
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Squill.Platform.Lifecycle;
 using Velopack;
 using WinRT;
 
@@ -8,6 +9,9 @@ namespace Squill.App.WinUI;
 /// <summary>Process entry point: lets Velopack handle install/update hooks before the XAML application starts.</summary>
 public static class Program
 {
+    /// <summary>Gets or sets what shows the main window; set once the window exists, called when another start of the application asked for it.</summary>
+    internal static Action? ShowMainWindow { get; set; }
+
     /// <summary>Runs the Velopack bootstrap, then starts the WinUI application.</summary>
     [STAThread]
     public static void Main()
@@ -20,6 +24,12 @@ public static class Program
             .SetAutoApplyOnStartup(false)
             .OnBeforeUninstallFastCallback(static _ => { /* intentionally empty: user data is kept */ })
             .Run();
+        // One instance per user; a throwaway data directory (SQUILL_DATA_DIR) may run next to it.
+        using var instance = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SQUILL_DATA_DIR"))
+            ? SingleInstance.TryAcquire(SingleInstance.DefaultName, () => ShowMainWindow?.Invoke())
+            : null;
+        if (instance is null && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SQUILL_DATA_DIR")))
+            return;
         ComWrappersSupport.InitializeComWrappers();
         Application.Start(callbackParams =>
         {
