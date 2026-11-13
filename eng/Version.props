@@ -1,6 +1,6 @@
 <Project>
   <!-- The only place a version is written; the release tag is "v" + this value. -->
   <PropertyGroup>
-    <SquillVersion>0.2.0</SquillVersion>
+    <SquillVersion>0.3.0</SquillVersion>
   </PropertyGroup>
 </Project>
