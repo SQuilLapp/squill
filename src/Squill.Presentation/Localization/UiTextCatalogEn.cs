@@ -63,6 +63,8 @@ internal static class UiTextCatalogEn
         ("explorer.scriptCreateTable", "Script as CREATE TABLE"),
         ("explorer.columns", "Columns"),
         ("explorer.indexes", "Indexes"),
+        ("explorer.keys", "Keys"),
+        ("explorer.primaryKey", "Primary key"),
         ("explorer.foreignKeys", "Foreign keys"),
         ("explorer.empty", "No connections yet"),
         ("explorer.edit", "Edit"),
