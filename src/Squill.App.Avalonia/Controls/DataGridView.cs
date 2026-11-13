@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Squill.Presentation;
 using Squill.Presentation.Editing;
 using Squill.Presentation.Results;
@@ -17,6 +18,7 @@ public sealed class DataGridView : Grid
     private readonly ScrollBar _vertical = new() { Orientation = Orientation.Vertical, AllowAutoHide = false };
     private readonly ScrollBar _horizontal = new() { Orientation = Orientation.Horizontal, AllowAutoHide = false };
     private readonly TextBox _editor = new() { IsVisible = false, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Padding = new Thickness(6, 0), VerticalContentAlignment = VerticalAlignment.Center };
+    private readonly Button _picker = new() { Content = "...", Focusable = false, Padding = new Thickness(6, 0), MinHeight = 0, VerticalAlignment = VerticalAlignment.Stretch, IsVisible = false };
     private GridEditController? _controller;
     private bool _syncing;
 
@@ -41,6 +43,8 @@ public sealed class DataGridView : Grid
             }
         };
         _editor.KeyDown += OnEditorKeyDown;
+        _editor.InnerRightContent = _picker;
+        _picker.Click += (_, _) => OpenPicker();
         _canvas.ScrollStateChanged += (_, _) =>
         {
             SyncScrollBars();
@@ -113,6 +117,8 @@ public sealed class DataGridView : Grid
 
     private void OnEditStateChanged(object? sender, EventArgs e) => SyncEditor();
 
+    private void OpenPicker() => CellValuePicker.Show(_editor, _controller, () => _canvas.Focus());
+
     private void OnEditorKeyDown(object? sender, KeyEventArgs e)
     {
         if (_controller is not { IsEditing: true } c)
@@ -181,6 +187,7 @@ public sealed class DataGridView : Grid
             }
 
             _editor.PlaceholderText = c.EditHint;
+            _picker.IsVisible = CellEditorKinds.HasPicker(c.EditorKind);
 
             var danger = c.Error is not null;
             _editor.Bind(TemplatedControl.BorderBrushProperty, _editor.GetResourceObservable(danger ? "SquillDangerBrush" : "SquillAccentBrush"));
@@ -197,6 +204,8 @@ public sealed class DataGridView : Grid
                 {
                     _editor.Focus();
                     _editor.CaretIndex = _editor.Text?.Length ?? 0;
+                    if (c.EditorKind == CellEditorKind.Boolean)
+                        Dispatcher.UIThread.Post(OpenPicker);
                 }
             }
             else

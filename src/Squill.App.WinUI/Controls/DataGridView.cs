@@ -19,6 +19,7 @@ public sealed partial class DataGridView : Grid
     private readonly Canvas _overlay = new();
     private readonly TextBox _editor = new() { BorderThickness = new Thickness(0), Padding = new Thickness(6, 0, 6, 0), VerticalContentAlignment = VerticalAlignment.Center, MinHeight = 0, MinWidth = 0 };
     private readonly Border _editorFrame = new() { Visibility = Visibility.Collapsed };
+    private readonly Button _picker = new() { Content = "...", IsTabStop = false, Padding = new Thickness(6, 0, 6, 0), MinHeight = 0, MinWidth = 0, VerticalAlignment = VerticalAlignment.Stretch, Visibility = Visibility.Collapsed };
     private GridEditController? _controller;
     private bool _syncing;
 
@@ -34,7 +35,12 @@ public sealed partial class DataGridView : Grid
         Children.Add(_canvas);
         Children.Add(_vertical);
         Children.Add(_horizontal);
-        _editorFrame.Child = _editor;
+        var editorRow = new Grid { ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } } };
+        SetColumn(_picker, 1);
+        editorRow.Children.Add(_editor);
+        editorRow.Children.Add(_picker);
+        _editorFrame.Child = editorRow;
+        _picker.Click += (_, _) => OpenPicker();
         _overlay.Children.Add(_editorFrame);
         Children.Add(_overlay);
         _editor.TextChanged += (_, _) =>
@@ -105,6 +111,8 @@ public sealed partial class DataGridView : Grid
 
     private void OnEditStateChanged(object? sender, EventArgs e) => SyncEditor();
 
+    private void OpenPicker() => CellValuePicker.Show(_editor, _controller, _canvas.FocusSurface);
+
     private void OnEditorKeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
     {
         if (_controller is not { IsEditing: true } c)
@@ -167,6 +175,7 @@ public sealed partial class DataGridView : Grid
             }
 
             _editor.PlaceholderText = c.EditHint ?? "";
+            _picker.Visibility = CellEditorKinds.HasPicker(c.EditorKind) ? Visibility.Visible : Visibility.Collapsed;
 
             var danger = c.Error is not null;
             _editorFrame.BorderBrush = (Brush)Application.Current.Resources[danger ? "SquillDangerBrush" : "SquillAccentBrush"];
@@ -187,6 +196,8 @@ public sealed partial class DataGridView : Grid
                     {
                         _editor.Focus(FocusState.Programmatic);
                         _editor.SelectionStart = _editor.Text.Length;
+                        if (c.EditorKind == CellEditorKind.Boolean)
+                            OpenPicker();
                     });
                 }
             }

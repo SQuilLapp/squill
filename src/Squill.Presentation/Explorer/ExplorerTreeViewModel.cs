@@ -136,7 +136,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
             return;
         var hidden = HiddenOf(session);
         var choices = session.Schema.Tables
-            .OrderBy(t => t.Schema, StringComparer.OrdinalIgnoreCase).ThenBy(t => t.Name, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(t => t.Schema, StringComparer.OrdinalIgnoreCase).ThenBy(t => NameRank(t.Name)).ThenBy(t => t.Name, StringComparer.OrdinalIgnoreCase)
             .Select(t => new TableChoice(KeyOf(t), t.Kind.IsViewLike(), hidden is null || !hidden.Contains(KeyOf(t))))
             .ToList();
         var shown = await picker.PickVisibleAsync(session.Profile.Database is { Length: > 0 } name ? name : session.Profile.Name, choices);
@@ -433,7 +433,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
 
     private static void AddGroup(ExplorerNode parent, ConnectionSession session, string titleKey, IEnumerable<TableInfo> tables, bool expanded)
     {
-        var list = tables.OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase).ThenBy(t => t.Name, StringComparer.Ordinal).ToList();
+        var list = tables.OrderBy(t => NameRank(t.Name)).ThenBy(t => t.Name, StringComparer.OrdinalIgnoreCase).ThenBy(t => t.Name, StringComparer.Ordinal).ToList();
         var folder = Node(UiText.Get(titleKey), ExplorerNodeKind.Folder, session, count: list.Count);
         foreach (var table in list)
             folder.Children.Add(TableNode(session, table));
@@ -441,6 +441,9 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
         if (folder.Children.Count > 0)
             parent.Children.Add(folder);
     }
+
+    // Names that start with an underscore come before the others, then A to Z.
+    private static int NameRank(string name) => name.StartsWith('_') ? 0 : 1;
 
     private static void AddFolder(ExplorerNode parent, ConnectionSession session, string titleKey, IEnumerable<ExplorerNode> items)
     {
@@ -468,6 +471,13 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
         var indexes = Node(UiText.Get("explorer.indexes"), ExplorerNodeKind.Folder, session, count: table.Indexes.Count);
         foreach (var i in table.Indexes)
             indexes.Children.Add(Node(i.Name, ExplorerNodeKind.Index, session, (i.IsUnique ? "UNIQUE " : "") + string.Join(", ", i.Columns)));
+        var primary = table.Columns.Where(c => c.IsPrimaryKey).Select(c => c.Name).ToList();
+        var uniques = table.Indexes.Where(i => i.IsUnique).ToList();
+        var uniqueKeys = Node(UiText.Get("explorer.keys"), ExplorerNodeKind.Folder, session, count: uniques.Count + (primary.Count > 0 ? 1 : 0));
+        if (primary.Count > 0)
+            uniqueKeys.Children.Add(Node(table.PrimaryKeyName ?? UiText.Get("explorer.primaryKey"), ExplorerNodeKind.Key, session, "PRIMARY " + string.Join(", ", primary)));
+        foreach (var u in uniques)
+            uniqueKeys.Children.Add(Node(u.Name, ExplorerNodeKind.Key, session, "UNIQUE " + string.Join(", ", u.Columns)));
         var keys = Node(UiText.Get("explorer.foreignKeys"), ExplorerNodeKind.Folder, session, count: table.ForeignKeys.Count);
         foreach (var k in table.ForeignKeys)
         {
@@ -476,6 +486,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
         }
         node.Children.Add(columns);
         node.Children.Add(indexes);
+        node.Children.Add(uniqueKeys);
         node.Children.Add(keys);
         return node;
     }

@@ -44,6 +44,9 @@ public enum ExplorerNodeKind
     /// <summary>An index.</summary>
     Index,
 
+    /// <summary>A primary or unique key.</summary>
+    Key,
+
     /// <summary>A foreign key.</summary>
     ForeignKey,
 

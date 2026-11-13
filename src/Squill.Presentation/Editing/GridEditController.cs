@@ -1,3 +1,4 @@
+using Squill.Core.Editing;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 
@@ -47,6 +48,12 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
     /// <summary>Gets the text typed so far.</summary>
     public string EditText { get; private set; } = "";
 
+    /// <summary>Gets whether the text stands for the default value of the column, not for a typed value.</summary>
+    public bool UsesDefault { get; private set; }
+
+    /// <summary>Gets whether the column of the cell being edited has a default value to fall back on.</summary>
+    public bool CanUseDefault => IsEditing && editor.HasDefault(EditColumn);
+
     /// <summary>Gets the reason the last commit was refused, or <see langword="null"/>.</summary>
     public string? Error { get; private set; }
 
@@ -68,8 +75,11 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
         EditRow = selection.ActiveRow;
         EditColumn = selection.ActiveColumn;
         EditorKind = CellEditorKinds.For(grid.Columns[EditColumn]);
-        EditText = CellEditorKinds.Sanitize(EditorKind, initialText ?? CellFormatter.Format(grid.GetCell(EditRow, EditColumn), grid.Columns[EditColumn]) ?? "");
-        Error = Validate(EditText);
+        UsesDefault = initialText is null && grid.GetCell(EditRow, EditColumn) is SqlDefault;
+        EditText = UsesDefault
+            ? CellEditorKinds.DefaultLabel
+            : CellEditorKinds.Sanitize(EditorKind, initialText ?? CellFormatter.Format(grid.GetCell(EditRow, EditColumn), grid.Columns[EditColumn]) ?? "");
+        Error = UsesDefault ? null : Validate(EditText);
         IsEditing = true;
         Raise();
         return true;
@@ -79,8 +89,32 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
     /// <param name="text">The new text.</param>
     public void SetText(string text)
     {
+        UsesDefault = false;
         EditText = CellEditorKinds.Sanitize(EditorKind, text);
         Error = Validate(EditText);
+        Raise();
+    }
+
+    /// <summary>Applies a choice of the popup: the default value, or a text; a boolean choice is recorded at once.</summary>
+    /// <param name="text">The chosen text, or <see langword="null"/> for the default value.</param>
+    /// <returns><see langword="true"/> when the edit ended, so the grid takes the focus back.</returns>
+    public bool Pick(string? text)
+    {
+        if (text is null)
+            SetDefault();
+        else
+            SetText(text);
+        return EditorKind == CellEditorKind.Boolean && Commit(EditMove.None);
+    }
+
+    /// <summary>Leaves the cell to the default value of its column.</summary>
+    public void SetDefault()
+    {
+        if (!IsEditing)
+            return;
+        UsesDefault = true;
+        EditText = CellEditorKinds.DefaultLabel;
+        Error = null;
         Raise();
     }
 
@@ -141,7 +175,7 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
     {
         if (!IsEditing)
             return false;
-        var error = editor.TrySetCell(EditRow, EditColumn, EditText);
+        var error = UsesDefault ? editor.TrySetDefault(EditRow, EditColumn) : editor.TrySetCell(EditRow, EditColumn, EditText);
         if (error is not null)
         {
             Error = error;

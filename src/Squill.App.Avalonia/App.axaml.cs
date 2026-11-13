@@ -51,7 +51,15 @@ public sealed partial class App : Application
                 : Environment.GetEnvironmentVariable("SQUILL_STYLE_GALLERY") == "1" ? new StyleGallery()
                 : CreateMainWindow(Services);
             if (desktop.MainWindow is MainWindow main)
+            {
                 desktop.ShutdownRequested += main.OnShutdownRequested;
+                Program.ShowMainWindow = () => global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    if (main.WindowState == global::Avalonia.Controls.WindowState.Minimized)
+                        main.WindowState = global::Avalonia.Controls.WindowState.Normal;
+                    main.Activate();
+                });
+            }
         }
 
         base.OnFrameworkInitializationCompleted();

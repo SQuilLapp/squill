@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Text.Json;
 using Squill.Core;
+using Squill.Core.Editing;
+using Squill.Presentation.Editing;
 using Squill.Presentation.Localization;
 
 namespace Squill.Presentation.Results;
@@ -30,6 +32,7 @@ public static class CellFormatter
     private static string? FormatCore(object? value, ColumnInfo column) => value switch
     {
         null => null,
+        SqlDefault => CellEditorKinds.DefaultLabel,
         // MySqlConnector (ConvertZeroDateTime) reads the zero dates as DateTime.MinValue; show them back the way MySQL stores them.
         DateTime d when d == DateTime.MinValue => column.DataTypeName.Equals("DATE", StringComparison.OrdinalIgnoreCase) ? "0000-00-00" : "0000-00-00 00:00:00",
         DateTime d when d.TimeOfDay == TimeSpan.Zero && column.DataTypeName.Equals("DATE", StringComparison.OrdinalIgnoreCase) => d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),

@@ -12,6 +12,7 @@ internal static class ExplorerGlyphs
     {
         ExplorerNodeKind.Column => "c",
         ExplorerNodeKind.Index => "i",
+        ExplorerNodeKind.Key => "k",
         ExplorerNodeKind.ForeignKey => "fk",
         ExplorerNodeKind.MaterializedView => "mv",
         ExplorerNodeKind.Function => "fn",
@@ -41,7 +42,7 @@ internal static class ExplorerGlyphs
 
     /// <summary>Tells whether a node kind is drawn with a glyph rather than an icon.</summary>
     public static readonly FuncValueConverter<ExplorerNodeKind, bool> IsPlain =
-        new(kind => kind is ExplorerNodeKind.Column or ExplorerNodeKind.Index or ExplorerNodeKind.ForeignKey
+        new(kind => kind is ExplorerNodeKind.Column or ExplorerNodeKind.Index or ExplorerNodeKind.Key or ExplorerNodeKind.ForeignKey
             or ExplorerNodeKind.MaterializedView or ExplorerNodeKind.Function or ExplorerNodeKind.Procedure or ExplorerNodeKind.Trigger);
 
     /// <summary>Draws connection and folder titles semibold, the objects regular.</summary>

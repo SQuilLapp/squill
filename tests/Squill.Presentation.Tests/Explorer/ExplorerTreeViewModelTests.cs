@@ -84,7 +84,7 @@ public sealed class ExplorerTreeViewModelTests
         Assert.Equal(["Tables", "Vues"], schema.Children.Select(c => c.Title));
         Assert.Equal(["users"], schema.Children[0].Children.Select(c => c.Title));
         Assert.Equal([ExplorerNodeKind.View], schema.Children[1].Children.Select(c => c.Kind));
-        Assert.Equal(["Colonnes", "Index", "Clés étrangères"], schema.Children[0].Children[0].Children.Select(c => c.Title));
+        Assert.Equal(["Colonnes", "Index", "Clés", "Clés étrangères"], schema.Children[0].Children[0].Children.Select(c => c.Title));
         Assert.All(Descendants(node), d => Assert.Same(node.Session, d.Session));
     }
 
@@ -98,6 +98,31 @@ public sealed class ExplorerTreeViewModelTests
 
         Assert.Equal("lite", database.Title);
         Assert.Equal(["Tables"], database.Children.Select(c => c.Title));
+    }
+
+    [Fact]
+    public void Tables_AreSortedAToZ_WithUnderscoreNamesFirst()
+    {
+        var profile = Profile("p");
+        _list.Profiles.Add(profile);
+
+        var database = Connect(profile, Table(null, "users"), Table(null, "Zeta"), Table(null, "_audit"), Table(null, "alpha"), Table(null, "__x")).Children.Single();
+
+        Assert.Equal(["_audit", "__x", "alpha", "users", "Zeta"], database.Children[0].Children.Select(c => c.Title));
+    }
+
+    [Fact]
+    public void Keys_ListThePrimaryKeyThenTheUniqueIndexes()
+    {
+        var profile = Profile("p");
+        _list.Profiles.Add(profile);
+        var node = Connect(profile, Table("public", "users") with { PrimaryKeyName = "users_pkey" });
+
+        var keys = Folder(Descendants(node).Single(d => d.Title == "users"), "Clés");
+
+        Assert.Equal(["users_pkey", "ix_email"], keys.Children.Select(c => c.Title));
+        Assert.Equal(["PRIMARY id", "UNIQUE email"], keys.Children.Select(c => c.Detail));
+        Assert.All(keys.Children, c => Assert.Equal(ExplorerNodeKind.Key, c.Kind));
     }
 
     [Fact]
@@ -258,9 +283,9 @@ public sealed class ExplorerTreeViewModelTests
     }
 
     [Theory]
-    [InlineData(UiLanguage.French, "Colonnes", "Index", "Clés étrangères")]
-    [InlineData(UiLanguage.English, "Columns", "Indexes", "Foreign keys")]
-    public void TableFolders_AreInTheChosenLanguage(UiLanguage language, string columns, string indexes, string foreignKeys)
+    [InlineData(UiLanguage.French, "Colonnes", "Index", "Clés", "Clés étrangères")]
+    [InlineData(UiLanguage.English, "Columns", "Indexes", "Keys", "Foreign keys")]
+    public void TableFolders_AreInTheChosenLanguage(UiLanguage language, string columns, string indexes, string keys, string foreignKeys)
     {
         using var _ = UiText.Override(language);
         var profile = Profile("p");
@@ -268,7 +293,7 @@ public sealed class ExplorerTreeViewModelTests
         var node = Connect(profile, Table("public", "users"));
 
         var users = Descendants(node).Single(d => d.Title == "users");
-        Assert.Equal([columns, indexes, foreignKeys], users.Children.Select(c => c.Title));
+        Assert.Equal([columns, indexes, keys, foreignKeys], users.Children.Select(c => c.Title));
     }
 
     private static ExplorerNode Folder(ExplorerNode table, string title) => table.Children.Single(c => c.Title == title);

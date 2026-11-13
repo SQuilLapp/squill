@@ -1,3 +1,4 @@
+using System.Globalization;
 using Squill.Core;
 
 namespace Squill.Presentation.Editing;
@@ -36,6 +37,9 @@ public static class CellEditorKinds
     /// <summary>Gets the values a boolean cell offers: the text to record and the label shown for it (empty text is SQL NULL).</summary>
     public static IReadOnlyList<(string Text, string Label)> BooleanChoices { get; } = [("true", "true"), ("false", "false"), ("", "NULL")];
 
+    /// <summary>Gets the text of the choice that leaves a cell to the default value of its column.</summary>
+    public const string DefaultLabel = "DEFAULT";
+
     /// <summary>Picks the editor of a result column.</summary>
     /// <param name="column">The column being edited.</param>
     /// <returns>The kind of editor to use.</returns>
@@ -73,6 +77,37 @@ public static class CellEditorKinds
         CellEditorKind.Fractional => "123.45",
         _ => null,
     };
+
+    /// <summary>Tells whether the editor of the kind offers a popup next to the text box: a choice for a boolean, a calendar for a date.</summary>
+    /// <param name="kind">The editor kind.</param>
+    /// <returns><see langword="true"/> for a boolean, a date or a date with a time.</returns>
+    public static bool HasPicker(CellEditorKind kind) => kind is CellEditorKind.Boolean or CellEditorKind.Date or CellEditorKind.DateTime;
+
+    /// <summary>Reads the date and time the popup starts from.</summary>
+    /// <param name="text">The text of the editor.</param>
+    /// <returns>The date it holds, or the current moment when it holds none.</returns>
+    public static DateTime ParseMoment(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        return DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out var moment) ? moment : DateTime.Now;
+    }
+
+    /// <summary>Builds a date or date-time value from the parts the popup shows; a day past the end of the month falls on the last day.</summary>
+    /// <param name="kind">Whether the text keeps the time of day.</param>
+    /// <param name="year">The year, 1 to 9999.</param>
+    /// <param name="month">The month, 1 to 12.</param>
+    /// <param name="day">The day of the month.</param>
+    /// <param name="hour">The hour.</param>
+    /// <param name="minute">The minute.</param>
+    /// <param name="second">The second.</param>
+    /// <returns>The text to put in the editor, for example <c>2026-11-13 07:44:16</c>.</returns>
+    public static string FormatMoment(CellEditorKind kind, int year, int month, int day, int hour, int minute, int second)
+    {
+        year = Math.Clamp(year, 1, 9999);
+        month = Math.Clamp(month, 1, 12);
+        var moment = new DateTime(year, month, Math.Clamp(day, 1, DateTime.DaysInMonth(year, month)), Math.Clamp(hour, 0, 23), Math.Clamp(minute, 0, 59), Math.Clamp(second, 0, 59));
+        return moment.ToString(kind == CellEditorKind.Date ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+    }
 
     /// <summary>Removes the characters that can never be part of a value of the kind, so a number box does not take letters.</summary>
     /// <param name="kind">The editor kind.</param>

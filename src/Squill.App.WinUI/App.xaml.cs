@@ -68,6 +68,12 @@ public sealed partial class App : Application
         platform.AttachWindow(main);
         main.Attach(Services, paths.DataDirectory, platform.Dialogs);
         _window.Activate();
+        Program.ShowMainWindow = () => main.DispatcherQueue.TryEnqueue(() =>
+        {
+            if (main.AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter { State: Microsoft.UI.Windowing.OverlappedPresenterState.Minimized } presenter)
+                presenter.Restore();
+            main.Activate();
+        });
         _ = main.StartUpdatesAsync();
     }
 }
