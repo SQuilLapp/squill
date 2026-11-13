@@ -68,8 +68,33 @@ internal static class CellValuePicker
         void Report() => picked(CellEditorKinds.FormatMoment(
             kind, Of(year, start.Year), month.SelectedIndex + 1, Of(day, start.Day), Of(hour, 0), Of(minute, 0), Of(second, 0)));
 
+        // The day list follows the month and the year, so 31 February cannot be picked.
+        var syncing = true;
+
+        void FitDays()
+        {
+            var length = DateTime.DaysInMonth(Math.Clamp(Of(year, start.Year), 1, 9999), Math.Clamp(month.SelectedIndex + 1, 1, 12));
+            var chosen = Math.Min(Of(day, start.Day), length);
+            day.ItemsSource = Range(1, length, "0");
+            day.SelectedItem = chosen.ToString(CultureInfo.InvariantCulture);
+        }
+
         foreach (var box in new[] { day, month, year, hour, minute, second })
-            box.SelectionChanged += (_, _) => Report();
+        {
+            box.SelectionChanged += (_, _) =>
+            {
+                if (syncing)
+                    return;
+                syncing = true;
+                if (box == month || box == year)
+                    FitDays();
+                syncing = false;
+                Report();
+            };
+        }
+
+        FitDays();
+        syncing = false;
 
         var panel = new StackPanel { Spacing = 8 };
         panel.Children.Add(Row(day, month, year));
