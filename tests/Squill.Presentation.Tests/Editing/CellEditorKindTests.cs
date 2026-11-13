@@ -29,4 +29,14 @@ public sealed class CellEditorKindTests
     [InlineData(CellEditorKind.Date, "2020-01-01", "2020-01-01")]
     public void Sanitize_DropsCharactersTheTypeNeverTakes(CellEditorKind kind, string text, string expected) =>
         Assert.Equal(expected, CellEditorKinds.Sanitize(kind, text));
+
+    [Theory]
+    [InlineData(CellEditorKind.Date, 2026, 2, 31, 7, 8, 9, "2026-02-28")]
+    [InlineData(CellEditorKind.DateTime, 2026, 11, 13, 7, 44, 16, "2026-11-13 07:44:16")]
+    public void FormatMoment_BuildsTheTextAndClampsTheDay(CellEditorKind kind, int y, int mo, int d, int h, int mi, int s, string expected) =>
+        Assert.Equal(expected, CellEditorKinds.FormatMoment(kind, y, mo, d, h, mi, s));
+
+    [Fact]
+    public void HasPicker_IsTrueForBooleansAndDates() =>
+        Assert.Equal([true, true, true, false, false], new[] { CellEditorKind.Boolean, CellEditorKind.Date, CellEditorKind.DateTime, CellEditorKind.Text, CellEditorKind.Whole }.Select(CellEditorKinds.HasPicker));
 }
