@@ -11,7 +11,7 @@ public sealed class SingleInstance : IDisposable
     private SingleInstance(Mutex mutex, string name, Action onActivate)
     {
         _mutex = mutex;
-        _ = Task.Run(() => ListenAsync(name, onActivate, _stop.Token));
+        _ = Task.Run(() => ListenAsync(name, onActivate, _stop.Token), _stop.Token);
     }
 
     /// <summary>Gets the name that identifies the application of the current user.</summary>
@@ -47,6 +47,7 @@ public sealed class SingleInstance : IDisposable
     public void Dispose()
     {
         _stop.Cancel();
+        _stop.Dispose();
         _mutex.Dispose();
     }
 

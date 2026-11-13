@@ -9,18 +9,24 @@ namespace Squill.App.Avalonia.Controls;
 /// <summary>The popup that helps to fill a boolean, a date or a date with a time; the text box stays editable by hand.</summary>
 internal static class CellValuePicker
 {
-    /// <summary>Opens the popup under the text box.</summary>
+    /// <summary>Opens the popup under the text box being edited, when a cell is being edited.</summary>
     /// <param name="anchor">The text box being edited.</param>
-    /// <param name="kind">Boolean, date or date with a time.</param>
-    /// <param name="current">The text in the box, where the popup starts from.</param>
-    /// <param name="canDefault">Whether to offer the choice that leaves the cell to the default value of its column.</param>
-    /// <param name="picked">Receives the text each choice produces, or <see langword="null"/> for the default value.</param>
-    public static void Show(Control anchor, CellEditorKind kind, string current, bool canDefault, Action<string?> picked)
+    /// <param name="edit">The edit in progress; the popup writes its choice there.</param>
+    /// <param name="focusGrid">Gives the focus back to the grid when a choice ended the edit.</param>
+    public static void Show(Control anchor, GridEditController? edit, Action focusGrid)
     {
+        if (edit is not { IsEditing: true } c)
+            return;
         var flyout = new Flyout { Placement = PlacementMode.BottomEdgeAlignedLeft };
-        flyout.Content = kind == CellEditorKind.Boolean
-            ? Choices(flyout, new ChoicePicker(current, canDefault), picked)
-            : Moment(flyout, new MomentPicker(kind, current), canDefault, picked);
+        void Picked(string? text)
+        {
+            if (c.Pick(text))
+                focusGrid();
+        }
+
+        flyout.Content = c.EditorKind == CellEditorKind.Boolean
+            ? Choices(flyout, new ChoicePicker(c.EditText, c.CanUseDefault), Picked)
+            : Moment(flyout, new MomentPicker(c.EditorKind, c.EditText), c.CanUseDefault, Picked);
         flyout.ShowAt(anchor);
     }
 
@@ -52,41 +58,31 @@ internal static class CellValuePicker
 
     private static StackPanel Moment(Flyout flyout, MomentPicker model, bool canDefault, Action<string?> picked)
     {
-        var day = Combo(model.Days, model.DayIndex, 70);
+        var boxes = Enumerable.Range(0, model.BoxCount).Select(i => Combo(model.ItemsOf(i), model.IndexOf(i), i == 1 ? 130 : 70)).ToList();
         var syncing = false;
-
-        void Wire(ComboBox box, Action<int> set, bool refitDays = false) => box.SelectionChanged += (_, _) =>
+        for (var i = 0; i < boxes.Count; i++)
         {
-            if (syncing || box.SelectedIndex < 0)
-                return;
-            set(box.SelectedIndex);
-            if (refitDays)
+            var (at, box) = (i, boxes[i]);
+            box.SelectionChanged += (_, _) =>
             {
-                syncing = true;
-                day.ItemsSource = model.Days;
-                day.SelectedIndex = model.DayIndex;
-                syncing = false;
-            }
+                if (syncing || box.SelectedIndex < 0)
+                    return;
+                if (model.Select(at, box.SelectedIndex))
+                {
+                    syncing = true;
+                    boxes[0].ItemsSource = model.Days;
+                    boxes[0].SelectedIndex = model.DayIndex;
+                    syncing = false;
+                }
 
-            picked(model.Text);
-        };
-
-        var month = Combo(model.Months, model.MonthIndex, 130);
-        var year = Combo(model.Years, model.YearIndex, 90);
-        var hour = Combo(model.Hours, model.Hour, 70);
-        var minute = Combo(model.Sixty, model.Minute, 70);
-        var second = Combo(model.Sixty, model.Second, 70);
-        Wire(day, i => model.DayIndex = i);
-        Wire(month, i => model.MonthIndex = i, true);
-        Wire(year, i => model.YearIndex = i, true);
-        Wire(hour, i => model.Hour = i);
-        Wire(minute, i => model.Minute = i);
-        Wire(second, i => model.Second = i);
+                picked(model.Text);
+            };
+        }
 
         var panel = new StackPanel { Spacing = 8 };
-        panel.Children.Add(Row(day, month, year));
+        panel.Children.Add(Row(boxes.Take(3)));
         if (model.HasTime)
-            panel.Children.Add(Row(hour, minute, second));
+            panel.Children.Add(Row(boxes.Skip(3)));
         if (canDefault)
         {
             var useDefault = new Button { Content = CellEditorKinds.DefaultLabel, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center };
@@ -104,7 +100,7 @@ internal static class CellValuePicker
     private static ComboBox Combo(IReadOnlyList<string> items, int selected, double width) =>
         new() { ItemsSource = items, SelectedIndex = selected, MinWidth = width };
 
-    private static StackPanel Row(params ComboBox[] boxes)
+    private static StackPanel Row(IEnumerable<ComboBox> boxes)
     {
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
         foreach (var box in boxes)

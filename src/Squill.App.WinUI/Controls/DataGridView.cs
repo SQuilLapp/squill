@@ -111,16 +111,7 @@ public sealed partial class DataGridView : Grid
 
     private void OnEditStateChanged(object? sender, EventArgs e) => SyncEditor();
 
-    private void OpenPicker()
-    {
-        if (_controller is not { IsEditing: true } c)
-            return;
-        CellValuePicker.Show(_editor, c.EditorKind, c.EditText, c.CanUseDefault, text =>
-        {
-            if (c.Pick(text))
-                _canvas.FocusSurface();
-        });
-    }
+    private void OpenPicker() => CellValuePicker.Show(_editor, _controller, _canvas.FocusSurface);
 
     private void OnEditorKeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
     {

@@ -108,6 +108,38 @@ public sealed class MomentPicker
     /// <summary>Gets or sets the selected second, also its index in <see cref="Sixty"/>.</summary>
     public int Second { get; set; }
 
+    /// <summary>Gets how many boxes the popup shows: day, month and year, then hour, minute and second for a date-time.</summary>
+    public int BoxCount => HasTime ? 6 : 3;
+
+    /// <summary>Gets the items of a box.</summary>
+    /// <param name="box">0 day, 1 month, 2 year, 3 hour, 4 minute, 5 second.</param>
+    /// <returns>The items, in order.</returns>
+    public IReadOnlyList<string> ItemsOf(int box) => box switch { 0 => Days, 1 => Months, 2 => Years, 3 => Hours, _ => Sixty };
+
+    /// <summary>Gets the selected index of a box.</summary>
+    /// <param name="box">The box, numbered as in <see cref="ItemsOf"/>.</param>
+    /// <returns>The index into <see cref="ItemsOf"/>.</returns>
+    public int IndexOf(int box) => box switch { 0 => DayIndex, 1 => MonthIndex, 2 => YearIndex, 3 => Hour, 4 => Minute, _ => Second };
+
+    /// <summary>Records the choice made in a box.</summary>
+    /// <param name="box">The box, numbered as in <see cref="ItemsOf"/>.</param>
+    /// <param name="index">The index the user picked.</param>
+    /// <returns><see langword="true"/> when the day list changed length, so the day box must show <see cref="Days"/> again.</returns>
+    public bool Select(int box, int index)
+    {
+        switch (box)
+        {
+            case 0: DayIndex = index; break;
+            case 1: MonthIndex = index; break;
+            case 2: YearIndex = index; break;
+            case 3: Hour = index; break;
+            case 4: Minute = index; break;
+            default: Second = index; break;
+        }
+
+        return box is 1 or 2;
+    }
+
     /// <summary>Gets the text to put in the editor for the selection.</summary>
     public string Text => CellEditorKinds.FormatMoment(_kind, _year, _month, DayIndex + 1, Hour, Minute, Second);
 
