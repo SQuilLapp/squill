@@ -41,55 +41,53 @@ internal static class CellValuePicker
         return list;
     }
 
-    private static StackPanel Moment(Flyout flyout, MomentPicker model, bool canDefault, Action<string?> picked)
+    private static Grid Moment(Flyout flyout, MomentPicker model, bool canDefault, Action<string?> picked)
     {
-        var boxes = Enumerable.Range(0, model.BoxCount).Select(i => Combo(model.ItemsOf(i).ToArray(), model.IndexOf(i), i == 1 ? 140 : 80)).ToList();
-        var syncing = false;
-        for (var i = 0; i < boxes.Count; i++)
+        var boxes = Enumerable.Range(0, model.BoxCount).Select(i => Combo(model.ItemsOf(i), model.IndexOf(i), i == 1 ? 140 : 80)).ToList();
+        var layout = new Grid { RowSpacing = 8, ColumnSpacing = 8 };
+        for (var row = 0; row < (model.HasTime ? 2 : 1) + (canDefault ? 1 : 0); row++)
+            layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        for (var column = 0; column < 3; column++)
+            layout.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        var refitting = false;
+        foreach (var (box, at) in boxes.Select((b, i) => (b, i)))
         {
-            var (at, box) = (i, boxes[i]);
-            box.SelectionChanged += (_, _) =>
+            Grid.SetRow(box, at / 3);
+            Grid.SetColumn(box, at % 3);
+            layout.Children.Add(box);
+            box.SelectionChanged += (sender, _) =>
             {
-                if (syncing || box.SelectedIndex < 0)
+                var chosen = ((ComboBox)sender).SelectedIndex;
+                if (refitting || chosen < 0)
                     return;
-                if (model.Select(at, box.SelectedIndex))
+                if (model.Select(at, chosen))
                 {
-                    syncing = true;
+                    refitting = true;
                     boxes[0].ItemsSource = model.Days.ToArray();
                     boxes[0].SelectedIndex = model.DayIndex;
-                    syncing = false;
+                    refitting = false;
                 }
 
                 picked(model.Text);
             };
         }
 
-        var panel = new StackPanel { Spacing = 8 };
-        panel.Children.Add(Row(boxes.Take(3)));
-        if (model.HasTime)
-            panel.Children.Add(Row(boxes.Skip(3)));
         if (canDefault)
         {
             var useDefault = new Button { Content = CellEditorKinds.DefaultLabel, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center };
+            Grid.SetRow(useDefault, model.HasTime ? 2 : 1);
+            Grid.SetColumnSpan(useDefault, 3);
             useDefault.Click += (_, _) =>
             {
-                picked(null);
                 flyout.Hide();
+                picked(null);
             };
-            panel.Children.Add(useDefault);
+            layout.Children.Add(useDefault);
         }
 
-        return panel;
+        return layout;
     }
 
     private static ComboBox Combo(IReadOnlyList<string> items, int selected, double width) =>
         new() { ItemsSource = items.ToArray(), SelectedIndex = selected, MinWidth = width };
-
-    private static StackPanel Row(IEnumerable<ComboBox> boxes)
-    {
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
-        foreach (var box in boxes)
-            row.Children.Add(box);
-        return row;
-    }
 }
