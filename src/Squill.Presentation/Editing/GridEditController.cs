@@ -95,6 +95,18 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
         Raise();
     }
 
+    /// <summary>Applies a choice of the popup: the default value, or a text; a boolean choice is recorded at once.</summary>
+    /// <param name="text">The chosen text, or <see langword="null"/> for the default value.</param>
+    /// <returns><see langword="true"/> when the edit ended, so the grid takes the focus back.</returns>
+    public bool Pick(string? text)
+    {
+        if (text is null)
+            SetDefault();
+        else
+            SetText(text);
+        return EditorKind == CellEditorKind.Boolean && Commit(EditMove.None);
+    }
+
     /// <summary>Leaves the cell to the default value of its column.</summary>
     public void SetDefault()
     {

@@ -39,4 +39,28 @@ public sealed class CellEditorKindTests
     [Fact]
     public void HasPicker_IsTrueForBooleansAndDates() =>
         Assert.Equal([true, true, true, false, false], new[] { CellEditorKind.Boolean, CellEditorKind.Date, CellEditorKind.DateTime, CellEditorKind.Text, CellEditorKind.Whole }.Select(CellEditorKinds.HasPicker));
+
+    [Fact]
+    public void MomentPicker_DayListFollowsTheMonthAndTheYear()
+    {
+        var picker = new MomentPicker(CellEditorKind.DateTime, "2026-01-31 07:08:09");
+
+        picker.MonthIndex = 1;
+
+        Assert.Equal(28, picker.Days.Count);
+        Assert.Equal(27, picker.DayIndex);
+        Assert.Equal("2026-02-28 07:08:09", picker.Text);
+        picker.YearIndex = Array.IndexOf(picker.Years.ToArray(), "2028");
+        Assert.Equal(29, picker.Days.Count);
+    }
+
+    [Fact]
+    public void ChoicePicker_OffersDefaultOnlyWhenTheColumnHasOne()
+    {
+        Assert.Equal(["true", "false", "NULL"], new ChoicePicker("false", false).Labels);
+        var withDefault = new ChoicePicker("false", true);
+        Assert.Equal(4, withDefault.Labels.Count);
+        Assert.Equal(1, withDefault.SelectedIndex);
+        Assert.Null(withDefault.TextAt(3));
+    }
 }
