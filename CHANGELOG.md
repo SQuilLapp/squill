@@ -6,6 +6,32 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-13
+
+### Added
+
+- Transactions: an Auto-commit / Manual toggle, a pending-changes pill, Commit and Rollback (`Ctrl+Alt+C`, `Ctrl+Alt+Z`) and a status bar segment, on SQLite, PostgreSQL, MySQL / MariaDB and SQL Server. Grid commits and designer applies run inside your open transaction, and closing, disconnecting or quitting asks what to do with it.
+- Production confirmation: statements that modify data or schema on a Production or Staging connection ask first, with the estimated number of rows touched, and the same applies to Commit, grid commits and designer applies.
+- Explorer: every database of a connection can be opened, each one can be refreshed from its context menu, and a Keys folder lists the primary and unique keys.
+- Explorer: choose which tables and views to show, from the context menu of a database or schema or directly on a table (like DataGrip). The choice is saved per connection and database; Show all tables clears it.
+- Oracle: Explain and Analyze open a plan tab from `EXPLAIN PLAN` and `DBMS_XPLAN`, with the actual plan from the run statistics.
+- Grid: the cell editor follows the column type (numbers refuse letters and step with the arrow keys, booleans cycle through true, false and NULL, dates step by day) and checks the value while you type.
+- Grid: a popup picks true, false or NULL, a date and time popup opens from a button next to the editor, and a DEFAULT choice gives the cell the default value of its column.
+- Results: a long, multi-line or JSON value selected in the grid opens a resizable preview pane on the right with the full text (JSON indented), editable and validated when the cell can be edited.
+
+### Changed
+
+- Explorer: tables and views are sorted A to Z, with names starting with an underscore first.
+- The properties panel on the right is resizable with a splitter, like the left panel.
+- SQuilL runs one instance per user: starting it a second time shows the running window.
+- Built on .NET 11 GA instead of RC3.
+
+### Fixed
+
+- Explorer: only the first database of a connection could be expanded.
+- The environment colour (Development, Staging, Production) now follows the tab on screen, including in the query view, instead of the explorer selection.
+- PostgreSQL: jsonb operators (`#>`, `#>>`, `#-`, `?`, `?|`, `?&`, `@?`, `@@`) are no longer flagged as errors in the editor.
+
 ## [0.2.0] - 2026-11-10
 
 ### Added
