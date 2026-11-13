@@ -448,7 +448,11 @@ public sealed partial class DataGridCanvas : Grid
         ScrollStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private void OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
+    private void OnPointerWheelChanged(object sender, PointerRoutedEventArgs e) => ScrollByWheel(e);
+
+    /// <summary>Scrolls by a wheel or trackpad gesture; the host calls it for gestures over its scroll bars and editor too.</summary>
+    /// <param name="e">The gesture; marked handled.</param>
+    public void ScrollByWheel(PointerRoutedEventArgs e)
     {
         var properties = e.GetCurrentPoint(_canvas).Properties;
         var delta = properties.MouseWheelDelta / 120.0 * _layout.RowHeight * 3;

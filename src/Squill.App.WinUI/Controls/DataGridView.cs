@@ -51,6 +51,13 @@ public sealed partial class DataGridView : Grid
             }
         };
         _editor.KeyDown += OnEditorKeyDown;
+        PointerWheelChanged += (_, e) =>
+        {
+            if (!e.Handled)
+            {
+                _canvas.ScrollByWheel(e);
+            }
+        };
         _canvas.ScrollStateChanged += (_, _) =>
         {
             SyncScrollBars();
