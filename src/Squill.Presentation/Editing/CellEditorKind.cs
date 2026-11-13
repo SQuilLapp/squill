@@ -37,6 +37,9 @@ public static class CellEditorKinds
     /// <summary>Gets the values a boolean cell offers: the text to record and the label shown for it (empty text is SQL NULL).</summary>
     public static IReadOnlyList<(string Text, string Label)> BooleanChoices { get; } = [("true", "true"), ("false", "false"), ("", "NULL")];
 
+    /// <summary>Gets the text of the choice that leaves a cell to the default value of its column.</summary>
+    public const string DefaultLabel = "DEFAULT";
+
     /// <summary>Picks the editor of a result column.</summary>
     /// <param name="column">The column being edited.</param>
     /// <returns>The kind of editor to use.</returns>

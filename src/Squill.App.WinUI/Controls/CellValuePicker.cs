@@ -13,32 +13,37 @@ internal static class CellValuePicker
     /// <param name="anchor">The text box being edited.</param>
     /// <param name="kind">Boolean, date or date with a time.</param>
     /// <param name="current">The text in the box, where a date popup starts from.</param>
-    /// <param name="picked">Receives the text each choice produces.</param>
-    public static void Show(FrameworkElement anchor, CellEditorKind kind, string current, Action<string> picked)
+    /// <param name="canDefault">Whether to offer the choice that leaves the cell to the default value of its column.</param>
+    /// <param name="picked">Receives the text each choice produces, or <see langword="null"/> for the default value.</param>
+    public static void Show(FrameworkElement anchor, CellEditorKind kind, string current, bool canDefault, Action<string?> picked)
     {
         var flyout = new Flyout { Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft };
-        flyout.Content = kind == CellEditorKind.Boolean ? Choices(flyout, picked) : Moment(kind, current, picked);
+        flyout.Content = kind == CellEditorKind.Boolean ? Choices(flyout, canDefault, picked) : Moment(flyout, kind, current, canDefault, picked);
         flyout.ShowAt(anchor);
     }
 
-    private static StackPanel Choices(Flyout flyout, Action<string> picked)
+    private static StackPanel Choices(Flyout flyout, bool canDefault, Action<string?> picked)
     {
         var panel = new StackPanel { Spacing = 4, MinWidth = 120 };
         foreach (var (text, label) in CellEditorKinds.BooleanChoices)
-        {
-            var button = new Button { Content = label, HorizontalAlignment = HorizontalAlignment.Stretch };
-            button.Click += (_, _) =>
-            {
-                picked(text);
-                flyout.Hide();
-            };
-            panel.Children.Add(button);
-        }
-
+            panel.Children.Add(Choice(flyout, label, () => picked(text)));
+        if (canDefault)
+            panel.Children.Add(Choice(flyout, CellEditorKinds.DefaultLabel, () => picked(null)));
         return panel;
     }
 
-    private static StackPanel Moment(CellEditorKind kind, string current, Action<string> picked)
+    private static Button Choice(Flyout flyout, string label, Action pick)
+    {
+        var button = new Button { Content = label, HorizontalAlignment = HorizontalAlignment.Stretch };
+        button.Click += (_, _) =>
+        {
+            pick();
+            flyout.Hide();
+        };
+        return button;
+    }
+
+    private static StackPanel Moment(Flyout flyout, CellEditorKind kind, string current, bool canDefault, Action<string?> picked)
     {
         var start = CellEditorKinds.ParseMoment(current);
         var day = new ComboBox { ItemsSource = Enumerable.Range(1, 31).ToArray(), SelectedItem = start.Day, MinWidth = 70 };
@@ -73,6 +78,9 @@ internal static class CellValuePicker
             time.Children.Add(second);
             panel.Children.Add(time);
         }
+
+        if (canDefault)
+            panel.Children.Add(Choice(flyout, CellEditorKinds.DefaultLabel, () => picked(null)));
 
         return panel;
     }

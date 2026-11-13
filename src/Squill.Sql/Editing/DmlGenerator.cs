@@ -29,7 +29,7 @@ public static class DmlGenerator
         ArgumentNullException.ThrowIfNull(target);
         var generated = target.KeyColumns
             .Where(k => target.Columns.Any(c => c.Definition.IsAutoIncrement && string.Equals(c.Definition.Name, k, StringComparison.Ordinal))
-                && !edit.Values.Any(v => string.Equals(v.Column, k, StringComparison.Ordinal)))
+                && !edit.Values.Any(v => string.Equals(v.Column, k, StringComparison.Ordinal) && v.Value is not SqlDefault))
             .ToList();
         if (generated.Count == 0)
             return new InsertPlan(Generate(edit, target, dialect, null), null);
@@ -69,6 +69,11 @@ public static class DmlGenerator
 
         string Col(string name) => SqlQuoting.Quote(name, dialect);
 
+        // SQLite has no DEFAULT keyword in an UPDATE: the default expression of the column is written out instead.
+        string DefaultOf(string column) => dialect == DatabaseDialect.Sqlite
+            ? target.Columns.FirstOrDefault(c => string.Equals(c.Definition.Name, column, StringComparison.Ordinal))?.Definition.DefaultExpression ?? "NULL"
+            : "DEFAULT";
+
         string KeyPredicate(IReadOnlyList<ColumnValue> key)
         {
             if (!key.Select(k => k.Column).SequenceEqual(target.KeyColumns, StringComparer.Ordinal))
@@ -82,9 +87,11 @@ public static class DmlGenerator
         {
             case InsertRow ins:
                 CheckColumns(ins.Values, target);
-                sql = ins.Values.Count == 0
+                // A column left to its default is simply not listed.
+                var given = ins.Values.Where(v => v.Value is not SqlDefault).ToList();
+                sql = given.Count == 0
                     ? dialect == DatabaseDialect.MySql ? $"INSERT INTO {table} () VALUES ()" : $"INSERT INTO {table} DEFAULT VALUES"
-                    : $"INSERT INTO {table} ({string.Join(", ", ins.Values.Select(v => Col(v.Column)))}) VALUES ({string.Join(", ", ins.Values.Select(v => BindFor(v.Column, v.Value)))})";
+                    : $"INSERT INTO {table} ({string.Join(", ", given.Select(v => Col(v.Column)))}) VALUES ({string.Join(", ", given.Select(v => BindFor(v.Column, v.Value)))})";
                 // SQL Server refuses OUTPUT without INTO on a table with a trigger (error 334): SCOPE_IDENTITY() ignores the trigger's own inserts.
                 if (returnedKey is not null)
                     sql += dialect == DatabaseDialect.SqlServer ? "; SELECT SCOPE_IDENTITY()" : $" RETURNING {returnedKey}";
@@ -93,7 +100,7 @@ public static class DmlGenerator
                 if (upd.Changes.Count == 0)
                     throw new ArgumentException("An update needs at least one change.", nameof(edit));
                 CheckColumns(upd.Changes, target);
-                var set = string.Join(", ", upd.Changes.Select(c => $"{Col(c.Column)} = {BindFor(c.Column, c.Value)}"));
+                var set = string.Join(", ", upd.Changes.Select(c => $"{Col(c.Column)} = {(c.Value is SqlDefault ? DefaultOf(c.Column) : BindFor(c.Column, c.Value))}"));
                 sql = $"UPDATE {table} SET {set} WHERE {KeyPredicate(upd.Key)}";
                 break;
             case DeleteRow del:

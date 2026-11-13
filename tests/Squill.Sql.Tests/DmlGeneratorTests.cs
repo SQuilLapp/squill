@@ -43,6 +43,27 @@ public sealed class DmlGeneratorTests
         _ => $"\"{id}\"",
     };
 
+    [Fact]
+    public void Update_WritesTheDefaultKeyword_AndInsertOmitsTheColumn()
+    {
+        var update = DmlGenerator.Generate(new UpdateRow([V("Id", 1)], [V("Name", SqlDefault.Value), V("Age", 3)]), Users, DatabaseDialect.PostgreSql);
+        var insert = DmlGenerator.Generate(new InsertRow([V("Id", 1), V("Name", SqlDefault.Value)]), Users, DatabaseDialect.PostgreSql);
+
+        Assert.Equal("UPDATE \"main\".\"Users\" SET \"Name\" = DEFAULT, \"Age\" = @p0 WHERE \"Id\" = @p1", update.Sql);
+        Assert.Equal("INSERT INTO \"main\".\"Users\" (\"Id\") VALUES (@p0)", insert.Sql);
+    }
+
+    [Fact]
+    public void Update_OnSqliteWritesTheDefaultExpression()
+    {
+        var defs = new[] { Def("Id", true), new ColumnDefinition("Name", "text", true, false, "'x'") };
+        var target = new EditTarget("main", "Users", [.. defs.Select((d, i) => new EditColumn(i, d))], ["Id"], new TableInfo("main", "Users", TableKind.Table, defs, [], []));
+
+        var sql = DmlGenerator.Generate(new UpdateRow([V("Id", 1)], [V("Name", SqlDefault.Value)]), target, DatabaseDialect.Sqlite).Sql;
+
+        Assert.Equal("UPDATE \"main\".\"Users\" SET \"Name\" = 'x' WHERE \"Id\" = @p0", sql);
+    }
+
     [Theory]
     [InlineData(DatabaseDialect.PostgreSql, "json", "INSERT INTO \"main\".\"Users\" (\"Id\") VALUES (@p0::json)")]
     [InlineData(DatabaseDialect.PostgreSql, "jsonb", "INSERT INTO \"main\".\"Users\" (\"Id\") VALUES (@p0::jsonb)")]

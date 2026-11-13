@@ -100,6 +100,30 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
         return null;
     }
 
+    /// <summary>Leaves a cell to the default value of its column: the statement says <c>DEFAULT</c>.</summary>
+    /// <param name="row">Grid row index.</param>
+    /// <param name="column">Result column index.</param>
+    /// <returns>The reason the edit was refused, or <see langword="null"/> when it was recorded.</returns>
+    public string? TrySetDefault(long row, int column)
+    {
+        if (!Grid.CanEdit)
+            return UiText.Get("results.rowsLoading");
+        if (column < 0 || column >= Grid.Columns.Count)
+            return UiText.Get("results.columnReadOnly");
+        if (Grid.GetReadOnlyReason(column) is { } reason)
+            return reason;
+        if (Grid.GetRowState(row) == RowState.Deleted)
+            return UiText.Get("results.rowDeleted");
+        Grid.SetCell(row, column, SqlDefault.Value);
+        return null;
+    }
+
+    /// <summary>Tells whether a column has a default value to fall back on.</summary>
+    /// <param name="column">Result column index.</param>
+    /// <returns><see langword="true"/> when the table defines a default, or generates the value.</returns>
+    public bool HasDefault(int column) =>
+        Target.Columns.FirstOrDefault(c => c.ResultOrdinal == column)?.Definition is { } d && (d.DefaultExpression is not null || d.IsAutoIncrement);
+
     /// <summary>Sets a cell to SQL NULL, the only way to store NULL in a text column.</summary>
     /// <param name="row">Grid row index.</param>
     /// <param name="column">Result column index; must be editable.</param>

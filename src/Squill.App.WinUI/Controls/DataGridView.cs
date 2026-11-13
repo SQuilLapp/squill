@@ -115,9 +115,12 @@ public sealed partial class DataGridView : Grid
     {
         if (_controller is not { IsEditing: true } c)
             return;
-        CellValuePicker.Show(_editor, c.EditorKind, c.EditText, text =>
+        CellValuePicker.Show(_editor, c.EditorKind, c.EditText, c.CanUseDefault, text =>
         {
-            c.SetText(text);
+            if (text is null)
+                c.SetDefault();
+            else
+                c.SetText(text);
             if (c.EditorKind == CellEditorKind.Boolean && c.Commit(EditMove.None))
                 _canvas.FocusSurface();
         });
