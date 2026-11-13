@@ -17,8 +17,12 @@ namespace Squill.Data.Oracle;
 /// <param name="Bytes">Estimated bytes.</param>
 /// <param name="Access">Access predicates.</param>
 /// <param name="Filter">Filter predicates.</param>
+/// <param name="ActualRows">Rows the step produced in the last run, when the statement was run with statistics.</param>
+/// <param name="ElapsedMicroseconds">Time of the step and its inputs in the last run, in microseconds.</param>
+/// <param name="Starts">How many times the step started in the last run.</param>
 internal sealed record OraclePlanRow(
-    long Id, long? ParentId, string Operation, string? Options, string? Owner, string? Name, double? Cardinality, double? Cost, double? Bytes, string? Access, string? Filter);
+    long Id, long? ParentId, string Operation, string? Options, string? Owner, string? Name, double? Cardinality, double? Cost, double? Bytes, string? Access, string? Filter,
+    double? ActualRows = null, double? ElapsedMicroseconds = null, double? Starts = null);
 
 /// <summary>Turns the rows of <c>PLAN_TABLE</c> into an engine-neutral <see cref="QueryPlan"/>; pure, never throws on unknown operations.</summary>
 internal static class OraclePlanParser
@@ -27,8 +31,9 @@ internal static class OraclePlanParser
     /// <param name="statement">The explained statement.</param>
     /// <param name="rows">The rows of one statement id.</param>
     /// <param name="text">The <c>DBMS_XPLAN</c> text, or <see langword="null"/> to draw an indented tree from the rows.</param>
+    /// <param name="mode">Actual when the rows carry the statistics of a run.</param>
     /// <returns>The plan; a synthetic root when the rows have none.</returns>
-    public static QueryPlan Parse(string statement, IReadOnlyList<OraclePlanRow> rows, string? text)
+    public static QueryPlan Parse(string statement, IReadOnlyList<OraclePlanRow> rows, string? text, PlanMode mode = PlanMode.Estimated)
     {
         var byParent = rows.Where(r => r.ParentId is not null).ToLookup(r => r.ParentId!.Value);
         var ids = rows.Select(r => r.Id).ToHashSet();
@@ -36,8 +41,8 @@ internal static class OraclePlanParser
         var tops = rows.Where(r => r.ParentId is null || !ids.Contains(r.ParentId.Value)).Select(r => Build(r, byParent, visited)).ToList();
         var root = tops.Count == 1 ? tops[0] : Node("PLAN", PlanNodeKind.Result, null, null, null, null, null, [], tops);
         return new QueryPlan(
-            DatabaseDialect.Oracle, PlanMode.Estimated, statement, PlanIds.Assign(root), [], [],
-            null, null, null, false, PlanSourceFormat.Text, text ?? Draw(root));
+            DatabaseDialect.Oracle, mode, statement, PlanIds.Assign(root), [], [],
+            null, root.ActualTimeMs, null, false, PlanSourceFormat.Text, text ?? Draw(root));
     }
 
     private static PlanNode Build(OraclePlanRow row, ILookup<long, OraclePlanRow> byParent, HashSet<long> visited)
@@ -49,7 +54,8 @@ internal static class OraclePlanParser
         var target = row.Name is null ? null : row.Owner is { Length: > 0 } owner ? $"{owner}.{row.Name}" : row.Name;
         var detail = string.Join(" · ", new[] { row.Access is null ? null : "access: " + row.Access, row.Filter is null ? null : "filter: " + row.Filter }.Where(d => d is not null));
         PlanWarning[] warnings = Kind(row) == PlanNodeKind.TableScan && target is not null ? [new PlanWarning(PlanMessageCodes.NoIndex, [target])] : [];
-        return Node(operation, Kind(row), target, detail.Length == 0 ? null : detail, row.Cardinality, row.Cost, row.Bytes, warnings, children);
+        var node = Node(operation, Kind(row), target, detail.Length == 0 ? null : detail, row.Cardinality, row.Cost, row.Bytes, warnings, children);
+        return row.ActualRows is null ? node : node with { ActualRows = row.ActualRows, ActualTimeMs = row.ElapsedMicroseconds / 1000, Loops = row.Starts is { } s ? (long)s : null };
     }
 
     private static PlanNodeKind Kind(OraclePlanRow row)

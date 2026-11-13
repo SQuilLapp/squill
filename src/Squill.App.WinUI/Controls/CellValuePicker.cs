@@ -12,81 +12,80 @@ internal static class CellValuePicker
     /// <summary>Opens the popup under the text box.</summary>
     /// <param name="anchor">The text box being edited.</param>
     /// <param name="kind">Boolean, date or date with a time.</param>
-    /// <param name="current">The text in the box, where a date popup starts from.</param>
+    /// <param name="current">The text in the box, where the popup starts from.</param>
     /// <param name="canDefault">Whether to offer the choice that leaves the cell to the default value of its column.</param>
     /// <param name="picked">Receives the text each choice produces, or <see langword="null"/> for the default value.</param>
     public static void Show(FrameworkElement anchor, CellEditorKind kind, string current, bool canDefault, Action<string?> picked)
     {
         var flyout = new Flyout { Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft };
-        flyout.Content = kind == CellEditorKind.Boolean ? Choices(flyout, canDefault, picked) : Moment(flyout, kind, current, canDefault, picked);
+        flyout.Content = kind == CellEditorKind.Boolean ? Choices(flyout, current, canDefault, picked) : Moment(flyout, kind, current, canDefault, picked);
         flyout.ShowAt(anchor);
     }
 
-    private static StackPanel Choices(Flyout flyout, bool canDefault, Action<string?> picked)
+    // A compact list, like a menu: the current value is highlighted, a click picks.
+    private static ListView Choices(Flyout flyout, string current, bool canDefault, Action<string?> picked)
     {
-        var panel = new StackPanel { Spacing = 4, MinWidth = 120 };
-        foreach (var (text, label) in CellEditorKinds.BooleanChoices)
-            panel.Children.Add(Choice(flyout, label, () => picked(text)));
+        var choices = CellEditorKinds.BooleanChoices.Select(c => (Text: (string?)c.Text, c.Label)).ToList();
         if (canDefault)
-            panel.Children.Add(Choice(flyout, CellEditorKinds.DefaultLabel, () => picked(null)));
-        return panel;
-    }
-
-    private static Button Choice(Flyout flyout, string label, Action pick)
-    {
-        var button = new Button { Content = label, HorizontalAlignment = HorizontalAlignment.Stretch };
-        button.Click += (_, _) =>
+            choices.Add((null, CellEditorKinds.DefaultLabel));
+        var list = new ListView { ItemsSource = choices.Select(c => c.Label).ToList(), MinWidth = 140, IsItemClickEnabled = true, SelectionMode = ListViewSelectionMode.Single };
+        list.SelectedIndex = choices.FindIndex(c => string.Equals(c.Text, current.Trim(), StringComparison.OrdinalIgnoreCase));
+        list.ItemClick += (_, e) =>
         {
-            pick();
+            picked(choices.First(c => c.Label == (string)e.ClickedItem).Text);
             flyout.Hide();
         };
-        return button;
+        return list;
     }
 
     private static StackPanel Moment(Flyout flyout, CellEditorKind kind, string current, bool canDefault, Action<string?> picked)
     {
         var start = CellEditorKinds.ParseMoment(current);
-        var day = new ComboBox { ItemsSource = Enumerable.Range(1, 31).ToArray(), SelectedItem = start.Day, MinWidth = 70 };
-        var month = new ComboBox { ItemsSource = CultureInfo.CurrentCulture.DateTimeFormat.MonthNames.Take(12).ToArray(), SelectedIndex = start.Month - 1, MinWidth = 130 };
-        var year = Spinner(start.Year, 1, 9999, 110);
-        var hour = Spinner(start.Hour, 0, 23, 90);
-        var minute = Spinner(start.Minute, 0, 59, 90);
-        var second = Spinner(start.Second, 0, 59, 90);
+        var day = Combo(Range(1, 31, "0"), start.Day.ToString(CultureInfo.InvariantCulture), 80);
+        var month = new ComboBox { ItemsSource = CultureInfo.CurrentCulture.DateTimeFormat.MonthNames.Take(12).ToArray(), SelectedIndex = start.Month - 1, MinWidth = 140 };
+        var years = Math.Max(1, start.Year - 100);
+        var year = Combo([.. Enumerable.Range(years, Math.Min(9999, start.Year + 100) - years + 1).Select(y => y.ToString(CultureInfo.InvariantCulture))], start.Year.ToString(CultureInfo.InvariantCulture), 100);
+        var hour = Combo(Range(0, 23, "00"), start.Hour.ToString("00", CultureInfo.InvariantCulture), 80);
+        var minute = Combo(Range(0, 59, "00"), start.Minute.ToString("00", CultureInfo.InvariantCulture), 80);
+        var second = Combo(Range(0, 59, "00"), start.Second.ToString("00", CultureInfo.InvariantCulture), 80);
+
+        int Of(ComboBox box, int fallback) => box.SelectedItem is string s && int.TryParse(s, CultureInfo.InvariantCulture, out var n) ? n : fallback;
 
         void Report() => picked(CellEditorKinds.FormatMoment(
-            kind, double.IsNaN(year.Value) ? start.Year : (int)year.Value, month.SelectedIndex + 1, day.SelectedItem is int d ? d : start.Day,
-            Whole(hour), Whole(minute), Whole(second)));
+            kind, Of(year, start.Year), month.SelectedIndex + 1, Of(day, start.Day), Of(hour, 0), Of(minute, 0), Of(second, 0)));
 
-        day.SelectionChanged += (_, _) => Report();
-        month.SelectionChanged += (_, _) => Report();
-        year.ValueChanged += (_, _) => Report();
-        hour.ValueChanged += (_, _) => Report();
-        minute.ValueChanged += (_, _) => Report();
-        second.ValueChanged += (_, _) => Report();
+        foreach (var box in new[] { day, month, year, hour, minute, second })
+            box.SelectionChanged += (_, _) => Report();
 
         var panel = new StackPanel { Spacing = 8 };
-        var date = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
-        date.Children.Add(day);
-        date.Children.Add(month);
-        date.Children.Add(year);
-        panel.Children.Add(date);
+        panel.Children.Add(Row(day, month, year));
         if (kind == CellEditorKind.DateTime)
-        {
-            var time = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Left };
-            time.Children.Add(hour);
-            time.Children.Add(minute);
-            time.Children.Add(second);
-            panel.Children.Add(time);
-        }
-
+            panel.Children.Add(Row(hour, minute, second));
         if (canDefault)
-            panel.Children.Add(Choice(flyout, CellEditorKinds.DefaultLabel, () => picked(null)));
+        {
+            var useDefault = new Button { Content = CellEditorKinds.DefaultLabel, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center };
+            useDefault.Click += (_, _) =>
+            {
+                picked(null);
+                flyout.Hide();
+            };
+            panel.Children.Add(useDefault);
+        }
 
         return panel;
     }
 
-    private static int Whole(NumberBox box) => double.IsNaN(box.Value) ? 0 : (int)box.Value;
+    private static string[] Range(int from, int to, string format) =>
+        [.. Enumerable.Range(from, to - from + 1).Select(i => i.ToString(format, CultureInfo.InvariantCulture))];
 
-    private static NumberBox Spinner(int value, int min, int max, double width) =>
-        new() { Minimum = min, Maximum = max, Value = value, SmallChange = 1, SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline, Width = width };
+    private static ComboBox Combo(string[] items, string selected, double width) =>
+        new() { ItemsSource = items, SelectedItem = selected, MinWidth = width };
+
+    private static StackPanel Row(params ComboBox[] boxes)
+    {
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        foreach (var box in boxes)
+            row.Children.Add(box);
+        return row;
+    }
 }

@@ -43,7 +43,7 @@ public sealed record PlanEligibility(bool CanExplain, bool CanAnalyze, string? E
             return Refused(PlanMessageCodes.ReasonNotExplainable);
         }
 
-        if (dialect is DatabaseDialect.Sqlite or DatabaseDialect.Oracle)
+        if (dialect == DatabaseDialect.Sqlite)
         {
             return new PlanEligibility(true, false, null, PlanMessageCodes.ReasonNoAnalyze);
         }

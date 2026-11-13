@@ -34,4 +34,17 @@ public sealed class OraclePlanParserTests
 
         Assert.Equal("Plan hash value: 1", plan.SourceText);
     }
+
+    [Fact]
+    public void Parse_ActualRowsAndTimesComeFromTheRunStatistics()
+    {
+        var plan = OraclePlanParser.Parse("select 1", [
+            new OraclePlanRow(0, null, "SELECT STATEMENT", null, null, null, 5, 3, 100, null, null, 4, 2500, 1),
+            new OraclePlanRow(1, 0, "TABLE ACCESS", "FULL", "HR", "EMP", 5, 3, 100, null, null, 4, 2000, 1)], null, PlanMode.Actual);
+
+        Assert.Equal(PlanMode.Actual, plan.Mode);
+        Assert.Equal(2.5, plan.ExecutionTimeMs);
+        var scan = plan.Root.Children.Single();
+        Assert.Equal((4d, 2d, 1L), (scan.ActualRows, scan.ActualTimeMs, scan.Loops));
+    }
 }
