@@ -4,7 +4,7 @@ namespace Squill.Data;
 
 /// <summary>
 /// Optional capability of a connection: returns the query plan of one statement. It is a separate interface so that providers
-/// without plans (Oracle) stay untouched; callers test <c>connection as IPlanReader</c>.
+/// without plans stay untouched; callers test <c>connection as IPlanReader</c>.
 /// </summary>
 /// <remarks>
 /// The statement is a single statement already vetted by <c>PlanEligibility</c>. The reader never executes it for

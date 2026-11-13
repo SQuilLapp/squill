@@ -43,7 +43,7 @@ public sealed record PlanEligibility(bool CanExplain, bool CanAnalyze, string? E
             return Refused(PlanMessageCodes.ReasonNotExplainable);
         }
 
-        if (dialect == DatabaseDialect.Sqlite)
+        if (dialect is DatabaseDialect.Sqlite or DatabaseDialect.Oracle)
         {
             return new PlanEligibility(true, false, null, PlanMessageCodes.ReasonNoAnalyze);
         }
@@ -58,10 +58,10 @@ public sealed record PlanEligibility(bool CanExplain, bool CanAnalyze, string? E
 
     private static bool IsExplainable(string head, DatabaseDialect dialect) => head switch
     {
-        "SELECT" or "WITH" or "INSERT" or "UPDATE" or "DELETE" => dialect is DatabaseDialect.PostgreSql or DatabaseDialect.MySql or DatabaseDialect.SqlServer or DatabaseDialect.Sqlite,
+        "SELECT" or "WITH" or "INSERT" or "UPDATE" or "DELETE" => dialect is DatabaseDialect.PostgreSql or DatabaseDialect.MySql or DatabaseDialect.SqlServer or DatabaseDialect.Sqlite or DatabaseDialect.Oracle,
         "VALUES" => dialect is DatabaseDialect.PostgreSql or DatabaseDialect.MySql or DatabaseDialect.Sqlite,
         "TABLE" => dialect is DatabaseDialect.PostgreSql or DatabaseDialect.MySql,
-        "MERGE" => dialect is DatabaseDialect.PostgreSql or DatabaseDialect.SqlServer,
+        "MERGE" => dialect is DatabaseDialect.PostgreSql or DatabaseDialect.SqlServer or DatabaseDialect.Oracle,
         "REPLACE" => dialect is DatabaseDialect.MySql or DatabaseDialect.Sqlite,
         _ => false,
     };
