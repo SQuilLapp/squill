@@ -97,6 +97,8 @@ try {
             # Windows and Linux libraries of the Oracle bridge are not macOS code: codesign --deep rejects those folders.
             Get-ChildItem (Join-Path $publish 'oracle-bridge/runtimes') -Directory -ErrorAction SilentlyContinue |
                 Where-Object Name -ne 'osx' | Remove-Item -Recurse -Force
+            # runtimes/osx/lib/net8.0 (managed, redundant on net11) looks like a bundle to codesign: "bundle format unrecognized".
+            Remove-Item (Join-Path $publish 'oracle-bridge/runtimes/osx/lib') -Recurse -Force -ErrorAction SilentlyContinue
             dotnet vpk bundle --packId $PackId --packVersion $Version --packTitle SQuilL --packAuthors SQuilL `
                 --packDir $publish --mainExe Squill.App.Avalonia --icon assets/brand/app-icons/macos/squill.icns `
                 --runtime $Runtime --channel $c --outputDir $releases
