@@ -43,6 +43,13 @@ public sealed class DataGridView : Grid
             }
         };
         _editor.KeyDown += OnEditorKeyDown;
+        AddHandler(PointerWheelChangedEvent, (_, e) =>
+        {
+            if (!e.Handled)
+            {
+                _canvas.ScrollByWheel(e);
+            }
+        });
         _editor.InnerRightContent = _picker;
         _picker.Click += (_, _) => OpenPicker();
         _canvas.ScrollStateChanged += (_, _) =>

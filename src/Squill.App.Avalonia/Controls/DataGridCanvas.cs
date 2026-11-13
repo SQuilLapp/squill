@@ -349,6 +349,13 @@ public sealed class DataGridCanvas : Control
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
         base.OnPointerWheelChanged(e);
+        ScrollByWheel(e);
+    }
+
+    /// <summary>Scrolls by a wheel or trackpad gesture; the host calls it for gestures over its scroll bars and editor too.</summary>
+    /// <param name="e">The gesture; marked handled.</param>
+    public void ScrollByWheel(PointerWheelEventArgs e)
+    {
         if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
         {
             SetScroll(_scrollX - (e.Delta.Y * _layout.RowHeight * 3), _scrollY);
