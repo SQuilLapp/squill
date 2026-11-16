@@ -1,6 +1,6 @@
 # P17-04 - Presentation: filter, search and sort state on the result (risky)
 
-Status: todo
+Status: done
 Depends on: P17-03
 
 ## Goal
@@ -19,8 +19,8 @@ Depends on: P17-03
 - The column menu and filter editor view-models (P17-05), any head code, persisting a view.
 
 ## Tasks
-- [ ] `ResultViewState`, `ResultViewModel` integration (`View`, `DisplayGrid`, `ReadOnlyReason`, `Selection` reset), edit guard in `GridEditController` / `ResultEditorViewModel`, catalog keys.
-- [ ] Tests in `tests/Squill.Presentation.Tests/Query/ResultViewStateTests.cs` (patterns of the existing `ResultViewModel` and `GridEditController` tests): adding a filter swaps `DisplayGrid` and raises the change, clearing restores the same grid instance, search, sort toggle cycle, footer text for filtered and unfiltered (fr and en), selection cleared on every change, the edit controller refuses a cell edit / add / delete while active and works again after `ClearFilters`, `ReadOnlyReason` restores its previous value (including `loading` and a real reason), a pending change blocks `AddFilter` with the reason, an editor set later keeps an active view, export still writes all rows of `Grid` while a filter is active.
+- [x] `ResultViewState`, `ResultViewModel` integration (`View`, `DisplayGrid`, `ReadOnlyReason`, `Selection` reset), edit guard in `GridEditController` / `ResultEditorViewModel`, catalog keys.
+- [x] Tests in `tests/Squill.Presentation.Tests/Query/ResultViewStateTests.cs` (patterns of the existing `ResultViewModel` and `GridEditController` tests): adding a filter swaps `DisplayGrid` and raises the change, clearing restores the same grid instance, search, sort toggle cycle, footer text for filtered and unfiltered (fr and en), selection cleared on every change, the edit controller refuses a cell edit / add / delete while active and works again after `ClearFilters`, `ReadOnlyReason` restores its previous value (including `loading` and a real reason), a pending change blocks `AddFilter` with the reason, an editor set later keeps an active view, export still writes all rows of `Grid` while a filter is active.
 
 ## Acceptance criteria
 - Common acceptance of the recipe (section 7), no head touched (the heads are not yet bound; nothing draws a chip until P17-06 / P17-08).

@@ -44,8 +44,11 @@ public sealed class EditableGridDataSource : IGridDataSource
     /// <inheritdoc />
     public bool IsTruncated => _source.IsTruncated;
 
-    /// <summary>Gets whether edits are allowed; false while rows are still streaming because indices are not stable.</summary>
-    public bool CanEdit => _source.IsComplete;
+    /// <summary>Gets or sets whether a filter, search or sort view sits over this grid; edits are refused while it does because view rows are not grid rows.</summary>
+    public bool IsViewActive { get; set; }
+
+    /// <summary>Gets whether edits are allowed; false while rows are still streaming because indices are not stable, and while <see cref="IsViewActive"/>.</summary>
+    public bool CanEdit => _source.IsComplete && !IsViewActive;
 
     /// <summary>Gets whether any row is inserted, modified or deleted and not yet committed.</summary>
     public bool HasPendingChanges => PendingCount > 0;

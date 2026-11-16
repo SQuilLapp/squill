@@ -219,10 +219,12 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
     }
 
     /// <summary>Appends a row and selects its first editable cell.</summary>
-    /// <returns>The index of the new row.</returns>
+    /// <returns>The index of the new row, or -1 while a filter view is active.</returns>
     public long AddRow()
     {
         var row = editor.AddRow();
+        if (row < 0)
+            return -1;
         var column = Enumerable.Range(0, editor.Grid.Columns.Count).FirstOrDefault(IsColumnEditable);
         selection.SelectCell(row, column, false);
         return row;
