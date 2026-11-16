@@ -430,6 +430,7 @@ internal static class UiTextCatalogEn
         ("issue.design.nullsBlockNotNull", "Existing NULLs make '{0}' fail to become non-nullable."),
         ("issue.design.foreignKeyTableMissing", "The foreign key '{0}' references the missing table '{1}'."),
         ("issue.design.viewsNotRecreated", "Views depending on this table are not recreated."),
+        ("issue.design.triggerMentionsColumn", "Trigger '{0}' may use the column '{1}', which is renamed or dropped: it will fail when it fires."),
         ("issue.edit.columnNull", "{0} cannot be NULL"),
         ("issue.edit.columnRequired", "{0} is required"),
         ("issue.edit.duplicateKey", "duplicate key in pending rows"),

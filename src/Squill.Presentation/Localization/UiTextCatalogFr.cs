@@ -430,6 +430,7 @@ internal static class UiTextCatalogFr
         ("issue.design.nullsBlockNotNull", "Les NULL existants empêchent '{0}' de devenir non nullable."),
         ("issue.design.foreignKeyTableMissing", "La clé étrangère '{0}' référence la table manquante '{1}'."),
         ("issue.design.viewsNotRecreated", "Les vues qui dépendent de cette table ne sont pas recréées."),
+        ("issue.design.triggerMentionsColumn", "Le déclencheur '{0}' utilise peut-être la colonne '{1}', renommée ou supprimée : il échouera à son exécution."),
         ("issue.edit.columnNull", "{0} ne peut pas être NULL"),
         ("issue.edit.columnRequired", "{0} est obligatoire"),
         ("issue.edit.duplicateKey", "clé en double dans les lignes en attente"),

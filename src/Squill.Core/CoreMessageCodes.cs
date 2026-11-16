@@ -93,6 +93,9 @@ public static class CoreMessageCodes
     /// <summary>The <c>design.viewsNotRecreated</c> message.</summary>
     public const string DesignViewsNotRecreated = "design.viewsNotRecreated";
 
+    /// <summary>The <c>design.triggerMentionsColumn</c> message.</summary>
+    public const string DesignTriggerMentionsColumn = "design.triggerMentionsColumn";
+
     /// <summary>The <c>edit.columnNull</c> message.</summary>
     public const string EditColumnNull = "edit.columnNull";
 
@@ -141,6 +144,7 @@ public static class CoreMessageCodes
         DesignNullsBlockNotNull,
         DesignForeignKeyTableMissing,
         DesignViewsNotRecreated,
+        DesignTriggerMentionsColumn,
         EditColumnNull,
         EditColumnRequired,
         EditDuplicateKey,

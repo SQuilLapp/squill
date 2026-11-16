@@ -1,6 +1,6 @@
 # P16-03 - Table designer: warn when a SQLite trigger names a renamed or dropped column
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -16,8 +16,8 @@ Altering a SQLite table rebuilds it and replays the triggers with their old text
 - Rewriting trigger bodies, views depending on the table (already warned), other engines.
 
 ## Tasks
-- [ ] Message code, both catalogs, warning generation in the view-model.
-- [ ] Tests in `tests/Squill.Presentation.Tests/Designer/`: rename warns, drop warns, add-column does not, a trigger on another table does not, `col_x` does not match `col`, PostgreSQL design with the same data produces no warning, `HasErrors` stays false, apply goes through after the warning is shown.
+- [x] Message code, both catalogs, warning generation in the view-model.
+- [x] Tests in `tests/Squill.Presentation.Tests/Designer/`: rename warns, drop warns, add-column does not, a trigger on another table does not, `col_x` does not match `col`, PostgreSQL design with the same data produces no warning, `HasErrors` stays false, apply goes through after the warning is shown.
 
 ## Acceptance criteria
 - Common acceptance; localization completeness guards green (P10-17).

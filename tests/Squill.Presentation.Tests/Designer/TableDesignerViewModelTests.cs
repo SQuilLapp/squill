@@ -50,9 +50,9 @@ public sealed class TableDesignerViewModelTests
 
     private sealed class Fixture
     {
-        public Fixture(DatabaseDialect dialect = DatabaseDialect.PostgreSql, TableInfo? existing = null, params TableInfo[] others)
+        public Fixture(DatabaseDialect dialect = DatabaseDialect.PostgreSql, TableInfo? existing = null, IReadOnlyList<TriggerInfo>? triggers = null, params TableInfo[] others)
         {
-            var snapshot = new SchemaSnapshot(dialect == DatabaseDialect.Sqlite ? "main" : "public", existing is null ? others : [existing, .. others]);
+            var snapshot = new SchemaSnapshot(dialect == DatabaseDialect.Sqlite ? "main" : "public", existing is null ? others : [existing, .. others]) { Triggers = triggers ?? [] };
             Session = new ConnectionSession(
                 new ConnectionProfile(Guid.NewGuid(), "p", dialect, "h", 1, "d", "u", null, null),
                 Connection, snapshot, null);
@@ -148,7 +148,7 @@ public sealed class TableDesignerViewModelTests
     [Fact]
     public void ForeignKey_MissingTarget_IsError_SelfReferenceIsNot()
     {
-        var f = new Fixture(DatabaseDialect.PostgreSql, null, People);
+        var f = new Fixture(DatabaseDialect.PostgreSql, null, null, People);
         f.Vm.AddForeignKeyCommand.Execute(null);
         var fk = f.Vm.ForeignKeys[0];
         fk.ColumnsText = "id";
@@ -334,7 +334,7 @@ public sealed class TableDesignerViewModelTests
     {
         using var _ = UiText.Override(language);
         var view = new TableInfo("main", "v", TableKind.View, [], [], [], null);
-        var f = new Fixture(DatabaseDialect.Sqlite, SqliteTable(), view);
+        var f = new Fixture(DatabaseDialect.Sqlite, SqliteTable(), null, view);
         f.Vm.Columns[1].Name = "title";
 
         await f.Vm.ApplyCommand.ExecuteAsync(null);
@@ -375,11 +375,89 @@ public sealed class TableDesignerViewModelTests
         Assert.Contains(f.Vm.Issues, i => i.Message == text);
     }
 
+    private static TriggerInfo Trigger(string table, string body, string name = "trg") =>
+        new("main", table, name, "AFTER", "INSERT", $"CREATE TRIGGER {name} AFTER INSERT ON {table} BEGIN {body} END");
+
+    private static IEnumerable<DesignIssue> TriggerIssues(Fixture f) => f.Vm.Issues.Where(i => i.Code == CoreMessageCodes.DesignTriggerMentionsColumn);
+
+    [Fact]
+    public void Trigger_RenamedColumn_Warns()
+    {
+        var f = new Fixture(DatabaseDialect.Sqlite, SqliteTable(), [Trigger("people", "UPDATE people SET x = NEW.\"name\";")]);
+        f.Vm.Columns[1].Name = "title";
+
+        var issue = Assert.Single(TriggerIssues(f));
+        Assert.Equal(DesignIssueSeverity.Warning, issue.Severity);
+        Assert.Equal(["trg", "name"], issue.Args);
+        Assert.False(f.Vm.HasErrors);
+    }
+
+    [Fact]
+    public void Trigger_DroppedColumn_Warns()
+    {
+        var f = new Fixture(DatabaseDialect.Sqlite, SqliteTable(), [Trigger("people", "SELECT NEW.name;")]);
+        f.Vm.Columns.RemoveAt(1);
+
+        Assert.Single(TriggerIssues(f));
+    }
+
+    [Fact]
+    public void Trigger_AddedColumn_DoesNotWarn()
+    {
+        var f = new Fixture(DatabaseDialect.Sqlite, SqliteTable(), [Trigger("people", "SELECT NEW.name;")]);
+        f.Vm.AddColumnCommand.Execute(null);
+
+        Assert.Empty(TriggerIssues(f));
+    }
+
+    [Fact]
+    public void Trigger_OnAnotherTable_DoesNotWarn()
+    {
+        var other = new TableInfo("main", "other", TableKind.Table, [], [], [], null);
+        var f = new Fixture(DatabaseDialect.Sqlite, SqliteTable(), [Trigger("other", "SELECT NEW.name;")], other);
+        f.Vm.Columns[1].Name = "title";
+
+        Assert.Empty(TriggerIssues(f));
+    }
+
+    [Fact]
+    public void Trigger_LongerIdentifier_DoesNotMatch()
+    {
+        var f = new Fixture(DatabaseDialect.Sqlite, SqliteTable(), [Trigger("people", "SELECT NEW.name_x;")]);
+        f.Vm.Columns[1].Name = "title";
+
+        Assert.Empty(TriggerIssues(f));
+    }
+
+    [Fact]
+    public void Trigger_OtherDialect_DoesNotWarn()
+    {
+        var table = new TableInfo("public", "people", TableKind.Table,
+            [new ColumnDefinition("id", "integer", false, true, null, true), new ColumnDefinition("name", "text", true, false, null)], [], [], null);
+        var f = new Fixture(DatabaseDialect.PostgreSql, table, [new TriggerInfo("public", "people", "trg", "AFTER", "INSERT", "CREATE TRIGGER trg AFTER INSERT ON people BEGIN SELECT NEW.name; END")]);
+        f.Vm.Columns[1].Name = "title";
+
+        Assert.Empty(TriggerIssues(f));
+    }
+
+    [Fact]
+    public async Task Trigger_Warning_IsConfirmedThenApplied()
+    {
+        var f = new Fixture(DatabaseDialect.Sqlite, SqliteTable(), [Trigger("people", "SELECT NEW.name;")]);
+        f.Vm.Columns[1].Name = "title";
+        f.Dialogs.ConfirmResult = true;
+
+        await f.Vm.ApplyCommand.ExecuteAsync(null);
+
+        Assert.Contains("trg", Assert.Single(f.Dialogs.Confirms).Message, StringComparison.Ordinal);
+        Assert.NotEmpty(f.Connection.Executed);
+    }
+
     [Fact]
     public async Task Apply_Warnings_RequireConfirmation()
     {
         var view = new TableInfo("main", "v", TableKind.View, [], [], [], null);
-        var f = new Fixture(DatabaseDialect.Sqlite, SqliteTable(), view);
+        var f = new Fixture(DatabaseDialect.Sqlite, SqliteTable(), null, view);
         f.Vm.Columns[1].Name = "title";
         Assert.Contains(f.Vm.Issues, i => i.Severity == DesignIssueSeverity.Warning && i.Code == CoreMessageCodes.DesignViewsNotRecreated);
 

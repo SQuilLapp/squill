@@ -93,7 +93,7 @@ public sealed partial class MessageCodesTests
     {
         var raised = Cases().Select(c => c.Data.Item4).ToHashSet();
         var expected = CoreMessageCodes.All.Where(c => c.StartsWith("design.", StringComparison.Ordinal)).ToHashSet();
-        expected.ExceptWith([CoreMessageCodes.DesignForeignKeyTableMissing, CoreMessageCodes.DesignViewsNotRecreated]);
+        expected.ExceptWith([CoreMessageCodes.DesignForeignKeyTableMissing, CoreMessageCodes.DesignViewsNotRecreated, CoreMessageCodes.DesignTriggerMentionsColumn]);
         Assert.Equal(expected.Order(), raised.Order());
     }
 }

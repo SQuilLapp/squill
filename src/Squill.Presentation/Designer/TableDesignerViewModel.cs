@@ -9,6 +9,7 @@ using Squill.Presentation.Localization;
 using Squill.Presentation.Safety;
 using Squill.Presentation.Sessions;
 using Squill.Sql.Ddl;
+using Squill.Sql.Lexing;
 using Squill.Sql.Transactions;
 
 namespace Squill.Presentation.Designer;
@@ -447,6 +448,30 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         [.. Indexes.Select(i => i.ToDesign())],
         [.. ForeignKeys.Select(f => f.ToDesign())]);
 
+    // shortcut: token equality on identifiers, so a keyword-like column or an alias is a false positive; fine for a warning.
+    private static IEnumerable<DesignIssue> TriggerWarnings(TableDesign original, TableDesign edited)
+    {
+        var touched = TableDiff.Compute(original, edited)
+            .Select(o => o switch { DropColumn d => d.Name, RenameColumn r => r.From, _ => null })
+            .OfType<string>().ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (touched.Count == 0)
+            yield break;
+
+        var tokenizer = SqlTokenizers.For(DatabaseDialect.Sqlite);
+        foreach (var text in original.Triggers)
+        {
+            var words = tokenizer.Tokenize(text)
+                .Where(t => t.Kind is TokenKind.Keyword or TokenKind.Identifier or TokenKind.QuotedIdentifier)
+                .Select(t => t.Text(text).Trim('"', '`', '[', ']')).ToList();
+            var at = words.FindIndex(w => w.Equals("TRIGGER", StringComparison.OrdinalIgnoreCase));
+            if (at >= 0 && at + 3 < words.Count && words[at + 1].Equals("IF", StringComparison.OrdinalIgnoreCase))
+                at += 3;
+            var name = at >= 0 && at + 1 < words.Count ? words[at + 1] : "?";
+            foreach (var column in touched.Where(c => words.Skip(at + 2).Contains(c, StringComparer.OrdinalIgnoreCase)).Order(StringComparer.Ordinal))
+                yield return new DesignIssue(DesignIssueSeverity.Warning, $"Trigger '{name}' may use the column '{column}'.", null, CoreMessageCodes.DesignTriggerMentionsColumn, [name, column]);
+        }
+    }
+
     private void Recompute()
     {
         if (_loading)
@@ -465,6 +490,9 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
 
         if (_dialect == DatabaseDialect.Sqlite && Original is not null && _session.Schema.Tables.Any(t => t.Kind.IsViewLike()))
             issues.Add(new DesignIssue(DesignIssueSeverity.Warning, "Views depending on this table are not recreated.", null, CoreMessageCodes.DesignViewsNotRecreated));
+
+        if (_dialect == DatabaseDialect.Sqlite && Original is { Triggers.Count: > 0 })
+            issues.AddRange(TriggerWarnings(Original, design));
 
         issues = [.. issues.Select(i => i with { Message = IssueText.Format(i.Code, i.Args, i.Message) })];
         Issues = [.. issues.Where(i => i.Severity == DesignIssueSeverity.Error), .. issues.Where(i => i.Severity != DesignIssueSeverity.Error)];
