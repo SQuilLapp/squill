@@ -25,7 +25,7 @@ Risk R1: the SQL editor must stay responsive on very large scripts. The WinUI he
 
 Criterion "highlighting and completion work on 100,000 lines without freezing, UI stall < 100 ms": met after start-up; the single 132 ms gap is the first layout and paint of the window, not an editing or scrolling stall. Completion returns one item because the demo has no schema and the caret follows `FROM t` (keywords only); the latency is the cost of tokenizing, splitting and parsing, not of the number of items. Machine: the development PC, Release Native AOT, one run.
 
-Not measured: typing latency on the 100,000-line text, memory, and the app's `UpdateDiagnostics` (the query tab runs `SqlDiagnosticsProvider` on the whole text at every change on the UI thread; it was not part of the demo and will stall on such scripts, a follow-up for the view-model).
+Not measured: typing latency on the 100,000-line text, memory, and the app's `UpdateDiagnostics` (the query tab runs `SqlDiagnosticsProvider` on the whole text at every change on the UI thread; since P16-01 this runs debounced off the UI thread).
 
 ## Missing LoomEditor APIs (requests, nothing changed in LoomEditor)
 

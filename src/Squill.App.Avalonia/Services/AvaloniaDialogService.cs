@@ -20,6 +20,10 @@ internal sealed class AvaloniaDialogService : IDialogService
         await ShowAsync(title, message, null, (UiText.Get("dialog.ok"), true), (UiText.Get("dialog.cancel"), false)) is true;
 
     /// <inheritdoc />
+    public async ValueTask<bool> ConfirmSshHostKeyAsync(Squill.Platform.Ssh.SshHostKeyRequest request) =>
+        Owner is { } owner && await Views.SshHostKeyWindow.ShowAsync(owner, request);
+
+    /// <inheritdoc />
     public async ValueTask<Squill.Presentation.Safety.ProductionConfirmationResult> ConfirmProductionAsync(Squill.Presentation.Safety.ProductionConfirmationRequest request) =>
         Owner is { } owner ? await Views.ProductionConfirmWindow.ShowAsync(owner, request) : new(false, false);
 

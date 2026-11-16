@@ -3,6 +3,7 @@ using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
 using Squill.Platform.Ssh;
+using Squill.Presentation.Localization;
 
 namespace Squill.Presentation.Sessions;
 
@@ -10,7 +11,8 @@ namespace Squill.Presentation.Sessions;
 /// <param name="providers">Resolves the provider of each profile's dialect.</param>
 /// <param name="store">Source of the database password and the SSH secret.</param>
 /// <param name="tunnels">Opens the SSH tunnel of profiles that need one.</param>
-public sealed class SessionManager(ProviderRegistry providers, IProfileStore store, ISshTunnelFactory tunnels)
+/// <param name="sshHostKeyPrompt">Asks whether to trust a host key seen for the first time; <see langword="null"/> refuses every unknown key.</param>
+public sealed class SessionManager(ProviderRegistry providers, IProfileStore store, ISshTunnelFactory tunnels, SshHostKeyPrompt? sshHostKeyPrompt = null)
 {
     /// <summary>Gets the open sessions.</summary>
     public ObservableCollection<ConnectionSession> Sessions { get; } = [];
@@ -31,7 +33,7 @@ public sealed class SessionManager(ProviderRegistry providers, IProfileStore sto
             if (profile.Ssh is { } ssh)
             {
                 var secret = await store.GetSshSecretAsync(profile.Id, ct);
-                tunnel = await tunnels.OpenAsync(ssh, secret, profile.Host ?? "", profile.Port ?? 0, ct);
+                tunnel = await tunnels.OpenAsync(ssh, secret, profile.Host ?? "", profile.Port ?? 0, sshHostKeyPrompt, ct);
                 effective = profile with { Host = "127.0.0.1", Port = tunnel.LocalPort };
             }
             connection = await provider.OpenAsync(effective, password, ct);
@@ -54,6 +56,15 @@ public sealed class SessionManager(ProviderRegistry providers, IProfileStore sto
             self = session;
             Sessions.Add(session);
             return session;
+        }
+        catch (SshHostKeyRejectedException)
+        {
+            throw new OperationCanceledException(ct); // declining the key is the user cancelling: no error banner
+        }
+        catch (SshHostKeyChangedException ex)
+        {
+            throw new InvalidOperationException(
+                UiText.Format("ssh.hostkey.changed", ex.Request.Host, ex.Request.Port, ex.StoredFingerprint ?? "?", ex.Request.Fingerprint, ex.Location), ex);
         }
         catch
         {

@@ -506,6 +506,8 @@ public static class TransactionFlowScenario
 
         public List<TransactionCloseRequest> Asked { get; } = [];
 
+        public ValueTask<bool> ConfirmSshHostKeyAsync(Squill.Platform.Ssh.SshHostKeyRequest request) => ValueTask.FromResult(false);
+
         public ValueTask<ProductionConfirmationResult> ConfirmProductionAsync(ProductionConfirmationRequest request)
         {
             ProductionRequests.Add(request);

@@ -71,6 +71,8 @@ public static class SqlFormatter
         /// <summary>Gets or sets whether the select item list has not started yet.</summary>
         public bool AfterSelect { get; set; }
 
+        public bool AfterTop { get; set; }
+
         /// <summary>Gets or sets whether a join still waits for its ON condition.</summary>
         public bool JoinPending { get; set; }
     }
@@ -201,8 +203,9 @@ public static class SqlFormatter
             var isClauseWord = level.Clause && word is not null && ClauseWords.Contains(word);
             if (level.AfterSelect)
             {
-                // shortcut: only "TOP n" and "DISTINCT ON (...)" are recognised as select modifiers, "TOP (n)" and "WITH TIES" start the item list.
+                level.AfterTop |= word == "TOP";
                 var inline = word is "DISTINCT" or "ALL" or "TOP"
+                    || level.AfterTop && (word is "PERCENT" or "TIES" || word == "WITH" && nextWord == "TIES")
                     || word == "ON" && prevWord == "DISTINCT"
                     || token.Kind == TokenKind.Punctuation && src[token.Start] == '(' && !opensSubquery && prevWord is "TOP" or "ON"
                     || token.Kind == TokenKind.NumberLiteral && prevWord == "TOP";
@@ -223,6 +226,7 @@ public static class SqlFormatter
             {
                 level.InSelectList = word == "SELECT";
                 level.AfterSelect = word == "SELECT";
+                level.AfterTop = false;
                 level.JoinPending = false;
                 if (!first)
                 {

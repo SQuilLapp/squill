@@ -6,12 +6,23 @@
 
 ## [Unreleased]
 
+### Added
+
+- SSH tunnels check the host key of the jump host: the first key is shown with its fingerprint and remembered only if you trust it, and a changed key is refused with both fingerprints and the file to edit if the server was reinstalled.
+- Table designer: a warning when a SQLite trigger uses a column that is renamed or dropped.
+
+### Fixed
+
+- Typing in a long script is no longer slowed down by the SQL diagnostics, which now run in the background.
+- The formatter keeps `TOP` and `WITH TIES` with their `SELECT`.
+- A custom delimiter glued to the statement, such as `END$$`, now splits the script correctly.
+
 ## [0.3.0] - 2026-11-13
 
 ### Added
 
 - Transactions: an Auto-commit / Manual toggle, a pending-changes pill, Commit and Rollback (`Ctrl+Alt+C`, `Ctrl+Alt+Z`) and a status bar segment, on SQLite, PostgreSQL, MySQL / MariaDB and SQL Server. Grid commits and designer applies run inside your open transaction, and closing, disconnecting or quitting asks what to do with it.
-- Production confirmation: statements that modify data or schema on a Production or Staging connection ask first, with the estimated number of rows touched, and the same applies to Commit, grid commits and designer applies.
+- Production confirmation: statements that modify data or schema on a Production connection ask first, with the estimated number of rows touched, and the same applies to Commit, grid commits and designer applies.
 - Explorer: every database of a connection can be opened, each one can be refreshed from its context menu, and a Keys folder lists the primary and unique keys.
 - Explorer: choose which tables and views to show, from the context menu of a database or schema or directly on a table (like DataGrip). The choice is saved per connection and database; Show all tables clears it.
 - Oracle: Explain and Analyze open a plan tab from `EXPLAIN PLAN` and `DBMS_XPLAN`, with the actual plan from the run statistics.

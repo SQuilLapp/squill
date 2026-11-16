@@ -16,11 +16,20 @@ public sealed class SshSessionTests(SshJumpFixture fixture) : IClassFixture<SshJ
 {
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
+    /// <summary>The real factory that trusts any new host key: the session manager passes no prompt yet.</summary>
+    private sealed class AcceptingTunnels : ISshTunnelFactory
+    {
+        private readonly SshNetTunnelFactory _inner = new(new InMemoryKnownHostsStore());
+
+        public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, string remoteHost, int remotePort, SshHostKeyPrompt? prompt, CancellationToken ct) =>
+            _inner.OpenAsync(settings, secret, remoteHost, remotePort, (_, _) => ValueTask.FromResult(true), ct);
+    }
+
     private static SessionManager NewManager(string? sshSecret)
     {
         var registry = new ProviderRegistry();
         registry.Register(new PostgresDatabaseProvider());
-        return new SessionManager(registry, new Store(sshSecret), new SshNetTunnelFactory());
+        return new SessionManager(registry, new Store(sshSecret), new AcceptingTunnels());
     }
 
     private static ConnectionProfile Profile(SshJumpHost jump, SshAuthMethod method, string? keyPath) =>

@@ -230,6 +230,13 @@ internal static class UiTextCatalogEn
         ("terminal.install.sqlite3", "Install the SQLite command-line shell (sqlite3)."),
         ("terminal.tunnelNotOpen", "Connect '{0}' first: its SSH tunnel must be open to start the terminal."),
 
+        // SSH host keys
+        ("ssh.hostkey.title", "Unknown SSH server"),
+        ("ssh.hostkey.body", "The server {0}:{1} presented a {2} host key that has never been seen. Check its fingerprint before trusting it."),
+        ("ssh.hostkey.trust", "Trust and connect"),
+        ("ssh.hostkey.cancel", "Cancel"),
+        ("ssh.hostkey.changed", "The identity of the SSH server {0}:{1} differs from the one remembered, so the connection was refused. Remembered: {2}. Presented: {3}. Only if the server was legitimately reinstalled, remove the entry for {0}:{1} from the known-hosts file ({4}) and connect again."),
+
         // Connections window
         ("connections.title", "Connections — SQuilL"),
         ("connections.engine", "ENGINE"),
@@ -430,6 +437,7 @@ internal static class UiTextCatalogEn
         ("issue.design.nullsBlockNotNull", "Existing NULLs make '{0}' fail to become non-nullable."),
         ("issue.design.foreignKeyTableMissing", "The foreign key '{0}' references the missing table '{1}'."),
         ("issue.design.viewsNotRecreated", "Views depending on this table are not recreated."),
+        ("issue.design.triggerMentionsColumn", "Trigger '{0}' may use the column '{1}', which is renamed or dropped: it will fail when it fires."),
         ("issue.edit.columnNull", "{0} cannot be NULL"),
         ("issue.edit.columnRequired", "{0} is required"),
         ("issue.edit.duplicateKey", "duplicate key in pending rows"),

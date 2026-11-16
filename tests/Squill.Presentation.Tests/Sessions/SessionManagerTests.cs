@@ -2,6 +2,7 @@ using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
 using Squill.Platform.Ssh;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Sessions;
 using Xunit;
 
@@ -157,7 +158,7 @@ public sealed class SessionManagerTests
         Assert.Same(next, session.Schema);
     }
 
-    private sealed class FakeStore : IProfileStore
+    internal sealed class FakeStore : IProfileStore
     {
         public string? Password { get; set; }
         public string? SshSecret { get; set; }
@@ -169,16 +170,19 @@ public sealed class SessionManagerTests
         public ValueTask<string?> GetSshSecretAsync(Guid id, CancellationToken ct) => ValueTask.FromResult(SshSecret);
     }
 
-    private sealed class FakeTunnels(List<string> log) : ISshTunnelFactory
+    internal sealed class FakeTunnels(List<string> log) : ISshTunnelFactory
     {
         public int Opened { get; private set; }
         public string? RemoteHost { get; private set; }
         public int RemotePort { get; private set; }
         public string? Secret { get; private set; }
+        public Func<SshHostKeyPrompt?, ValueTask>? OnOpen { get; set; }
 
-        public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, string remoteHost, int remotePort, CancellationToken ct)
+        public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, string remoteHost, int remotePort, SshHostKeyPrompt? prompt, CancellationToken ct)
         {
             Opened++;
+            if (OnOpen is { } onOpen)
+                onOpen(prompt).AsTask().GetAwaiter().GetResult();
             (RemoteHost, RemotePort, Secret) = (remoteHost, remotePort, secret);
             log.Add("tunnel opened");
             return ValueTask.FromResult<ISshTunnel>(new FakeTunnel(log));
@@ -196,7 +200,7 @@ public sealed class SessionManagerTests
         }
     }
 
-    private sealed class FakeProvider(List<string> log) : IDatabaseProvider
+    internal sealed class FakeProvider(List<string> log) : IDatabaseProvider
     {
         public DatabaseDialect Dialect => DatabaseDialect.PostgreSql;
         public ConnectionProfile? OpenedWith { get; private set; }

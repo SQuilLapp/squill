@@ -33,7 +33,6 @@ public static class SqlDiagnosticsProvider
 
         if (request.Schema is { } schema)
         {
-            // shortcut: scope is resolved per column reference (re-tokenizes the text), upgrade if huge scripts get slow
             foreach (var r in SqlTreeWalker.References(script))
             {
                 switch (r.Node)
@@ -81,7 +80,7 @@ public static class SqlDiagnosticsProvider
             return null;
         }
 
-        var sources = SqlScopeResolver.Resolve(script, c.Start).Sources;
+        var sources = SqlScopeResolver.Resolve(script, c.Start, withClause: false).Sources;
         if (c.Qualifier is { } qualifier)
         {
             var matched = sources.Where(s => SchemaCompletionProvider.Matches(s, [.. qualifier.Split('.')])).ToList();

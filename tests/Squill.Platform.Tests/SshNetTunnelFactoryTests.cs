@@ -24,6 +24,6 @@ public sealed class SshNetTunnelFactoryTests
     public async Task OpenAsync_rejects_invalid_arguments_before_connecting(SshTunnelSettings settings, string host, int port)
     {
         await Assert.ThrowsAsync<ArgumentException>(async () =>
-            await new SshNetTunnelFactory().OpenAsync(settings, null, host, port, TestContext.Current.CancellationToken));
+            await new SshNetTunnelFactory(new InMemoryKnownHostsStore()).OpenAsync(settings, null, host, port, null, TestContext.Current.CancellationToken));
     }
 }
