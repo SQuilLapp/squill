@@ -1,4 +1,8 @@
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.VisualTree;
+using Squill.App.Avalonia.Controls;
 using Avalonia.Headless;
 using Squill.App.Avalonia.Editors;
 using Squill.App.Avalonia.Views;
@@ -116,5 +120,46 @@ public sealed class FilterBarUiTests
         Assert.False(bar.FindControl<Button>("AddFilter")!.IsEnabled);
         Assert.False(bar.FindControl<TextBox>("Search")!.IsEnabled);
         return Task.CompletedTask;
+    });
+
+    [Fact]
+    public Task Sort_SetsTheArrowStateOnTheCanvas() => RunAsync((view, tab) =>
+    {
+        var canvas = view.FindControl<DataGridView>("ResultGrid")!.Canvas;
+        Assert.Equal(-1, canvas.SortColumn);
+
+        tab.SelectedResult!.View!.SetSort(new GridSort(1, true));
+
+        Assert.Equal(1, canvas.SortColumn);
+        Assert.True(canvas.SortDescending);
+        return Task.CompletedTask;
+    });
+
+    [Fact]
+    public Task MenuRequest_OpensTheMenuOfThatColumn_AndApplyAddsOneInFilter() => RunAsync(async (view, tab) =>
+    {
+        var canvas = view.FindControl<DataGridView>("ResultGrid")!.Canvas;
+        var state = tab.SelectedResult!.View!;
+        canvas.Selection.SelectCell(0, 1, false);
+        canvas.Focus();
+
+        canvas.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Apps });
+
+        Assert.Equal(1, canvas.MenuColumn);
+        var menu = Assert.IsType<StackPanel>(view.ColumnMenuContent);
+        var values = menu.Children.OfType<ListBox>().Single();
+        for (var i = 0; i < 20 && values.ItemsSource is not IReadOnlyList<ValueItem> { Count: > 0 }; i++)
+        {
+            await Task.Delay(50);
+            global::Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        }
+
+        var items = Assert.IsAssignableFrom<IReadOnlyList<ValueItem>>(values.ItemsSource);
+        items[0].IsChecked = false;
+        menu.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "Apply").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+        var chip = Assert.Single(state.Filters);
+        Assert.Equal(GridFilterOperator.In, chip.Filter.Operator);
+        Assert.Contains(1, canvas.FilteredColumns);
     });
 }

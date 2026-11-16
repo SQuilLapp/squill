@@ -1,6 +1,6 @@
 # P17-09 - Avalonia head: header marks and the column menu
 
-Status: todo
+Status: done
 Depends on: P17-07, P17-08
 
 ## Goal
@@ -15,7 +15,7 @@ The Avalonia custom-drawn grid draws the sort arrow, funnel and chevron and open
 - Freeze / hide / fit width.
 
 ## Tasks
-- [ ] Header marks, chevron hit testing, event, flyout and bindings, headless test.
+- [x] Header marks, chevron hit testing, event, flyout and bindings, headless test.
 
 ## Acceptance criteria
 - Common acceptance with `Squill.slnx`, Avalonia AOT publish with zero IL2xxx/IL3xxx, run once and close.
