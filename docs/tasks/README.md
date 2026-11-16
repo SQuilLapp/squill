@@ -320,7 +320,7 @@ Depends on: <card ids, ranges allowed>
 | [P16-05](phase-16/P16-05-presentation-ssh-host-key-prompt.md) | Presentation: the host key question and the host key errors | P16-04 | done |
 | [P16-06](phase-16/P16-06-winui-ssh-host-key-dialog.md) | WinUI head: SSH host key dialog | P16-05 | done |
 | [P16-07](phase-16/P16-07-avalonia-ssh-host-key-dialog.md) | Avalonia head: SSH host key dialog | P16-06 | done |
-| [P16-08](phase-16/P16-08-docs-and-adr.md) | Documentation: SSH host keys ADR 0013, changelog correction and README | P16-01 ... P16-07 | todo |
+| [P16-08](phase-16/P16-08-docs-and-adr.md) | Documentation: SSH host keys ADR 0013, changelog correction and README | P16-01 ... P16-07 | done |
 
 ### Phase 9 - Visual conformance
 
@@ -380,7 +380,7 @@ Goal: a query tab can run in manual-transaction mode with explicit `Valider` / `
 - Order: vocabulary and pure logic P15-01 ... P15-03, the four providers P15-04 (SQLite, also writes the shared scenario) ... P15-07 (PostgreSQL, MySQL, SQL Server need Podman, see [verification-recipe.md](phase-11/verification-recipe.md)), Presentation P15-08 ... P15-14 (P15-11 is independent after P15-01), WinUI P15-15 / P15-16 before Avalonia P15-17 / P15-18, verification P15-19, docs P15-20.
 - Riskiest cards: P15-09 (changes how the grid commit and the designer bracket their statements; behavior on every engine must be proven), P15-06 (the MySQL probe may have to be "unknown"; stop rule in the card), P15-11 (planner estimates differ per engine; child-node rule proven on containers), P15-16 / P15-18 (`Entrée` must never confirm; window closing with an async question, nothing exists today). Bugs found by P15-19 too big for the card get `P15-21` onwards (added to this index).
 
-### Phase 16 - Debug and polish (after transactions)
+### Phase 16 - Debug and polish (after transactions) - P16-01 ... P16-08 done ([ADR 0013](../adr/0013-ssh-host-keys.md)); owner findings from P16-09 onwards
 
 Goal: fix what phases 14 and 15 left behind and what the code itself marks as a known gap (`shortcut:` comments, documented known limits), before any new mockup feature (M05 grid filter, M13 palette, M01 home and M09 ... M12 stay out of scope). Sources: `docs/poc/editor.md` (diagnostics on the UI thread), the `shortcut:` comments of `Squill.Sql`, `Squill.Platform/Ssh` and the SQLite DDL generator, and the `Staging` mismatch between the changelog and ADR 0012. The owner's own findings from hand-testing the AOT builds are added as `P16-09` onwards (and to this index); the cards above are the ones the repository alone justifies.
 

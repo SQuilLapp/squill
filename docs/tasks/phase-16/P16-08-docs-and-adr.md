@@ -1,6 +1,6 @@
 # P16-08 - Documentation: SSH host keys ADR 0013, changelog correction and README
 
-Status: todo
+Status: done
 Depends on: P16-01 ... P16-07
 
 ## Goal
@@ -16,7 +16,7 @@ Record what phase 16 changed and correct documentation that is wrong or missing 
 - New features, ticking the owner's manual checklists.
 
 ## Tasks
-- [ ] ADR, changelog, README, architecture, task index status.
+- [x] ADR, changelog, README, architecture, task index status.
 
 ## Acceptance criteria
 - Build and test green (docs only, but run them); every link in the touched files resolves (grep the new file names); `eng/release-notes.ps1` still extracts the `Unreleased` and `0.3.0` sections (run it for both).

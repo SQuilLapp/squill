@@ -23,9 +23,9 @@ To add a UI string, add the same key to `UiTextCatalogFr` and `UiTextCatalogEn` 
 | MySQL | `MySqlConnector` | compatible (publish only, not run against a server) |
 | SQL Server | `Microsoft.Data.SqlClient` | compatible (publish and startup only); the package raises IL2104/IL3053 itself |
 
-SSH tunnels (`SSH.NET`) are compatible under the same conditions (publish and startup only).
+SSH tunnels (`SSH.NET`) are compatible under the same conditions (publish and startup only). The jump host key is checked against `known-hosts.json` (`IKnownHostsStore`): the first key is shown with its fingerprint and remembered on your yes, a changed key is refused ([ADR 0013](docs/adr/0013-ssh-host-keys.md)).
 
-Phase 11 ran the four engines against real servers (Testcontainers). The feature-by-engine support matrix, what is not supported (MariaDB, Azure SQL, sequences, user-defined types, ...) and the manual window checks still pending are in [ADR 0008](docs/adr/0008-engine-parity.md). Tests and how to run them: [docs/testing.md](docs/testing.md).
+Oracle exists only as a proof of concept through a separate bridge process ([docs/poc/oracle-bridge.md](docs/poc/oracle-bridge.md)). Phase 11 ran the four engines against real servers (Testcontainers). The feature-by-engine support matrix, what is not supported (MariaDB, Azure SQL, sequences, user-defined types, ...) and the manual window checks still pending are in [ADR 0008](docs/adr/0008-engine-parity.md). Tests and how to run them: [docs/testing.md](docs/testing.md).
 
 SQL completion (phase 14): after `JOIN` the popup offers each table with its alias and the `ON` condition built from the foreign keys, inserts schema-qualified names where needed, follows the keyword-case setting, and has statement snippets (`sel`, `ins`, `upd`, `del`, `cte`, `crt`). Decisions and limits: [ADR 0011](docs/adr/0011-sql-completion.md).
 
@@ -68,6 +68,7 @@ See [ADR 0004](docs/adr/0004-schema-designer.md) for the design and what is not 
 
 Results of a plain `SELECT` over one table can be edited in the grid: change cells, add rows, delete rows, then commit or discard. The primary key must be selected; otherwise the result is read-only and the panel says why (join, view, `DISTINCT` / `GROUP BY` / `WITH`, no primary key, key column not selected). The generated `INSERT`, `UPDATE` and `DELETE` statements can be previewed before they run, and all changes are applied in one transaction (MySQL / MariaDB engines without transactions excepted).
 
+- The cell editor follows the column type, with true / false / NULL and date pickers and a `DEFAULT` choice; a long or JSON value opens a preview pane on the right. The explorer can show only some tables ("Choose tables", saved per connection and database through `ITableFilterStore`).
 - Updates and deletes match the primary key only: if someone else changed other columns of the row meanwhile, your commit overwrites them (last write wins). A row deleted by someone else makes the commit fail and roll back.
 - The DML tests for PostgreSQL, MySQL / MariaDB and SQL Server need Docker and have never been run, and the edit flow was not driven by hand in either head.
 
@@ -145,7 +146,7 @@ Dependency graph: `Core` <- `Data` <- `Data.<Driver>`; `Core` <- `Sql`; `Core` <
 | `src/Squill.Data` | Provider contracts (`IDatabaseProvider`, connections, result readers, optional `IPlanReader`) and registry |
 | `src/Squill.Data.Sqlite`, `.Postgres`, `.MySql`, `.SqlServer` | One provider per database (execute, stream, read schema) |
 | `src/Squill.Sql` | Per-dialect tokenizers, hand-written parser, completion, diagnostics, hover, signature help, formatter, highlighter |
-| `src/Squill.Platform` | Secret stores (DPAPI, libsecret, Keychain), app paths, profile/history/snippet/settings stores, SSH tunnel |
+| `src/Squill.Platform` | Secret stores (DPAPI, libsecret, Keychain), app paths, profile/history/snippet/settings/table-filter stores, single-instance guard (`SingleInstance`), SSH tunnel and known-hosts store |
 | `src/Squill.Presentation` | UI-framework-free view-models, composition root, terminal launcher |
 | `src/Squill.App.Shared` | Source shared (linked) by both heads, such as the LoomTerminal host |
 | `src/Squill.App.WinUI` | WinUI 3 head (Windows, Win2D grid) |
