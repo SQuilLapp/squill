@@ -321,7 +321,7 @@ Depends on: <card ids, ranges allowed>
 | [P16-06](phase-16/P16-06-winui-ssh-host-key-dialog.md) | WinUI head: SSH host key dialog | P16-05 | done |
 | [P16-07](phase-16/P16-07-avalonia-ssh-host-key-dialog.md) | Avalonia head: SSH host key dialog | P16-06 | done |
 | [P16-08](phase-16/P16-08-docs-and-adr.md) | Documentation: SSH host keys ADR 0013, changelog correction and README | P16-01 ... P16-07 | done |
-| [P17-01](phase-17/P17-01-presentation-grid-filter-model.md) | Presentation: grid filter model and matching | none | todo |
+| [P17-01](phase-17/P17-01-presentation-grid-filter-model.md) | Presentation: grid filter model and matching | none | done |
 | [P17-02](phase-17/P17-02-presentation-grid-sort-and-value-counts.md) | Presentation: grid sort and column value counts | P17-01 | todo |
 | [P17-03](phase-17/P17-03-presentation-filtered-grid-view.md) | Presentation: the filtered and sorted grid view (risky) | P17-01, P17-02 | todo |
 | [P17-04](phase-17/P17-04-presentation-result-view-state.md) | Presentation: filter, search and sort state on the result (risky) | P17-03 | todo |

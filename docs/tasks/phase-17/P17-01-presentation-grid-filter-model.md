@@ -1,6 +1,6 @@
 # P17-01 - Presentation: grid filter model and matching
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -17,8 +17,8 @@ A pure model of one grid filter (column, operator, operand) with the matching ru
 - Any view, sort or UI (P17-02 ...), the `OR` of filters, regular expressions, localizing the operator names for the filter editor (P17-05 owns their `UiText` keys).
 
 ## Tasks
-- [ ] `GridFilterOperator`, `GridFilter`, `GridFilterMatcher` (operators per column, `TryCreate`, compiled matching), `GridFilterText`.
-- [ ] Tests `tests/Squill.Presentation.Tests/Results/GridFilterMatcherTests.cs` and `GridFilterTextTests.cs`: every operator on text, integer, decimal, date-time, boolean and byte-array columns; NULL cells (only `IsNull` / `In` with null match; `NotEquals` does not); case-insensitive text; accented text; an invalid typed operand returns an error and no filter; `In` with a null entry; chip text with 1, 3 and 5 values and a quote inside a string.
+- [x] `GridFilterOperator`, `GridFilter`, `GridFilterMatcher` (operators per column, `TryCreate`, compiled matching), `GridFilterText`.
+- [x] Tests `tests/Squill.Presentation.Tests/Results/GridFilterMatcherTests.cs` and `GridFilterTextTests.cs`: every operator on text, integer, decimal, date-time, boolean and byte-array columns; NULL cells (only `IsNull` / `In` with null match; `NotEquals` does not); case-insensitive text; accented text; an invalid typed operand returns an error and no filter; `In` with a null entry; chip text with 1, 3 and 5 values and a quote inside a string.
 
 ## Acceptance criteria
 - Common acceptance of the recipe (section 7), no head touched.
