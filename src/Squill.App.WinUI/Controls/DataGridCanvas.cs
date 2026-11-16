@@ -30,6 +30,8 @@ public sealed partial class DataGridCanvas : Grid
     private const long DoubleClickMs = 500;
     private const float StateBarWidth = 3;
     private const float KeyGlyphWidth = 14;
+    private const float MarkWidth = 14;
+    private const float ChevronZone = 20;
 
     /// <summary>Width of the row-number column drawn left of the data columns.</summary>
     internal const double GutterWidth = 36;
@@ -51,6 +53,12 @@ public sealed partial class DataGridCanvas : Grid
     private Point _lastPressPoint;
     private GridEditController? _edit;
     private Faces? _faces;
+    private int _hoverColumn = -1;
+    private bool _hoverChevron;
+    private int _sortColumn = -1;
+    private bool _sortDescending;
+    private HashSet<int> _filteredColumns = [];
+    private int _menuColumn = -1;
 
     /// <summary>Creates the canvas, reading the row height from the token resources.</summary>
     public DataGridCanvas()
@@ -65,6 +73,7 @@ public sealed partial class DataGridCanvas : Grid
         _canvas.PointerPressed += OnPointerPressed;
         _canvas.PointerMoved += OnPointerMoved;
         _canvas.PointerReleased += OnPointerReleased;
+        _canvas.PointerExited += (_, _) => SetHover(-1, false);
         _canvas.IsTabStop = true;
         _canvas.KeyDown += OnKeyDown;
         _canvas.CharacterReceived += OnCharacterReceived;
@@ -111,6 +120,58 @@ public sealed partial class DataGridCanvas : Grid
             _canvas.Invalidate();
         }
     }
+
+    /// <summary>Raised when the user asks for the menu of a column (chevron, right click on the header, or the menu key).</summary>
+    public event EventHandler<ColumnMenuRequestedEventArgs>? ColumnMenuRequested;
+
+    /// <summary>Gets or sets the column whose header shows a sort arrow, or -1.</summary>
+    public int SortColumn
+    {
+        get => _sortColumn;
+        set
+        {
+            _sortColumn = value;
+            _canvas.Invalidate();
+        }
+    }
+
+    /// <summary>Gets or sets whether the sort arrow points down.</summary>
+    public bool SortDescending
+    {
+        get => _sortDescending;
+        set
+        {
+            _sortDescending = value;
+            _canvas.Invalidate();
+        }
+    }
+
+    /// <summary>Gets or sets the columns whose header shows the filter funnel.</summary>
+    public HashSet<int> FilteredColumns
+    {
+        get => _filteredColumns;
+        set
+        {
+            _filteredColumns = value;
+            _canvas.Invalidate();
+        }
+    }
+
+    /// <summary>Gets or sets the column whose menu is open (its chevron stays visible), or -1.</summary>
+    public int MenuColumn
+    {
+        get => _menuColumn;
+        set
+        {
+            _menuColumn = value;
+            _canvas.Invalidate();
+        }
+    }
+
+    /// <summary>Gets the point under a column header where its menu is anchored, in surface coordinates.</summary>
+    /// <param name="column">Column index.</param>
+    /// <returns>The left edge of the header cell, at the header's bottom edge.</returns>
+    public Point MenuAnchor(int column) => new(Math.Max(0, GutterWidth + _layout.ColumnLeft(column) - _scrollX), _layout.HeaderHeight);
 
     /// <summary>Gets or sets the selection; share the one given to <see cref="EditController"/> when editing.</summary>
     public GridSelection Selection { get; set; } = new();
@@ -299,11 +360,56 @@ public sealed partial class DataGridCanvas : Grid
 
             var name = TextLayout(ds, info.Name, Face.UiSemibold);
             ds.DrawTextLayout(name, headerX, (headerHeight - (float)name.LayoutBounds.Height) / 2, c.HeaderText);
+            var marksWidth = DrawMarks(ds, c, col, headerX + (float)name.LayoutBounds.Width + 4, headerHeight);
             var type = TextLayout(ds, info.DataTypeName, Face.MonoSmall);
-            ds.DrawTextLayout(type, (float)GridEditGeometry.HeaderTypeX(headerX, name.LayoutBounds.Width), (headerHeight - (float)type.LayoutBounds.Height) / 2, c.Muted);
+            ds.DrawTextLayout(type, (float)GridEditGeometry.HeaderTypeX(headerX, name.LayoutBounds.Width + marksWidth), (headerHeight - (float)type.LayoutBounds.Height) / 2, c.Muted);
+            if (col == _hoverColumn || col == _menuColumn)
+            {
+                DrawChevron(ds, c, left + colWidth - ChevronZone, headerHeight, col == _menuColumn || _hoverChevron);
+            }
         }
 
         ds.DrawLine(left + colWidth - 0.5f, 0, left + colWidth - 0.5f, height, c.BorderSubtle);
+    }
+
+    // Sort arrow then filter funnel after the column name; returns the width they take.
+    private float DrawMarks(CanvasDrawingSession ds, GridColors c, int col, float x, float headerHeight)
+    {
+        var used = 0f;
+        var cy = headerHeight / 2;
+        if (col == _sortColumn)
+        {
+            var ax = x + 5;
+            var (tip, tail) = _sortDescending ? (cy + 5, cy - 5) : (cy - 5, cy + 5);
+            var wing = _sortDescending ? -3 : 3;
+            ds.DrawLine(ax, tail, ax, tip, c.Text, 1.5f);
+            ds.DrawLine(ax - 3, tip + wing, ax, tip, c.Text, 1.5f);
+            ds.DrawLine(ax + 3, tip + wing, ax, tip, c.Text, 1.5f);
+            used += MarkWidth;
+        }
+
+        if (_filteredColumns.Contains(col))
+        {
+            var fx = x + used;
+            using var funnel = CanvasGeometry.CreatePolygon(ds, [new Vector2(fx, cy - 5), new Vector2(fx + 10, cy - 5), new Vector2(fx + 6, cy), new Vector2(fx + 6, cy + 5), new Vector2(fx + 4, cy + 4), new Vector2(fx + 4, cy)]);
+            ds.FillGeometry(funnel, c.Accent);
+            used += MarkWidth;
+        }
+
+        return used;
+    }
+
+    private static void DrawChevron(CanvasDrawingSession ds, GridColors c, float x, float headerHeight, bool hot)
+    {
+        var cy = headerHeight / 2;
+        if (hot)
+        {
+            ds.FillRoundedRectangle(x + 1, cy - 9, ChevronZone - 4, 18, 4, 4, c.Selection);
+        }
+
+        var mx = x + ((ChevronZone - 2) / 2);
+        ds.DrawLine(mx - 3, cy - 1.5f, mx, cy + 1.5f, c.Text, 1.5f);
+        ds.DrawLine(mx, cy + 1.5f, mx + 3, cy - 1.5f, c.Text, 1.5f);
     }
 
     private void DrawGutter(CanvasDrawingSession ds, GridColors c, long firstRow, long endRow, float height)
@@ -411,7 +517,7 @@ public sealed partial class DataGridCanvas : Grid
         for (var col = 0; col < widths.Length; col++)
         {
             var info = source.Columns[col];
-            var max = TextLayout(creator, info.Name, Face.UiSemibold).LayoutBounds.Width + 6 + TextLayout(creator, info.DataTypeName, Face.MonoSmall).LayoutBounds.Width + KeyGlyphWidth;
+            var max = TextLayout(creator, info.Name, Face.UiSemibold).LayoutBounds.Width + 6 + TextLayout(creator, info.DataTypeName, Face.MonoSmall).LayoutBounds.Width + KeyGlyphWidth + ChevronZone;
             for (var row = 0; row < sample; row++)
             {
                 var value = CellFormatter.FormatDisplay(source.GetCell(row, col), info) ?? "NULL";
@@ -491,6 +597,14 @@ public sealed partial class DataGridCanvas : Grid
         var shift = e.KeyModifiers.HasFlag(VirtualKeyModifiers.Shift);
         if (point.Y <= _layout.HeaderHeight)
         {
+            var (hit, onChevron) = HeaderHit(point);
+            if (hit >= 0 && (onChevron || e.GetCurrentPoint(_canvas).Properties.IsRightButtonPressed))
+            {
+                ColumnMenuRequested?.Invoke(this, new ColumnMenuRequestedEventArgs(hit, MenuAnchor(hit)));
+                e.Handled = true;
+                return;
+            }
+
             var clicked = point.X < GutterWidth ? -1 : _layout.ColumnAt(point.X - GutterWidth + _scrollX);
             if (clicked >= 0)
             {
@@ -535,8 +649,38 @@ public sealed partial class DataGridCanvas : Grid
             return;
         }
 
+        var (hover, chevron) = point.Y <= _layout.HeaderHeight ? HeaderHit(point) : (-1, false);
+        SetHover(hover, chevron);
         var onHandle = point.Y <= _layout.HeaderHeight && _layout.ResizeHandleAt(point.X - GutterWidth, _scrollX, ResizeTolerance) >= 0;
         ProtectedCursor = onHandle ? InputSystemCursor.Create(InputSystemCursorShape.SizeWestEast) : null;
+    }
+
+    // The column under a header point and whether the point is in its chevron zone (the resize handle wins over the zone).
+    private (int Column, bool Chevron) HeaderHit(Point point)
+    {
+        if (point.X < GutterWidth || _layout.ResizeHandleAt(point.X - GutterWidth, _scrollX, ResizeTolerance) >= 0)
+        {
+            return (-1, false);
+        }
+
+        var column = _layout.ColumnAt(point.X - GutterWidth + _scrollX);
+        if (column < 0)
+        {
+            return (-1, false);
+        }
+
+        var right = GutterWidth + _layout.ColumnLeft(column) + _layout.ColumnWidth(column) - _scrollX;
+        return (column, point.X >= right - ChevronZone);
+    }
+
+    private void SetHover(int column, bool chevron)
+    {
+        if (column != _hoverColumn || chevron != _hoverChevron)
+        {
+            _hoverColumn = column;
+            _hoverChevron = chevron;
+            _canvas.Invalidate();
+        }
     }
 
     private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -558,6 +702,20 @@ public sealed partial class DataGridCanvas : Grid
 
         var ctrl = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
         var shift = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+        if (e.Key == VirtualKey.Application || (shift && e.Key == VirtualKey.F10))
+        {
+            // The keyboard path to the column menu: the active column, or the first one.
+            var target = Selection.HasSelection ? Selection.ActiveColumn : 0;
+            if (target >= 0 && target < source.Columns.Count)
+            {
+                EnsureVisible(Selection.ActiveRow, target);
+                ColumnMenuRequested?.Invoke(this, new ColumnMenuRequestedEventArgs(target, MenuAnchor(target)));
+                e.Handled = true;
+            }
+
+            return;
+        }
+
         if (ctrl && e.Key == VirtualKey.C)
         {
             if (Selection.HasSelection)
@@ -745,4 +903,16 @@ public sealed partial class DataGridCanvas : Grid
     private sealed record Faces(string Ui, string Mono, string MonoItalic, float MonoSize);
 
     private sealed record GridColors(Color Surface, Color Raised, Color Text, Color HeaderText, Color Muted, Color Border, Color BorderSubtle, Color Selection, Color Accent, Color Success, Color Danger, Color CellNull, Color CellModified, Color CellAdded, Color CellDeleted);
+}
+
+/// <summary>Data of <see cref="DataGridCanvas.ColumnMenuRequested"/>.</summary>
+/// <param name="column">The column whose menu is requested.</param>
+/// <param name="anchor">Where the menu hangs, in surface coordinates.</param>
+public sealed class ColumnMenuRequestedEventArgs(int column, Point anchor) : EventArgs
+{
+    /// <summary>Gets the column whose menu is requested.</summary>
+    public int Column { get; } = column;
+
+    /// <summary>Gets where the menu hangs, in surface coordinates.</summary>
+    public Point Anchor { get; } = anchor;
 }

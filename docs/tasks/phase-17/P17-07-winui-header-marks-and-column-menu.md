@@ -1,6 +1,6 @@
 # P17-07 - WinUI head: header marks and the column menu in the Win2D grid
 
-Status: todo
+Status: done
 Depends on: P17-06
 
 ## Goal
@@ -17,8 +17,8 @@ The Win2D grid draws the sort arrow, the filter funnel and a chevron in the colu
 - Freeze / hide / fit width, Avalonia (P17-09).
 
 ## Tasks
-- [ ] Header marks in the Win2D grid, chevron hit testing, `ColumnMenuRequested`, flyout in `QueryTabView`.
-- [ ] Tests where the head has a pattern; the rest under "To check by hand".
+- [x] Header marks in the Win2D grid, chevron hit testing, `ColumnMenuRequested`, flyout in `QueryTabView`.
+- [x] Tests where the head has a pattern; the rest under "To check by hand".
 
 ## Acceptance criteria
 - Common acceptance with `Squill.Windows.slnx`, WinUI AOT publish with zero IL2xxx/IL3xxx, exe run once and closed.

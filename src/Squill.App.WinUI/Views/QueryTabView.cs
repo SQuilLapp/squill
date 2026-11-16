@@ -89,6 +89,7 @@ public sealed partial class QueryTabView : UserControl
     private QueryTabViewModel? _tab;
     private ResultViewModel? _result;
     private ResultViewState? _viewState;
+    private readonly ColumnMenu _columnMenu = new();
 
     /// <summary>Creates the view.</summary>
     public QueryTabView()
@@ -131,6 +132,7 @@ public sealed partial class QueryTabView : UserControl
             e.Handled = true;
         };
         results.KeyboardAccelerators.Add(find);
+        _grid.Canvas.ColumnMenuRequested += OnColumnMenuRequested;
         Grid.SetRow(_filterBar, 1);
         Grid.SetRow(_editBar, 2);
         Grid.SetRow(_progress, 3);
@@ -653,19 +655,48 @@ public sealed partial class QueryTabView : UserControl
         if (!ReferenceEquals(state, _viewState))
         {
             if (_viewState is not null)
+            {
                 _viewState.PropertyChanged -= OnViewStateChanged;
+                _viewState.Filters.CollectionChanged -= OnViewFiltersChanged;
+            }
+
             _viewState = state;
             if (state is not null)
+            {
                 state.PropertyChanged += OnViewStateChanged;
+                state.Filters.CollectionChanged += OnViewFiltersChanged;
+            }
         }
 
         _filterBar.Attach(state);
+        ShowHeaderMarks();
     }
 
     private void OnViewStateChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(ResultViewState.FooterText))
             RefreshFooter();
+        else if (e.PropertyName == nameof(ResultViewState.Sort))
+            ShowHeaderMarks();
+    }
+
+    private void OnViewFiltersChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => ShowHeaderMarks();
+
+    // The grid control only gets column numbers; it never sees the filter model.
+    private void ShowHeaderMarks()
+    {
+        var canvas = _grid.Canvas;
+        canvas.SortColumn = _viewState?.Sort?.Column ?? -1;
+        canvas.SortDescending = _viewState?.Sort?.Descending ?? false;
+        canvas.FilteredColumns = _viewState is null ? [] : [.. _viewState.Filters.Select(c => c.Filter.Column)];
+    }
+
+    private void OnColumnMenuRequested(object? sender, ColumnMenuRequestedEventArgs e)
+    {
+        if (_viewState?.OpenColumnMenu(e.Column) is not { } menu)
+            return;
+        var hasFilter = _viewState.Filters.Any(c => c.Filter.Column == e.Column);
+        _columnMenu.Show(_grid.Canvas, menu, hasFilter, e.Anchor);
     }
 
     private void ShowEditBar()
