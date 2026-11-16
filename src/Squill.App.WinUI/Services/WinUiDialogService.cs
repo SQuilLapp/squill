@@ -22,6 +22,9 @@ internal sealed class WinUiDialogService : IDialogService
         await ShowAsync(title, message, null, UiText.Get("dialog.ok"), UiText.Get("dialog.cancel")) == ContentDialogResult.Primary;
 
     /// <inheritdoc />
+    public ValueTask<bool> ConfirmSshHostKeyAsync(Squill.Platform.Ssh.SshHostKeyRequest request) => ValueTask.FromResult(false); // temporary: P16-06 draws the dialog
+
+    /// <inheritdoc />
     public async ValueTask<Squill.Presentation.Safety.ProductionConfirmationResult> ConfirmProductionAsync(Squill.Presentation.Safety.ProductionConfirmationRequest request) =>
         _window?.Content is FrameworkElement { XamlRoot: not null } root
             ? await Views.ProductionConfirmDialog.ShowAsync(root, request)

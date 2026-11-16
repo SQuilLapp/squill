@@ -27,6 +27,16 @@ internal sealed class FakeDialogService : IDialogService
         return ValueTask.FromResult(ProductionResult);
     }
 
+    public bool SshHostKeyResult { get; set; }
+
+    public List<Squill.Platform.Ssh.SshHostKeyRequest> SshHostKeyRequests { get; } = [];
+
+    public ValueTask<bool> ConfirmSshHostKeyAsync(Squill.Platform.Ssh.SshHostKeyRequest request)
+    {
+        SshHostKeyRequests.Add(request);
+        return ValueTask.FromResult(SshHostKeyResult);
+    }
+
     public Queue<TransactionChoice> TransactionChoices { get; } = [];
 
     public List<TransactionCloseRequest> TransactionRequests { get; } = [];

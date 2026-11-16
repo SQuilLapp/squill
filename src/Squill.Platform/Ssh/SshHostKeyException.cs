@@ -18,9 +18,16 @@ public sealed class SshHostKeyChangedException : SshHostKeyException
     /// <summary>Initializes the exception.</summary>
     /// <param name="request">The key the server presented.</param>
     /// <param name="location">Where the remembered keys are kept.</param>
-    public SshHostKeyChangedException(SshHostKeyRequest request, string location)
-        : base(request, $"The host key of {request.Host}:{request.Port} changed ({request.Algorithm} {request.Fingerprint}). Remembered keys are in {location}.") =>
+    /// <param name="storedFingerprint">The remembered fingerprint, when known.</param>
+    public SshHostKeyChangedException(SshHostKeyRequest request, string location, string? storedFingerprint = null)
+        : base(request, $"The host key of {request.Host}:{request.Port} changed ({request.Algorithm} {request.Fingerprint}). Remembered keys are in {location}.")
+    {
         Location = location;
+        StoredFingerprint = storedFingerprint;
+    }
+
+    /// <summary>Gets the remembered fingerprint, when known.</summary>
+    public string? StoredFingerprint { get; }
 
     /// <summary>Gets where the remembered keys are kept.</summary>
     public string Location { get; }

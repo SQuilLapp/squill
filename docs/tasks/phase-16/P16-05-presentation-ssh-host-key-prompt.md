@@ -1,6 +1,6 @@
 # P16-05 - Presentation: the host key question and the host key errors
 
-Status: todo
+Status: done
 Depends on: P16-04
 
 ## Goal
@@ -17,9 +17,9 @@ A first connection through an SSH tunnel asks the user to trust the host key (sh
 - The dialogs themselves (P16-06, P16-07), a "forget host key" button in the connection editor.
 
 ## Tasks
-- [ ] `IDialogService` member, temporary head implementations, fakes, `AppComposition` and `SessionManager` wiring.
-- [ ] Catalog keys (fr, en) and the error mapping.
-- [ ] Tests (`tests/Squill.Presentation.Tests/Sessions/SshSessionTests.cs` pattern, fake tunnel factory that raises the three outcomes): first use accepted opens the session, declined leaves no session and no error banner, changed key shows the localized message with both fingerprints and the file path in French and English, a non-SSH profile never calls the prompt.
+- [x] `IDialogService` member, temporary head implementations, fakes, `AppComposition` and `SessionManager` wiring.
+- [x] Catalog keys (fr, en) and the error mapping.
+- [x] Tests (`tests/Squill.Presentation.Tests/Sessions/SshSessionTests.cs` pattern, fake tunnel factory that raises the three outcomes): first use accepted opens the session, declined leaves no session and no error banner, changed key shows the localized message with both fingerprints and the file path in French and English, a non-SSH profile never calls the prompt.
 
 ## Acceptance criteria
 - Common acceptance, both solutions build (`Squill.Windows.slnx` for WinUI), localization guards green.

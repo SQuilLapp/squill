@@ -56,7 +56,7 @@ public sealed class SshNetTunnelFactory(IKnownHostsStore store) : ISshTunnelFact
             port?.Dispose();
             client.Dispose();
             throw verdict == HostKeyVerdict.Changed
-                ? new SshHostKeyChangedException(presented, store.Location)
+                ? new SshHostKeyChangedException(presented, store.Location, await store.FindAsync(presented.Host, presented.Port, presented.Algorithm, CancellationToken.None).ConfigureAwait(false))
                 : new SshHostKeyRejectedException(presented);
         }
         catch

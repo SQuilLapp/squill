@@ -38,6 +38,11 @@ public interface IDialogService
         IReadOnlyList<string> names,
         IReadOnlyDictionary<string, ParameterValue> defaults);
 
+    /// <summary>Asks whether to trust the host key an SSH server presented for the first time.</summary>
+    /// <param name="request">The host, port, algorithm and fingerprint of the key.</param>
+    /// <returns><see langword="true"/> to trust the key and remember it.</returns>
+    ValueTask<bool> ConfirmSshHostKeyAsync(Squill.Platform.Ssh.SshHostKeyRequest request);
+
     /// <summary>Asks the production confirmation (mockup M15) before a modifying statement is sent to a production connection.</summary>
     /// <param name="request">The localized content; the head draws it and adds nothing.</param>
     /// <returns>Whether the user confirmed and whether the transaction option was checked.</returns>

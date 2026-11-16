@@ -208,6 +208,8 @@ public static class QueryFlowScenario
 
         public string? SavePath { get; set; }
 
+        public ValueTask<bool> ConfirmSshHostKeyAsync(Squill.Platform.Ssh.SshHostKeyRequest request) => ValueTask.FromResult(false);
+
         public ValueTask<Squill.Presentation.Safety.ProductionConfirmationResult> ConfirmProductionAsync(Squill.Presentation.Safety.ProductionConfirmationRequest request) =>
             ValueTask.FromResult(new Squill.Presentation.Safety.ProductionConfirmationResult(true, false));
 
