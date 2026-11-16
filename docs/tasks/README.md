@@ -319,7 +319,7 @@ Depends on: <card ids, ranges allowed>
 | [P16-04](phase-16/P16-04-platform-ssh-known-hosts.md) | Platform: SSH host keys are checked and remembered | none | done |
 | [P16-05](phase-16/P16-05-presentation-ssh-host-key-prompt.md) | Presentation: the host key question and the host key errors | P16-04 | done |
 | [P16-06](phase-16/P16-06-winui-ssh-host-key-dialog.md) | WinUI head: SSH host key dialog | P16-05 | done |
-| [P16-07](phase-16/P16-07-avalonia-ssh-host-key-dialog.md) | Avalonia head: SSH host key dialog | P16-06 | todo |
+| [P16-07](phase-16/P16-07-avalonia-ssh-host-key-dialog.md) | Avalonia head: SSH host key dialog | P16-06 | done |
 | [P16-08](phase-16/P16-08-docs-and-adr.md) | Documentation: SSH host keys ADR 0013, changelog correction and README | P16-01 ... P16-07 | todo |
 
 ### Phase 9 - Visual conformance

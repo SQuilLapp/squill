@@ -90,6 +90,47 @@ public sealed class TransactionDialogTests
         return Task.CompletedTask;
     });
 
+    private static readonly Squill.Platform.Ssh.SshHostKeyRequest HostKey = new("db.example.com", 22, "ssh-ed25519", "SHA256:abc");
+
+    [Fact]
+    public Task SshHostKey_CancelIsTheDefault_AndTrustOnlyReactsToAClick() => Headless.Session.Dispatch(() =>
+    {
+        var window = new SshHostKeyWindow(HostKey);
+        Assert.True(window.Cancel.IsDefault);
+        Assert.True(window.Cancel.IsCancel);
+        Assert.False(window.Trust.IsDefault);
+        Assert.False(window.Trust.IsCancel);
+        return Task.CompletedTask;
+    }, TestContext.Current.CancellationToken);
+
+    [Theory]
+    [InlineData(Key.Enter)]
+    [InlineData(Key.Escape)]
+    public Task SshHostKey_EnterAndEscapeCancel(Key key) => Headless.Session.Dispatch(() =>
+    {
+        var window = new SshHostKeyWindow(HostKey);
+        window.Show();
+        Press(window.Trust, key);
+        Assert.False(window.Trusted);
+        Assert.False(window.IsVisible);
+        return Task.CompletedTask;
+    }, TestContext.Current.CancellationToken);
+
+    [Fact]
+    public Task SshHostKey_TrustClickTrusts_AndClosingDoesNot() => Headless.Session.Dispatch(() =>
+    {
+        var trust = new SshHostKeyWindow(HostKey);
+        trust.Show();
+        trust.Trust.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Assert.True(trust.Trusted);
+
+        var closed = new SshHostKeyWindow(HostKey);
+        closed.Show();
+        closed.Close();
+        Assert.False(closed.Trusted);
+        return Task.CompletedTask;
+    }, TestContext.Current.CancellationToken);
+
     private static TransactionCloseRequest Ask(TransactionState state) =>
         new("c", ConnectionEnvironment.Production, "db", state, 2, ["INSERT INTO t VALUES (1)"], "Title", "Message");
 
