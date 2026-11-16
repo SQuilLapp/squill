@@ -90,6 +90,26 @@ public sealed class StatementSplitterTests
     }
 
     [Fact]
+    public void Split_MySqlDelimiterGluedToEnd_SplitsAtTheDelimiter()
+    {
+        var body = "CREATE PROCEDURE p() BEGIN SELECT 1; END";
+        Assert.Equal(
+            [body, "SELECT 2;"],
+            Split(DatabaseDialect.MySql, $"DELIMITER $$\n{body}$$\nDELIMITER ;\nSELECT 2;"));
+        Assert.Equal([body], Split(DatabaseDialect.MySql, $"DELIMITER $$\n{body} $$\nDELIMITER ;"));
+    }
+
+    [Fact]
+    public void Split_CustomDelimiterInStringOrComment_DoesNotSplit() =>
+        Assert.Equal(
+            ["SELECT '$$', 1 /* $$ */ -- $$\n, 2"],
+            Split(DatabaseDialect.MySql, "DELIMITER $$\nSELECT '$$', 1 /* $$ */ -- $$\n, 2$$"));
+
+    [Fact]
+    public void Split_DefaultDelimiterGluedToWord_StillSplits() =>
+        Assert.Equal(["a;", "b"], Split(DatabaseDialect.MySql, "a;b"));
+
+    [Fact]
     public void Split_BeginWithoutCreateObject_SplitsNormally()
     {
         Assert.Equal(["BEGIN;", "SELECT 1;", "COMMIT;"], Split(DatabaseDialect.Sqlite, "BEGIN; SELECT 1; COMMIT;"));

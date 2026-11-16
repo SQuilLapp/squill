@@ -314,7 +314,7 @@ Depends on: <card ids, ranges allowed>
 | [P15-19](phase-15/P15-19-verify-transactions.md) | End-to-end verification: transactions and production confirmation on the four engines | P15-07, P15-09, P15-11, P15-13, P15-14, P15-16, P15-18 | automated done, manual pending |
 | [P15-20](phase-15/P15-20-docs-and-adr.md) | Documentation: transactions ADR 0012, README and architecture note | P15-19 | done |
 | [P16-01](phase-16/P16-01-diagnostics-off-the-ui-thread.md) | Presentation: SQL diagnostics debounced and computed off the UI thread | none | done |
-| [P16-02](phase-16/P16-02-sql-formatter-splitter-leftovers.md) | Sql: formatter select modifiers and glued custom delimiters | none | todo |
+| [P16-02](phase-16/P16-02-sql-formatter-splitter-leftovers.md) | Sql: formatter select modifiers and glued custom delimiters | none | done |
 | [P16-03](phase-16/P16-03-sqlite-designer-trigger-warning.md) | Table designer: warn when a SQLite trigger names a renamed or dropped column | none | todo |
 | [P16-04](phase-16/P16-04-platform-ssh-known-hosts.md) | Platform: SSH host keys are checked and remembered | none | todo |
 | [P16-05](phase-16/P16-05-presentation-ssh-host-key-prompt.md) | Presentation: the host key question and the host key errors | P16-04 | todo |

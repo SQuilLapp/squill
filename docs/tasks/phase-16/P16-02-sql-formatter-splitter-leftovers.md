@@ -1,6 +1,6 @@
 # P16-02 - Sql: formatter select modifiers and glued custom delimiters
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -15,8 +15,8 @@ Close two known gaps recorded as `shortcut:` comments in `Squill.Sql`: the forma
 - `FETCH` row count in `SelectParser`, formatter style options, other dialect modifiers.
 
 ## Tasks
-- [ ] Formatter table test (`tests/Squill.Sql.Tests/Formatting/`), fix the failing rows, remove the stale comment.
-- [ ] Splitter cases in the existing splitter test class, fix, remove the comment.
+- [x] Formatter table test (`tests/Squill.Sql.Tests/Formatting/`), fix the failing rows, remove the stale comment.
+- [x] Splitter cases in the existing splitter test class, fix, remove the comment.
 
 ## Acceptance criteria
 - Common acceptance. `SqlFormatter` and splitter tests green, idempotence test included.

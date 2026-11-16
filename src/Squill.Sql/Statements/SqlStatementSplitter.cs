@@ -69,11 +69,18 @@ public static class SqlStatementSplitter
                     continue;
                 }
             }
-            else if (string.CompareOrdinal(text, token.Start, delimiter, 0, delimiter.Length) == 0)
+            else if (FindDelimiter(text, token, delimiter) is var at and >= 0)
             {
-                // shortcut: a custom delimiter glued to an identifier (END$$) is not split, only token-aligned ones are.
+                if (at > token.Start)
+                {
+                    // the tokenizer swallowed the delimiter into a word (END$$): keep the part before it
+                    start = start < 0 ? token.Start : start;
+                    end = at;
+                    count++;
+                }
+
                 Flush();
-                var delimiterEnd = token.Start + delimiter.Length;
+                var delimiterEnd = at + delimiter.Length;
                 while (i + 1 < tokens.Count && tokens[i + 1].Start < delimiterEnd)
                 {
                     i++;
@@ -160,6 +167,23 @@ public static class SqlStatementSplitter
         }
 
         return found;
+    }
+
+    // Offset of the custom delimiter at the token start, or inside a word token (END$$); -1 when absent.
+    private static int FindDelimiter(string text, Token token, string delimiter)
+    {
+        if (string.CompareOrdinal(text, token.Start, delimiter, 0, delimiter.Length) == 0)
+        {
+            return token.Start;
+        }
+
+        if (!IsWord(token))
+        {
+            return -1;
+        }
+
+        var inside = text.AsSpan(token.Start, token.Length).IndexOf(delimiter, StringComparison.Ordinal);
+        return inside < 0 ? -1 : token.Start + inside;
     }
 
     private static bool IsTrivia(Token token) =>
