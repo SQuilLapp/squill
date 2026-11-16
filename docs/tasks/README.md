@@ -313,6 +313,14 @@ Depends on: <card ids, ranges allowed>
 | [P15-18](phase-15/P15-18-avalonia-production-dialogs-and-closing.md) | Avalonia head: production confirmation window, transaction question, window closing | P15-16, P15-17 | done |
 | [P15-19](phase-15/P15-19-verify-transactions.md) | End-to-end verification: transactions and production confirmation on the four engines | P15-07, P15-09, P15-11, P15-13, P15-14, P15-16, P15-18 | automated done, manual pending |
 | [P15-20](phase-15/P15-20-docs-and-adr.md) | Documentation: transactions ADR 0012, README and architecture note | P15-19 | done |
+| [P16-01](phase-16/P16-01-diagnostics-off-the-ui-thread.md) | Presentation: SQL diagnostics debounced and computed off the UI thread | none | todo |
+| [P16-02](phase-16/P16-02-sql-formatter-splitter-leftovers.md) | Sql: formatter select modifiers and glued custom delimiters | none | todo |
+| [P16-03](phase-16/P16-03-sqlite-designer-trigger-warning.md) | Table designer: warn when a SQLite trigger names a renamed or dropped column | none | todo |
+| [P16-04](phase-16/P16-04-platform-ssh-known-hosts.md) | Platform: SSH host keys are checked and remembered | none | todo |
+| [P16-05](phase-16/P16-05-presentation-ssh-host-key-prompt.md) | Presentation: the host key question and the host key errors | P16-04 | todo |
+| [P16-06](phase-16/P16-06-winui-ssh-host-key-dialog.md) | WinUI head: SSH host key dialog | P16-05 | todo |
+| [P16-07](phase-16/P16-07-avalonia-ssh-host-key-dialog.md) | Avalonia head: SSH host key dialog | P16-06 | todo |
+| [P16-08](phase-16/P16-08-docs-and-adr.md) | Documentation: SSH host keys ADR 0013, changelog correction and README | P16-01 ... P16-07 | todo |
 
 ### Phase 9 - Visual conformance
 
@@ -371,3 +379,11 @@ Goal: a query tab can run in manual-transaction mode with explicit `Valider` / `
 - Branch: implement phase 15 on the existing branch `phase-15-transactions`; do not create another branch.
 - Order: vocabulary and pure logic P15-01 ... P15-03, the four providers P15-04 (SQLite, also writes the shared scenario) ... P15-07 (PostgreSQL, MySQL, SQL Server need Podman, see [verification-recipe.md](phase-11/verification-recipe.md)), Presentation P15-08 ... P15-14 (P15-11 is independent after P15-01), WinUI P15-15 / P15-16 before Avalonia P15-17 / P15-18, verification P15-19, docs P15-20.
 - Riskiest cards: P15-09 (changes how the grid commit and the designer bracket their statements; behavior on every engine must be proven), P15-06 (the MySQL probe may have to be "unknown"; stop rule in the card), P15-11 (planner estimates differ per engine; child-node rule proven on containers), P15-16 / P15-18 (`Entrée` must never confirm; window closing with an async question, nothing exists today). Bugs found by P15-19 too big for the card get `P15-21` onwards (added to this index).
+
+### Phase 16 - Debug and polish (after transactions)
+
+Goal: fix what phases 14 and 15 left behind and what the code itself marks as a known gap (`shortcut:` comments, documented known limits), before any new mockup feature (M05 grid filter, M13 palette, M01 home and M09 ... M12 stay out of scope). Sources: `docs/poc/editor.md` (diagnostics on the UI thread), the `shortcut:` comments of `Squill.Sql`, `Squill.Platform/Ssh` and the SQLite DDL generator, and the `Staging` mismatch between the changelog and ADR 0012. The owner's own findings from hand-testing the AOT builds are added as `P16-09` onwards (and to this index); the cards above are the ones the repository alone justifies.
+
+- Branch: implement phase 16 on the branch `phase-16-polish`; do not create another branch.
+- Order: P16-01 ... P16-04 are independent (any order); P16-05 needs P16-04; WinUI P16-06 before Avalonia P16-07; docs P16-08 last.
+- Riskiest cards: P16-04 (SSH.NET raises the host key event synchronously on the connect thread and a refused key must surface as the right exception; Docker-gated proof) and P16-01 (a stale result must never overwrite newer markers). Bugs found by the owner's manual checklists too big for a card get `P16-09` onwards.
