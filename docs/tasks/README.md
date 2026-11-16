@@ -316,7 +316,7 @@ Depends on: <card ids, ranges allowed>
 | [P16-01](phase-16/P16-01-diagnostics-off-the-ui-thread.md) | Presentation: SQL diagnostics debounced and computed off the UI thread | none | done |
 | [P16-02](phase-16/P16-02-sql-formatter-splitter-leftovers.md) | Sql: formatter select modifiers and glued custom delimiters | none | done |
 | [P16-03](phase-16/P16-03-sqlite-designer-trigger-warning.md) | Table designer: warn when a SQLite trigger names a renamed or dropped column | none | done |
-| [P16-04](phase-16/P16-04-platform-ssh-known-hosts.md) | Platform: SSH host keys are checked and remembered | none | todo |
+| [P16-04](phase-16/P16-04-platform-ssh-known-hosts.md) | Platform: SSH host keys are checked and remembered | none | done |
 | [P16-05](phase-16/P16-05-presentation-ssh-host-key-prompt.md) | Presentation: the host key question and the host key errors | P16-04 | todo |
 | [P16-06](phase-16/P16-06-winui-ssh-host-key-dialog.md) | WinUI head: SSH host key dialog | P16-05 | todo |
 | [P16-07](phase-16/P16-07-avalonia-ssh-host-key-dialog.md) | Avalonia head: SSH host key dialog | P16-06 | todo |

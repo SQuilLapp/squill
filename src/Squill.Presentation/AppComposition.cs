@@ -86,7 +86,7 @@ public static class AppComposition
         var history = new JsonQueryHistoryStore(paths);
         var settings = new JsonSettingsStore(paths);
         LanguageSetup.Apply(settings, Environment.GetEnvironmentVariable("SQUILL_LANGUAGE"), CultureInfo.CurrentUICulture);
-        var sessions = new SessionManager(platform.Providers, profiles, new SshNetTunnelFactory());
+        var sessions = new SessionManager(platform.Providers, profiles, new SshNetTunnelFactory(new JsonKnownHostsStore(paths)));
         var list = new ConnectionListViewModel(profiles, platform.Providers, platform.Dialogs);
         var workspace = new WorkspaceViewModel(
             sessions, list, history, settings, platform.Dispatcher, platform.Dialogs, platform.EditorFactory,

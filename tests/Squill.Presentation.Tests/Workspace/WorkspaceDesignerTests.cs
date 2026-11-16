@@ -306,7 +306,7 @@ public sealed class WorkspaceDesignerTests : IDisposable
 
     private sealed class FakeTunnels : ISshTunnelFactory
     {
-        public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, string remoteHost, int remotePort, CancellationToken ct) =>
+        public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, string remoteHost, int remotePort, SshHostKeyPrompt? prompt, CancellationToken ct) =>
             throw new NotSupportedException();
     }
 

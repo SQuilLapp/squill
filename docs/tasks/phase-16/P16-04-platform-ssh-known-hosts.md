@@ -1,6 +1,6 @@
 # P16-04 - Platform: SSH host keys are checked and remembered
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -15,9 +15,9 @@ Depends on: none
 - Any UI (P16-05 ... P16-07), a "forget host key" command, reading the user's OpenSSH `known_hosts`, host key algorithms preference, certificates.
 
 ## Tasks
-- [ ] Types, store, factory change, exceptions, caller updates.
-- [ ] Tests (`tests/Squill.Platform.Tests/`): store round trip and a corrupted file (treated as empty, not a crash), fingerprint format, `JsonKnownHostsStore` file location, the four decision rules through a fake key event if SSH.NET allows one, else through a small `internal` decision method `Decide(known, presented, prompt)` that the handler calls (tested table-driven); Docker-gated jump host test: first open prompts once and saves, second open does not prompt, a stored wrong fingerprint throws `SshHostKeyChangedException` and the tunnel is not open (`rtk pwsh eng/run-docker-tests.ps1 -Engine ssh`, nothing skipped, no container left).
-- [ ] AOT publish of `tools/Squill.AotProbe.SshNet` with zero IL2xxx/IL3xxx warnings.
+- [x] Types, store, factory change, exceptions, caller updates.
+- [x] Tests (`tests/Squill.Platform.Tests/`): store round trip and a corrupted file (treated as empty, not a crash), fingerprint format, `JsonKnownHostsStore` file location, the four decision rules through a fake key event if SSH.NET allows one, else through a small `internal` decision method `Decide(known, presented, prompt)` that the handler calls (tested table-driven); Docker-gated jump host test: first open prompts once and saves, second open does not prompt, a stored wrong fingerprint throws `SshHostKeyChangedException` and the tunnel is not open (`rtk pwsh eng/run-docker-tests.ps1 -Engine ssh`, nothing skipped, no container left).
+- [x] AOT publish of `tools/Squill.AotProbe.SshNet` with zero IL2xxx/IL3xxx warnings.
 
 ## Acceptance criteria
 - Common acceptance, Docker run for the SSH tests green, AOT probe publishes.

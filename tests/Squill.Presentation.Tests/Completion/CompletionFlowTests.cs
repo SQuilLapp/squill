@@ -141,6 +141,6 @@ public sealed class CompletionFlowTests : IAsyncLifetime
 
     private sealed class NoTunnels : ISshTunnelFactory
     {
-        public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, string remoteHost, int remotePort, CancellationToken ct) => throw new NotSupportedException();
+        public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, string remoteHost, int remotePort, SshHostKeyPrompt? prompt, CancellationToken ct) => throw new NotSupportedException();
     }
 }

@@ -31,7 +31,7 @@ public sealed class SessionManager(ProviderRegistry providers, IProfileStore sto
             if (profile.Ssh is { } ssh)
             {
                 var secret = await store.GetSshSecretAsync(profile.Id, ct);
-                tunnel = await tunnels.OpenAsync(ssh, secret, profile.Host ?? "", profile.Port ?? 0, ct);
+                tunnel = await tunnels.OpenAsync(ssh, secret, profile.Host ?? "", profile.Port ?? 0, null, ct);
                 effective = profile with { Host = "127.0.0.1", Port = tunnel.LocalPort };
             }
             connection = await provider.OpenAsync(effective, password, ct);

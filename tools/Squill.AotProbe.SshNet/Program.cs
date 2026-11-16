@@ -1,5 +1,6 @@
 using System.Globalization;
 using Squill.Core;
+using Squill.Platform;
 using Squill.Platform.Ssh;
 
 try
@@ -11,7 +12,7 @@ try
     }
 
     var settings = new SshTunnelSettings(args[0], int.Parse(args[1], CultureInfo.InvariantCulture), args[2], SshAuthMethod.Password, null);
-    await using var tunnel = await new SshNetTunnelFactory().OpenAsync(settings, args[3], args[4], int.Parse(args[5], CultureInfo.InvariantCulture), CancellationToken.None);
+    await using var tunnel = await new SshNetTunnelFactory(new JsonKnownHostsStore(new AppPaths())).OpenAsync(settings, args[3], args[4], int.Parse(args[5], CultureInfo.InvariantCulture), (_, _) => ValueTask.FromResult(true), CancellationToken.None);
     Console.WriteLine($"OK {tunnel.LocalPort}");
     return 0;
 }

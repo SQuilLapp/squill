@@ -176,7 +176,7 @@ public sealed class SessionManagerTests
         public int RemotePort { get; private set; }
         public string? Secret { get; private set; }
 
-        public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, string remoteHost, int remotePort, CancellationToken ct)
+        public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, string remoteHost, int remotePort, SshHostKeyPrompt? prompt, CancellationToken ct)
         {
             Opened++;
             (RemoteHost, RemotePort, Secret) = (remoteHost, remotePort, secret);
