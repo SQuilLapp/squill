@@ -1,6 +1,6 @@
 # P16-01 - Presentation: SQL diagnostics debounced and computed off the UI thread
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -16,12 +16,16 @@ Typing in a query tab must never wait for the diagnostics. Today `QueryTabViewMo
 - Incremental parsing, diagnostics for a selection only, changing any diagnostic text or code.
 
 ## Tasks
-- [ ] Measurement recorded in the card report (and the provider change only if the rule above says so).
-- [ ] Debounce, cancellation, stale-result drop and dispatcher marshalling in `QueryTabViewModel`.
-- [ ] Tests in `tests/Squill.Presentation.Tests/Query/`: ten quick `TextChanged` raises produce one `SetDiagnostics` call after the delay (with the fake time provider the tests already use; grep for it); an older result never overwrites a newer one (gate the first computation with a `TaskCompletionSource`); closing the tab cancels a pending run; the first call and a schema refresh apply without waiting for the delay.
+- [x] Measurement recorded in the card report (and the provider change only if the rule above says so).
+- [x] Debounce, cancellation, stale-result drop and dispatcher marshalling in `QueryTabViewModel`.
+- [x] Tests in `tests/Squill.Presentation.Tests/Query/`: ten quick `TextChanged` raises produce one `SetDiagnostics` call after the delay (with the fake time provider the tests already use; grep for it); an older result never overwrites a newer one (gate the first computation with a `TaskCompletionSource`); closing the tab cancels a pending run; the first call and a schema refresh apply without waiting for the delay.
 
 ## Acceptance criteria
 - Common acceptance (build 0 warnings, all tests green). Both heads still compile and their tests pass (`Squill.Windows.slnx` as the README says for the WinUI head).
 
 ## Suggested commit message
 Compute SQL diagnostics off the UI thread, debounced
+
+## Report
+- Measured in `Release`: `GetDiagnostics` on 6,000 lines / 1,500 statements against 200 tables took **about 38 s** (above the 150 ms rule). The cost was `SqlScopeResolver.Resolve`, which re-tokenized the whole text per column reference only to compute a clause that diagnostics never read. `Resolve` now has an internal `withClause` switch and the provider skips the clause: **about 250 ms**, of which about 236 ms is the parser itself. `SqlDiagnosticsProviderTests` are unchanged and green; the `shortcut:` comment is removed.
+- `QueryTabViewModel`: `TextChanged` bumps a version and starts a 250 ms debounced run on `Task.Run` (previous run cancelled); the result is posted through `IUiDispatcher` only if the version is still current. The constructor and `RefreshSchemaAsync` stay synchronous and immediate. Closing a tab (and disconnecting) calls `CancelPendingDiagnostics()`; the class is not `IDisposable` because that would force CA1001 on every holder in the tests.

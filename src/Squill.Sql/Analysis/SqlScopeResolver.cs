@@ -10,7 +10,14 @@ public static class SqlScopeResolver
     /// <param name="script">A script parsed by <see cref="SqlParser.Parse"/>.</param>
     /// <param name="offset">The caret offset in <see cref="SqlScript.Text"/>.</param>
     /// <returns>The clause and the sources, empty when the caret is outside every statement.</returns>
-    public static ScopeInfo Resolve(SqlScript script, int offset)
+    public static ScopeInfo Resolve(SqlScript script, int offset) => Resolve(script, offset, withClause: true);
+
+    /// <summary>Same as <see cref="Resolve(SqlScript, int)"/>; the clause costs a tokenization of the whole text, so callers that only read the sources skip it.</summary>
+    /// <param name="script">A script parsed by <see cref="SqlParser.Parse"/>.</param>
+    /// <param name="offset">The caret offset in <see cref="SqlScript.Text"/>.</param>
+    /// <param name="withClause">Whether <see cref="ScopeInfo.Clause"/> is computed; otherwise it is <see cref="ClauseKind.None"/>.</param>
+    /// <returns>The sources, and the clause when requested.</returns>
+    internal static ScopeInfo Resolve(SqlScript script, int offset, bool withClause)
     {
         var text = script.Text;
         offset = Math.Clamp(offset, 0, text.Length);
@@ -40,7 +47,7 @@ public static class SqlScopeResolver
             }
         }
 
-        return new ScopeInfo(ClauseOf(chain[^1].Statement, script, offset), sources) { LocalCount = local };
+        return new ScopeInfo(withClause ? ClauseOf(chain[^1].Statement, script, offset) : ClauseKind.None, sources) { LocalCount = local };
     }
 
     private sealed record Frame(Statement Statement, IReadOnlyList<CommonTableExpr> Visible);

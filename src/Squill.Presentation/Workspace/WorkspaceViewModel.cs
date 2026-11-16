@@ -308,6 +308,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable
         foreach (var tab in Tabs.Where(t => t.Session.Root == session).ToList())
         {
             Tabs.Remove(tab);
+            tab.CancelPendingDiagnostics();
             RemovePlansOf(tab);
         }
         foreach (var designer in Designers.Where(d => d.Session.Root == session).ToList())
@@ -345,6 +346,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable
             return;
         var index = Tabs.IndexOf(tab);
         Tabs.RemoveAt(index);
+        tab.CancelPendingDiagnostics();
         RemovePlansOf(tab);
         if (ActiveTab == tab)
             ActiveTab = Tabs.Count == 0 ? null : Tabs[Math.Min(index, Tabs.Count - 1)];

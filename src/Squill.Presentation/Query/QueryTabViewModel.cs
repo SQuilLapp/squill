@@ -28,10 +28,14 @@ namespace Squill.Presentation.Query;
 /// <summary>Runs the statements of an editor on a session and exposes the grids and messages they produce.</summary>
 public sealed partial class QueryTabViewModel : ViewModelBase
 {
+    private static readonly TimeSpan DiagnosticsDelay = TimeSpan.FromMilliseconds(250);
+
     private static readonly string[] SchemaChangingKeywords = ["CREATE", "ALTER", "DROP"];
 
     private readonly ConnectionSession _session;
     private readonly ISqlEditor _editor;
+    private CancellationTokenSource? _diagnosticsCts;
+    private int _textVersion;
     private readonly IQueryHistoryStore _history;
     private readonly ISettingsStore _settings;
     private readonly IUiDispatcher _dispatcher;
@@ -91,7 +95,8 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         editor.SetHoverProvider(r => SqlHoverProvider.GetHover(r with { Schema = session.Schema }) is { } h ? h with { Markdown = IssueText.Format(h.Code, h.Args, h.Markdown) } : null);
         editor.TextChanged += (_, _) =>
         {
-            UpdateDiagnostics();
+            _textVersion++;
+            UpdateDiagnosticsDebounced();
             RefreshPlanState();
         };
         editor.CaretChanged += (_, _) => RefreshPlanState();
@@ -668,10 +673,59 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         return false;
     }
 
-    private void UpdateDiagnostics() =>
-        _editor.SetDiagnostics([.. SqlDiagnosticsProvider.GetDiagnostics(
-            new SqlRequest(_editor.Text, _editor.CaretOffset, _session.Profile.Dialect, _session.Schema))
-            .Select(d => d with { Message = IssueText.Format(d.MessageCode, d.Args, d.Message) })]);
+    /// <summary>Cancels a pending diagnostics run; called when the tab closes.</summary>
+    public void CancelPendingDiagnostics() => ReplaceDiagnosticsCts(null);
+
+    private SqlRequest DiagnosticsRequest() =>
+        new(_editor.Text, _editor.CaretOffset, _session.Profile.Dialect, _session.Schema);
+
+    private static SqlDiagnostic[] ComputeDiagnostics(SqlRequest request) =>
+        [.. SqlDiagnosticsProvider.GetDiagnostics(request)
+            .Select(d => d with { Message = IssueText.Format(d.MessageCode, d.Args, d.Message) })];
+
+    private CancellationToken ReplaceDiagnosticsCts(CancellationTokenSource? next)
+    {
+        var old = Interlocked.Exchange(ref _diagnosticsCts, next);
+        old?.Cancel();
+        old?.Dispose();
+        return next?.Token ?? default;
+    }
+
+    /// <summary>Computes the markers at once on the calling thread (first call, schema refresh) and drops any pending run.</summary>
+    private void UpdateDiagnostics()
+    {
+        ReplaceDiagnosticsCts(null);
+        _editor.SetDiagnostics(ComputeDiagnostics(DiagnosticsRequest()));
+    }
+
+    /// <summary>Computes the markers 250 ms after the last keystroke, off the UI thread; a result older than the text is dropped.</summary>
+    private void UpdateDiagnosticsDebounced()
+    {
+        var request = DiagnosticsRequest();
+        var version = _textVersion;
+        var ct = ReplaceDiagnosticsCts(new CancellationTokenSource());
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(DiagnosticsDelay, _time, ct);
+                var markers = ComputeDiagnostics(request);
+                _dispatcher.Post(() =>
+                {
+                    if (!ct.IsCancellationRequested && version == _textVersion)
+                        _editor.SetDiagnostics(markers);
+                });
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception)
+            {
+                // Diagnostics are a convenience: clear the markers rather than surface a failure.
+                _dispatcher.Post(() => _editor.SetDiagnostics([]));
+            }
+        }, CancellationToken.None);
+    }
 
     /// <summary>Returns the keyword case of the settings; a value older than five seconds is refreshed in the background, so a change shows up in the next popup.</summary>
     private KeywordCase CurrentKeywordCase()
