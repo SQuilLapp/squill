@@ -1,6 +1,6 @@
 # P17-08 - Avalonia head: filter bar, search box and footer
 
-Status: todo
+Status: done
 Depends on: P17-06
 
 ## Goal
@@ -17,7 +17,7 @@ The same M05 strip as P17-06 in the Avalonia head: chips, `+ Filtre`, search box
 - Header marks and the column menu (P17-09).
 
 ## Tasks
-- [ ] Filter bar, chip style, flyout, search box, footer binding, headless test.
+- [x] Filter bar, chip style, flyout, search box, footer binding, headless test.
 
 ## Acceptance criteria
 - Common acceptance with `Squill.slnx`; Avalonia AOT publish with zero IL2xxx/IL3xxx (`rtk dotnet publish src/Squill.App.Avalonia -c Release -r win-x64`, in the background; run once and close).

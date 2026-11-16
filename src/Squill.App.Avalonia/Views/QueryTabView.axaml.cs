@@ -29,6 +29,7 @@ public sealed partial class QueryTabView : UserControl
     private ResultViewModel? _result;
     private ResultEditorViewModel? _editor;
     private SessionTransaction? _transaction;
+    private ResultViewState? _viewState;
 
     /// <summary>Creates the view.</summary>
     public QueryTabView()
@@ -44,6 +45,11 @@ public sealed partial class QueryTabView : UserControl
         {
             Gesture = new KeyGesture(Key.S, KeyModifiers.Control),
             Command = new RelayCommand(() => _result?.Editor?.CommitCommand.Execute(null)),
+        });
+        ResultsPanel.KeyBindings.Add(new KeyBinding
+        {
+            Gesture = new KeyGesture(Key.F, KeyModifiers.Control),
+            Command = new RelayCommand(FilterBar.FocusSearch),
         });
     }
 
@@ -189,6 +195,7 @@ public sealed partial class QueryTabView : UserControl
         if (result is not null)
             result.PropertyChanged += OnResultPropertyChanged;
         ShowGrid();
+        ShowFilterBar();
         ShowEditBar();
         ResultGrid.IsVisible = result?.Kind == ResultKind.Grid;
         Message.IsVisible = result?.Kind is ResultKind.Message or ResultKind.Messages;
@@ -216,8 +223,29 @@ public sealed partial class QueryTabView : UserControl
         if (grid is null)
             return;
         var loaded = DisplayFormat.Count(grid.RowCount);
-        FooterText.Text = UiText.Format("results.footer", loaded, grid.IsTruncated ? loaded + "+" : loaded);
+        FooterText.Text = _result?.View?.FooterText ?? UiText.Format("results.footer", loaded, grid.IsTruncated ? loaded + "+" : loaded);
         ExportTitle.Text = UiText.Format("results.exportRows", loaded);
+    }
+
+    private void ShowFilterBar()
+    {
+        var state = _result?.Kind == ResultKind.Grid ? _result.View : null;
+        if (!ReferenceEquals(state, _viewState))
+        {
+            if (_viewState is not null)
+                _viewState.PropertyChanged -= OnViewStateChanged;
+            _viewState = state;
+            if (state is not null)
+                state.PropertyChanged += OnViewStateChanged;
+        }
+
+        FilterBar.Attach(state);
+    }
+
+    private void OnViewStateChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ResultViewState.FooterText))
+            RefreshFooter();
     }
 
     private void ShowEditBar()

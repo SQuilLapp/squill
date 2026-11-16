@@ -10,6 +10,7 @@
   <StreamGeometry x:Key="SquillIconArrowLeft">M19,12 H5 M11,6 L5,12 L11,18</StreamGeometry>
   <StreamGeometry x:Key="SquillIconPlus">M12,5 V19 M5,12 H19</StreamGeometry>
   <StreamGeometry x:Key="SquillIconClose">M6,6 L18,18 M18,6 L6,18</StreamGeometry>
+  <StreamGeometry x:Key="SquillIconFunnel">M4,5 H20 L14,12 V19 L10,17 V12 Z</StreamGeometry>
   <StreamGeometry x:Key="SquillIconRefresh">M20,12 A8,8 0 1 1 17.7,6.3 M20,4 V9 H15</StreamGeometry>
   <StreamGeometry x:Key="SquillIconCollapse">M5,9 L12,16 L19,9</StreamGeometry>
   <StreamGeometry x:Key="SquillIconChevron">M9,6 L15,12 L9,18</StreamGeometry>

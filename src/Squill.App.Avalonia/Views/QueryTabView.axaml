@@ -119,7 +119,7 @@
     </Grid>
     <GridSplitter Grid.Row="2" Height="4" Background="{DynamicResource SquillBorderBrush}"
                   ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" />
-    <Grid Name="ResultsPanel" Grid.Row="3" RowDefinitions="Auto,Auto,Auto,*,Auto" Background="{DynamicResource SquillBgBaseBrush}">
+    <Grid Name="ResultsPanel" Grid.Row="3" RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" Background="{DynamicResource SquillBgBaseBrush}">
       <Border Height="32" Padding="8,0" Background="{DynamicResource SquillBgBaseBrush}"
               BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
         <DockPanel>
@@ -192,7 +192,8 @@
           </DockPanel>
         </DockPanel>
       </Border>
-      <Border Name="EditBar" Grid.Row="1" Height="36" Padding="12,0" IsVisible="False"
+      <v:FilterBar Name="FilterBar" Grid.Row="1" />
+      <Border Name="EditBar" Grid.Row="2" Height="36" Padding="12,0" IsVisible="False"
               Background="{DynamicResource SquillInfoSoftBrush}" BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
         <DockPanel>
           <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
@@ -215,8 +216,8 @@
           </DockPanel>
         </DockPanel>
       </Border>
-      <ProgressBar Grid.Row="2" IsIndeterminate="True" Height="2" IsVisible="{Binding IsRunning}" />
-      <Grid Name="ResultBody" Grid.Row="3" ColumnDefinitions="*,Auto,340">
+      <ProgressBar Grid.Row="3" IsIndeterminate="True" Height="2" IsVisible="{Binding IsRunning}" />
+      <Grid Name="ResultBody" Grid.Row="4" ColumnDefinitions="*,Auto,340">
         <c:DataGridView Name="ResultGrid" />
         <SelectableTextBlock Name="Message" Margin="12" TextWrapping="Wrap" IsVisible="False"
                    Foreground="{DynamicResource SquillFgBrush}" />
@@ -225,7 +226,7 @@
         <GridSplitter Name="PreviewSplitter" Grid.Column="1" Width="4" IsVisible="False" Background="{DynamicResource SquillBorderBrush}" />
         <v:CellPreviewPanel Name="Preview" Grid.Column="2" />
       </Grid>
-      <Border Name="Footer" Grid.Row="4" Height="26" Padding="12,0" IsVisible="False" Background="{DynamicResource SquillBgSurfaceBrush}"
+      <Border Name="Footer" Grid.Row="5" Height="26" Padding="12,0" IsVisible="False" Background="{DynamicResource SquillBgSurfaceBrush}"
               BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,1,0,0">
         <TextBlock Name="FooterText" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource SquillFg2Brush}" />
       </Border>
