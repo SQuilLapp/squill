@@ -325,7 +325,7 @@ Depends on: <card ids, ranges allowed>
 | [P17-02](phase-17/P17-02-presentation-grid-sort-and-value-counts.md) | Presentation: grid sort and column value counts | P17-01 | done |
 | [P17-03](phase-17/P17-03-presentation-filtered-grid-view.md) | Presentation: the filtered and sorted grid view (risky) | P17-01, P17-02 | done |
 | [P17-04](phase-17/P17-04-presentation-result-view-state.md) | Presentation: filter, search and sort state on the result (risky) | P17-03 | done |
-| [P17-05](phase-17/P17-05-presentation-column-menu-and-filter-editor.md) | Presentation: column menu and filter editor view-models | P17-02, P17-04 | todo |
+| [P17-05](phase-17/P17-05-presentation-column-menu-and-filter-editor.md) | Presentation: column menu and filter editor view-models | P17-02, P17-04 | done |
 | [P17-06](phase-17/P17-06-winui-filter-bar-search-and-footer.md) | WinUI head: filter bar, search box and footer | P17-04, P17-05, P9-15 | todo |
 | [P17-07](phase-17/P17-07-winui-header-marks-and-column-menu.md) | WinUI head: header marks and the column menu in the Win2D grid | P17-06 | todo |
 | [P17-08](phase-17/P17-08-avalonia-filter-bar-search-and-footer.md) | Avalonia head: filter bar, search box and footer | P17-06 | todo |

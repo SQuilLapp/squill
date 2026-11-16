@@ -124,6 +124,17 @@ public sealed class ResultViewState : ViewModelBase, IDisposable
     /// <param name="column">The clicked column.</param>
     public void ToggleSort(int column) => SetSort(GridSort.Next(_sort, column));
 
+    /// <summary>Opens the menu of a column header; dispose it when the menu closes.</summary>
+    /// <param name="column">The ordinal of the column.</param>
+    /// <returns>The menu, or <see langword="null"/> when the result has no such column.</returns>
+    public ColumnMenuViewModel? OpenColumnMenu(int column) =>
+        _owner.InnerGrid is { } grid && column >= 0 && column < grid.Columns.Count ? new ColumnMenuViewModel(this, grid, column, _dispatcher) : null;
+
+    /// <summary>Opens the <c>+ Filter</c> popup; dispose it when the popup closes.</summary>
+    /// <returns>The editor, or <see langword="null"/> when the result has no grid.</returns>
+    public FilterEditorViewModel? OpenFilterEditor() =>
+        _owner.InnerGrid is { } grid ? new FilterEditorViewModel(this, grid.Columns) : null;
+
     /// <inheritdoc/>
     public void Dispose()
     {

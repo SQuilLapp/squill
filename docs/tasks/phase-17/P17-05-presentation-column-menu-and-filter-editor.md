@@ -1,6 +1,6 @@
 # P17-05 - Presentation: column menu and filter editor view-models
 
-Status: todo
+Status: done
 Depends on: P17-02, P17-04
 
 ## Goal
@@ -16,8 +16,8 @@ Everything the M05 column menu and the `+ Filtre` editor show and do, as view-mo
 - Drawing (P17-06 ... P17-09), freeze / hide / fit width, OR groups.
 
 ## Tasks
-- [ ] The two view-models, `ResultViewState.OpenColumnMenu`, catalog keys.
-- [ ] Tests `tests/Squill.Presentation.Tests/Query/ColumnMenuViewModelTests.cs`, `FilterEditorViewModelTests.cs`: sort commands go through `ToggleSort` rules (ascending then descending on the same column), value list counts and NULL entry, `ValueSearch` narrows the list, `ApplyValues` builds the `In` filter with `null` when the NULL row is checked, applying all values removes the filter, an existing filter pre-checks its values, `ClearColumnFilter`, truncated hint, the editor lists operators per column category, switching column resets the operator, a bad number sets `Error` and adds nothing, `IsNull` needs no operand, both blocked with pending changes.
+- [x] The two view-models, `ResultViewState.OpenColumnMenu`, catalog keys.
+- [x] Tests `tests/Squill.Presentation.Tests/Query/ColumnMenuViewModelTests.cs`, `FilterEditorViewModelTests.cs`: sort commands go through `ToggleSort` rules (ascending then descending on the same column), value list counts and NULL entry, `ValueSearch` narrows the list, `ApplyValues` builds the `In` filter with `null` when the NULL row is checked, applying all values removes the filter, an existing filter pre-checks its values, `ClearColumnFilter`, truncated hint, the editor lists operators per column category, switching column resets the operator, a bad number sets `Error` and adds nothing, `IsNull` needs no operand, both blocked with pending changes.
 
 ## Acceptance criteria
 - Common acceptance of the recipe (section 7), no head touched.

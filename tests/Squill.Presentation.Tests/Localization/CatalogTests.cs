@@ -12,6 +12,10 @@ public sealed partial class CatalogTests
     // Keys whose English text is legitimately identical to the French one.
     private static readonly HashSet<string> SameInBothLanguages =
     [
+        "results.filter.op.greaterThan", // comparison symbol
+        "results.filter.op.greaterOrEqual", // comparison symbol
+        "results.filter.op.lessThan", // comparison symbol
+        "results.filter.op.lessOrEqual", // comparison symbol
         "settings.language.french", // language names are shown in their own language
         "settings.language.english", // language names are shown in their own language
         "dialog.ok", // same word
