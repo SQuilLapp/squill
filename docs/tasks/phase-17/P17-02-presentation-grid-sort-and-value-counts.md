@@ -1,6 +1,6 @@
 # P17-02 - Presentation: grid sort and column value counts
 
-Status: todo
+Status: done
 Depends on: P17-01
 
 ## Goal
@@ -16,8 +16,8 @@ The two other pure pieces of the M05 column menu: a typed row comparison for sor
 - The view that applies the sort (P17-03), the menu (P17-05, heads).
 
 ## Tasks
-- [ ] `GridSort`, `GridSortComparer`, `ColumnValueCounts`.
-- [ ] Tests `tests/Squill.Presentation.Tests/Results/GridSortTests.cs`, `ColumnValueCountsTests.cs`: ascending and descending per category with NULLs, stability is not the comparer's job (a test on equal keys returns 0), the click cycle, mixed CLR types do not throw, counts and ordering, the cap and `Truncated`, cancellation stops the scan, 100,000 rows counted in well under a second (assert a generous bound, not a benchmark).
+- [x] `GridSort`, `GridSortComparer`, `ColumnValueCounts`.
+- [x] Tests `tests/Squill.Presentation.Tests/Results/GridSortTests.cs`, `ColumnValueCountsTests.cs`: ascending and descending per category with NULLs, stability is not the comparer's job (a test on equal keys returns 0), the click cycle, mixed CLR types do not throw, counts and ordering, the cap and `Truncated`, cancellation stops the scan, 100,000 rows counted in well under a second (assert a generous bound, not a benchmark).
 
 ## Acceptance criteria
 - Common acceptance of the recipe (section 7), no head touched.

@@ -219,7 +219,7 @@ public static class GridFilterMatcher
             return false;
         }
 
-        private static bool TryCompare(object a, object b, out int order)
+        internal static bool TryCompare(object a, object b, out int order)
         {
             order = 0;
             if (a.GetType() == b.GetType())
