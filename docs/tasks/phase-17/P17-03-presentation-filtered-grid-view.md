@@ -1,6 +1,6 @@
 # P17-03 - Presentation: the filtered and sorted grid view (risky)
 
-Status: todo
+Status: done
 Depends on: P17-01, P17-02
 
 ## Goal
@@ -19,8 +19,8 @@ Depends on: P17-01, P17-02
 - Selection reset, view-model state, texts (P17-04), menus and chips (heads), exporting the view.
 
 ## Tasks
-- [ ] `FilteredGridDataSource` as above.
-- [ ] Tests `tests/Squill.Presentation.Tests/Results/FilteredGridDataSourceTests.cs` with a fake inner source whose rows can be appended and completed and an immediate dispatcher: filter, search, filter + search, sort, filter + sort; rows appended while streaming appear (unsorted) and are re-sorted after completion; `SourceRow` maps back to the right inner row for every view row; `Apply` twice quickly publishes only the second result (use a gate in the fake to hold the first rebuild, then release it: its result must be discarded); empty result; the pass-through case; `Dispose` stops work; 200,000 rows filter and sort finish within a generous bound and the calling thread returns from `Apply` immediately.
+- [x] `FilteredGridDataSource` as above.
+- [x] Tests `tests/Squill.Presentation.Tests/Results/FilteredGridDataSourceTests.cs` with a fake inner source whose rows can be appended and completed and an immediate dispatcher: filter, search, filter + search, sort, filter + sort; rows appended while streaming appear (unsorted) and are re-sorted after completion; `SourceRow` maps back to the right inner row for every view row; `Apply` twice quickly publishes only the second result (use a gate in the fake to hold the first rebuild, then release it: its result must be discarded); empty result; the pass-through case; `Dispose` stops work; 200,000 rows filter and sort finish within a generous bound and the calling thread returns from `Apply` immediately.
 
 ## Acceptance criteria
 - Common acceptance of the recipe (section 7), no head touched. The tests run several times in a row without failing (`rtk bypass dotnet test` twice): they must not depend on timing, only on explicit gates.

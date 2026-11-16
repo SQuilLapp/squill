@@ -323,7 +323,7 @@ Depends on: <card ids, ranges allowed>
 | [P16-08](phase-16/P16-08-docs-and-adr.md) | Documentation: SSH host keys ADR 0013, changelog correction and README | P16-01 ... P16-07 | done |
 | [P17-01](phase-17/P17-01-presentation-grid-filter-model.md) | Presentation: grid filter model and matching | none | done |
 | [P17-02](phase-17/P17-02-presentation-grid-sort-and-value-counts.md) | Presentation: grid sort and column value counts | P17-01 | done |
-| [P17-03](phase-17/P17-03-presentation-filtered-grid-view.md) | Presentation: the filtered and sorted grid view (risky) | P17-01, P17-02 | todo |
+| [P17-03](phase-17/P17-03-presentation-filtered-grid-view.md) | Presentation: the filtered and sorted grid view (risky) | P17-01, P17-02 | done |
 | [P17-04](phase-17/P17-04-presentation-result-view-state.md) | Presentation: filter, search and sort state on the result (risky) | P17-03 | todo |
 | [P17-05](phase-17/P17-05-presentation-column-menu-and-filter-editor.md) | Presentation: column menu and filter editor view-models | P17-02, P17-04 | todo |
 | [P17-06](phase-17/P17-06-winui-filter-bar-search-and-footer.md) | WinUI head: filter bar, search box and footer | P17-04, P17-05, P9-15 | todo |
