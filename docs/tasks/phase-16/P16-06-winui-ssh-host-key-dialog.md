@@ -1,6 +1,6 @@
 # P16-06 - WinUI head: SSH host key dialog
 
-Status: todo
+Status: done
 Depends on: P16-05
 
 ## Goal
@@ -16,11 +16,15 @@ Replace the temporary "decline" implementation of `ConfirmSshHostKeyAsync` in th
 - Avalonia (P16-07), new catalog texts, a fingerprint in other formats.
 
 ## Tasks
-- [ ] Dialog and service member; remove the temporary implementation.
-- [ ] Tests where `tests/Squill.App.WinUI.Tests` already has a pattern (a view-model or model test of the button defaults); what cannot be driven headless is listed under "To check by hand": fingerprint selectable and copyable, `Entrée` cancels, French and English text not clipped, dark theme contrast.
+- [x] Dialog and service member; remove the temporary implementation.
+- [x] Tests where `tests/Squill.App.WinUI.Tests` already has a pattern (a view-model or model test of the button defaults); what cannot be driven headless is listed under "To check by hand": fingerprint selectable and copyable, `Entrée` cancels, French and English text not clipped, dark theme contrast.
 
 ## Acceptance criteria
 - Common acceptance with `Squill.Windows.slnx`, WinUI AOT publish with zero IL2xxx/IL3xxx warnings (`rtk dotnet publish src/Squill.App.WinUI -c Release -r win-x64`, in the background, then run the exe once and close it).
 
 ## Suggested commit message
 Add the SSH host key question dialog to the WinUI head
+
+## To check by hand
+- Fingerprint is selectable and copyable; `Entrée` cancels; French and English text not clipped; dark theme contrast.
+- No headless test: the dialog is pure `ContentDialog` construction (no view-model), and the head has no pattern for driving one.
