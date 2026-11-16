@@ -1,6 +1,6 @@
 # P17-10 - Presentation: fuzzy matcher and palette query modes
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -15,8 +15,8 @@ The two pure pieces under the palette search: a scored subsequence matcher that 
 - Items, providers, view-model (P17-11 ...), highlighting (heads).
 
 ## Tasks
-- [ ] `FuzzyMatcher`, `FuzzyMatch`, `PaletteMode`, `PaletteQuery`.
-- [ ] Tests `tests/Squill.Presentation.Tests/Palette/FuzzyMatcherTests.cs`, `PaletteQueryTests.cs`: the M13 examples (`comm` matches `commandes`, `lignes_commande`, `v_commandes_recentes`, `Commit — valider la transaction`, `Commenter / décommenter la ligne`, `Comparer les schémas...` with the expected ranges for the first and last), ranking order (exact, prefix, word start, scattered), accents (`ecole` matches `École`, ranges point at the original string), case, words in order (`cmd tab` vs `tab cmd`), empty pattern, no match, a 10,000-character candidate does not blow up, every prefix and `WithMode` round trip, `:12` and `:abc`, `@x` is text.
+- [x] `FuzzyMatcher`, `FuzzyMatch`, `PaletteMode`, `PaletteQuery`.
+- [x] Tests `tests/Squill.Presentation.Tests/Palette/FuzzyMatcherTests.cs`, `PaletteQueryTests.cs`: the M13 examples (`comm` matches `commandes`, `lignes_commande`, `v_commandes_recentes`, `Commit — valider la transaction`, `Commenter / décommenter la ligne`, `Comparer les schémas...` with the expected ranges for the first and last), ranking order (exact, prefix, word start, scattered), accents (`ecole` matches `École`, ranges point at the original string), case, words in order (`cmd tab` vs `tab cmd`), empty pattern, no match, a 10,000-character candidate does not blow up, every prefix and `WithMode` round trip, `:12` and `:abc`, `@x` is text.
 
 ## Acceptance criteria
 - Common acceptance of the recipe (section 7), no head touched; matching 50,000 names of 30 characters with a 4-letter pattern stays under a generous bound in a test (not a benchmark).

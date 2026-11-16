@@ -330,7 +330,7 @@ Depends on: <card ids, ranges allowed>
 | [P17-07](phase-17/P17-07-winui-header-marks-and-column-menu.md) | WinUI head: header marks and the column menu in the Win2D grid | P17-06 | done |
 | [P17-08](phase-17/P17-08-avalonia-filter-bar-search-and-footer.md) | Avalonia head: filter bar, search box and footer | P17-06 | done |
 | [P17-09](phase-17/P17-09-avalonia-header-marks-and-column-menu.md) | Avalonia head: header marks and the column menu | P17-07, P17-08 | done |
-| [P17-10](phase-17/P17-10-presentation-fuzzy-matcher-and-query-modes.md) | Presentation: palette fuzzy matcher and query modes | none | todo |
+| [P17-10](phase-17/P17-10-presentation-fuzzy-matcher-and-query-modes.md) | Presentation: palette fuzzy matcher and query modes | none | done |
 | [P17-11](phase-17/P17-11-presentation-palette-items-and-actions.md) | Presentation: palette items and the action registry | P17-10 | todo |
 | [P17-12](phase-17/P17-12-presentation-palette-objects-provider.md) | Presentation: palette objects provider (risky) | P17-11 | todo |
 | [P17-13](phase-17/P17-13-presentation-palette-history-and-line.md) | Presentation: palette history and go-to-line providers | P17-11 | todo |
