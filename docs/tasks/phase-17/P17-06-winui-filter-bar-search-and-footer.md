@@ -1,6 +1,6 @@
 # P17-06 - WinUI head: filter bar, search box and footer
 
-Status: todo
+Status: done
 Depends on: P17-04, P17-05, P9-15
 
 ## Goal
@@ -18,8 +18,8 @@ The M05 strip between the results header and the grid in the WinUI head: filter 
 - Header marks and the column menu (P17-07), Avalonia (P17-08), freeze / hide / fit width.
 
 ## Tasks
-- [ ] Filter bar, chip, `+ Filtre` flyout, search box and footer binding in the WinUI head.
-- [ ] Tests only where `tests/Squill.App.WinUI.Tests` already has a pattern; otherwise "To check by hand" below.
+- [x] Filter bar, chip, `+ Filtre` flyout, search box and footer binding in the WinUI head.
+- [x] Tests only where `tests/Squill.App.WinUI.Tests` already has a pattern; otherwise "To check by hand" below.
 
 ## Acceptance criteria
 - Common acceptance with `Squill.Windows.slnx`; WinUI AOT publish with zero IL2xxx/IL3xxx warnings (`rtk dotnet publish src/Squill.App.WinUI -c Release -r win-x64`, in the background, then run the exe once and close it).

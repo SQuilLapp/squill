@@ -75,6 +75,7 @@ public sealed partial class QueryTabView : UserControl
     private readonly TextBlock _editDetail = new() { VerticalAlignment = VerticalAlignment.Center, FontSize = 12, Foreground = Brush("SquillFg2Brush") };
     private readonly StackPanel _marker = new() { Orientation = Orientation.Horizontal, Spacing = 6, Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Visibility = Visibility.Collapsed };
     private readonly TextBlock _markerText = new() { FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
+    private readonly FilterBar _filterBar = new();
     private readonly Border _footer = new() { Height = 26, Padding = new Thickness(12, 0, 12, 0), Visibility = Visibility.Collapsed, BorderThickness = new Thickness(0, 1, 0, 0), Background = Brush("SquillBgSurfaceBrush"), BorderBrush = Brush("SquillBorderSubtleBrush") };
     private readonly TextBlock _footerText = new() { FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Foreground = Brush("SquillFg2Brush") };
     private readonly Button _issuesButton = new() { Visibility = Visibility.Collapsed, Foreground = Brush("SquillDangerBrush") };
@@ -87,6 +88,7 @@ public sealed partial class QueryTabView : UserControl
     private ResultEditorViewModel? _editor;
     private QueryTabViewModel? _tab;
     private ResultViewModel? _result;
+    private ResultViewState? _viewState;
 
     /// <summary>Creates the view.</summary>
     public QueryTabView()
@@ -100,6 +102,7 @@ public sealed partial class QueryTabView : UserControl
         editor.Children.Add(_editorHost);
         Grid.SetRow(editor, 1);
         var results = _results;
+        results.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         results.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         results.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         results.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -121,11 +124,20 @@ public sealed partial class QueryTabView : UserControl
             e.Handled = true;
         };
         results.KeyboardAccelerators.Add(save);
-        Grid.SetRow(_editBar, 1);
-        Grid.SetRow(_progress, 2);
-        Grid.SetRow(_footer, 4);
+        var find = new KeyboardAccelerator { Key = VirtualKey.F, Modifiers = VirtualKeyModifiers.Control };
+        find.Invoked += (_, e) =>
+        {
+            _filterBar.FocusSearch();
+            e.Handled = true;
+        };
+        results.KeyboardAccelerators.Add(find);
+        Grid.SetRow(_filterBar, 1);
+        Grid.SetRow(_editBar, 2);
+        Grid.SetRow(_progress, 3);
+        Grid.SetRow(_footer, 5);
         _footer.Child = _footerText;
         results.Children.Add(strip);
+        results.Children.Add(_filterBar);
         results.Children.Add(_editBar);
         results.Children.Add(_progress);
         results.Children.Add(_footer);
@@ -146,7 +158,7 @@ public sealed partial class QueryTabView : UserControl
             body.ColumnDefinitions[2].MinWidth = open ? 160 : 0;
             body.ColumnDefinitions[2].MaxWidth = open ? double.PositiveInfinity : 0;
         };
-        Grid.SetRow(body, 3);
+        Grid.SetRow(body, 4);
         results.Children.Add(body);
 
         var main = new Grid();
@@ -631,8 +643,29 @@ public sealed partial class QueryTabView : UserControl
         _footer.Visibility = grid is null ? Visibility.Collapsed : Visibility.Visible;
         if (grid is null)
             return;
-        _footerText.Text = EditBarFormat.Footer(grid.RowCount, grid.IsTruncated);
+        _footerText.Text = _result?.View?.FooterText ?? EditBarFormat.Footer(grid.RowCount, grid.IsTruncated);
         _exportTitle.Text = UiText.Format("results.exportRows", EditBarFormat.Rows(grid.RowCount));
+    }
+
+    private void ShowFilterBar()
+    {
+        var state = _result?.Kind == ResultKind.Grid ? _result.View : null;
+        if (!ReferenceEquals(state, _viewState))
+        {
+            if (_viewState is not null)
+                _viewState.PropertyChanged -= OnViewStateChanged;
+            _viewState = state;
+            if (state is not null)
+                state.PropertyChanged += OnViewStateChanged;
+        }
+
+        _filterBar.Attach(state);
+    }
+
+    private void OnViewStateChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ResultViewState.FooterText))
+            RefreshFooter();
     }
 
     private void ShowEditBar()
@@ -690,6 +723,7 @@ public sealed partial class QueryTabView : UserControl
         _grid.EditController = result?.EditController;
         _grid.DataSource = result?.DisplayGrid;
         _preview.Attach(result?.Preview);
+        ShowFilterBar();
     }
 
     private sealed record IssueItem(EditIssue Issue, string Text)
