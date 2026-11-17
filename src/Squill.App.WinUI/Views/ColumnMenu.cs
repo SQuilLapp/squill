@@ -70,15 +70,22 @@ internal sealed class ColumnMenu
         }
     }
 
-    private static Button Entry(Flyout flyout, FrameworkElement owner, string text, bool isChecked, bool enabled, string? blocked, Action run)
+    private static Button Entry(Flyout flyout, FrameworkElement owner, string icon, string text, bool isChecked, bool enabled, string? blocked, Action run)
     {
-        var tick = Icons.Create("SquillIconCheck", 12, Brush(owner, "SquillAccentTextBrush"));
-        tick.Visibility = isChecked ? Visibility.Visible : Visibility.Collapsed;
-        var row = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(18) }, new ColumnDefinition() } };
-        row.Children.Add(tick);
+        var glyph = Icons.Create(icon, 14, Brush(owner, isChecked ? "SquillAccentTextBrush" : "SquillFg3Brush"));
+        glyph.HorizontalAlignment = HorizontalAlignment.Left;
+        var row = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(26) }, new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } } };
+        row.Children.Add(glyph);
         var label = new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center };
         Grid.SetColumn(label, 1);
         row.Children.Add(label);
+        if (isChecked)
+        {
+            var tick = Icons.Create("SquillIconCheck", 12, Brush(owner, "SquillAccentTextBrush"));
+            Grid.SetColumn(tick, 2);
+            row.Children.Add(tick);
+        }
+
         var button = new Button
         {
             Content = row,
@@ -86,8 +93,9 @@ internal sealed class ColumnMenu
             HorizontalContentAlignment = HorizontalAlignment.Left,
             Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
             BorderThickness = new Thickness(0),
-            Height = 30,
-            MinHeight = 30,
+            Height = 32,
+            MinHeight = 32,
+            Padding = new Thickness(10, 0, 10, 0),
             IsEnabled = enabled,
         };
         AutomationProperties.SetName(button, text);
@@ -106,13 +114,13 @@ internal sealed class ColumnMenu
     private static StackPanel Build(FrameworkElement owner, ColumnMenuViewModel vm, bool hasFilter, Flyout flyout)
     {
         var canChange = vm.CanSort;
-        var sortAsc = Entry(flyout, owner, UiText.Get("results.columnMenu.sortAsc"), vm.CurrentSort is { Descending: false }, canChange, vm.BlockedReason, () => vm.SortAscendingCommand.Execute(null));
-        var sortDesc = Entry(flyout, owner, UiText.Get("results.columnMenu.sortDesc"), vm.CurrentSort is { Descending: true }, canChange, vm.BlockedReason, () => vm.SortDescendingCommand.Execute(null));
-        var search = new TextBox { PlaceholderText = UiText.Get("results.columnMenu.searchValue"), Height = 28, MinHeight = 28, Text = vm.ValueSearch, IsEnabled = canChange };
+        var sortAsc = Entry(flyout, owner, "SquillIconSortAsc", UiText.Get("results.columnMenu.sortAsc"), vm.CurrentSort is { Descending: false }, canChange, vm.BlockedReason, () => vm.SortAscendingCommand.Execute(null));
+        var sortDesc = Entry(flyout, owner, "SquillIconSortDesc", UiText.Get("results.columnMenu.sortDesc"), vm.CurrentSort is { Descending: true }, canChange, vm.BlockedReason, () => vm.SortDescendingCommand.Execute(null));
+        var search = new TextBox { PlaceholderText = UiText.Get("results.columnMenu.searchValue"), Height = 28, MinHeight = 28, Margin = new Thickness(10, 0, 10, 4), Text = vm.ValueSearch, IsEnabled = canChange };
         AutomationProperties.SetName(search, UiText.Get("results.columnMenu.searchValue"));
         // Plain check boxes in a stack panel: no ItemsSource marshalling, no containers to recycle (the list is capped at 500 values).
         var list = new StackPanel();
-        var scroller = new ScrollViewer { MaxHeight = 240, Content = list, IsEnabled = canChange, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        var scroller = new ScrollViewer { MaxHeight = 190, Padding = new Thickness(0, 0, 12, 0), Content = list, IsEnabled = canChange, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         var loading = new ProgressBar { IsIndeterminate = true, Visibility = vm.IsLoadingValues ? Visibility.Visible : Visibility.Collapsed };
         var hint = new TextBlock { Foreground = Brush(owner, "SquillFg3Brush"), FontSize = 11, Text = vm.ValuesHint ?? "", Visibility = vm.ValuesHint is null ? Visibility.Collapsed : Visibility.Visible };
         var apply = new Button { Style = Res("PrimaryButtonStyle"), Content = UiText.Get("results.filter.editor.apply"), Height = 28, MinHeight = 28, HorizontalAlignment = HorizontalAlignment.Right, IsEnabled = canChange && !vm.IsLoadingValues };
@@ -142,17 +150,17 @@ internal sealed class ColumnMenu
         panel.Children.Add(sortAsc);
         panel.Children.Add(sortDesc);
         panel.Children.Add(Separator(owner));
-        panel.Children.Add(new TextBlock { Text = UiText.Get("results.columnMenu.filterByValue"), Style = Res("CapsTextBlockStyle"), Margin = new Thickness(8, 4, 0, 4) });
+        panel.Children.Add(new TextBlock { Text = UiText.Get("results.columnMenu.filterByValue"), Style = Res("CapsTextBlockStyle"), Margin = new Thickness(10, 6, 0, 4) });
         panel.Children.Add(search);
         panel.Children.Add(loading);
         panel.Children.Add(scroller);
         panel.Children.Add(hint);
-        panel.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 4, 0, 0), Children = { apply } });
+        panel.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 6, 10, 2), Children = { apply } });
         panel.Children.Add(Separator(owner));
         if (hasFilter)
-            panel.Children.Add(Entry(flyout, owner, UiText.Get("results.columnMenu.clearFilter"), false, canChange, vm.BlockedReason, () => vm.ClearColumnFilterCommand.Execute(null)));
+            panel.Children.Add(Entry(flyout, owner, "SquillIconClose", UiText.Get("results.columnMenu.clearFilter"), false, canChange, vm.BlockedReason, () => vm.ClearColumnFilterCommand.Execute(null)));
         // No Ctrl+C chip: Ctrl+C in the grid copies the selection, not the column name.
-        panel.Children.Add(Entry(flyout, owner, UiText.Get("results.columnMenu.copyName"), false, true, null, () =>
+        panel.Children.Add(Entry(flyout, owner, "SquillIconCopy", UiText.Get("results.columnMenu.copyName"), false, true, null, () =>
         {
             var package = new DataPackage();
             package.SetText(vm.ColumnName);
@@ -190,7 +198,7 @@ internal sealed class ColumnMenu
     {
         var muted = Brush(owner, "SquillFg3Brush");
         var text = new TextBlock { Text = item.Text, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
-        var count = new TextBlock { Text = item.Count.ToString(System.Globalization.CultureInfo.CurrentCulture), Foreground = muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
+        var count = new TextBlock { Text = item.Count.ToString(System.Globalization.CultureInfo.CurrentCulture), Foreground = muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 0, 0) };
         if (item.Value is null)
         {
             text.FontStyle = Windows.UI.Text.FontStyle.Italic;
@@ -201,8 +209,9 @@ internal sealed class ColumnMenu
         var box = new CheckBox
         {
             IsChecked = item.IsChecked,
+            Height = 28,
             MinHeight = 28,
-            Padding = new Thickness(6, 0, 6, 0),
+            Padding = new Thickness(8, 0, 4, 0),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
             Content = new Grid { ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } }, Children = { text, count } },
