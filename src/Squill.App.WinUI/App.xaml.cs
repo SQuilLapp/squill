@@ -21,7 +21,13 @@ public sealed partial class App : Application
     private Window? _window;
 
     /// <summary>Initializes the application.</summary>
-    public App() => InitializeComponent();
+    public App()
+    {
+        InitializeComponent();
+        var dataDir = Environment.GetEnvironmentVariable("SQUILL_DATA_DIR");
+        CrashLog.Install(new AppPaths(string.IsNullOrEmpty(dataDir) ? null : dataDir).Combine("logs", "crash.log"));
+        UnhandledException += (_, e) => CrashLog.Write("Application.UnhandledException", e.Exception, e.Message);
+    }
 
     /// <summary>Gets the root view-models shared with the other heads.</summary>
     public AppServices? Services { get; private set; }
