@@ -1,6 +1,6 @@
 # P18-13 - Presentation: sessions and locks monitor (risky)
 
-Status: todo
+Status: done
 Depends on: P18-11, P18-12, P18-02
 
 ## Goal
@@ -22,8 +22,8 @@ The M12 screen as a workspace tab driven by `IActivityReader`: tiles, filtered t
 - Views (P18-14, P18-15), history of snapshots, killing several sessions, query plans of a session.
 
 ## Tasks
-- [ ] View-model, row and detail view-models, chain builder (pure, `BlockingChains.Build`), tiles, timer with an injectable clock and scheduler, catalog keys, workspace command, palette action.
-- [ ] Tests in `tests/Squill.Presentation.Tests/Activity/` with a fake reader: tiles figures, transactions per second from two samples, filters and counts, selection kept across refreshes, chain building (two blocked behind one, a chain of three, a cycle does not loop), paused tab does not poll, overlapping read skipped, stale read dropped, cancel unsupported hides the command, terminate on Production asks the typed confirmation and does nothing when refused, error stops the timer.
+- [x] View-model, row and detail view-models, chain builder (pure, `BlockingChains.Build`), tiles, timer with an injectable clock and scheduler, catalog keys, workspace command, palette action.
+- [x] Tests in `tests/Squill.Presentation.Tests/Activity/` with a fake reader: tiles figures, transactions per second from two samples, filters and counts, selection kept across refreshes, chain building (two blocked behind one, a chain of three, a cycle does not loop), paused tab does not poll, overlapping read skipped, stale read dropped, cancel unsupported hides the command, terminate on Production asks the typed confirmation and does nothing when refused, error stops the timer.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched. Riskiest: polling must never pile up or keep running in a closed or inactive tab (a test proves it).

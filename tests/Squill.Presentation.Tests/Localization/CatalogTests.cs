@@ -24,6 +24,15 @@ public sealed partial class CatalogTests
         "compare.group.table", // group title, same word
         "compare.duration", // seconds, same unit
         "compare.sourceCaption", // same word
+        "activity.pause", // same word
+        "activity.duration.ms", // unit, same in both languages
+        "activity.duration.s", // unit
+        "activity.duration.minS", // units
+        "activity.duration.hMin", // units
+        "activity.field.application", // same word
+        "activity.field.client", // same word
+        "activity.confirm.who", // pid and login, language-neutral
+        "activity.tile.transactions", // same label
         "results.filter.op.greaterThan", // comparison symbol
         "results.filter.op.greaterOrEqual", // comparison symbol
         "results.filter.op.lessThan", // comparison symbol

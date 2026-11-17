@@ -83,7 +83,7 @@ internal static class MySqlActivityReader
             .ToDictionary(x => x.Name, x => x.Value, StringComparer.OrdinalIgnoreCase);
         long? counter = status.TryGetValue("Com_commit", out var commits) && status.TryGetValue("Com_rollback", out var rollbacks) ? commits + rollbacks : null;
         var active = status.TryGetValue("Threads_connected", out var connected) ? (int)connected : sessions.Count(s => !s.IsSystem);
-        return new ActivitySnapshot(DateTimeOffset.UtcNow, active, maxConnections, counter, sessions, blocking, unavailable);
+        return new ActivitySnapshot(DateTimeOffset.UtcNow, active, maxConnections, counter, sessions, blocking, unavailable, "information_schema.processlist");
     }
 
     /// <summary>Cancels the statement of a session (<c>KILL QUERY</c>).</summary>

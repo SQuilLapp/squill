@@ -9,6 +9,7 @@ using Squill.Core.Design;
 using Squill.Platform.Profiles;
 using Squill.Platform.Settings;
 using Squill.Platform.Storage;
+using Squill.Presentation.Activity;
 using Squill.Presentation.Compare;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Designer;
@@ -112,9 +113,10 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
                 foreach (var added in e.NewItems.OfType<ConnectionSession>().Where(x => x.Parent is null))
                     _ = Home.TouchAsync(added.Profile.Id, CancellationToken.None);
         };
-        foreach (var collection in new INotifyCollectionChanged[] { manager.Sessions, Tabs, Terminals, Designers, Diagrams, Plans, Compares })
+        foreach (var collection in new INotifyCollectionChanged[] { manager.Sessions, Tabs, Terminals, Designers, Diagrams, Plans, Compares, Monitors })
             collection.CollectionChanged += (_, _) => UpdateHomeVisibility();
         manager.Sessions.CollectionChanged += (_, _) => RaiseSchemaCompareAvailability();
+        manager.Sessions.CollectionChanged += (_, _) => RaiseMonitorAvailability();
         Explorer.OpenTableRequested += (_, r) => _ = OpenTableOnAsync(r.Session, r.Table);
         Explorer.DesignTableRequested += (_, r) => DesignTableOn(r.Session, r.Table);
         Explorer.DropTableRequested += (_, r) =>
@@ -151,7 +153,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     }
 
     private bool HasNothingOpen() =>
-        Sessions.Count == 0 && Tabs.Count == 0 && Terminals.Count == 0 && Designers.Count == 0 && Diagrams.Count == 0 && Plans.Count == 0 && Compares.Count == 0;
+        Sessions.Count == 0 && Tabs.Count == 0 && Terminals.Count == 0 && Designers.Count == 0 && Diagrams.Count == 0 && Plans.Count == 0 && Compares.Count == 0 && Monitors.Count == 0;
 
     private void UpdateHomeVisibility() => IsHomeVisible = HasNothingOpen();
 
@@ -169,6 +171,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     public void Dispose()
     {
         _elapsedTimer.Dispose();
+        foreach (var monitor in Monitors)
+            monitor.Dispose();
         Palette.Dispose();
     }
 
@@ -247,6 +251,61 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     /// <summary>Gets or sets the plan tab shown.</summary>
     [ObservableProperty]
     public partial PlanTabViewModel? ActivePlan { get; set; }
+
+    /// <summary>Gets the open sessions and locks monitors, at most one per connection session.</summary>
+    public ObservableCollection<SessionsMonitorViewModel> Monitors { get; } = [];
+
+    /// <summary>Gets or sets the sessions monitor tab shown.</summary>
+    [ObservableProperty]
+    public partial SessionsMonitorViewModel? ActiveMonitor { get; set; }
+
+    private bool CanOpenSessionsMonitor() => SessionsMonitorViewModel.DisabledReason(ActiveSession).Length == 0;
+
+    /// <summary>Gets why the sessions monitor cannot be opened (the tooltip of the disabled menu item and palette action), empty when it can.</summary>
+    public string SessionsMonitorDisabledReason => SessionsMonitorViewModel.DisabledReason(ActiveSession);
+
+    private void RaiseMonitorAvailability()
+    {
+        OpenSessionsMonitorCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(SessionsMonitorDisabledReason));
+    }
+
+    /// <summary>Opens the sessions and locks monitor of the active session, or shows it when it is already open.</summary>
+    [RelayCommand(CanExecute = nameof(CanOpenSessionsMonitor))]
+    public void OpenSessionsMonitor()
+    {
+        if (ActiveSession is not { } session)
+            return;
+        if (Monitors.FirstOrDefault(m => m.Session == session) is { } open)
+        {
+            ActiveMonitor = open;
+            return;
+        }
+
+        var monitor = new SessionsMonitorViewModel(session, _dialogs, _dispatcher);
+        monitor.CloseRequested += RemoveMonitor;
+        Monitors.Add(monitor);
+        ActiveMonitor = monitor;
+    }
+
+    [RelayCommand]
+    private void CloseMonitor(SessionsMonitorViewModel? monitor)
+    {
+        if (monitor is not null)
+            RemoveMonitor(monitor);
+    }
+
+    private void RemoveMonitor(SessionsMonitorViewModel monitor)
+    {
+        var index = Monitors.IndexOf(monitor);
+        if (index < 0)
+            return;
+        Monitors.RemoveAt(index);
+        monitor.CloseRequested -= RemoveMonitor;
+        monitor.Dispose();
+        if (ActiveMonitor == monitor)
+            ActiveMonitor = Monitors.Count == 0 ? null : Monitors[Math.Min(index, Monitors.Count - 1)];
+    }
 
     /// <summary>Gets or sets the schema compare tab shown.</summary>
     [ObservableProperty]
@@ -359,8 +418,11 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             DiagramTabViewModel g => g.Session,
             PlanTabViewModel p => p.Source.Session,
             SchemaCompareViewModel c => c.Session,
+            SessionsMonitorViewModel m => m.Session,
             _ => null,
         };
+        foreach (var monitor in Monitors)
+            monitor.SetActive(ReferenceEquals(monitor, tab)); // a monitor only polls while its tab is on screen
         _shownSession = session;
         if (session is not null && !ReferenceEquals(ActiveSession, session))
             ActiveSession = session; // raises ActiveEnvironment
@@ -371,6 +433,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     partial void OnActiveSessionChanged(ConnectionSession? value)
     {
         RaiseSchemaCompareAvailability();
+        RaiseMonitorAvailability();
         if (value is null)
             _shownSession = null; // not connected: no tab can be on screen
         OnPropertyChanged(nameof(ActiveEnvironment));
@@ -385,6 +448,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     partial void OnActivePlanChanged(PlanTabViewModel? value) => ShowTabIfAny(value);
 
     partial void OnActiveCompareChanged(SchemaCompareViewModel? value) => ShowTabIfAny(value);
+
+    partial void OnActiveMonitorChanged(SessionsMonitorViewModel? value) => ShowTabIfAny(value);
 
     private void ShowTabIfAny(object? tab)
     {
@@ -443,6 +508,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             RemoveDiagram(diagram);
         foreach (var compare in Compares.Where(c => c.UsesServer(session)).ToList())
             RemoveCompare(compare);
+        foreach (var monitor in Monitors.Where(m => m.Session?.Root == session).ToList())
+            RemoveMonitor(monitor);
         foreach (var opened in session.OpenedDatabases.Prepend(session))
             _tabCounters.Remove(opened);
         await _manager.CloseAsync(session);

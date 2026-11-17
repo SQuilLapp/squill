@@ -69,7 +69,7 @@ internal static class PostgresActivityReader
                 counter = reader.IsDBNull(1) ? null : reader.GetInt64(1);
             }
 
-        return new ActivitySnapshot(DateTimeOffset.UtcNow, sessions.Count(s => !s.IsSystem), maxConnections, counter, sessions, blocking);
+        return new ActivitySnapshot(DateTimeOffset.UtcNow, sessions.Count(s => !s.IsSystem), maxConnections, counter, sessions, blocking, SourceName: "pg_stat_activity");
     }
 
     /// <summary>Cancels the statement of a backend.</summary>

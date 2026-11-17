@@ -81,7 +81,7 @@ internal static class SqlServerActivityReader
                     counter = reader.IsDBNull(1) ? null : reader.GetInt64(1);
                 }
 
-            return new ActivitySnapshot(DateTimeOffset.UtcNow, sessions.Count(s => !s.IsSystem), maxConnections, counter, sessions, blocking);
+            return new ActivitySnapshot(DateTimeOffset.UtcNow, sessions.Count(s => !s.IsSystem), maxConnections, counter, sessions, blocking, SourceName: "sys.dm_exec_sessions");
         }
         catch (SqlException ex) when (IsPermissionError(ex))
         {
