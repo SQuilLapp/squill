@@ -1,5 +1,6 @@
 using Squill.Core;
 using Squill.Data;
+using Squill.Core.Transactions;
 using Squill.Platform.Profiles;
 using Squill.Platform.Settings;
 using Squill.Platform.Ssh;
@@ -21,10 +22,10 @@ internal sealed class PanelsHost
     public List<FakeTerminalHost> TerminalHosts { get; } = [];
     public WorkspaceViewModel Workspace { get; }
 
-    public PanelsHost()
+    public PanelsHost(bool probe = false)
     {
         var registry = new ProviderRegistry();
-        registry.Register(new FakeProvider());
+        registry.Register(new FakeProvider(probe));
         var store = new FakeProfiles();
         Workspace = new WorkspaceViewModel(
             new SessionManager(registry, store, new FakeTunnels()),
@@ -81,15 +82,20 @@ internal sealed class PanelsHost
         public ValueTask SaveAsync(AppSettings settings, CancellationToken ct) => ValueTask.CompletedTask;
     }
 
-    private sealed class FakeProvider : IDatabaseProvider
+    private sealed class FakeProvider(bool probe) : IDatabaseProvider
     {
         public DatabaseDialect Dialect => DatabaseDialect.PostgreSql;
 
         public ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken) =>
-            ValueTask.FromResult<IDatabaseConnection>(new FakeConnection());
+            ValueTask.FromResult<IDatabaseConnection>(probe ? new ProbeConnection() : new FakeConnection());
     }
 
-    private sealed class FakeConnection : IDatabaseConnection
+    private sealed class ProbeConnection : FakeConnection, ITransactionProbe
+    {
+        public ValueTask<TransactionProbeResult> ProbeAsync(CancellationToken cancellationToken) => ValueTask.FromResult(TransactionProbeResult.Unknown);
+    }
+
+    private class FakeConnection : IDatabaseConnection
     {
         public string ServerVersion => "1";
 
