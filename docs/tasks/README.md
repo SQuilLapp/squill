@@ -336,7 +336,7 @@ Depends on: <card ids, ranges allowed>
 | [P17-13](phase-17/P17-13-presentation-palette-history-and-line.md) | Presentation: palette history and go-to-line providers | P17-11 | done |
 | [P17-14](phase-17/P17-14-presentation-palette-view-model.md) | Presentation: the palette view-model | P17-12, P17-13 | done |
 | [P17-15](phase-17/P17-15-winui-command-palette.md) | WinUI head: the command palette overlay (risky) | P17-14, P9-09 | done |
-| [P17-16](phase-17/P17-16-avalonia-command-palette.md) | Avalonia head: the command palette overlay (risky) | P17-15 | todo |
+| [P17-16](phase-17/P17-16-avalonia-command-palette.md) | Avalonia head: the command palette overlay (risky) | P17-15 | done |
 | [P17-17](phase-17/P17-17-verify-grid-filter-and-palette.md) | End-to-end verification: grid filter and command palette | P17-09, P17-16 | todo |
 | [P17-18](phase-17/P17-18-docs-and-adr.md) | Documentation: grid filter and palette ADR 0014, changelog and README | P17-17 | todo |
 

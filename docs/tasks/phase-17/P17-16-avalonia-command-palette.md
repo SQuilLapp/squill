@@ -1,6 +1,6 @@
 # P17-16 - Avalonia head: the command palette overlay (risky)
 
-Status: todo
+Status: done
 Depends on: P17-15
 
 ## Goal
@@ -17,7 +17,7 @@ The same palette as P17-15 in the Avalonia head. Recipe decisions 10 to 17; mock
 - New palette features, Linux/macOS manual verification beyond what the owner can run.
 
 ## Tasks
-- [ ] `CommandPalette` control, title bar box, key bindings, head action registration, headless test.
+- [x] `CommandPalette` control, title bar box, key bindings, head action registration, headless test.
 
 ## Acceptance criteria
 - Common acceptance with `Squill.slnx`; Avalonia AOT publish with zero IL2xxx/IL3xxx, run once and close.
@@ -29,3 +29,9 @@ Add the command palette to the Avalonia head
 
 ## To check by hand
 - Same list as P17-15; `Cmd+K` on macOS only if the owner has the machine.
+
+## Result
+- `Ctrl+K` (`Cmd+K` on macOS) is caught by a tunnelling `KeyDown` handler on the window (not a `KeyBinding`, which runs on the bubbling phase), so it precedes LoomEditor, the grid canvas and the explorer; none of them binds `Ctrl+K` (the grid's `ApplyKey` has no `K`), so the stop rule did not apply. While open the palette swallows every other Ctrl chord except text-editing ones.
+- The title bar box handles `PointerPressed` and opens the palette. Head actions registered in `Attach`: `app.settings`, `app.newConnection`, `app.checkUpdates`, `app.about`, `app.openDataFolder`. New glyphs: action, routine, trigger, line. Shortcut strings stay `Ctrl+...` as for the head's other menu items (the macOS file only converts native menu gestures).
+- Control is code-built (like the WinUI one), rows in a `ScrollViewer` + `StackPanel`; colors resolved from theme resources and repainted on theme change. Headless tests: `CommandPaletteUiTests` (toggle and focus, typing and Down/Enter, Esc, focus return, editor untouched).
+- Avalonia AOT publish: only the known SqlClient / ConfigurationManager IL2104/IL3053 warnings; exe started and stayed responsive. Not done here: light/dark and fr/en screenshots against M13 and the by-hand checks.

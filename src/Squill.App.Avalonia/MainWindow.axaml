@@ -149,8 +149,8 @@
             </MenuItem>
           </Menu>
         </StackPanel>
-        <!-- Placeholder for the command palette, which does not exist yet. -->
-        <Border Name="CommandSearch" Grid.Column="1" MaxWidth="438" MinWidth="80" Height="27" CornerRadius="6" IsEnabled="False" IsHitTestVisible="False"
+        <Border Name="CommandSearch" Grid.Column="1" MaxWidth="438" MinWidth="80" Height="27" CornerRadius="6" Cursor="Hand" PointerPressed="OnCommandSearchPressed"
+                AutomationProperties.Name="{loc:Text search.placeholder}"
                 Margin="12,0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="{DynamicResource SquillBgRaisedBrush}"
                 BorderBrush="{DynamicResource SquillBorderBrush}" BorderThickness="1" Padding="8,0">
           <DockPanel>

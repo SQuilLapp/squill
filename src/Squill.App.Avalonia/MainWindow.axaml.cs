@@ -9,6 +9,7 @@ using Squill.App.Avalonia.Views;
 using Squill.Presentation;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
+using Squill.Presentation.Palette;
 using Squill.Core.Plans;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
@@ -34,6 +35,8 @@ public sealed partial class MainWindow : Window
         InitializeTitleLayout();
         InitializeMacChrome();
         Closing += OnWindowClosing;
+        // Tunnelling: Ctrl+K (Cmd+K on macOS) is seen before the editor, the grid or the explorer can consume it.
+        AddHandler(KeyDownEvent, OnPaletteKey, RoutingStrategies.Tunnel);
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.OemComma, KeyModifiers.Control), Command = new RelayCommand(OpenSettings) });
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.E, KeyModifiers.Control), Command = new RelayCommand(OnExplainKey) });
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.E, KeyModifiers.Control | KeyModifiers.Shift), Command = new RelayCommand(OnAnalyzeKey) });
@@ -115,6 +118,43 @@ public sealed partial class MainWindow : Window
         ActiveTabView.EditorFontSize = _settings.EditorFontSize;
         AttachUpdates(services.Updates, services.About);
         InitializeMacMenu();
+        AttachPalette(services.Workspace);
+    }
+
+    private void AttachPalette(WorkspaceViewModel workspace)
+    {
+        var palette = new Controls.CommandPalette(workspace.Palette);
+        RootGrid.Children.Add(palette);
+        void Head(string id, string title, string category, string? shortcut, Action run) =>
+            workspace.Palette.Registry.Add(new PaletteAction(id, title, category, shortcut, "action", () => true, _ =>
+            {
+                run();
+                return ValueTask.CompletedTask;
+            }));
+        Head("app.settings", "palette.action.app.settings", "menu.tools", "Ctrl+,", OpenSettings);
+        Head("app.newConnection", "palette.action.app.newConnection", "menu.database", null, () => workspace.ConnectionList.NewCommand.Execute(null));
+        Head("app.checkUpdates", "palette.action.app.checkUpdates", "menu.help", null, () => OnCheckForUpdatesClicked(null, null!));
+        Head("app.about", "palette.action.app.about", "menu.help", null, () => OnAboutClicked(null, null!));
+        Head("app.openDataFolder", "palette.action.app.openDataFolder", "menu.file", null, () => OnOpenDataFolder(null, null!));
+    }
+
+    private void OnPaletteKey(object? sender, KeyEventArgs e)
+    {
+        var command = OperatingSystem.IsMacOS() ? KeyModifiers.Meta : KeyModifiers.Control;
+        if (e.Key != Key.K || e.KeyModifiers != command || DataContext is not WorkspaceViewModel { Palette: { } palette } workspace)
+            return;
+        if (palette.IsOpen)
+            palette.Close();
+        else
+            workspace.OpenPaletteCommand.Execute(null);
+        e.Handled = true;
+    }
+
+    private void OnCommandSearchPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (DataContext is WorkspaceViewModel workspace)
+            workspace.OpenPaletteCommand.Execute(null);
+        e.Handled = true;
     }
 
     private void OnSettingsPropertyChanged(object? sender, PropertyChangedEventArgs e)
