@@ -46,6 +46,9 @@ src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFg2Brush|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFg3Brush|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFontMono|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillIconCollapse|resource key
+src/Squill.App.WinUI/Views/SchemaCompareView.cs|SquillFg2Brush|resource key
+src/Squill.App.WinUI/Views/SchemaCompareView.cs|SquillFgBrush|resource key
+src/Squill.App.WinUI/Views/SchemaCompareView.cs|SquillFontMono|resource key
 src/Squill.App.WinUI/Views/TableDesignerView.xaml|Ctrl+S|keyboard accelerator text, not translated
 src/Squill.App.WinUI/Views/TableDesignerView.xaml|ON DELETE|SQL keyword, not translated
 src/Squill.App.WinUI/Views/TableDesignerView.xaml|ON UPDATE|SQL keyword, not translated

@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Media;
 using ConnectionEnvironment = Squill.Core.ConnectionEnvironment;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
+using Squill.Presentation.Compare;
 using Squill.Presentation.Plans;
 using Squill.Core.Transactions;
 using Squill.Presentation.Query;
@@ -36,6 +37,9 @@ public sealed partial class StatusBar : UserControl
     private QueryTabViewModel? _tab;
     private SessionTransaction? _transaction;
     private PlanTabViewModel? _plan;
+    private SchemaCompareViewModel? _compare;
+    private readonly Border _sourceBlock = new() { Padding = new Thickness(14, 0, 14, 0), Visibility = Visibility.Collapsed, Child = new TextBlock { FontWeight = Microsoft.UI.Text.FontWeights.Bold, VerticalAlignment = VerticalAlignment.Center } };
+    private readonly TextBlock _flowArrow = new() { Text = "→", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 8, 0), Visibility = Visibility.Collapsed };
 
     /// <summary>Creates the view.</summary>
     public StatusBar()
@@ -58,7 +62,7 @@ public sealed partial class StatusBar : UserControl
             },
             Children =
             {
-                _environmentBlock,
+                new StackPanel { Orientation = Orientation.Horizontal, Children = { _sourceBlock, _flowArrow, _environmentBlock } },
                 Segment(1, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { _connectionDot, _connection } }, right: true),
                 Segment(2, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { _transactionDot, _transactionText } }, right: true),
                 Segment(3, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { _status, _elapsed } }, right: false),
@@ -98,6 +102,38 @@ public sealed partial class StatusBar : UserControl
         if (_plan is not null)
             _plan.PropertyChanged += OnTabChanged;
         Refresh();
+    }
+
+    /// <summary>Shows the compared environments (<c>STAGING → PRODUCTION</c>), the difference counts and both server versions while a schema compare tab is active.</summary>
+    /// <param name="compare">The active compare tab, or <see langword="null"/> when another kind of tab is shown.</param>
+    public void ShowCompare(SchemaCompareViewModel? compare)
+    {
+        if (ReferenceEquals(_compare, compare))
+            return;
+        if (_compare is not null)
+            _compare.PropertyChanged -= OnTabChanged;
+        _compare = compare;
+        if (_compare is not null)
+            _compare.PropertyChanged += OnTabChanged;
+        Refresh();
+    }
+
+    private void RefreshCompare()
+    {
+        var source = _compare?.Source?.Environment ?? ConnectionEnvironment.None;
+        if (_compare is null || ChromeFormat.Environment(source) is not var (suffix, key, _))
+        {
+            _sourceBlock.Visibility = _flowArrow.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        _sourceBlock.Visibility = _flowArrow.Visibility = Visibility.Visible;
+        _sourceBlock.Background = Brush($"SquillEnv{suffix}Brush");
+        var label = (TextBlock)_sourceBlock.Child;
+        label.Text = UiText.Get(key);
+        label.Foreground = Brush($"SquillOnEnv{suffix}Brush");
+        label.FontSize = (double)Application.Current.Resources["SquillFontSizeBodySm"];
+        _flowArrow.Foreground = Brush("SquillFg3Brush");
     }
 
     private static TextBlock Text(bool mono)
@@ -172,10 +208,11 @@ public sealed partial class StatusBar : UserControl
         Paint();
         RefreshTransaction();
         RefreshEnvironment(workspace.ActiveEnvironment);
+        RefreshCompare();
         _connection.Text = ChromeFormat.Connection(workspace.ActiveSession?.Profile);
         _connectionDot.Visibility = workspace.ActiveSession is null ? Visibility.Visible : Visibility.Collapsed;
-        _version.Text = _plan?.ServerVersion ?? workspace.ActiveSession?.Connection.ServerVersion ?? "";
-        _segments[4].Visibility = _plan is null ? Visibility.Visible : Visibility.Collapsed;
+        _version.Text = _compare is { } c ? $"{c.SourceServerVersion} → {c.TargetServerVersion}" : _plan?.ServerVersion ?? workspace.ActiveSession?.Connection.ServerVersion ?? "";
+        _segments[4].Visibility = _plan is null && _compare is null ? Visibility.Visible : Visibility.Collapsed;
         RefreshRunStatus();
         RefreshPosition();
     }
@@ -216,7 +253,7 @@ public sealed partial class StatusBar : UserControl
     // The transaction belongs to the session of the active query tab: nothing is shown for plans and other kinds of tab.
     private void RefreshTransaction()
     {
-        var text = _plan is null ? _transaction?.StatusText ?? "" : "";
+        var text = _plan is null && _compare is null ? _transaction?.StatusText ?? "" : "";
         _segments[1].Visibility = text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
         _transactionText.Text = text;
         var brush = Brush(_transaction?.State == TransactionState.Failed ? "SquillDangerBrush" : "SquillWarningBrush");
@@ -226,6 +263,14 @@ public sealed partial class StatusBar : UserControl
 
     private void RefreshRunStatus()
     {
+        if (_compare is { } compare)
+        {
+            _status.Text = compare.DifferencesText;
+            _status.Foreground = Brush("SquillFg2Brush");
+            _elapsed.Text = "";
+            return;
+        }
+
         if (_plan is { } plan)
         {
             _status.Text = plan.Plan.StatusLine;

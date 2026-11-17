@@ -10,6 +10,7 @@ using Squill.Presentation;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
+using Squill.Presentation.Compare;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
 using Squill.Presentation.Settings;
@@ -172,6 +173,9 @@ public sealed partial class MainWindow : Window
             case nameof(WorkspaceViewModel.ActivePlan) when Workspace.ActivePlan is { } plan:
                 SelectExtraTab(plan);
                 break;
+            case nameof(WorkspaceViewModel.ActiveCompare) when Workspace.ActiveCompare is { } compare:
+                SelectExtraTab(compare);
+                break;
             case nameof(WorkspaceViewModel.ActiveDesigner) when Workspace.ActiveDesigner is { } designer:
                 SelectExtraTab(designer);
                 break;
@@ -230,6 +234,10 @@ public sealed partial class MainWindow : Window
                 Workspace.ActivePlan = plan;
                 ShowPlan(plan);
                 break;
+            case SchemaCompareViewModel compare:
+                Workspace.ActiveCompare = compare;
+                ShowCompare(compare);
+                break;
             case TerminalTabViewModel terminal:
                 ShowTerminal(terminal);
                 break;
@@ -246,6 +254,8 @@ public sealed partial class MainWindow : Window
             Workspace.CloseDiagramCommand.Execute(diagram);
         else if (args.Tab.Tag is PlanTabViewModel plan)
             plan.CloseCommand.Execute(null);
+        else if (args.Tab.Tag is SchemaCompareViewModel compare)
+            compare.CloseCommand.Execute(null);
         else if (args.Tab.Tag is TableDesignerViewModel designer)
             Workspace.CloseDesignerCommand.Execute(designer);
     }
@@ -279,6 +289,8 @@ public sealed partial class MainWindow : Window
             Workspace.CloseDiagramCommand.Execute(diagram);
         else if (selected is PlanTabViewModel plan)
             plan.CloseCommand.Execute(null);
+        else if (selected is SchemaCompareViewModel compare)
+            compare.CloseCommand.Execute(null);
         else if (selected is TableDesignerViewModel designer)
             Workspace.CloseDesignerCommand.Execute(designer);
         else

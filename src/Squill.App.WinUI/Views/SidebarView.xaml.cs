@@ -135,7 +135,14 @@ public sealed partial class SidebarView : UserControl
             Add(UiText.Get("explorer.edit"), () => List.EditCommand.Execute(null));
             Add(UiText.Get("explorer.delete"), () => List.DeleteCommand.Execute(null));
             if (node.IsConnected)
+            {
+                Add(UiText.Get("explorer.compareSchemas"), () => _workspace.OpenSchemaCompareCommand.Execute(node.Profile?.Id));
+                var compare = (MenuFlyoutItem)menu.Items[^1];
+                compare.IsEnabled = _workspace.OpenSchemaCompareCommand.CanExecute(node.Profile?.Id);
+                if (!compare.IsEnabled)
+                    ToolTipService.SetToolTip(compare, _workspace.SchemaCompareDisabledReason);
                 Add(UiText.Get("explorer.disconnect"), () => _workspace.DisconnectCommand.Execute(null));
+            }
             else
                 Add(UiText.Get("explorer.connect"), () => _workspace.ConnectCommand.Execute(node.Profile));
         }

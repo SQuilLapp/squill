@@ -348,7 +348,7 @@ Depends on: <card ids, ranges allowed>
 | [P18-06](phase-18/P18-06-sql-migration-script.md) | Sql: migration script generation | P18-05 | done |
 | [P18-07](phase-18/P18-07-presentation-line-diff.md) | Presentation: line diff for the side-by-side DDL | none | done |
 | [P18-08](phase-18/P18-08-presentation-schema-compare-tab.md) | Presentation: schema compare view-model and tab (risky) | P18-05 ... P18-07, P18-02 | done |
-| [P18-09](phase-18/P18-09-winui-schema-compare-view.md) | WinUI head: the schema compare view | P18-08, P9-10 | todo |
+| [P18-09](phase-18/P18-09-winui-schema-compare-view.md) | WinUI head: the schema compare view | P18-08, P9-10 | done |
 | [P18-10](phase-18/P18-10-avalonia-schema-compare-view.md) | Avalonia head: the schema compare view | P18-09 | todo |
 | [P18-11](phase-18/P18-11-data-activity-contract-and-postgres.md) | Data: server activity contract and PostgreSQL reader | none | todo |
 | [P18-12](phase-18/P18-12-data-activity-mysql-sqlserver.md) | Data: activity readers for MySQL and SQL Server | P18-11 | todo |

@@ -15,6 +15,7 @@
     <Compile Include="..\..\src\Squill.App.WinUI\CrashLog.cs" Link="CrashLog.cs" />
     <Compile Include="..\..\src\Squill.App.WinUI\Views\EditBarFormat.cs" Link="EditBarFormat.cs" />
     <Compile Include="..\..\src\Squill.App.WinUI\Views\ChromeFormat.cs" Link="ChromeFormat.cs" />
+    <Compile Include="..\..\src\Squill.App.WinUI\Views\CompareFormat.cs" Link="CompareFormat.cs" />
     <Compile Include="..\..\src\Squill.App.WinUI\Views\PropertiesModel.cs" Link="PropertiesModel.cs" />
     <Compile Include="..\..\src\Squill.App.WinUI\Views\TabInfo.cs" Link="TabInfo.cs" />
     <Compile Include="..\..\src\Squill.App.WinUI\Views\HistoryFormat.cs" Link="HistoryFormat.cs" />
@@ -25,6 +26,8 @@
     <Content Include="..\..\src\Squill.App.WinUI\Views\PropertiesPanel.xaml" Link="Xaml\PropertiesPanel.xaml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\PropertiesPanel.xaml.cs" Link="Xaml\PropertiesPanel.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\tokens\squill.tokens.json" Link="squill.tokens.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\SchemaCompareView.cs" Link="Xaml\SchemaCompareView.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\MainWindow.Diagram.cs" Link="Xaml\MainWindow.Diagram.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\HomePage.cs" Link="Xaml\HomePage.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\MainWindow.Home.cs" Link="Xaml\MainWindow.Home.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\MainWindow.xaml" Link="Xaml\MainWindow.xaml" CopyToOutputDirectory="PreserveNewest" />

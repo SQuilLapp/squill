@@ -168,13 +168,18 @@ public sealed partial class MainWindow
             Item("editor.stop", () => Workspace.ActiveTab?.CancelCommand, null, OnCancelClicked, VirtualKey.Escape, VirtualKeyModifiers.None),
             new MenuFlyoutSeparator(),
             Item("menu.format", () => Workspace.ActiveTab?.FormatDocumentCommand, null, OnFormatClicked, VirtualKey.F, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift)));
-        MainMenu.Items.Add(Menu("menu.database", Item("menu.newTable", () => Workspace.NewTableCommand, null, OnNewTableClicked)));
+        _compareItem = Item("menu.compareSchemas", () => Workspace.OpenSchemaCompareCommand, null, OnCompareClicked);
+        MainMenu.Items.Add(Menu("menu.database", Item("menu.newTable", () => Workspace.NewTableCommand, null, OnNewTableClicked), _compareItem));
         ToolsMenu = Menu("menu.tools", Plain("menu.settings", OnSettingsClicked));
         MainMenu.Items.Add(ToolsMenu);
         MainMenu.Items.Add(Menu("menu.help", Plain("menu.checkForUpdates", OnCheckForUpdatesClicked), Plain("menu.about", OnAboutClicked)));
     }
 
     private MenuBarItem ToolsMenu { get; set; } = null!;
+
+    private MenuFlyoutItem? _compareItem;
+
+    private void OnCompareClicked(object sender, RoutedEventArgs e) => Workspace.OpenSchemaCompareCommand.Execute(null);
 
     // Narrow window: the menu bar folds into a hamburger button whose flyout holds the same items (moved, never copied, so commands and shortcuts stay in sync).
     private void BuildHamburger()
@@ -276,6 +281,8 @@ public sealed partial class MainWindow
     {
         foreach (var (item, command, parameter) in _commandItems)
             item.IsEnabled = ChromeFormat.IsEnabled(command(), parameter());
+        if (_compareItem is not null && _workspace is not null)
+            ToolTipService.SetToolTip(_compareItem, _compareItem.IsEnabled ? null : Workspace.SchemaCompareDisabledReason);
     }
 
     private void AttachMenu(WorkspaceViewModel workspace)
@@ -283,6 +290,7 @@ public sealed partial class MainWindow
         workspace.PropertyChanged += (_, _) => WatchMenuTab();
         workspace.OpenDiagramCommand.CanExecuteChanged += (_, _) => SyncMenu();
         workspace.NewTableCommand.CanExecuteChanged += (_, _) => SyncMenu();
+        workspace.OpenSchemaCompareCommand.CanExecuteChanged += (_, _) => SyncMenu();
         WatchMenuTab();
     }
 

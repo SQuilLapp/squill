@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Squill.App.WinUI.Views;
 using Squill.Presentation.Designer;
+using Squill.Presentation.Compare;
 using Squill.Presentation.Diagram;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Workspace;
@@ -19,6 +20,7 @@ public sealed partial class MainWindow
         workspace.Diagrams.CollectionChanged += OnExtraTabsChanged;
         workspace.Designers.CollectionChanged += OnExtraTabsChanged;
         workspace.Plans.CollectionChanged += OnExtraTabsChanged;
+        workspace.Compares.CollectionChanged += OnExtraTabsChanged;
     }
 
     private void OnExtraTabsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -31,6 +33,8 @@ public sealed partial class MainWindow
 
         foreach (var added in e.NewItems ?? new List<object>())
         {
+            if (added is SchemaCompareViewModel compare)
+                compare.CopyRequested += CopyToClipboard;
             var item = TabHeader.Create(added);
             _extraItems[added] = item;
             Tabs.TabItems.Add(item);
@@ -58,7 +62,9 @@ public sealed partial class MainWindow
         DiagramArea.Visibility = Visibility.Collapsed;
         DesignerArea.Visibility = Visibility.Collapsed;
         PlanArea.Visibility = Visibility.Collapsed;
+        CompareArea.Visibility = Visibility.Collapsed;
         Status.ShowPlan(null);
+        Status.ShowCompare(null);
     }
 
     private void ShowDiagram(DiagramTabViewModel diagram)
@@ -72,6 +78,20 @@ public sealed partial class MainWindow
         ShowOnly(PlanArea);
         PlanArea.ViewModel = plan;
         Status.ShowPlan(plan);
+    }
+
+    private void ShowCompare(SchemaCompareViewModel compare)
+    {
+        ShowOnly(CompareArea);
+        CompareArea.ViewModel = compare;
+        Status.ShowCompare(compare);
+    }
+
+    private static void CopyToClipboard(string text)
+    {
+        var package = new Windows.ApplicationModel.DataTransfer.DataPackage();
+        package.SetText(text);
+        Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(package);
     }
 
     private void ShowDesigner(TableDesignerViewModel designer)

@@ -1,6 +1,6 @@
 # P18-09 - WinUI head: the schema compare view
 
-Status: todo
+Status: done
 Depends on: P18-08, P9-10
 
 ## Goal
@@ -17,11 +17,17 @@ Draw M09 in the WinUI head. Recipe 5, 6.
 - Avalonia (P18-10), `Données` tab.
 
 ## Tasks
-- [ ] View, DDL pane control, wiring of menu and context items.
-- [ ] Tests in `tests/Squill.App.WinUI.Tests` where the harness allows (line count, marks, hatch for filler).
+- [x] View, DDL pane control, wiring of menu and context items.
+- [x] Tests in `tests/Squill.App.WinUI.Tests` where the harness allows (line count, marks, hatch for filler).
 
 ## Acceptance criteria
 - Common acceptance (recipe 7) with the WinUI AOT publish; a capture needs two live connections: use two SQLite files (differences created with the P18-08 scenario) and compare with M09 light and dark; list differences; what needs a Production target is "to check by hand".
 
 ## Suggested commit message
 Add the WinUI schema compare view
+
+## Report
+- Built in code like the home page (no `.xaml`): `Views/SchemaCompareView.cs`, `Controls/DdlPane.cs` (Win2D, row tints, `+` / `-` marks, hatched filler, shared scroll), `Views/CompareFormat.cs` (row kinds, tested). The script editor is the head's `EditorFactory` editor (LoomEditor when the build has it).
+- Wired: tab host in `MainWindow`, `Base de donnees` menu item with the disabled reason as tooltip, explorer connection context item, status bar (`STAGING -> PRODUCTION`, counts, both server versions), `F7` / `Maj+F7` / `Ctrl+S` / `Ctrl+Entree`.
+- Verified: both solutions build with 0 warnings, all tests green, AOT publish without IL2xxx/IL3xxx from our code (third-party SqlClient warnings are the existing ones), published exe starts without a crash log.
+- To check by hand (no capture was taken): the M09 light / dark comparison with two live SQLite files, a Production target (danger button, stripe), horizontal scroll of long DDL lines (not implemented, text is clipped).

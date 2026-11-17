@@ -16,6 +16,7 @@ public sealed partial class CatalogTests
         "home.env.staging", // environment pill
         "home.env.dev", // environment pill
         "home.env.local", // environment pill
+        "compare.source", // SOURCE label of the compare header, same in both languages
         "compare.env.production", // environment name in the status bar
         "compare.env.staging", // environment name in the status bar
         "compare.env.development", // environment name in the status bar
