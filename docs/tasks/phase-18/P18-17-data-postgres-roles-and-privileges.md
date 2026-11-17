@@ -1,6 +1,6 @@
 # P18-17 - Data.Postgres: read roles and privileges
 
-Status: todo
+Status: done
 Depends on: P18-16
 
 ## Goal
@@ -15,8 +15,8 @@ Read the data of M11 from a PostgreSQL server, read-only. Recipe 1, 4.
 - Writing (statements run through the statement runner, P18-19), other engines.
 
 ## Tasks
-- [ ] Contract, reader, provider hook.
-- [ ] Docker-gated `tests/Squill.Data.Postgres.Tests/SecurityReaderTests.cs`: create roles `grp_read` (nologin) granted `select` on a schema's tables, `analyst` (nologin, member of `grp_read`), `reader` (login), grant `insert` on one table directly to `analyst`: roles list and group / user split, memberships both ways, `analyst` shows `Inherited(grp_read)` for select and `Granted` for the direct insert, the owner shows everything granted, `PUBLIC` grant shows inherited from `PUBLIC`, schema filter, views and materialized views present, a 2,000-table schema reads quickly.
+- [x] Contract, reader, provider hook.
+- [x] Docker-gated `tests/Squill.Data.Postgres.Tests/SecurityReaderTests.cs`: create roles `grp_read` (nologin) granted `select` on a schema's tables, `analyst` (nologin, member of `grp_read`), `reader` (login), grant `insert` on one table directly to `analyst`: roles list and group / user split, memberships both ways, `analyst` shows `Inherited(grp_read)` for select and `Granted` for the direct insert, the owner shows everything granted, `PUBLIC` grant shows inherited from `PUBLIC`, schema filter, views and materialized views present, a 2,000-table schema reads quickly.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7); the Docker-gated test ran on PostgreSQL (say so).
