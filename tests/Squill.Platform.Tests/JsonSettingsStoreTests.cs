@@ -102,4 +102,29 @@ public sealed class JsonSettingsStoreTests : IDisposable
         Assert.Equal(AppSettings.Default, await NewStore().LoadAsync(_ct));
         Assert.True(File.Exists(Path.Combine(_dir, "settings.json.bad")));
     }
+
+    [Fact]
+    public async Task LoadAsync_OldFileWithoutHomeFields_UsesTheirDefaults()
+    {
+        Directory.CreateDirectory(_dir);
+        await File.WriteAllTextAsync(
+            Path.Combine(_dir, "settings.json"),
+            """[{"theme":"Dark","editorFontSize":14,"maxGridRows":5000,"formatterKeywordCase":"Upper"}]""",
+            _ct);
+
+        var loaded = await NewStore().LoadAsync(_ct);
+
+        Assert.True(loaded.ShowHomeAtStartup);
+        Assert.Equal(0, loaded.HomeTipIndex);
+        Assert.False(loaded.HomeTipsHidden);
+    }
+
+    [Fact]
+    public async Task SaveAsync_HomeSettings_RoundTrip()
+    {
+        var settings = AppSettings.Default with { ShowHomeAtStartup = false, HomeTipIndex = 3, HomeTipsHidden = true };
+        await NewStore().SaveAsync(settings, _ct);
+
+        Assert.Equal(settings, await NewStore().LoadAsync(_ct));
+    }
 }

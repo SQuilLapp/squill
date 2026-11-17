@@ -1,6 +1,6 @@
 # P18-01 - Platform: recent connections and home settings
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -16,8 +16,8 @@ The data the M01 home page needs and the app does not store today: when each con
 - Any UI, the view-model (P18-02), projects, tips content.
 
 ## Tasks
-- [ ] Contract, JSON store, JSON context, `AppSettings` fields, factory/registration next to the other stores (`AppComposition` wiring is P18-02).
-- [ ] Tests in `tests/Squill.Platform.Tests`: touch orders newest first, touching twice keeps one entry, 21st entry drops the oldest, corrupt file reads as empty, old settings file loads with defaults, round trip of the new settings.
+- [x] Contract, JSON store, JSON context, `AppSettings` fields, factory/registration next to the other stores (`AppComposition` wiring is P18-02).
+- [x] Tests in `tests/Squill.Platform.Tests`: touch orders newest first, touching twice keeps one entry, 21st entry drops the oldest, corrupt file reads as empty, old settings file loads with defaults, round trip of the new settings.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched.

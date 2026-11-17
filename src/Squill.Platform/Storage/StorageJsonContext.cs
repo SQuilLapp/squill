@@ -8,6 +8,7 @@ namespace Squill.Platform.Storage;
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(List<HistoryEntry>))]
 [JsonSerializable(typeof(List<Snippet>))]
+[JsonSerializable(typeof(List<Squill.Platform.Profiles.RecentConnection>))]
 [JsonSerializable(typeof(DiagramLayout))]
 [JsonSerializable(typeof(TableFilter))]
 [JsonSerializable(typeof(List<Squill.Platform.Ssh.KnownHostEntry>))]
