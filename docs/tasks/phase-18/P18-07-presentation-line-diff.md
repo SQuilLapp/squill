@@ -1,6 +1,6 @@
 # P18-07 - Presentation: line diff for the side-by-side DDL
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -16,8 +16,8 @@ The aligned, marked lines of the two M09 DDL panes (green `+` on the source side
 - Intra-line highlighting, syntax coloring (the heads reuse the SQL highlighter if it exists for read-only text; otherwise plain mono).
 
 ## Tasks
-- [ ] `LineDiff` and records.
-- [ ] Tests in `tests/Squill.Presentation.Tests/Compare/LineDiffTests.cs`: identical, one line added, one removed, one replaced, the M09 `commandes` example (two added lines in the middle become `SourceOnly` with fillers on the target), empty side, trailing whitespace ignored, CRLF vs LF, large input fallback.
+- [x] `LineDiff` and records.
+- [x] Tests in `tests/Squill.Presentation.Tests/Compare/LineDiffTests.cs`: identical, one line added, one removed, one replaced, the M09 `commandes` example (two added lines in the middle become `SourceOnly` with fillers on the target), empty side, trailing whitespace ignored, CRLF vs LF, large input fallback.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched.
