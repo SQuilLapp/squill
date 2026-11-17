@@ -9,6 +9,7 @@ using Squill.Core.Design;
 using Squill.Platform.Profiles;
 using Squill.Platform.Settings;
 using Squill.Platform.Storage;
+using Squill.Presentation.Compare;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
@@ -111,8 +112,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
                 foreach (var added in e.NewItems.OfType<ConnectionSession>().Where(x => x.Parent is null))
                     _ = Home.TouchAsync(added.Profile.Id, CancellationToken.None);
         };
-        foreach (var collection in new INotifyCollectionChanged[] { manager.Sessions, Tabs, Terminals, Designers, Diagrams, Plans })
+        foreach (var collection in new INotifyCollectionChanged[] { manager.Sessions, Tabs, Terminals, Designers, Diagrams, Plans, Compares })
             collection.CollectionChanged += (_, _) => UpdateHomeVisibility();
+        manager.Sessions.CollectionChanged += (_, _) => RaiseSchemaCompareAvailability();
         Explorer.OpenTableRequested += (_, r) => _ = OpenTableOnAsync(r.Session, r.Table);
         Explorer.DesignTableRequested += (_, r) => DesignTableOn(r.Session, r.Table);
         Explorer.DropTableRequested += (_, r) =>
@@ -149,7 +151,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     }
 
     private bool HasNothingOpen() =>
-        Sessions.Count == 0 && Tabs.Count == 0 && Terminals.Count == 0 && Designers.Count == 0 && Diagrams.Count == 0 && Plans.Count == 0;
+        Sessions.Count == 0 && Tabs.Count == 0 && Terminals.Count == 0 && Designers.Count == 0 && Diagrams.Count == 0 && Plans.Count == 0 && Compares.Count == 0;
 
     private void UpdateHomeVisibility() => IsHomeVisible = HasNothingOpen();
 
@@ -193,6 +195,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             if (session.Transaction.State == TransactionState.Open)
                 session.Transaction.RefreshElapsed();
         }
+
+        foreach (var compare in Compares)
+            compare.RefreshComparedText();
     }
 
     /// <summary>Gets the open sessions.</summary>
@@ -212,6 +217,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
 
     /// <summary>Gets the open plan tabs, at most one per query tab.</summary>
     public ObservableCollection<PlanTabViewModel> Plans { get; } = [];
+
+    /// <summary>Gets the open schema compare tabs, at most one.</summary>
+    public ObservableCollection<SchemaCompareViewModel> Compares { get; } = [];
 
     /// <summary>Gets or sets the session shown in the explorer and used by new tabs.</summary>
     [ObservableProperty]
@@ -239,6 +247,68 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     /// <summary>Gets or sets the plan tab shown.</summary>
     [ObservableProperty]
     public partial PlanTabViewModel? ActivePlan { get; set; }
+
+    /// <summary>Gets or sets the schema compare tab shown.</summary>
+    [ObservableProperty]
+    public partial SchemaCompareViewModel? ActiveCompare { get; set; }
+
+    private IReadOnlyList<CompareEndpoint> CompareEndpoints() => CompareEndpoint.List(AllSessions());
+
+    private bool CanOpenSchemaCompare() => CompareEndpoint.CanCompare(CompareEndpoints());
+
+    /// <summary>Gets why the schema comparison cannot be opened (the tooltip of the disabled menu item and palette action), empty when it can.</summary>
+    public string SchemaCompareDisabledReason =>
+        CanOpenSchemaCompare() ? ""
+        : UiText.Get(AllSessions().Any() && AllSessions().All(s => s.Profile.Dialect == DatabaseDialect.Oracle) ? "compare.disabled.oracle" : "compare.disabled.sessions");
+
+    private void RaiseSchemaCompareAvailability()
+    {
+        OpenSchemaCompareCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(SchemaCompareDisabledReason));
+    }
+
+    /// <summary>Opens the schema compare tab, or shows it when it is already open.</summary>
+    /// <param name="sessionId">The profile id of the connection to compare from; <see langword="null"/> uses the active session.</param>
+    [RelayCommand(CanExecute = nameof(CanOpenSchemaCompare))]
+    public void OpenSchemaCompare(Guid? sessionId)
+    {
+        var from = sessionId is { } id ? AllSessions().FirstOrDefault(s => s.Profile.Id == id) : ActiveSession;
+        if (Compares.FirstOrDefault() is { } open)
+        {
+            open.RefreshEndpoints();
+            if (from is not null)
+                open.SelectSource(from);
+            ActiveCompare = open;
+            return;
+        }
+
+        var compare = new SchemaCompareViewModel(() => AllSessions(), _dialogs);
+        if (from is not null)
+            compare.SelectSource(from);
+        compare.CloseRequested += RemoveCompare;
+        compare.ScriptRequested += (session, script) => AddTab(session, script);
+        Compares.Add(compare);
+        ActiveCompare = compare;
+    }
+
+    [RelayCommand]
+    private void CloseCompare(SchemaCompareViewModel? compare)
+    {
+        if (compare is not null)
+            RemoveCompare(compare);
+    }
+
+    private void RemoveCompare(SchemaCompareViewModel compare)
+    {
+        var index = Compares.IndexOf(compare);
+        if (index < 0)
+            return;
+        Compares.RemoveAt(index);
+        compare.CloseRequested -= RemoveCompare;
+        compare.Dispose();
+        if (ActiveCompare == compare)
+            ActiveCompare = Compares.Count == 0 ? null : Compares[Math.Min(index, Compares.Count - 1)];
+    }
 
     /// <summary>Shows a plan tab, adding it first when it is not open; a query tab keeps one plan tab whose content is replaced by each new plan.</summary>
     /// <param name="plan">The plan tab of a query tab.</param>
@@ -288,6 +358,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             TableDesignerViewModel d => d.Session,
             DiagramTabViewModel g => g.Session,
             PlanTabViewModel p => p.Source.Session,
+            SchemaCompareViewModel c => c.Session,
             _ => null,
         };
         _shownSession = session;
@@ -299,6 +370,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
 
     partial void OnActiveSessionChanged(ConnectionSession? value)
     {
+        RaiseSchemaCompareAvailability();
         if (value is null)
             _shownSession = null; // not connected: no tab can be on screen
         OnPropertyChanged(nameof(ActiveEnvironment));
@@ -311,6 +383,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     partial void OnActiveDiagramChanged(DiagramTabViewModel? value) => ShowTabIfAny(value);
 
     partial void OnActivePlanChanged(PlanTabViewModel? value) => ShowTabIfAny(value);
+
+    partial void OnActiveCompareChanged(SchemaCompareViewModel? value) => ShowTabIfAny(value);
 
     private void ShowTabIfAny(object? tab)
     {
@@ -367,6 +441,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             RemoveDesigner(designer);
         foreach (var diagram in Diagrams.Where(d => d.Session.Root == session).ToList())
             RemoveDiagram(diagram);
+        foreach (var compare in Compares.Where(c => c.UsesServer(session)).ToList())
+            RemoveCompare(compare);
         foreach (var opened in session.OpenedDatabases.Prepend(session))
             _tabCounters.Remove(opened);
         await _manager.CloseAsync(session);

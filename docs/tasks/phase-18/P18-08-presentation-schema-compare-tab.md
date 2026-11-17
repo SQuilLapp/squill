@@ -1,6 +1,6 @@
 # P18-08 - Presentation: schema compare view-model and tab (risky)
 
-Status: todo
+Status: done
 Depends on: P18-05, P18-06, P18-07, P18-02
 
 ## Goal
@@ -21,9 +21,9 @@ The M09 screen as a workspace tab: pick source and target, compare, browse diffe
 - Views (P18-09, P18-10), `Données` tab, comparing different dialects.
 
 ## Tasks
-- [ ] View-model, tab kind registration, workspace command, palette action, catalog keys.
-- [ ] Tests in `tests/Squill.Presentation.Tests/Compare/` with two fake sessions: compare lists and counts, chips filter, inclusion changes rebuild the script (stale build never wins), swap, defaults, execute on a Production target asks the confirmation and runs nothing when refused, execute success refreshes, failure keeps the script, `Dialect mismatch` impossible by construction (target list), cancel while comparing.
-- [ ] An engine scenario in `tests/Shared` reused by the SQLite test class (always) and the Docker-gated ones: two databases, compare, execute the script on the target, compare again, no included difference left.
+- [x] View-model, tab kind registration, workspace command, palette action, catalog keys.
+- [x] Tests in `tests/Squill.Presentation.Tests/Compare/` with two fake sessions: compare lists and counts, chips filter, inclusion changes rebuild the script (stale build never wins), swap, defaults, execute on a Production target asks the confirmation and runs nothing when refused, execute success refreshes, failure keeps the script, `Dialect mismatch` impossible by construction (target list), cancel while comparing.
+- [x] An engine scenario in `tests/Shared` reused by the SQLite test class (always) and the Docker-gated ones: two databases, compare, execute the script on the target, compare again, no included difference left.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched. Riskiest part: the execute path must never bypass the production confirmation; a test proves it.

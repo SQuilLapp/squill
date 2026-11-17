@@ -87,6 +87,7 @@ public sealed class PaletteActionRegistry
             () => workspace.ActiveTab?.Transaction.Mode == TransactionMode.Manual ? "palette.action.query.mode.auto" : "palette.action.query.mode.manual"));
         Add("workspace.newTable", "menu.database", null, "action", () => workspace.NewTableCommand.CanExecute(null), () => Do(() => workspace.NewTableCommand.Execute(null)));
         Add("workspace.openDiagram", "menu.view", null, "action", () => workspace.OpenDiagramCommand.CanExecute(null), () => workspace.OpenDiagramCommand.ExecuteAsync(null));
+        Add("workspace.openSchemaCompare", "menu.database", null, "action", () => workspace.OpenSchemaCompareCommand.CanExecute(null), () => Do(() => workspace.OpenSchemaCompareCommand.Execute(null)));
         Add("workspace.newTerminal", "menu.tools", null, "action", () => true, () => workspace.NewTerminalCommand.ExecuteAsync(null));
         Add("workspace.disconnect", "menu.database", null, "action", () => workspace.DisconnectCommand.CanExecute(null), () => workspace.DisconnectCommand.ExecuteAsync(null));
         Add("grid.clearFilter", "menu.view", null, "action", () => ActiveView(workspace)?.IsActive == true, () => Do(() => ActiveView(workspace)?.ClearFilters()));

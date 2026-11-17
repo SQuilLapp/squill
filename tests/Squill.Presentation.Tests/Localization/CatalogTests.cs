@@ -16,6 +16,13 @@ public sealed partial class CatalogTests
         "home.env.staging", // environment pill
         "home.env.dev", // environment pill
         "home.env.local", // environment pill
+        "compare.env.production", // environment name in the status bar
+        "compare.env.staging", // environment name in the status bar
+        "compare.env.development", // environment name in the status bar
+        "compare.env.local", // environment name in the status bar
+        "compare.group.table", // group title, same word
+        "compare.duration", // seconds, same unit
+        "compare.sourceCaption", // same word
         "results.filter.op.greaterThan", // comparison symbol
         "results.filter.op.greaterOrEqual", // comparison symbol
         "results.filter.op.lessThan", // comparison symbol
