@@ -338,7 +338,7 @@ Depends on: <card ids, ranges allowed>
 | [P17-15](phase-17/P17-15-winui-command-palette.md) | WinUI head: the command palette overlay (risky) | P17-14, P9-09 | done |
 | [P17-16](phase-17/P17-16-avalonia-command-palette.md) | Avalonia head: the command palette overlay (risky) | P17-15 | done |
 | [P17-17](phase-17/P17-17-verify-grid-filter-and-palette.md) | End-to-end verification: grid filter and command palette | P17-09, P17-16 | automated done, manual pending |
-| [P17-18](phase-17/P17-18-docs-and-adr.md) | Documentation: grid filter and palette ADR 0014, changelog and README | P17-17 | todo |
+| [P17-18](phase-17/P17-18-docs-and-adr.md) | Documentation: grid filter and palette ADR 0014, changelog and README | P17-17 | done |
 
 ### Phase 9 - Visual conformance
 
@@ -410,6 +410,7 @@ Goal: fix what phases 14 and 15 left behind and what the code itself marks as a 
 
 Goal: the result grid gets the M05 filter bar (typed filter chips, a search box, a column menu with sort and a value filter, header marks) and the window gets the M13 command palette (`Ctrl+K`: actions, objects of every open connection, query history, go to line). Decisions (final, details in [filter-palette-recipe.md](phase-17/filter-palette-recipe.md) and in ADR 0014 written by P17-18): the filter and the sort are client-side over the rows already loaded (a view layer, `FilteredGridDataSource`, no server round trip); the grid is read-only while a filter, search or sort is active and a filter cannot start while edits are pending; export stays the whole committed result; the palette is a window overlay with modes by prefix (`>` actions, `#` objects, `:` line, `!` history), fuzzy matching with highlighted letters, and a history entry is inserted into the editor, never executed. Not built (no feature behind it): freeze / hide / fit width, the row side panel, block size and infinite scroll, the cell sum, filtering rows that carry edits, export of the filtered rows, OR groups, the `@ Symboles` mode and `FICHIERS` section of M13.
 
+- Status: P17-01 ... P17-18 done.
 - Branch: implement phase 17 on the branch `phase-17-grid-filter-palette`; do not create another branch.
 - Order: the two features are independent. Filter: P17-01 ... P17-05 (pure logic, view, view-models), WinUI P17-06 / P17-07 before Avalonia P17-08 / P17-09. Palette: P17-10 ... P17-14, WinUI P17-15 before Avalonia P17-16. Then verification P17-17 and docs P17-18. Either feature may be implemented first; do not interleave a head card before its Presentation cards.
 - Riskiest cards: P17-03 (a stale rebuild must never replace a newer one, 100,000+ rows must not freeze the UI thread), P17-04 (row identity: editing must be refused in Presentation while a view is active), P17-12 (50,000 objects searched per keystroke, opening an object of a non-active connection), P17-15 / P17-16 (focus and keys: `Ctrl+K` from the editor and the grid, no key reaching the editor behind the overlay; stop rules in the cards). Bugs found by P17-17 too big for the card get `P17-19` onwards (added to this index).

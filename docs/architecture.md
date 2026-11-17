@@ -72,6 +72,10 @@ Done through phase 15 (transactions and production confirmation, see [ADR 0012](
 
 `Squill.Platform/Ssh` has `IKnownHostsStore` (`JsonKnownHostsStore`, `known-hosts.json`); `SshNetTunnelFactory` trusts a known key, refuses a changed one and asks through `IDialogService.ConfirmSshHostKeyAsync` for an unknown one. Decisions: [ADR 0013](adr/0013-ssh-host-keys.md).
 
+## Grid filter and command palette (phase 17)
+
+`Squill.Presentation/Results` has `FilteredGridDataSource` (the view that `ResultViewModel.DisplayGrid` returns while a filter, search or sort is active), `ResultViewState`, `GridFilter`, `GridSort`, `ColumnValueCounts`, `ColumnMenuViewModel` and `FilterEditorViewModel`; `Squill.Presentation/Palette` has `PaletteViewModel`, `FuzzyMatcher`, `PaletteActionRegistry` and the object, history and line providers. Both heads draw them (`FilterBar`, `ColumnMenu`, `CommandPalette`). Decisions and limits: [ADR 0014](adr/0014-grid-filter-and-command-palette.md).
+
 ## Transactions and production confirmation (phase 15)
 
 - **Layers.** `Squill.Core/Transactions` holds `TransactionMode`, `TransactionState` and `TransactionProbeResult`. `Squill.Sql/Transactions` holds the pure vocabulary: `StatementTraits`, `StatementClassifier`, `TransactionControl`, `TransactionSql` (per-dialect begin, commit, rollback, savepoint). `Squill.Data` has the optional `ITransactionProbe` on `IDatabaseConnection` (the four connections implement it; Oracle does not; the MySQL one always answers unknown). `Squill.Presentation/Sessions` has `SessionTransaction` (`ConnectionSession.Transaction`: mode, state, pending count, journal, `BeginOperation()`) and the savepoint scope of `SqlRunner`; `Squill.Presentation/Safety` has `ProductionGuard`, `ImpactEstimator`, `ProductionRequestBuilder`, `ProductionConfirmationRequest` / `Result`, `TransactionCloseRequest` and `TransactionChoice`.

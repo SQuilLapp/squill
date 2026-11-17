@@ -1,6 +1,6 @@
 # P17-18 - Documentation: grid filter and palette ADR 0014, changelog and README
 
-Status: todo
+Status: done
 Depends on: P17-17
 
 ## Goal
@@ -19,7 +19,7 @@ Record what phase 17 built and where it stopped, and update the documents that l
 - New features, ticking the owner's manual checklists.
 
 ## Tasks
-- [ ] ADR, visual spec, mockups README, changelog, README, architecture, task index status.
+- [x] ADR, visual spec, mockups README, changelog, README, architecture, task index status.
 
 ## Acceptance criteria
 - Build and test green (docs only, but run them); every link in the touched files resolves (grep the new file names); `eng/release-notes.ps1` still extracts the `Unreleased` section (run it).
