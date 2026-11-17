@@ -16,7 +16,8 @@ namespace Squill.App.WinUI.Views;
 /// <summary>The flyout of a grid column (M05): sort, filter by value, clear, copy name. It only draws <see cref="ColumnMenuViewModel"/>.</summary>
 internal sealed class ColumnMenu
 {
-    private const double MenuWidth = 300;
+    private const double MenuWidth = 320;
+    private const double MenuHeight = 400;
     private Flyout? _flyout;
     private DataGridCanvas? _grid;
     private ColumnMenuViewModel? _vm;
@@ -70,106 +71,152 @@ internal sealed class ColumnMenu
         }
     }
 
-    private static Button Entry(Flyout flyout, FrameworkElement owner, string icon, string text, bool isChecked, bool enabled, string? blocked, Action run)
-    {
-        var glyph = Icons.Create(icon, 14, Brush(owner, isChecked ? "SquillAccentTextBrush" : "SquillFg3Brush"));
-        glyph.HorizontalAlignment = HorizontalAlignment.Left;
-        var row = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(26) }, new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } } };
-        row.Children.Add(glyph);
-        var label = new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center };
-        Grid.SetColumn(label, 1);
-        row.Children.Add(label);
-        if (isChecked)
-        {
-            var tick = Icons.Create("SquillIconCheck", 12, Brush(owner, "SquillAccentTextBrush"));
-            Grid.SetColumn(tick, 2);
-            row.Children.Add(tick);
-        }
-
-        var button = new Button
-        {
-            Content = row,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            HorizontalContentAlignment = HorizontalAlignment.Left,
-            Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
-            BorderThickness = new Thickness(0),
-            Height = 32,
-            MinHeight = 32,
-            Padding = new Thickness(10, 0, 10, 0),
-            IsEnabled = enabled,
-        };
-        AutomationProperties.SetName(button, text);
-        if (!enabled)
-            ToolTipService.SetToolTip(button, blocked);
-        button.Click += (_, _) =>
-        {
-            flyout.Hide();
-            run();
-        };
-        return button;
-    }
-
-    private static Border Separator(FrameworkElement owner) => new() { Height = 1, Margin = new Thickness(0, 4, 0, 4), Background = Brush(owner, "SquillBorderSubtleBrush") };
-
-    private static StackPanel Build(FrameworkElement owner, ColumnMenuViewModel vm, bool hasFilter, Flyout flyout)
+    private static Grid Build(FrameworkElement owner, ColumnMenuViewModel vm, bool hasFilter, Flyout flyout)
     {
         var canChange = vm.CanSort;
-        var sortAsc = Entry(flyout, owner, "SquillIconSortAsc", UiText.Get("results.columnMenu.sortAsc"), vm.CurrentSort is { Descending: false }, canChange, vm.BlockedReason, () => vm.SortAscendingCommand.Execute(null));
-        var sortDesc = Entry(flyout, owner, "SquillIconSortDesc", UiText.Get("results.columnMenu.sortDesc"), vm.CurrentSort is { Descending: true }, canChange, vm.BlockedReason, () => vm.SortDescendingCommand.Execute(null));
-        var search = new TextBox { PlaceholderText = UiText.Get("results.columnMenu.searchValue"), Height = 28, MinHeight = 28, Margin = new Thickness(10, 0, 10, 4), Text = vm.ValueSearch, IsEnabled = canChange };
+        var muted = Brush(owner, "SquillFg3Brush");
+        var title = new TextBlock { Text = UiText.Format("results.columnMenu.title", vm.ColumnName), FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
+        var copy = IconButton(owner, "SquillIconCopy", UiText.Get("results.columnMenu.copyName"), false, true, null);
+        copy.Click += (_, _) =>
+        {
+            var package = new DataPackage();
+            package.SetText(vm.ColumnName);
+            Clipboard.SetContent(package);
+        };
+        Grid.SetColumn(copy, 1);
+        var titleRow = new Grid { ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } }, Children = { title, copy } };
+
+        var search = new TextBox { PlaceholderText = UiText.Get("results.columnMenu.searchValue"), Height = 32, MinHeight = 32, Text = vm.ValueSearch, IsEnabled = canChange };
         AutomationProperties.SetName(search, UiText.Get("results.columnMenu.searchValue"));
+        var sortAsc = IconButton(owner, "SquillIconSortAsc", UiText.Get("results.columnMenu.sortAsc"), vm.CurrentSort is { Descending: false }, canChange, vm.BlockedReason);
+        var sortDesc = IconButton(owner, "SquillIconSortDesc", UiText.Get("results.columnMenu.sortDesc"), vm.CurrentSort is { Descending: true }, canChange, vm.BlockedReason);
+        sortAsc.Click += (_, _) =>
+        {
+            flyout.Hide();
+            vm.SortAscendingCommand.Execute(null);
+        };
+        sortDesc.Click += (_, _) =>
+        {
+            flyout.Hide();
+            vm.SortDescendingCommand.Execute(null);
+        };
+        Grid.SetColumn(sortAsc, 1);
+        Grid.SetColumn(sortDesc, 2);
+        var searchRow = new Grid
+        {
+            ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto }, new ColumnDefinition { Width = GridLength.Auto } },
+            ColumnSpacing = 4,
+            Children = { search, sortAsc, sortDesc },
+        };
+
         // Plain check boxes in a stack panel: no ItemsSource marshalling, no containers to recycle (the list is capped at 500 values).
         var list = new StackPanel();
-        var scroller = new ScrollViewer { Height = 190, Padding = new Thickness(0, 0, 12, 0), Content = list, IsEnabled = canChange, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
-        var loading = new ProgressBar { IsIndeterminate = true, Visibility = vm.IsLoadingValues ? Visibility.Visible : Visibility.Collapsed };
-        var hint = new TextBlock { Foreground = Brush(owner, "SquillFg3Brush"), FontSize = 11, Text = vm.ValuesHint ?? "", Visibility = vm.ValuesHint is null ? Visibility.Collapsed : Visibility.Visible };
-        var apply = new Button { Style = Res("PrimaryButtonStyle"), Content = UiText.Get("results.filter.editor.apply"), Height = 28, MinHeight = 28, HorizontalAlignment = HorizontalAlignment.Right, IsEnabled = canChange && !vm.IsLoadingValues };
+        var scroller = new ScrollViewer { Padding = new Thickness(0, 0, 12, 0), Content = list, IsEnabled = canChange, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        var all = new CheckBox { MinWidth = 0, Width = 24, Height = 28, IsTabStop = true, VerticalAlignment = VerticalAlignment.Center };
+        AutomationProperties.SetName(all, UiText.Get("results.columnMenu.selectAll"));
+        var valueHeader = new TextBlock { Text = UiText.Get("results.columnMenu.valueHeader"), Foreground = muted, VerticalAlignment = VerticalAlignment.Center };
+        var countHeader = new TextBlock { Text = UiText.Get("results.columnMenu.countHeader"), Foreground = muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) };
+        Grid.SetColumn(valueHeader, 1);
+        Grid.SetColumn(countHeader, 2);
+        var headerRow = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Auto }, new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } }, Children = { all, valueHeader, countHeader }, Padding = new Thickness(8, 0, 0, 0) };
+        var headerBox = new Border { BorderBrush = Brush(owner, "SquillBorderSubtleBrush"), BorderThickness = new Thickness(0, 0, 0, 1), Child = headerRow };
+        var loading = new ProgressBar { IsIndeterminate = true, VerticalAlignment = VerticalAlignment.Bottom, Visibility = vm.IsLoadingValues ? Visibility.Visible : Visibility.Collapsed };
+        var hint = new TextBlock { Foreground = muted, FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
+        var apply = new Button { Style = Res("PrimaryButtonStyle"), Content = UiText.Get("results.filter.editor.apply"), Height = 28, MinHeight = 28, IsEnabled = canChange && !vm.IsLoadingValues };
         ToolTipService.SetToolTip(apply, vm.BlockedReason);
+        var clear = new Button { Content = UiText.Get("results.columnMenu.clearFilter"), Height = 28, MinHeight = 28, HorizontalAlignment = HorizontalAlignment.Left, Visibility = hasFilter ? Visibility.Visible : Visibility.Collapsed, IsEnabled = canChange };
+        Grid.SetColumn(apply, 1);
+        var footer = new Grid { ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } }, Children = { clear, apply } };
 
-        Fill(list, owner, vm.Values);
+        void SyncAll()
+        {
+            var checkedCount = vm.Values.Count(v => v.IsChecked);
+            all.IsChecked = checkedCount == 0 ? false : checkedCount == vm.Values.Count ? true : null;
+        }
 
         void Refresh(string? property)
         {
             if (property is nameof(ColumnMenuViewModel.Values))
-                Fill(list, owner, vm.Values);
+                Fill(list, owner, vm.Values, SyncAll);
+            SyncAll();
             loading.Visibility = vm.IsLoadingValues ? Visibility.Visible : Visibility.Collapsed;
-            hint.Text = vm.ValuesHint ?? "";
-            hint.Visibility = vm.ValuesHint is null ? Visibility.Collapsed : Visibility.Visible;
+            hint.Text = vm.ValuesHint ?? UiText.Get("results.columnMenu.hint");
             apply.IsEnabled = canChange && !vm.IsLoadingValues;
         }
 
+        Refresh(nameof(ColumnMenuViewModel.Values));
         vm.PropertyChanged += (_, e) => Refresh(e.PropertyName);
         search.TextChanged += (_, _) => vm.ValueSearch = search.Text;
+        all.Click += (_, _) =>
+        {
+            var target = vm.Values.Any(v => !v.IsChecked);
+            foreach (var item in vm.Values)
+                item.IsChecked = target;
+            Fill(list, owner, vm.Values, SyncAll);
+            SyncAll();
+        };
         apply.Click += (_, _) =>
         {
             flyout.Hide();
             vm.ApplyValuesCommand.Execute(null);
         };
-
-        var panel = new StackPanel { Width = MenuWidth, Spacing = 2 };
-        panel.Children.Add(sortAsc);
-        panel.Children.Add(sortDesc);
-        panel.Children.Add(Separator(owner));
-        panel.Children.Add(new TextBlock { Text = UiText.Get("results.columnMenu.filterByValue"), Style = Res("CapsTextBlockStyle"), Margin = new Thickness(10, 6, 0, 4) });
-        panel.Children.Add(search);
-        panel.Children.Add(loading);
-        panel.Children.Add(scroller);
-        panel.Children.Add(hint);
-        panel.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 6, 10, 2), Children = { apply } });
-        panel.Children.Add(Separator(owner));
-        if (hasFilter)
-            panel.Children.Add(Entry(flyout, owner, "SquillIconClose", UiText.Get("results.columnMenu.clearFilter"), false, canChange, vm.BlockedReason, () => vm.ClearColumnFilterCommand.Execute(null)));
-        // No Ctrl+C chip: Ctrl+C in the grid copies the selection, not the column name.
-        panel.Children.Add(Entry(flyout, owner, "SquillIconCopy", UiText.Get("results.columnMenu.copyName"), false, true, null, () =>
+        clear.Click += (_, _) =>
         {
-            var package = new DataPackage();
-            package.SetText(vm.ColumnName);
-            Clipboard.SetContent(package);
-        }));
+            flyout.Hide();
+            vm.ClearColumnFilterCommand.Execute(null);
+        };
+
+        // The popup keeps one size whatever the list holds: only the list scrolls.
+        var panel = new Grid
+        {
+            Width = MenuWidth,
+            Height = MenuHeight,
+            RowSpacing = 8,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = new GridLength(1, GridUnitType.Star) },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+            },
+        };
+        Place(panel, titleRow, 0);
+        Place(panel, searchRow, 1);
+        Place(panel, headerBox, 2);
+        Place(panel, scroller, 3);
+        Place(panel, new Grid { Height = 18, Children = { hint, loading } }, 4);
+        Place(panel, footer, 5);
 
         // Tunnelling, so Enter applies before a focused check box sees it; Space toggles a focused check box natively.
         panel.PreviewKeyDown += (_, e) => OnKey(e, vm, apply, flyout);
         return panel;
+    }
+
+    private static void Place(Grid grid, FrameworkElement child, int row)
+    {
+        Grid.SetRow(child, row);
+        grid.Children.Add(child);
+    }
+
+    private static Button IconButton(FrameworkElement owner, string icon, string name, bool active, bool enabled, string? blocked)
+    {
+        var button = new Button
+        {
+            Content = Icons.Create(icon, 14, Brush(owner, active ? "SquillAccentTextBrush" : "SquillFg3Brush")),
+            Width = 32,
+            Height = 32,
+            MinWidth = 0,
+            MinHeight = 0,
+            Padding = new Thickness(0),
+            Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
+            BorderThickness = new Thickness(0),
+            IsEnabled = enabled,
+        };
+        AutomationProperties.SetName(button, name);
+        ToolTipService.SetToolTip(button, enabled ? name : blocked ?? name);
+        return button;
     }
 
     private static void OnKey(KeyRoutedEventArgs e, ColumnMenuViewModel vm, Button apply, Flyout flyout)
@@ -187,14 +234,14 @@ internal sealed class ColumnMenu
         }
     }
 
-    private static void Fill(StackPanel list, FrameworkElement owner, IReadOnlyList<ValueItem> values)
+    private static void Fill(StackPanel list, FrameworkElement owner, IReadOnlyList<ValueItem> values, Action changed)
     {
         list.Children.Clear();
         foreach (var item in values)
-            list.Children.Add(BuildValueRow(owner, item));
+            list.Children.Add(BuildValueRow(owner, item, changed));
     }
 
-    private static CheckBox BuildValueRow(FrameworkElement owner, ValueItem item)
+    private static CheckBox BuildValueRow(FrameworkElement owner, ValueItem item, Action changed)
     {
         var muted = Brush(owner, "SquillFg3Brush");
         var text = new TextBlock { Text = item.Text, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
@@ -217,7 +264,11 @@ internal sealed class ColumnMenu
             Content = new Grid { ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } }, Children = { text, count } },
         };
         AutomationProperties.SetName(box, item.Text);
-        box.Click += (_, _) => item.IsChecked = box.IsChecked == true;
+        box.Click += (_, _) =>
+        {
+            item.IsChecked = box.IsChecked == true;
+            changed();
+        };
         return box;
     }
 }
