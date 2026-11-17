@@ -60,6 +60,21 @@ public sealed class ColumnMenuViewModelTests : ViewStateFixture
     }
 
     [Fact]
+    public async Task Search_UnchecksEveryValueItHidesAndApplyKeepsOnlyTheMatches()
+    {
+        var (result, menu) = await OpenAsync(1);
+
+        menu.ValueSearch = "b";
+        Assert.True(menu.Values.Single().IsChecked);
+        menu.ValueSearch = "";
+        Assert.Equal([false, false, true], menu.Values.Select(v => v.IsChecked));
+
+        menu.ApplyValuesCommand.Execute(null);
+
+        Assert.Equal("20", await QtyAsync(result));
+    }
+
+    [Fact]
     public async Task ApplyValues_BuildsAnInFilterWithNullAndReplacesIt()
     {
         var (result, menu) = await OpenAsync(1);

@@ -74,15 +74,25 @@ public sealed partial class ColumnMenuViewModel : ViewModelBase, IDisposable
     /// <summary>Gets a task that completes when the value list is ready.</summary>
     public Task ValuesLoaded { get; }
 
-    /// <summary>Gets or sets the text that narrows <see cref="Values"/> (case-insensitive).</summary>
+    /// <summary>Gets or sets the text that narrows <see cref="Values"/> (case-insensitive); a non-empty text also unchecks every value it hides.</summary>
     public string ValueSearch
     {
         get => _valueSearch;
         set
         {
             value ??= "";
-            if (SetProperty(ref _valueSearch, value))
-                Values = Narrow(_all);
+            if (!SetProperty(ref _valueSearch, value))
+                return;
+            var shown = Narrow(_all);
+            // Searching selects: only the values that come up stay checked.
+            if (value.Length > 0)
+            {
+                var kept = shown.ToHashSet();
+                foreach (var item in _all)
+                    item.IsChecked = kept.Contains(item);
+            }
+
+            Values = shown;
         }
     }
 
