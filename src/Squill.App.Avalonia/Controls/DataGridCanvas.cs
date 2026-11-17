@@ -404,19 +404,7 @@ public sealed class DataGridCanvas : Control
         if (_filteredColumns.Contains(col))
         {
             var fx = x + used;
-            var funnel = new StreamGeometry();
-            using (var c = funnel.Open())
-            {
-                c.BeginFigure(new Point(fx, cy - 5), true);
-                c.LineTo(new Point(fx + 10, cy - 5));
-                c.LineTo(new Point(fx + 6, cy));
-                c.LineTo(new Point(fx + 6, cy + 5));
-                c.LineTo(new Point(fx + 4, cy + 4));
-                c.LineTo(new Point(fx + 4, cy));
-                c.EndFigure(true);
-            }
-
-            context.DrawGeometry(b.Accent, null, funnel);
+            context.DrawGeometry(b.Accent, null, Funnel(fx, cy));
             used += MarkWidth;
         }
 
@@ -454,19 +442,22 @@ public sealed class DataGridCanvas : Control
         }
 
         var fx = x + (ButtonWidth / 2) - 5;
-        var funnel = new StreamGeometry();
-        using (var c = funnel.Open())
-        {
-            c.BeginFigure(new Point(fx, cy - 5), true);
-            c.LineTo(new Point(fx + 10, cy - 5));
-            c.LineTo(new Point(fx + 6, cy));
-            c.LineTo(new Point(fx + 6, cy + 5));
-            c.LineTo(new Point(fx + 4, cy + 4));
-            c.LineTo(new Point(fx + 4, cy));
-            c.EndFigure(true);
-        }
+        context.DrawGeometry(_filteredColumns.Contains(col) ? b.Accent : b.Text, null, Funnel(fx, cy));
+    }
 
-        context.DrawGeometry(_filteredColumns.Contains(col) ? b.Accent : b.Text, null, funnel);
+    // The filter funnel, 10 wide and 10 tall, its top-left corner at (x, cy - 5).
+    private static StreamGeometry Funnel(double x, double cy)
+    {
+        var funnel = new StreamGeometry();
+        using var c = funnel.Open();
+        c.BeginFigure(new Point(x, cy - 5), true);
+        c.LineTo(new Point(x + 10, cy - 5));
+        c.LineTo(new Point(x + 6, cy));
+        c.LineTo(new Point(x + 6, cy + 5));
+        c.LineTo(new Point(x + 4, cy + 4));
+        c.LineTo(new Point(x + 4, cy));
+        c.EndFigure(true);
+        return funnel;
     }
 
     private void DrawGutter(DrawingContext context, GridBrushes b, GridEditController? edit, long firstRow, long endRow)
