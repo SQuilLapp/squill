@@ -146,8 +146,8 @@ public sealed class FilterBarUiTests
         canvas.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Apps });
 
         Assert.Equal(1, canvas.MenuColumn);
-        var menu = Assert.IsType<StackPanel>(view.ColumnMenuContent);
-        var values = menu.Children.OfType<ListBox>().Single();
+        var menu = Assert.IsType<Grid>(view.ColumnMenuContent);
+        var values = menu.GetVisualDescendants().OfType<ListBox>().Single();
         for (var i = 0; i < 20 && values.ItemsSource is not IReadOnlyList<ValueItem> { Count: > 0 }; i++)
         {
             await Task.Delay(50);

@@ -44,6 +44,7 @@ public sealed partial class QueryTabView : UserControl
         Toolbar.SizeChanged += (_, _) => LayoutToolbar();
         ResultGrid.Dialogs = new AvaloniaDialogService();
         ResultGrid.Canvas.ColumnMenuRequested += OnColumnMenuRequested;
+        ResultGrid.Canvas.ColumnSortRequested += (_, e) => _viewState?.ToggleSort(e.Column);
         ResultsPanel.KeyBindings.Add(new KeyBinding
         {
             Gesture = new KeyGesture(Key.S, KeyModifiers.Control),
