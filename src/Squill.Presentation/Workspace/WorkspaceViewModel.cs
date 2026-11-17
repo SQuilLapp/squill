@@ -24,7 +24,7 @@ using Squill.Sql.Ddl;
 namespace Squill.Presentation.Workspace;
 
 /// <summary>The shell view-model tying the connection list, the open sessions, the object explorer and the query tabs together.</summary>
-public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPaletteObjectHost
+public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPaletteEditorHost
 {
     private readonly SessionManager _manager;
     private readonly IQueryHistoryStore _history;
@@ -571,6 +571,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         ArgumentNullException.ThrowIfNull(sql);
         return ActiveSession is { } session ? AddTab(session, sql) : null;
     }
+
+    ISqlEditor? IPaletteEditorHost.ActiveEditor => ActiveTab?.Editor;
 
     IReadOnlyList<ConnectionSession> IPaletteObjectHost.Sessions => [.. AllSessions()];
 

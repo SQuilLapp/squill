@@ -1,6 +1,6 @@
 # P17-13 - Presentation: palette history and go-to-line providers
 
-Status: todo
+Status: done
 Depends on: P17-11
 
 ## Goal
@@ -15,11 +15,17 @@ The `!` history rows and the `:` go-to-line row. Recipe decisions 12 and 14 (his
 - Re-running history, searching other fields of an entry, the merged view-model (P17-14), scrolling the head's editor to the caret beyond what setting `CaretOffset` already does (the head cards check it by hand).
 
 ## Tasks
-- [ ] Both providers, catalog keys (`palette.history.*`, `palette.line.*`).
-- [ ] Tests `tests/Squill.Presentation.Tests/Palette/PaletteHistoryProviderTests.cs`, `PaletteLineProviderTests.cs` with a fake store and a fake `ISqlEditor`: most recent first, matching, multi-line SQL collapsed, relative time texts in French and English, failed entry, append with and without existing text, new tab when there is no active tab, nothing executed (fake connection never receives a statement), line numbers clamped, `\r\n` handling, disabled without an editor, hint for `:abc`, the store is read once per `Reload`.
+- [x] Both providers, catalog keys (`palette.history.*`, `palette.line.*`).
+- [x] Tests `tests/Squill.Presentation.Tests/Palette/PaletteHistoryProviderTests.cs`, `PaletteLineProviderTests.cs` with a fake store and a fake `ISqlEditor`: most recent first, matching, multi-line SQL collapsed, relative time texts in French and English, failed entry, append with and without existing text, new tab when there is no active tab, nothing executed (fake connection never receives a statement), line numbers clamped, `\r\n` handling, disabled without an editor, hint for `:abc`, the store is read once per `Reload`.
 
 ## Acceptance criteria
 - Common acceptance of the recipe (section 7), no head touched.
 
 ## Suggested commit message
 Add the palette history and go-to-line providers
+
+## Implementation notes
+- `IPaletteEditorHost : IPaletteObjectHost` adds `ActiveEditor`; `WorkspaceViewModel` implements it explicitly (`ActiveTab?.Editor`).
+- `PaletteHistoryProvider` takes `IQueryHistoryStore`, `IProfileStore`, the host and an optional `TimeProvider`; `ReloadAsync` replaces the specified `Reload()` because it reads two async stores. Relative time was formatted in Presentation (`DisplayFormat` has no relative-age helper, the heads' `HistoryFormat` shows clock times only).
+- Row layout: `Detail` = connection name (empty when the profile is gone), `Right` = `age · duration` or `age · erreur`; the history panel had no failed-entry key, so `palette.history.failed` was added.
+- `ISqlEditor` offers no undoable edit: the insert replaces `Text` (one undo step is not guaranteed). `palette.line.total` and `palette.line.noEditor` complete the `palette.line.*` keys.
