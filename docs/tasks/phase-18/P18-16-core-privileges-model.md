@@ -1,6 +1,6 @@
 # P18-16 - Core: role and privilege model
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -15,8 +15,8 @@ The engine-neutral-looking but PostgreSQL-shaped model behind M11: roles, member
 - Reading from a server (P18-17), SQL text (P18-18), `WITH GRANT OPTION`, column privileges, default privileges, other engines.
 
 ## Tasks
-- [ ] Records, `RoleInfo.IsGroup`, `PrivilegeChangeSet`.
-- [ ] Tests in `tests/Squill.Core.Tests/Security/`: toggle rules (none, granted, pending grant, pending revoke, inherited), row toggle, group / user split, `Count`.
+- [x] Records, `RoleInfo.IsGroup`, `PrivilegeChangeSet`.
+- [x] Tests in `tests/Squill.Core.Tests/Security/`: toggle rules (none, granted, pending grant, pending revoke, inherited), row toggle, group / user split, `Count`.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched.
