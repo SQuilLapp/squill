@@ -104,7 +104,11 @@ public sealed partial class ColumnMenuViewModel : ViewModelBase, IDisposable
     }
 
     /// <inheritdoc/>
-    public void Dispose() => _cts.Cancel();
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
 
     [RelayCommand]
     private void SortAscending() => _state.SetSort(new GridSort(Column, false));

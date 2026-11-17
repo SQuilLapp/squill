@@ -106,7 +106,7 @@ public sealed class FilteredGridDataSource : IGridDataSource, IDisposable
         }
 
         var text = string.IsNullOrWhiteSpace(search) ? null : search;
-        var spec = compiled.Length == 0 && text is null && sort is null ? Spec.None : new Spec(compiled, filterColumns, text, sort);
+        var spec = filters.Count == 0 && text is null && sort is null ? Spec.None : new Spec(compiled, filterColumns, text, sort);
         CancellationToken token;
         int generation;
         lock (_lock)
