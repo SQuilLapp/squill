@@ -17,6 +17,10 @@ public sealed partial class CatalogTests
         "home.env.dev", // environment pill
         "home.env.local", // environment pill
         "compare.source", // SOURCE label of the compare header, same in both languages
+        "activity.session", // SESSION caption of the detail pane, same word
+        "activity.col.pid", // technical column name
+        "activity.col.application", // column title, same word
+        "activity.col.client", // column title, same word
         "compare.env.production", // environment name in the status bar
         "compare.env.staging", // environment name in the status bar
         "compare.env.development", // environment name in the status bar

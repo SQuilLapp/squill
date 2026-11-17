@@ -169,7 +169,8 @@ public sealed partial class MainWindow
             new MenuFlyoutSeparator(),
             Item("menu.format", () => Workspace.ActiveTab?.FormatDocumentCommand, null, OnFormatClicked, VirtualKey.F, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift)));
         _compareItem = Item("menu.compareSchemas", () => Workspace.OpenSchemaCompareCommand, null, OnCompareClicked);
-        MainMenu.Items.Add(Menu("menu.database", Item("menu.newTable", () => Workspace.NewTableCommand, null, OnNewTableClicked), _compareItem));
+        _monitorItem = Item("menu.sessionsMonitor", () => Workspace.OpenSessionsMonitorCommand, null, OnMonitorClicked);
+        MainMenu.Items.Add(Menu("menu.database", Item("menu.newTable", () => Workspace.NewTableCommand, null, OnNewTableClicked), _compareItem, _monitorItem));
         ToolsMenu = Menu("menu.tools", Plain("menu.settings", OnSettingsClicked));
         MainMenu.Items.Add(ToolsMenu);
         MainMenu.Items.Add(Menu("menu.help", Plain("menu.checkForUpdates", OnCheckForUpdatesClicked), Plain("menu.about", OnAboutClicked)));
@@ -178,6 +179,10 @@ public sealed partial class MainWindow
     private MenuBarItem ToolsMenu { get; set; } = null!;
 
     private MenuFlyoutItem? _compareItem;
+
+    private MenuFlyoutItem? _monitorItem;
+
+    private void OnMonitorClicked(object sender, RoutedEventArgs e) => Workspace.OpenSessionsMonitorCommand.Execute(null);
 
     private void OnCompareClicked(object sender, RoutedEventArgs e) => Workspace.OpenSchemaCompareCommand.Execute(null);
 
@@ -283,6 +288,8 @@ public sealed partial class MainWindow
             item.IsEnabled = ChromeFormat.IsEnabled(command(), parameter());
         if (_compareItem is not null && _workspace is not null)
             ToolTipService.SetToolTip(_compareItem, _compareItem.IsEnabled ? null : Workspace.SchemaCompareDisabledReason);
+        if (_monitorItem is not null && _workspace is not null)
+            ToolTipService.SetToolTip(_monitorItem, _monitorItem.IsEnabled ? null : Workspace.SessionsMonitorDisabledReason);
     }
 
     private void AttachMenu(WorkspaceViewModel workspace)
@@ -291,6 +298,7 @@ public sealed partial class MainWindow
         workspace.OpenDiagramCommand.CanExecuteChanged += (_, _) => SyncMenu();
         workspace.NewTableCommand.CanExecuteChanged += (_, _) => SyncMenu();
         workspace.OpenSchemaCompareCommand.CanExecuteChanged += (_, _) => SyncMenu();
+        workspace.OpenSessionsMonitorCommand.CanExecuteChanged += (_, _) => SyncMenu();
         WatchMenuTab();
     }
 

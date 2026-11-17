@@ -10,6 +10,7 @@ using Squill.Presentation;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
+using Squill.Presentation.Activity;
 using Squill.Presentation.Compare;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
@@ -173,6 +174,9 @@ public sealed partial class MainWindow : Window
             case nameof(WorkspaceViewModel.ActivePlan) when Workspace.ActivePlan is { } plan:
                 SelectExtraTab(plan);
                 break;
+            case nameof(WorkspaceViewModel.ActiveMonitor) when Workspace.ActiveMonitor is { } monitor:
+                SelectExtraTab(monitor);
+                break;
             case nameof(WorkspaceViewModel.ActiveCompare) when Workspace.ActiveCompare is { } compare:
                 SelectExtraTab(compare);
                 break;
@@ -238,6 +242,10 @@ public sealed partial class MainWindow : Window
                 Workspace.ActiveCompare = compare;
                 ShowCompare(compare);
                 break;
+            case SessionsMonitorViewModel monitor:
+                Workspace.ActiveMonitor = monitor;
+                ShowMonitor(monitor);
+                break;
             case TerminalTabViewModel terminal:
                 ShowTerminal(terminal);
                 break;
@@ -256,6 +264,8 @@ public sealed partial class MainWindow : Window
             plan.CloseCommand.Execute(null);
         else if (args.Tab.Tag is SchemaCompareViewModel compare)
             compare.CloseCommand.Execute(null);
+        else if (args.Tab.Tag is SessionsMonitorViewModel monitor)
+            monitor.CloseCommand.Execute(null);
         else if (args.Tab.Tag is TableDesignerViewModel designer)
             Workspace.CloseDesignerCommand.Execute(designer);
     }
@@ -291,6 +301,8 @@ public sealed partial class MainWindow : Window
             plan.CloseCommand.Execute(null);
         else if (selected is SchemaCompareViewModel compare)
             compare.CloseCommand.Execute(null);
+        else if (selected is SessionsMonitorViewModel monitor)
+            monitor.CloseCommand.Execute(null);
         else if (selected is TableDesignerViewModel designer)
             Workspace.CloseDesignerCommand.Execute(designer);
         else

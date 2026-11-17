@@ -950,5 +950,15 @@ internal static class UiTextCatalogEn
         ("activity.duration.s", "{0} s"),
         ("activity.duration.minS", "{0} min {1} s"),
         ("activity.duration.hMin", "{0} h {1} min"),
+        ("explorer.sessionsMonitor", "Sessions and locks"),
+        ("activity.session", "SESSION"),
+        ("activity.col.pid", "pid"),
+        ("activity.col.user", "User"),
+        ("activity.col.application", "Application"),
+        ("activity.col.client", "Client"),
+        ("activity.col.state", "State"),
+        ("activity.col.duration", "Duration"),
+        ("activity.col.wait", "Wait"),
+        ("activity.col.query", "Query"),
     ];
 }

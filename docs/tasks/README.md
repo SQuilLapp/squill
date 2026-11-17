@@ -353,7 +353,7 @@ Depends on: <card ids, ranges allowed>
 | [P18-11](phase-18/P18-11-data-activity-contract-and-postgres.md) | Data: server activity contract and PostgreSQL reader | none | done |
 | [P18-12](phase-18/P18-12-data-activity-mysql-sqlserver.md) | Data: activity readers for MySQL and SQL Server | P18-11 | done |
 | [P18-13](phase-18/P18-13-presentation-sessions-monitor.md) | Presentation: sessions and locks monitor (risky) | P18-11, P18-12, P18-02 | done |
-| [P18-14](phase-18/P18-14-winui-sessions-monitor-view.md) | WinUI head: the sessions and locks view | P18-13, P9-10 | todo |
+| [P18-14](phase-18/P18-14-winui-sessions-monitor-view.md) | WinUI head: the sessions and locks view | P18-13, P9-10 | done |
 | [P18-15](phase-18/P18-15-avalonia-sessions-monitor-view.md) | Avalonia head: the sessions and locks view | P18-14 | todo |
 | [P18-16](phase-18/P18-16-core-privileges-model.md) | Core: role and privilege model | none | todo |
 | [P18-17](phase-18/P18-17-data-postgres-roles-and-privileges.md) | Data.Postgres: read roles and privileges | P18-16 | todo |

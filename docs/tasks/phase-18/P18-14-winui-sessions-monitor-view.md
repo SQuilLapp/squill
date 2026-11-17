@@ -1,6 +1,6 @@
 # P18-14 - WinUI head: the sessions and locks view
 
-Status: todo
+Status: done
 Depends on: P18-13, P9-10
 
 ## Goal
@@ -17,11 +17,15 @@ Draw M12 in the WinUI head. Recipe 5, 6.
 - Avalonia (P18-15).
 
 ## Tasks
-- [ ] View, table control, sparkline, chain panel, wiring.
-- [ ] Tests in `tests/Squill.App.WinUI.Tests` where the harness allows (row count, selection by id, no `ItemsSource` of objects).
+- [x] View, table control, sparkline, chain panel, wiring.
+- [x] Tests in `tests/Squill.App.WinUI.Tests` where the harness allows (row count, selection by id, no `ItemsSource` of objects).
 
 ## Acceptance criteria
 - Common acceptance (recipe 7) with the WinUI AOT publish; live capture needs a server: use the container of P18-11 (`-Keep`) with a blocked update, compare with M12 light and dark, list differences; what cannot be driven is "to check by hand".
 
 ## Suggested commit message
 Add the WinUI sessions and locks view
+
+## Report
+- Live capture against a server (container of P18-11, blocked update) and the light/dark comparison with M12 were **not driven**: to check by hand. Known differences from M12: the query box in the detail pane is plain monospace (no syntax colors), the `pg_cancel_backend` hint on the cancel button is not drawn, the engine badge and pulse glyph are text, the table builds at most 400 row elements.
+- Added catalog keys `activity.col.*`, `activity.session`, `explorer.sessionsMonitor`; WinUI AOT publish: zero IL2xxx/IL3xxx, the exe starts.

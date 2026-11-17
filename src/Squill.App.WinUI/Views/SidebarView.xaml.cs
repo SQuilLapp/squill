@@ -141,6 +141,11 @@ public sealed partial class SidebarView : UserControl
                 compare.IsEnabled = _workspace.OpenSchemaCompareCommand.CanExecute(node.Profile?.Id);
                 if (!compare.IsEnabled)
                     ToolTipService.SetToolTip(compare, _workspace.SchemaCompareDisabledReason);
+                Add(UiText.Get("explorer.sessionsMonitor"), () => _workspace.OpenSessionsMonitorCommand.Execute(null));
+                var monitor = (MenuFlyoutItem)menu.Items[^1];
+                monitor.IsEnabled = _workspace.OpenSessionsMonitorCommand.CanExecute(null);
+                if (!monitor.IsEnabled)
+                    ToolTipService.SetToolTip(monitor, _workspace.SessionsMonitorDisabledReason);
                 Add(UiText.Get("explorer.disconnect"), () => _workspace.DisconnectCommand.Execute(null));
             }
             else

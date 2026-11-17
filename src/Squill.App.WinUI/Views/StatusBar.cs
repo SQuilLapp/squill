@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Media;
 using ConnectionEnvironment = Squill.Core.ConnectionEnvironment;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
+using Squill.Presentation.Activity;
 using Squill.Presentation.Compare;
 using Squill.Presentation.Plans;
 using Squill.Core.Transactions;
@@ -38,6 +39,7 @@ public sealed partial class StatusBar : UserControl
     private SessionTransaction? _transaction;
     private PlanTabViewModel? _plan;
     private SchemaCompareViewModel? _compare;
+    private SessionsMonitorViewModel? _monitor;
     private readonly Border _sourceBlock = new() { Padding = new Thickness(14, 0, 14, 0), Visibility = Visibility.Collapsed, Child = new TextBlock { FontWeight = Microsoft.UI.Text.FontWeights.Bold, VerticalAlignment = VerticalAlignment.Center } };
     private readonly TextBlock _flowArrow = new() { Text = "→", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 8, 0), Visibility = Visibility.Collapsed };
 
@@ -115,6 +117,20 @@ public sealed partial class StatusBar : UserControl
         _compare = compare;
         if (_compare is not null)
             _compare.PropertyChanged += OnTabChanged;
+        Refresh();
+    }
+
+    /// <summary>Shows the last read of the sessions monitor (<c>pg_stat_activity · 47 rows · 6 ms</c>) while its tab is active.</summary>
+    /// <param name="monitor">The active monitor tab, or <see langword="null"/> when another kind of tab is shown.</param>
+    public void ShowMonitor(SessionsMonitorViewModel? monitor)
+    {
+        if (ReferenceEquals(_monitor, monitor))
+            return;
+        if (_monitor is not null)
+            _monitor.PropertyChanged -= OnTabChanged;
+        _monitor = monitor;
+        if (_monitor is not null)
+            _monitor.PropertyChanged += OnTabChanged;
         Refresh();
     }
 
@@ -253,7 +269,7 @@ public sealed partial class StatusBar : UserControl
     // The transaction belongs to the session of the active query tab: nothing is shown for plans and other kinds of tab.
     private void RefreshTransaction()
     {
-        var text = _plan is null && _compare is null ? _transaction?.StatusText ?? "" : "";
+        var text = _plan is null && _compare is null && _monitor is null ? _transaction?.StatusText ?? "" : "";
         _segments[1].Visibility = text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
         _transactionText.Text = text;
         var brush = Brush(_transaction?.State == TransactionState.Failed ? "SquillDangerBrush" : "SquillWarningBrush");
@@ -263,6 +279,14 @@ public sealed partial class StatusBar : UserControl
 
     private void RefreshRunStatus()
     {
+        if (_monitor is { } monitor)
+        {
+            _status.Text = monitor.StatusText;
+            _status.Foreground = Brush("SquillFg2Brush");
+            _elapsed.Text = "";
+            return;
+        }
+
         if (_compare is { } compare)
         {
             _status.Text = compare.DifferencesText;

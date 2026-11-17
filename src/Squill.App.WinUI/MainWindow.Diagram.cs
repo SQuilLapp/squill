@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Squill.App.WinUI.Views;
 using Squill.Presentation.Designer;
+using Squill.Presentation.Activity;
 using Squill.Presentation.Compare;
 using Squill.Presentation.Diagram;
 using Squill.Presentation.Plans;
@@ -21,6 +22,7 @@ public sealed partial class MainWindow
         workspace.Designers.CollectionChanged += OnExtraTabsChanged;
         workspace.Plans.CollectionChanged += OnExtraTabsChanged;
         workspace.Compares.CollectionChanged += OnExtraTabsChanged;
+        workspace.Monitors.CollectionChanged += OnExtraTabsChanged;
     }
 
     private void OnExtraTabsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -35,6 +37,8 @@ public sealed partial class MainWindow
         {
             if (added is SchemaCompareViewModel compare)
                 compare.CopyRequested += CopyToClipboard;
+            if (added is SessionsMonitorViewModel monitor)
+                monitor.CopyRequested += CopyToClipboard;
             var item = TabHeader.Create(added);
             _extraItems[added] = item;
             Tabs.TabItems.Add(item);
@@ -63,8 +67,10 @@ public sealed partial class MainWindow
         DesignerArea.Visibility = Visibility.Collapsed;
         PlanArea.Visibility = Visibility.Collapsed;
         CompareArea.Visibility = Visibility.Collapsed;
+        MonitorArea.Visibility = Visibility.Collapsed;
         Status.ShowPlan(null);
         Status.ShowCompare(null);
+        Status.ShowMonitor(null);
     }
 
     private void ShowDiagram(DiagramTabViewModel diagram)
@@ -85,6 +91,13 @@ public sealed partial class MainWindow
         ShowOnly(CompareArea);
         CompareArea.ViewModel = compare;
         Status.ShowCompare(compare);
+    }
+
+    private void ShowMonitor(SessionsMonitorViewModel monitor)
+    {
+        ShowOnly(MonitorArea);
+        MonitorArea.ViewModel = monitor;
+        Status.ShowMonitor(monitor);
     }
 
     private static void CopyToClipboard(string text)
