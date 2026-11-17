@@ -22,6 +22,7 @@ public sealed partial class StatusBar : UserControl
     private FrameworkElement? _environmentWarning;
     private readonly StackPanel _environmentContent = new() { Orientation = Orientation.Horizontal, Spacing = 6 };
     private readonly TextBlock _connection = Text(true);
+    private readonly Microsoft.UI.Xaml.Shapes.Ellipse _connectionDot = new() { Width = 8, Height = 8, VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _transactionText = Text(false);
     private readonly Microsoft.UI.Xaml.Shapes.Ellipse _transactionDot = new() { Width = 8, Height = 8, VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _status = Text(false);
@@ -58,7 +59,7 @@ public sealed partial class StatusBar : UserControl
             Children =
             {
                 _environmentBlock,
-                Segment(1, _connection, right: true),
+                Segment(1, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { _connectionDot, _connection } }, right: true),
                 Segment(2, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { _transactionDot, _transactionText } }, right: true),
                 Segment(3, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { _status, _elapsed } }, right: false),
                 Segment(4, _position, left: true),
@@ -172,6 +173,7 @@ public sealed partial class StatusBar : UserControl
         RefreshTransaction();
         RefreshEnvironment(workspace.ActiveEnvironment);
         _connection.Text = ChromeFormat.Connection(workspace.ActiveSession?.Profile);
+        _connectionDot.Visibility = workspace.ActiveSession is null ? Visibility.Visible : Visibility.Collapsed;
         _version.Text = _plan?.ServerVersion ?? workspace.ActiveSession?.Connection.ServerVersion ?? "";
         _segments[4].Visibility = _plan is null ? Visibility.Visible : Visibility.Collapsed;
         RefreshRunStatus();
@@ -185,6 +187,7 @@ public sealed partial class StatusBar : UserControl
         foreach (var segment in _segments)
             segment.BorderBrush = Brush("SquillBorderSubtleBrush");
         _connection.Foreground = Brush("SquillFgBrush");
+        _connectionDot.Fill = Brush("SquillFg3Brush");
         foreach (var text in (TextBlock[])[_elapsed, _position, _encoding, _version])
             text.Foreground = Brush("SquillFg2Brush");
     }

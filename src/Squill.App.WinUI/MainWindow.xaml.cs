@@ -29,6 +29,7 @@ public sealed partial class MainWindow : Window
     private AboutWindow? _aboutWindow;
     private ConnectionEditorWindow? _editorWindow;
     private SettingsWindow? _settingsWindow;
+    private Splitter? _sidebarSplitter;
     private bool _syncing;
     private bool _closeConfirmed;
     private bool _askingToClose;
@@ -41,6 +42,7 @@ public sealed partial class MainWindow : Window
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "squill.ico"));
         AppWindow.Closing += OnAppWindowClosing;
         var splitter = new Splitter(true);
+        _sidebarSplitter = splitter;
         Grid.SetRow(splitter, 2);
         Grid.SetColumn(splitter, 2);
         Root.Children.Add(splitter);
@@ -76,7 +78,7 @@ public sealed partial class MainWindow : Window
         Root.KeyboardAccelerators.Add(SettingsAccelerator());
         services.Settings.ThemeChanged += (_, _) => ApplyTheme(services.Settings.Theme);
         services.Settings.LoadCommand.Execute(null);
-        services.Workspace.ConnectionList.LoadCommand.Execute(null);
+        var loading = services.Workspace.ConnectionList.LoadCommand.ExecuteAsync(null);
         services.Workspace.ConnectionList.EditRequested += OnEditRequested;
         services.Workspace.Tabs.CollectionChanged += OnTabsChanged;
         services.Workspace.PropertyChanged += OnWorkspaceChanged;
@@ -91,6 +93,7 @@ public sealed partial class MainWindow : Window
         AttachMenu(services.Workspace);
         AttachUpdates();
         AttachPalette(services.Workspace);
+        AttachHome(services.Workspace, loading);
     }
 
     private WorkspaceViewModel Workspace => _workspace!;

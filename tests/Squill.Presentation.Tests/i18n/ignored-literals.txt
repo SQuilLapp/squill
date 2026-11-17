@@ -31,6 +31,12 @@ src/Squill.App.WinUI/Views/ConnectionEditorWindow.xaml.cs|SquillFg3Brush|resourc
 src/Squill.App.WinUI/Views/ConnectionEditorWindow.xaml.cs|SquillFgBrush|resource key
 src/Squill.App.WinUI/Views/DiagramTabView.xaml|Ctrl+0|keyboard accelerator text, not translated
 src/Squill.App.WinUI/Views/FilterBar.cs|MonoTextBlockStyle|resource key, not text
+src/Squill.App.WinUI/Views/HomePage.cs|CapsTextBlockStyle|style key
+src/Squill.App.WinUI/Views/HomePage.cs|SQuilL|product name, not translated
+src/Squill.App.WinUI/Views/HomePage.cs|SquillFg3Brush|resource key
+src/Squill.App.WinUI/Views/HomePage.cs|SquillFontBrand|resource key
+src/Squill.App.WinUI/Views/HomePage.cs|SquillFontMono|resource key
+src/Squill.App.WinUI/Views/HomePage.cs|SquillFontSizeBodySm|resource key
 src/Squill.App.WinUI/Views/ProductionConfirmDialog.cs|SquillDangerBrush|resource key
 src/Squill.App.WinUI/Views/ProductionConfirmDialog.cs|SquillFgBrush|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFg2Brush|resource key

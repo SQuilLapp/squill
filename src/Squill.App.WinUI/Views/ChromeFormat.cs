@@ -13,7 +13,7 @@ internal static class ChromeFormat
     public static string Connection(ConnectionProfile? profile)
     {
         if (profile is null)
-            return UiText.Get("status.notConnected");
+            return UiText.Get("home.noConnection");
         var name = string.IsNullOrEmpty(profile.UserName) ? profile.Name : $"{profile.UserName}@{profile.Name}";
         return string.IsNullOrEmpty(profile.Database) ? name : $"{name} / {profile.Database}";
     }

@@ -1,6 +1,6 @@
 # P18-03 - WinUI head: the home page
 
-Status: todo
+Status: done
 Depends on: P18-02
 
 ## Goal
@@ -17,8 +17,8 @@ Draw M01 in the WinUI head from `HomeViewModel`. Recipe 3, 5, 6.
 - Projects, drivers count, Avalonia (P18-04).
 
 ## Tasks
-- [ ] `HomePage`, card and tile controls, accelerators, show / hide of the rail and panels, XAML-free key handling kept in the view-model.
-- [ ] Tests in `tests/Squill.App.WinUI.Tests` where the harness allows (card count, visibility binding, no `ItemsSource` of objects: assert by grep in the test as P17-19 did for the column menu if a pattern exists).
+- [x] `HomePage`, card and tile controls, accelerators, show / hide of the rail and panels, XAML-free key handling kept in the view-model.
+- [x] Tests in `tests/Squill.App.WinUI.Tests` where the harness allows (card count, visibility binding, no `ItemsSource` of objects: assert by grep in the test as P17-19 did for the column menu if a pattern exists).
 
 ## Acceptance criteria
 - Common acceptance (recipe 7) with the WinUI AOT publish.

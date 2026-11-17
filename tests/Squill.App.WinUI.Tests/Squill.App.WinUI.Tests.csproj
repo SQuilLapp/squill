@@ -25,6 +25,8 @@
     <Content Include="..\..\src\Squill.App.WinUI\Views\PropertiesPanel.xaml" Link="Xaml\PropertiesPanel.xaml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\PropertiesPanel.xaml.cs" Link="Xaml\PropertiesPanel.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\tokens\squill.tokens.json" Link="squill.tokens.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\HomePage.cs" Link="Xaml\HomePage.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\MainWindow.Home.cs" Link="Xaml\MainWindow.Home.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\MainWindow.xaml" Link="Xaml\MainWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\MainWindow.xaml.cs" Link="Xaml\MainWindow.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\SidebarView.xaml" Link="Xaml\SidebarView.xaml" CopyToOutputDirectory="PreserveNewest" />
