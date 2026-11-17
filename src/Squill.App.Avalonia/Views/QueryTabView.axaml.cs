@@ -15,6 +15,7 @@ using Squill.Core.Transactions;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Editing;
 using Squill.Presentation.Results;
+using Squill.App.Avalonia.Controls;
 using Squill.App.Avalonia.Editors;
 using Squill.App.Avalonia.Services;
 using Squill.Presentation.Panels;
@@ -29,6 +30,8 @@ public sealed partial class QueryTabView : UserControl
     private ResultViewModel? _result;
     private ResultEditorViewModel? _editor;
     private SessionTransaction? _transaction;
+    private ResultViewState? _viewState;
+    private readonly ColumnMenu _columnMenu = new();
 
     /// <summary>Creates the view.</summary>
     public QueryTabView()
@@ -40,12 +43,22 @@ public sealed partial class QueryTabView : UserControl
         IsVisible = false;
         Toolbar.SizeChanged += (_, _) => LayoutToolbar();
         ResultGrid.Dialogs = new AvaloniaDialogService();
+        ResultGrid.Canvas.ColumnMenuRequested += OnColumnMenuRequested;
+        ResultGrid.Canvas.ColumnSortRequested += (_, e) => _viewState?.ToggleSort(e.Column);
         ResultsPanel.KeyBindings.Add(new KeyBinding
         {
             Gesture = new KeyGesture(Key.S, KeyModifiers.Control),
             Command = new RelayCommand(() => _result?.Editor?.CommitCommand.Execute(null)),
         });
+        ResultsPanel.KeyBindings.Add(new KeyBinding
+        {
+            Gesture = new KeyGesture(Key.F, KeyModifiers.Control),
+            Command = new RelayCommand(FilterBar.FocusSearch),
+        });
     }
+
+    /// <summary>Gets the content of the open column menu, or <see langword="null"/> when none is open (for tests).</summary>
+    internal Control? ColumnMenuContent => _columnMenu.Content;
 
     /// <summary>Gets or sets the font size of the editor in points.</summary>
     public double EditorFontSize
@@ -189,6 +202,7 @@ public sealed partial class QueryTabView : UserControl
         if (result is not null)
             result.PropertyChanged += OnResultPropertyChanged;
         ShowGrid();
+        ShowFilterBar();
         ShowEditBar();
         ResultGrid.IsVisible = result?.Kind == ResultKind.Grid;
         Message.IsVisible = result?.Kind is ResultKind.Message or ResultKind.Messages;
@@ -216,8 +230,58 @@ public sealed partial class QueryTabView : UserControl
         if (grid is null)
             return;
         var loaded = DisplayFormat.Count(grid.RowCount);
-        FooterText.Text = UiText.Format("results.footer", loaded, grid.IsTruncated ? loaded + "+" : loaded);
+        FooterText.Text = _result?.View?.FooterText ?? UiText.Format("results.footer", loaded, grid.IsTruncated ? loaded + "+" : loaded);
         ExportTitle.Text = UiText.Format("results.exportRows", loaded);
+    }
+
+    private void ShowFilterBar()
+    {
+        var state = _result?.Kind == ResultKind.Grid ? _result.View : null;
+        if (!ReferenceEquals(state, _viewState))
+        {
+            if (_viewState is not null)
+            {
+                _viewState.PropertyChanged -= OnViewStateChanged;
+                _viewState.Filters.CollectionChanged -= OnViewFiltersChanged;
+            }
+
+            _viewState = state;
+            if (state is not null)
+            {
+                state.PropertyChanged += OnViewStateChanged;
+                state.Filters.CollectionChanged += OnViewFiltersChanged;
+            }
+        }
+
+        FilterBar.Attach(state);
+        ShowHeaderMarks();
+    }
+
+    private void OnViewStateChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ResultViewState.FooterText))
+            RefreshFooter();
+        else if (e.PropertyName == nameof(ResultViewState.Sort))
+            ShowHeaderMarks();
+    }
+
+    private void OnViewFiltersChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => ShowHeaderMarks();
+
+    // The grid control only gets column numbers; it never sees the filter model.
+    private void ShowHeaderMarks()
+    {
+        var canvas = ResultGrid.Canvas;
+        canvas.SortColumn = _viewState?.Sort?.Column ?? -1;
+        canvas.SortDescending = _viewState?.Sort?.Descending ?? false;
+        canvas.FilteredColumns = _viewState is null ? new HashSet<int>() : _viewState.Filters.Select(c => c.Filter.Column).ToHashSet();
+    }
+
+    private void OnColumnMenuRequested(object? sender, ColumnMenuRequestedEventArgs e)
+    {
+        if (_viewState?.OpenColumnMenu(e.Column) is not { } menu)
+            return;
+        var hasFilter = _viewState.Filters.Any(c => c.Filter.Column == e.Column);
+        _columnMenu.Show(ResultGrid, menu, hasFilter, e.Anchor);
     }
 
     private void ShowEditBar()

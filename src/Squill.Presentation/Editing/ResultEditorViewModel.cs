@@ -86,6 +86,8 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
     /// <returns>The reason the edit was refused, or <see langword="null"/> when it was recorded.</returns>
     public string? TrySetCell(long row, int column, string? text)
     {
+        if (Grid.IsViewActive)
+            return UiText.Get("results.readOnly.filtered");
         if (!Grid.CanEdit)
             return UiText.Get("results.rowsLoading");
         if (column < 0 || column >= Grid.Columns.Count)
@@ -106,6 +108,8 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
     /// <returns>The reason the edit was refused, or <see langword="null"/> when it was recorded.</returns>
     public string? TrySetDefault(long row, int column)
     {
+        if (Grid.IsViewActive)
+            return UiText.Get("results.readOnly.filtered");
         if (!Grid.CanEdit)
             return UiText.Get("results.rowsLoading");
         if (column < 0 || column >= Grid.Columns.Count)
@@ -127,17 +131,23 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
     /// <summary>Sets a cell to SQL NULL, the only way to store NULL in a text column.</summary>
     /// <param name="row">Grid row index.</param>
     /// <param name="column">Result column index; must be editable.</param>
-    public void SetNull(long row, int column) => Grid.SetCell(row, column, null);
+    public void SetNull(long row, int column)
+    {
+        if (!Grid.IsViewActive)
+            Grid.SetCell(row, column, null);
+    }
 
     /// <summary>Appends a new row to insert.</summary>
-    /// <returns>The index of the new row.</returns>
-    public long AddRow() => Grid.AddRow();
+    /// <returns>The index of the new row, or -1 while a filter view is active.</returns>
+    public long AddRow() => Grid.IsViewActive ? -1 : Grid.AddRow();
 
     /// <summary>Marks rows for deletion.</summary>
     /// <param name="rows">Grid rows; duplicates are ignored.</param>
     public void DeleteRows(IReadOnlyList<long> rows)
     {
         ArgumentNullException.ThrowIfNull(rows);
+        if (Grid.IsViewActive)
+            return;
         foreach (var row in rows.Distinct().OrderDescending())
             Grid.DeleteRow(row);
     }
@@ -147,6 +157,8 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
     public void RevertRows(IReadOnlyList<long> rows)
     {
         ArgumentNullException.ThrowIfNull(rows);
+        if (Grid.IsViewActive)
+            return;
         foreach (var row in rows.Distinct().OrderDescending())
             Grid.RevertRow(row);
     }
@@ -214,6 +226,8 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
     [RelayCommand]
     private async Task DiscardAsync()
     {
+        if (Grid.IsViewActive)
+            return;
         if (HasPendingChanges && !await _dialogs.ConfirmAsync(UiText.Get("results.discard.title"), UiText.FormatPlural("results.discard.confirm", PendingCount)))
             return;
         Grid.DiscardAll();

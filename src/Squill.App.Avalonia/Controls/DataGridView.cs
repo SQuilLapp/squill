@@ -19,6 +19,7 @@ public sealed class DataGridView : Grid
     private readonly ScrollBar _horizontal = new() { Orientation = Orientation.Horizontal, AllowAutoHide = false };
     private readonly TextBox _editor = new() { IsVisible = false, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Padding = new Thickness(6, 0), VerticalContentAlignment = VerticalAlignment.Center };
     private readonly Button _picker = new() { Content = "...", Focusable = false, Padding = new Thickness(6, 0), MinHeight = 0, VerticalAlignment = VerticalAlignment.Stretch, IsVisible = false };
+    private readonly Border _menuAnchor = new() { Width = 1, Height = 1, IsHitTestVisible = false, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
     private GridEditController? _controller;
     private bool _syncing;
 
@@ -33,6 +34,7 @@ public sealed class DataGridView : Grid
         Children.Add(_vertical);
         Children.Add(_horizontal);
         Children.Add(_editor);
+        Children.Add(_menuAnchor);
         _editor.Bind(TemplatedControl.BackgroundProperty, _editor.GetResourceObservable("SquillBgSurfaceBrush"));
         _editor.Bind(TemplatedControl.ForegroundProperty, _editor.GetResourceObservable("SquillFgBrush"));
         _editor.TextChanged += (_, _) =>
@@ -75,6 +77,15 @@ public sealed class DataGridView : Grid
 
     /// <summary>Gets the drawing surface.</summary>
     public DataGridCanvas Canvas => _canvas;
+
+    /// <summary>Moves the invisible one-pixel anchor a flyout hangs on to a point of the canvas.</summary>
+    /// <param name="point">Point in canvas coordinates.</param>
+    /// <returns>The anchor control, to give to <c>Flyout.ShowAt</c>.</returns>
+    public Control AnchorAt(Point point)
+    {
+        _menuAnchor.Margin = new Thickness(point.X, point.Y, 0, 0);
+        return _menuAnchor;
+    }
 
     /// <summary>Gets or sets the data shown by the grid.</summary>
     public IGridDataSource? DataSource

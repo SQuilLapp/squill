@@ -25,9 +25,9 @@ Phase 9 (cards P9-01 to P9-27) restyled both heads (WinUI 3 and Avalonia) after 
 
 ## Follow-up feature phases (proposals only, nothing decided)
 `visual-spec.md` section 10 lists mockup screens that need their own feature work:
-- Start page (M01) and command palette (M13).
+- Start page (M01) and command palette (M13; palette built in phase 17, see [ADR 0014](0014-grid-filter-and-command-palette.md)).
 - Query plan (M06): done in phase 13, see [ADR 0010](0010-execution-plan.md).
 - Schema compare (M09) and data transfer (M10).
 - Privileges (M11) and sessions (M12).
 - Production confirmation dialog (M15) with the auto-commit / manual transaction controls.
-- Grid filter bar, column menu and row panel (M05); tags, SSL, proxy and driver tabs (M02); impact estimate (M07); shortcuts, drivers, accent, material and density settings (M14).
+- Grid filter bar, column menu and row panel (M05; filter bar and column menu built in phase 17, see [ADR 0014](0014-grid-filter-and-command-palette.md)); tags, SSL, proxy and driver tabs (M02); impact estimate (M07); shortcuts, drivers, accent, material and density settings (M14).

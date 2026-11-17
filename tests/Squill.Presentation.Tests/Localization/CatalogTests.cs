@@ -12,11 +12,16 @@ public sealed partial class CatalogTests
     // Keys whose English text is legitimately identical to the French one.
     private static readonly HashSet<string> SameInBothLanguages =
     [
+        "results.filter.op.greaterThan", // comparison symbol
+        "results.filter.op.greaterOrEqual", // comparison symbol
+        "results.filter.op.lessThan", // comparison symbol
+        "results.filter.op.lessOrEqual", // comparison symbol
         "settings.language.french", // language names are shown in their own language
         "settings.language.english", // language names are shown in their own language
         "dialog.ok", // same word
         "workspace.terminal", // same word
         "explorer.tables", // same word
+        "palette.kind.table", // same word
         "properties.kindTable", // same word
         "results.type.date", // same word
         "results.exportJsonDetail", // file extension
@@ -56,6 +61,8 @@ public sealed partial class CatalogTests
         "tab.plan", // the name is the same word in both languages
         "plan.raw", // the name is the same word in both languages
         "plan.explainShortcut", // key chord
+        "palette.section.actions", // the name is the same word in both languages
+        "palette.mode.actions", // the name is the same word in both languages
     ];
 
     private static Dictionary<string, string> Fr => UiTextCatalogFr.Entries.ToDictionary(e => e.Key, e => e.Value);

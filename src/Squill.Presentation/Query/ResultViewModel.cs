@@ -11,7 +11,9 @@ public sealed partial class ResultViewModel : ViewModelBase
 {
     private readonly IDialogService _dialogs;
 
-    private ResultViewModel(ResultKind kind, string title, StreamingGridDataSource? grid, string text, IDialogService dialogs)
+    private string? _baseReason;
+
+    private ResultViewModel(ResultKind kind, string title, StreamingGridDataSource? grid, string text, IDialogService dialogs, IUiDispatcher? dispatcher = null)
     {
         _dialogs = dialogs;
         Kind = kind;
@@ -21,12 +23,16 @@ public sealed partial class ResultViewModel : ViewModelBase
         Header = title;
         if (grid is not null)
         {
-            ReadOnlyReason = "loading";
+            _baseReason = ReadOnlyReason = "loading";
+            View = new ResultViewState(this, dispatcher ?? InlineDispatcher.Instance);
             grid.Changed += (_, _) => UpdateHeader();
             Selection = new GridSelection();
             Preview = new CellPreviewViewModel(this);
         }
     }
+
+    /// <summary>Gets the filters, search and sort of a grid result, or <see langword="null"/> for a message.</summary>
+    public ResultViewState? View { get; }
 
     /// <summary>Gets the preview of the selected cell's full value, or <see langword="null"/> for a message.</summary>
     public CellPreviewViewModel? Preview { get; }
@@ -53,8 +59,10 @@ public sealed partial class ResultViewModel : ViewModelBase
     [ObservableProperty]
     public partial string? ReadOnlyReason { get; private set; }
 
-    /// <summary>Gets the grid the heads bind: the editor's grid when there is one, otherwise <see cref="Grid"/>.</summary>
-    public IGridDataSource? DisplayGrid => Editor?.Grid ?? (IGridDataSource?)Grid;
+    /// <summary>Gets the grid the heads bind: the filtered view while <see cref="View"/> is active, otherwise the editor's grid when there is one, otherwise <see cref="Grid"/>.</summary>
+    public IGridDataSource? DisplayGrid => View?.ActiveGrid ?? InnerGrid;
+
+    internal IGridDataSource? InnerGrid => Editor?.Grid ?? (IGridDataSource?)Grid;
 
     /// <summary>Gets whether the result holds uncommitted grid edits.</summary>
     public bool HasPendingChanges => Editor?.HasPendingChanges == true;
@@ -76,18 +84,37 @@ public sealed partial class ResultViewModel : ViewModelBase
         Selection ??= new GridSelection();
         EditController = new GridEditController(editor, Selection);
         Editor = editor;
-        ReadOnlyReason = null;
+        _baseReason = null;
         editor.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(ResultEditorViewModel.HasPendingChanges))
             {
                 OnPropertyChanged(nameof(HasPendingChanges));
+                View?.NotifyCanChange();
                 UpdateHeader();
             }
         };
+        editor.Grid.IsViewActive = View?.IsActive == true;
+        RefreshReason();
+        View?.InnerChanged();
         OnPropertyChanged(nameof(DisplayGrid));
         UpdateHeader();
     }
+
+    // Called by the view state after every change: the grid, the read-only reason and the selection follow it.
+    internal void OnViewChanged()
+    {
+        if (Editor is not null)
+            Editor.Grid.IsViewActive = View?.IsActive == true;
+        RefreshReason();
+        Selection?.Clear();
+        OnPropertyChanged(nameof(DisplayGrid));
+    }
+
+    // Releases the filtered view when the result is replaced.
+    internal void Release() => View?.Dispose();
+
+    private void RefreshReason() => ReadOnlyReason = View?.IsActive == true ? UiText.Get("results.readOnly.filtered") : _baseReason;
 
     internal void SetTitle(string title)
     {
@@ -95,7 +122,11 @@ public sealed partial class ResultViewModel : ViewModelBase
         UpdateHeader();
     }
 
-    internal void SetReadOnly(string reason) => ReadOnlyReason = reason;
+    internal void SetReadOnly(string reason)
+    {
+        _baseReason = reason;
+        RefreshReason();
+    }
 
     private void UpdateHeader()
     {
@@ -105,7 +136,7 @@ public sealed partial class ResultViewModel : ViewModelBase
             : $"{Title} ({CountText} rows){(HasPendingChanges ? " *" : "")}";
     }
 
-    internal static ResultViewModel ForGrid(string title, StreamingGridDataSource grid, IDialogService dialogs) => new(ResultKind.Grid, title, grid, "", dialogs);
+    internal static ResultViewModel ForGrid(string title, StreamingGridDataSource grid, IDialogService dialogs, IUiDispatcher? dispatcher = null) => new(ResultKind.Grid, title, grid, "", dialogs, dispatcher);
 
     internal static ResultViewModel ForMessage(string title, string text, IDialogService dialogs) => new(ResultKind.Message, title, null, text, dialogs);
 
@@ -123,6 +154,7 @@ public sealed partial class ResultViewModel : ViewModelBase
             return;
         }
 
+        // Export ignores filters: it writes every committed row of Grid, never the filtered view.
         // Grid is the committed result: the edits live in Editor.Grid and are never exported.
         if (Editor is { HasPendingChanges: true } editor
             && !await _dialogs.ConfirmAsync(UiText.Get("results.exportPending.title"), UiText.FormatPlural("results.exportPending.confirm", editor.PendingCount)))
@@ -138,5 +170,14 @@ public sealed partial class ResultViewModel : ViewModelBase
         {
             await _dialogs.ShowErrorAsync(UiText.Get("results.exportFailed"), ex.Message);
         }
+    }
+
+    private sealed class InlineDispatcher : IUiDispatcher
+    {
+        public static readonly InlineDispatcher Instance = new();
+
+        public bool CheckAccess() => true;
+
+        public void Post(Action action) => action();
     }
 }

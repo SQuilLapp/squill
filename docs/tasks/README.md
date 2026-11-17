@@ -321,6 +321,25 @@ Depends on: <card ids, ranges allowed>
 | [P16-06](phase-16/P16-06-winui-ssh-host-key-dialog.md) | WinUI head: SSH host key dialog | P16-05 | done |
 | [P16-07](phase-16/P16-07-avalonia-ssh-host-key-dialog.md) | Avalonia head: SSH host key dialog | P16-06 | done |
 | [P16-08](phase-16/P16-08-docs-and-adr.md) | Documentation: SSH host keys ADR 0013, changelog correction and README | P16-01 ... P16-07 | done |
+| [P17-01](phase-17/P17-01-presentation-grid-filter-model.md) | Presentation: grid filter model and matching | none | done |
+| [P17-02](phase-17/P17-02-presentation-grid-sort-and-value-counts.md) | Presentation: grid sort and column value counts | P17-01 | done |
+| [P17-03](phase-17/P17-03-presentation-filtered-grid-view.md) | Presentation: the filtered and sorted grid view (risky) | P17-01, P17-02 | done |
+| [P17-04](phase-17/P17-04-presentation-result-view-state.md) | Presentation: filter, search and sort state on the result (risky) | P17-03 | done |
+| [P17-05](phase-17/P17-05-presentation-column-menu-and-filter-editor.md) | Presentation: column menu and filter editor view-models | P17-02, P17-04 | done |
+| [P17-06](phase-17/P17-06-winui-filter-bar-search-and-footer.md) | WinUI head: filter bar, search box and footer | P17-04, P17-05, P9-15 | done |
+| [P17-07](phase-17/P17-07-winui-header-marks-and-column-menu.md) | WinUI head: header marks and the column menu in the Win2D grid | P17-06 | done |
+| [P17-08](phase-17/P17-08-avalonia-filter-bar-search-and-footer.md) | Avalonia head: filter bar, search box and footer | P17-06 | done |
+| [P17-09](phase-17/P17-09-avalonia-header-marks-and-column-menu.md) | Avalonia head: header marks and the column menu | P17-07, P17-08 | done |
+| [P17-10](phase-17/P17-10-presentation-fuzzy-matcher-and-query-modes.md) | Presentation: palette fuzzy matcher and query modes | none | done |
+| [P17-11](phase-17/P17-11-presentation-palette-items-and-actions.md) | Presentation: palette items and the action registry | P17-10 | done |
+| [P17-12](phase-17/P17-12-presentation-palette-objects-provider.md) | Presentation: palette objects provider (risky) | P17-11 | done |
+| [P17-13](phase-17/P17-13-presentation-palette-history-and-line.md) | Presentation: palette history and go-to-line providers | P17-11 | done |
+| [P17-14](phase-17/P17-14-presentation-palette-view-model.md) | Presentation: the palette view-model | P17-12, P17-13 | done |
+| [P17-15](phase-17/P17-15-winui-command-palette.md) | WinUI head: the command palette overlay (risky) | P17-14, P9-09 | done |
+| [P17-16](phase-17/P17-16-avalonia-command-palette.md) | Avalonia head: the command palette overlay (risky) | P17-15 | done |
+| [P17-17](phase-17/P17-17-verify-grid-filter-and-palette.md) | End-to-end verification: grid filter and command palette | P17-09, P17-16 | automated done, manual pending |
+| [P17-18](phase-17/P17-18-docs-and-adr.md) | Documentation: grid filter and palette ADR 0014, changelog and README | P17-17 | done |
+| [P17-19](phase-17/P17-19-winui-column-menu-crash.md) | WinUI column menu crash and crash log | P17-18 | done |
 
 ### Phase 9 - Visual conformance
 
@@ -387,3 +406,12 @@ Goal: fix what phases 14 and 15 left behind and what the code itself marks as a 
 - Branch: implement phase 16 on the branch `phase-16-polish`; do not create another branch.
 - Order: P16-01 ... P16-04 are independent (any order); P16-05 needs P16-04; WinUI P16-06 before Avalonia P16-07; docs P16-08 last.
 - Riskiest cards: P16-04 (SSH.NET raises the host key event synchronously on the connect thread and a refused key must surface as the right exception; Docker-gated proof) and P16-01 (a stale result must never overwrite newer markers). Bugs found by the owner's manual checklists too big for a card get `P16-09` onwards.
+
+### Phase 17 - Grid filter (mockup M05) and command palette (mockup M13)
+
+Goal: the result grid gets the M05 filter bar (typed filter chips, a search box, a column menu with sort and a value filter, header marks) and the window gets the M13 command palette (`Ctrl+K`: actions, objects of every open connection, query history, go to line). Decisions (final, details in [filter-palette-recipe.md](phase-17/filter-palette-recipe.md) and in ADR 0014 written by P17-18): the filter and the sort are client-side over the rows already loaded (a view layer, `FilteredGridDataSource`, no server round trip); the grid is read-only while a filter, search or sort is active and a filter cannot start while edits are pending; export stays the whole committed result; the palette is a window overlay with modes by prefix (`>` actions, `#` objects, `:` line, `!` history), fuzzy matching with highlighted letters, and a history entry is inserted into the editor, never executed. Not built (no feature behind it): freeze / hide / fit width, the row side panel, block size and infinite scroll, the cell sum, filtering rows that carry edits, export of the filtered rows, OR groups, the `@ Symboles` mode and `FICHIERS` section of M13.
+
+- Status: P17-01 ... P17-19 done.
+- Branch: implement phase 17 on the branch `phase-17-grid-filter-palette`; do not create another branch.
+- Order: the two features are independent. Filter: P17-01 ... P17-05 (pure logic, view, view-models), WinUI P17-06 / P17-07 before Avalonia P17-08 / P17-09. Palette: P17-10 ... P17-14, WinUI P17-15 before Avalonia P17-16. Then verification P17-17 and docs P17-18. Either feature may be implemented first; do not interleave a head card before its Presentation cards.
+- Riskiest cards: P17-03 (a stale rebuild must never replace a newer one, 100,000+ rows must not freeze the UI thread), P17-04 (row identity: editing must be refused in Presentation while a view is active), P17-12 (50,000 objects searched per keystroke, opening an object of a non-active connection), P17-15 / P17-16 (focus and keys: `Ctrl+K` from the editor and the grid, no key reaching the editor behind the overlay; stop rules in the cards). Bugs found by P17-17 too big for the card get `P17-19` onwards (added to this index).

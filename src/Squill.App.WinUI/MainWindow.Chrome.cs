@@ -30,6 +30,7 @@ public sealed partial class MainWindow
     private FrameworkElement _railSettings = null!;
     private FrameworkElement _commandSearchIcon = null!;
     private string? _dataDirectory;
+    private Controls.CommandPalette? _palette;
     private double _menuWidth;
     private bool _menuCollapsed;
     private readonly List<(MenuBarItem Menu, MenuFlyoutSubItem Sub)> _hamburger = [];
@@ -86,12 +87,69 @@ public sealed partial class MainWindow
 
     private void BuildCommandSearch()
     {
-        // Placeholder for the command palette, which does not exist yet.
         _commandSearchIcon = Icons.Create("SquillIconSearch", 14, Tokens.Brush(Root, "SquillFg3Brush"));
         _commandSearchIcon.Margin = new Thickness(0, 0, 8, 0);
         CommandSearchRow.Children.Insert(0, _commandSearchIcon);
         CommandSearchText.Text = UiText.Get("search.placeholder");
-        CommandSearch.IsHitTestVisible = false;
+        // A button (not the bare border) so the title bar's drag region lets the click through.
+        var open = new Button
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+            Background = new SolidColorBrush(Colors.Transparent),
+            BorderThickness = new Thickness(0),
+            Padding = new Thickness(0),
+            CornerRadius = new CornerRadius(6),
+        };
+        foreach (var key in new[] { "ButtonBackgroundPointerOver", "ButtonBackgroundPressed" })
+            open.Resources[key] = new SolidColorBrush(Colors.Transparent);
+        Grid.SetColumnSpan(open, 2);
+        open.Click += (_, _) => TogglePalette();
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(open, UiText.Get("search.placeholder"));
+        ((Grid)CommandSearch.Child).Children.Add(open);
+    }
+
+    private void TogglePalette()
+    {
+        if (_palette is { } palette)
+            palette.Toggle(() => Workspace.OpenPaletteCommand.Execute(null));
+    }
+
+    // Ctrl+K is caught on the tunnelling event at the root, before the editor, the grid or the explorer can see it.
+    private void OnRootPreviewKeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+    {
+        var down = Windows.UI.Core.CoreVirtualKeyStates.Down;
+        if (e.Key == VirtualKey.K
+            && Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(down)
+            && !Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(down)
+            && !Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(down))
+        {
+            TogglePalette();
+            e.Handled = true;
+        }
+    }
+
+    private void AttachPalette(WorkspaceViewModel workspace)
+    {
+        _palette = new Controls.CommandPalette(workspace.Palette);
+        Root.Children.Add(_palette);
+        Root.PreviewKeyDown += OnRootPreviewKeyDown;
+        var accelerator = new Microsoft.UI.Xaml.Input.KeyboardAccelerator { Key = VirtualKey.K, Modifiers = VirtualKeyModifiers.Control };
+        accelerator.Invoked += (_, args) => Accelerate(args, TogglePalette);
+        Root.KeyboardAccelerators.Add(accelerator);
+        var registry = workspace.Palette.Registry;
+        void Head(string id, string title, string category, string? shortcut, string icon, Action run) =>
+            registry.Add(new Squill.Presentation.Palette.PaletteAction(id, title, category, shortcut, icon, () => true, _ =>
+            {
+                run();
+                return ValueTask.CompletedTask;
+            }));
+        Head("app.settings", "palette.action.app.settings", "menu.tools", "Ctrl+,", "action", () => OnSettingsClicked(null!, null!));
+        Head("app.newConnection", "palette.action.app.newConnection", "menu.database", null, "action", () => workspace.ConnectionList.NewCommand.Execute(null));
+        Head("app.checkUpdates", "palette.action.app.checkUpdates", "menu.help", null, "action", () => OnCheckForUpdatesClicked(null!, null!));
+        Head("app.about", "palette.action.app.about", "menu.help", null, "action", () => OnAboutClicked(null!, null!));
+        Head("app.openDataFolder", "palette.action.app.openDataFolder", "menu.file", null, "action", () => OnOpenDataFolder(null!, null!));
     }
 
     private void BuildMenu()

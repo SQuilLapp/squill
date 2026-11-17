@@ -328,6 +328,25 @@
     <Setter Property="Padding" Value="14" />
   </Style>
 
+  <!-- FilterChip: Border.filter-chip around a funnel, mono text and a close button -->
+  <Style Selector="Border.filter-chip">
+    <Setter Property="Height" Value="24" />
+    <Setter Property="Padding" Value="8,0,3,0" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillAccentLineBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SquillAccentSoftBrush}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Border.filter-chip Path.icon">
+    <Setter Property="Stroke" Value="{DynamicResource SquillAccentTextBrush}" />
+  </Style>
+  <Style Selector="Border.filter-chip TextBlock">
+    <Setter Property="FontFamily" Value="{DynamicResource SquillFontMono}" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillAccentTextBrush}" />
+  </Style>
+
   <!-- KeyboardChip: Border.kbd around a TextBlock -->
   <Style Selector="Border.kbd">
     <Setter Property="BorderBrush" Value="{DynamicResource SquillBorderBrush}" />

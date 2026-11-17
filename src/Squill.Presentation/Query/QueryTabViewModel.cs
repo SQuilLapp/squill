@@ -447,6 +447,8 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         _baselineText = _editor.Text;
         IsRunning = true;
         using var operation = Transaction.BeginOperation();
+        foreach (var old in Results)
+            old.Release();
         Results.Clear();
         SelectedResult = null;
         StatusText = UiText.Get("query.running");
@@ -562,7 +564,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
                         if (reader.Columns.Count == 0)
                             continue;
                         var grid = new StreamingGridDataSource(reader, maxRows, _dispatcher, disposeReader: false);
-                        var result = ResultViewModel.ForGrid(title, grid, _dialogs);
+                        var result = ResultViewModel.ForGrid(title, grid, _dialogs, _dispatcher);
                         AddResult(result);
                         await grid.StartAsync(ct);
                         sets.Add((result, grid));

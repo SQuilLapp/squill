@@ -8,6 +8,8 @@
 
 ### Added
 
+- Grid: a filter bar with typed filters (equals, contains, greater than, is null, in a list, ...), a search box (`Ctrl+F`) and a column menu with sort and a filter by value. Filtering works on the loaded rows, makes the grid read-only until it is cleared, and does not change what Export writes.
+- Command palette on `Ctrl+K` (or a click on the title bar search box): actions, tables and routines of every open connection, query history and go to line, with the matching letters highlighted. A history entry is inserted into the editor and never run.
 - SSH tunnels check the host key of the jump host: the first key is shown with its fingerprint and remembered only if you trust it, and a changed key is refused with both fingerprints and the file to edit if the server was reinstalled.
 - Table designer: a warning when a SQLite trigger uses a column that is renamed or dropped.
 
