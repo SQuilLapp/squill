@@ -138,6 +138,7 @@
             </MenuItem>
             <MenuItem Header="{loc:Text menu.database}">
               <MenuItem Header="{loc:Text menu.newTable}" Command="{Binding NewTableCommand}" />
+              <MenuItem Header="{loc:Text menu.compareSchemas}" Command="{Binding OpenSchemaCompareCommand}" ToolTip.Tip="{Binding SchemaCompareDisabledReason}" />
             </MenuItem>
             <MenuItem Name="ToolsMenu" Header="{loc:Text menu.tools}">
               <MenuItem Classes="appmenu" Header="{loc:Text menu.settings}" Click="OnSettingsClicked" />
@@ -262,6 +263,7 @@
       <v:DiagramTabView Grid.Row="1" Name="DiagramArea" IsVisible="False" />
       <v:TableDesignerView Grid.Row="1" Name="DesignerArea" IsVisible="False" />
       <v:PlanTabView Grid.Row="1" Name="PlanArea" IsVisible="False" />
+      <v:SchemaCompareView Grid.Row="1" Name="CompareArea" IsVisible="False" />
       <Grid Name="TerminalArea" Grid.Row="1" IsVisible="False" Background="{DynamicResource SquillBgBaseBrush}" />
     </Grid>
     <!-- Hidden on a narrow window (MainWindow.TitleLayout.cs) so the editor keeps its room. -->

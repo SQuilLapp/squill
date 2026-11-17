@@ -6,6 +6,7 @@ using Squill.Core;
 using Squill.Core.Transactions;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Compare;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Results;
 using Squill.Presentation.Query;
@@ -19,6 +20,7 @@ public sealed partial class StatusBar : UserControl
     private WorkspaceViewModel? _workspace;
     private QueryTabViewModel? _tab;
     private PlanTabViewModel? _plan;
+    private SchemaCompareViewModel? _compare;
     private SessionTransaction? _transaction;
 
     /// <summary>Creates the view.</summary>
@@ -52,6 +54,32 @@ public sealed partial class StatusBar : UserControl
         if (_plan is not null)
             _plan.PropertyChanged += OnTabChanged;
         Refresh();
+    }
+
+    /// <summary>Shows the compared environments (<c>STAGING → PRODUCTION</c>), the difference counts and both server versions while a schema compare tab is active.</summary>
+    /// <param name="compare">The active compare tab, or <see langword="null"/> when another kind of tab is shown.</param>
+    public void ShowCompare(SchemaCompareViewModel? compare)
+    {
+        if (ReferenceEquals(_compare, compare))
+            return;
+        if (_compare is not null)
+            _compare.PropertyChanged -= OnTabChanged;
+        _compare = compare;
+        if (_compare is not null)
+            _compare.PropertyChanged += OnTabChanged;
+        Refresh();
+    }
+
+    private void RefreshCompare()
+    {
+        var source = _compare?.Source?.Environment ?? ConnectionEnvironment.None;
+        var show = _compare is not null && CompareFormat.Environment(source) is not null;
+        SourceBlock.IsVisible = FlowArrow.IsVisible = show;
+        if (!show || CompareFormat.Environment(source) is not var (suffix, key))
+            return;
+        SourceBlock.Background = Brush($"SquillEnv{suffix}Brush");
+        SourceLabel.Foreground = Brush($"SquillOnEnv{suffix}Brush");
+        SourceLabel.Text = UiText.Get(key);
     }
 
     private void AttachTab(QueryTabViewModel? tab)
@@ -93,8 +121,9 @@ public sealed partial class StatusBar : UserControl
         var profile = _workspace?.ActiveSession?.Profile;
         ConnectionText.Text = profile is null ? UiText.Get("home.noConnection") : ConnectionLabel(profile);
         ConnectionDot.IsVisible = profile is null;
-        ServerVersionText.Text = _plan?.ServerVersion ?? _workspace?.ActiveSession?.Connection.ServerVersion;
-        EncodingSegment.IsVisible = _plan is null;
+        ServerVersionText.Text = _compare is { } c ? $"{c.SourceServerVersion} → {c.TargetServerVersion}" : _plan?.ServerVersion ?? _workspace?.ActiveSession?.Connection.ServerVersion;
+        EncodingSegment.IsVisible = _plan is null && _compare is null;
+        RefreshCompare();
         RefreshTransaction();
         RefreshRunStatus();
         RefreshPosition();
@@ -132,7 +161,7 @@ public sealed partial class StatusBar : UserControl
     // The transaction belongs to the session of the active query tab: nothing is shown for plans and other kinds of tab.
     private void RefreshTransaction()
     {
-        var text = _plan is null ? _transaction?.StatusText ?? "" : "";
+        var text = _plan is null && _compare is null ? _transaction?.StatusText ?? "" : "";
         TransactionSegment.IsVisible = text.Length > 0;
         TransactionText.Text = text;
         var brush = Brush(_transaction?.State == TransactionState.Failed ? "SquillDangerBrush" : "SquillWarningBrush");
@@ -142,6 +171,14 @@ public sealed partial class StatusBar : UserControl
 
     private void RefreshRunStatus()
     {
+        if (_compare is { } compare)
+        {
+            StatusSegment.Text = compare.DifferencesText;
+            StatusSegment.Foreground = Brush("SquillFg2Brush");
+            ElapsedSegment.Text = null;
+            return;
+        }
+
         if (_plan is { } plan)
         {
             StatusSegment.Text = plan.Plan.StatusLine;
@@ -173,6 +210,12 @@ public sealed partial class StatusBar : UserControl
 
     private void RefreshPosition()
     {
+        if (_compare is not null)
+        {
+            PositionText.Text = null;
+            return;
+        }
+
         if (_plan is { } plan)
         {
             PositionText.Text = plan.SummaryText;

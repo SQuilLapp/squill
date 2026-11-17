@@ -7,6 +7,7 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using Squill.App.Avalonia.Views;
 using Squill.Presentation;
+using Squill.Presentation.Compare;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
 using Squill.Presentation.Palette;
@@ -88,7 +89,7 @@ public sealed partial class MainWindow : Window
     // Only while a query tab is active (a plan tab or the designer has no transaction group).
     private void RunTransactionCommand(Func<QueryTabViewModel, IAsyncRelayCommand> pick)
     {
-        if (!PlanArea.IsVisible && _tabs?.Selected?.Source is QueryTabViewModel { } query && pick(query) is { } command && command.CanExecute(null))
+        if (!PlanArea.IsVisible && !CompareArea.IsVisible && _tabs?.Selected?.Source is QueryTabViewModel { } query && pick(query) is { } command && command.CanExecute(null))
             command.Execute(null);
     }
 
@@ -212,6 +213,10 @@ public sealed partial class MainWindow : Window
         PlanArea.DataContext = plan;
         PlanArea.IsVisible = plan is not null;
         Status.ShowPlan(plan);
+        var compare = source as SchemaCompareViewModel;
+        CompareArea.DataContext = compare;
+        CompareArea.IsVisible = compare is not null;
+        Status.ShowCompare(compare);
         var designer = source as TableDesignerViewModel;
         DesignerArea.DataContext = designer;
         DesignerArea.IsVisible = designer is not null;

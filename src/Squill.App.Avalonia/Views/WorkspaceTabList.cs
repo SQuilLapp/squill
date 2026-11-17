@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Squill.Core;
+using Squill.Presentation.Compare;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
 using Squill.Presentation.Plans;
@@ -65,6 +66,7 @@ public sealed partial class WorkspaceTab : ObservableObject
             TableDesignerViewModel d => (d.Title, d.Session.Profile.Environment, d.HasChanges),
             DiagramTabViewModel g => (g.Title, g.Session.Profile.Environment, false),
             PlanTabViewModel p => (p.Source.Title, p.Environment, false),
+            SchemaCompareViewModel c => (c.Title, c.Environment, false),
             TerminalTabViewModel t => (t.Title, ConnectionEnvironment.None, false),
             _ => ("", ConnectionEnvironment.None, false),
         };
@@ -92,6 +94,7 @@ public sealed partial class WorkspaceTabList : ObservableObject
         workspace.Terminals.CollectionChanged += OnSourcesChanged;
         workspace.Diagrams.CollectionChanged += OnSourcesChanged;
         workspace.Plans.CollectionChanged += OnSourcesChanged;
+        workspace.Compares.CollectionChanged += OnSourcesChanged;
         workspace.Designers.CollectionChanged += OnSourcesChanged;
         workspace.PropertyChanged += OnWorkspaceChanged;
         Sync(null);
@@ -115,6 +118,9 @@ public sealed partial class WorkspaceTabList : ObservableObject
                 break;
             case PlanTabViewModel plan:
                 _workspace.ActivePlan = plan;
+                break;
+            case SchemaCompareViewModel compare:
+                _workspace.ActiveCompare = compare;
                 break;
             case TableDesignerViewModel designer:
                 _workspace.ActiveDesigner = designer;
@@ -143,6 +149,9 @@ public sealed partial class WorkspaceTabList : ObservableObject
             case PlanTabViewModel plan:
                 plan.CloseCommand.Execute(null);
                 break;
+            case SchemaCompareViewModel compare:
+                compare.CloseCommand.Execute(null);
+                break;
             case TerminalTabViewModel terminal:
                 _workspace.CloseTerminalCommand.Execute(terminal);
                 break;
@@ -157,6 +166,7 @@ public sealed partial class WorkspaceTabList : ObservableObject
             nameof(WorkspaceViewModel.ActiveDesigner) => _workspace.ActiveDesigner,
             nameof(WorkspaceViewModel.ActiveDiagram) => _workspace.ActiveDiagram,
             nameof(WorkspaceViewModel.ActivePlan) => _workspace.ActivePlan,
+            nameof(WorkspaceViewModel.ActiveCompare) => _workspace.ActiveCompare,
             _ => null,
         };
         if (source is not null && _bySource.TryGetValue(source, out var tab))
@@ -180,6 +190,7 @@ public sealed partial class WorkspaceTabList : ObservableObject
             .. _workspace.Terminals,
             .. _workspace.Diagrams,
             .. _workspace.Plans,
+            .. _workspace.Compares,
             .. _workspace.Designers,
         ];
         foreach (var stale in _bySource.Keys.Where(k => !desired.Contains(k)).ToList())
