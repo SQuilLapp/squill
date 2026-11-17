@@ -12,11 +12,12 @@ public sealed class GridFilterFlowTests
         var file = Path.Combine(Path.GetTempPath(), $"squill-gf-{Guid.NewGuid():N}.db");
         try
         {
-            await GridFilterFlowScenario.RunAsync(
+            // The scenario asserts as it goes; any failure it throws fails this assertion.
+            Assert.Null(await Record.ExceptionAsync(() => GridFilterFlowScenario.RunAsync(
                 new SqliteDatabaseProvider(),
                 new ConnectionProfile(Guid.NewGuid(), "t", DatabaseDialect.Sqlite, null, null, null, null, file, null),
                 null,
-                new GridFilterSpec("numeric", "text", "", "datetime", "integer", "1", "0", "text", "with recursive s(n) as (select 1 union all select n + 1 from s where n < 50000) select n from s"));
+                new GridFilterSpec("numeric", "text", "", "datetime", "integer", "1", "0", "text", "with recursive s(n) as (select 1 union all select n + 1 from s where n < 50000) select n from s"))));
         }
         finally
         {
