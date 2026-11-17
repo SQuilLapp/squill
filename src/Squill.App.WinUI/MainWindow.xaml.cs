@@ -90,6 +90,7 @@ public sealed partial class MainWindow : Window
         Status.Attach(services.Workspace);
         AttachMenu(services.Workspace);
         AttachUpdates();
+        AttachPalette(services.Workspace);
     }
 
     private WorkspaceViewModel Workspace => _workspace!;

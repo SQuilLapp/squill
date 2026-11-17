@@ -729,6 +729,7 @@ internal static class UiTextCatalogFr
         ("palette.hint.objects", "Saisissez le nom d'une table, d'une vue ou d'une routine"),
         ("palette.hint.noConnection", "Connectez-vous pour chercher des objets"),
         ("palette.error.title", "La commande a échoué"),
+        ("palette.key.escape", "Échap"),
         ("tx.pill.one", "{0} instruction non validée"),
         ("tx.pill.other", "{0} instructions non validées"),
         ("tx.tooltip.commit", "Valider la transaction (Ctrl+Alt+C)"),

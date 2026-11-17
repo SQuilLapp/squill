@@ -729,6 +729,7 @@ internal static class UiTextCatalogEn
         ("palette.hint.objects", "Type the name of a table, view or routine"),
         ("palette.hint.noConnection", "Connect to search objects"),
         ("palette.error.title", "The command failed"),
+        ("palette.key.escape", "Esc"),
         ("tx.pill.one", "{0} uncommitted statement"),
         ("tx.pill.other", "{0} uncommitted statements"),
         ("tx.tooltip.commit", "Commit the transaction (Ctrl+Alt+C)"),

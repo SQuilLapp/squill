@@ -1,6 +1,6 @@
 # P17-15 - WinUI head: the command palette overlay (risky)
 
-Status: todo
+Status: done
 Depends on: P17-14, P9-09
 
 ## Goal
@@ -18,8 +18,8 @@ Depends on: P17-14, P9-09
 - Avalonia (P17-16), mouse-hover selection tuning, an animation.
 
 ## Tasks
-- [ ] `CommandPalette` control, title bar box wiring, `Ctrl+K`, head action registration, shared glyphs.
-- [ ] Tests only where the head already has a pattern; the rest in "To check by hand".
+- [x] `CommandPalette` control, title bar box wiring, `Ctrl+K`, head action registration, shared glyphs.
+- [x] Tests only where the head already has a pattern; the rest in "To check by hand".
 
 ## Acceptance criteria
 - Common acceptance with `Squill.Windows.slnx`; WinUI AOT publish with zero IL2xxx/IL3xxx (`rtk dotnet publish src/Squill.App.WinUI -c Release -r win-x64`, in the background; run the exe once, open the palette and close it).
@@ -31,3 +31,9 @@ Add the command palette to the WinUI head
 
 ## To check by hand
 - `Ctrl+K` from the editor, the grid, the explorer and an open dialog-less tab; focus returns where it was; no key reaches the editor while open; `Enter` runs, `Ctrl+Enter` new tab; a click outside closes; narrow window; many results scroll; screen reader reads rows; light and dark contrast of the accent letters; `PRODUCTION` squares match the explorer.
+
+## Result
+- `Ctrl+K` is caught by `Root.PreviewKeyDown` (tunnelling, so it precedes the editor, grid and explorer) plus a hidden root `KeyboardAccelerator`; neither `PlainSqlEditor` (only `Ctrl+Space`) nor the grid binds `Ctrl+K`, so the stop rule did not apply. While open, the palette swallows every other Ctrl chord except text-editing ones, so `Ctrl+T`, `Ctrl+W`... cannot fire behind the scrim.
+- Rows live in a `ScrollViewer` + `StackPanel` (at most ~60 rows: the view-model caps modes at 50), not a virtualized `ListView`; selection is painted from `PaletteViewModel.SelectedIndex`, focus stays in the text box.
+- Head actions registered: `app.settings` (`Ctrl+,`), `app.newConnection`, `app.checkUpdates`, `app.about`, `app.openDataFolder`. New glyphs: action, routine, trigger, line. New key `palette.key.escape`.
+- Not done here: light/dark and fr/en screenshot comparison with M13 and the by-hand checks (needs an interactive session); files and symbols have no data and are left out.
