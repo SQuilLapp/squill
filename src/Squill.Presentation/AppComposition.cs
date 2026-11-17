@@ -92,7 +92,8 @@ public static class AppComposition
         var list = new ConnectionListViewModel(profiles, platform.Providers, platform.Dialogs);
         var workspace = new WorkspaceViewModel(
             sessions, list, history, settings, platform.Dispatcher, platform.Dialogs, platform.EditorFactory,
-            profiles, platform.TerminalHostFactory, diagramStore: diagramStore, measureText: measureText, tableFilters: new JsonTableFilterStore(paths));
+            profiles, platform.TerminalHostFactory, diagramStore: diagramStore, measureText: measureText, tableFilters: new JsonTableFilterStore(paths),
+            recent: new JsonRecentConnectionsStore(paths));
         var updates = new UpdateViewModel(
             new UpdateService(
                 updateEngine ?? UpdateEngineFactory.Create("https://github.com/squillapp/squill", Environment.GetEnvironmentVariable("SQUILL_UPDATE_FEED")),

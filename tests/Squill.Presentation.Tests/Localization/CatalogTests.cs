@@ -12,6 +12,10 @@ public sealed partial class CatalogTests
     // Keys whose English text is legitimately identical to the French one.
     private static readonly HashSet<string> SameInBothLanguages =
     [
+        "home.env.prod", // environment pill, same short form in both languages
+        "home.env.staging", // environment pill
+        "home.env.dev", // environment pill
+        "home.env.local", // environment pill
         "results.filter.op.greaterThan", // comparison symbol
         "results.filter.op.greaterOrEqual", // comparison symbol
         "results.filter.op.lessThan", // comparison symbol

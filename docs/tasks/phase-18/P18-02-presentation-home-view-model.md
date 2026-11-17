@@ -1,6 +1,6 @@
 # P18-02 - Presentation: the home view-model
 
-Status: todo
+Status: done
 Depends on: P18-01
 
 ## Goal
@@ -20,8 +20,8 @@ Everything M01 shows and does, as a view-model both heads bind, plus the rule th
 - Views (P18-03, P18-04), projects, import of other tools' connections, drivers count, ephemeral console.
 
 ## Tasks
-- [ ] `HomeViewModel`, card view-model, `RelativeTimeFormatter`, tips, catalog keys, `WorkspaceViewModel` integration, `AppComposition` registration of the store.
-- [ ] Tests in `tests/Squill.Presentation.Tests/Home/`: at most 6 cards newest first with shortcuts, a deleted profile is skipped and forgotten, subtitle never contains the password, relative text per range (minutes, yesterday with time, weekday, date) in fr and en, tip navigation wraps and persists, hiding persists, visibility rule (launch with setting on / off, tab opened hides, last tab closed with no connection shows), opening a card touches the store.
+- [x] `HomeViewModel`, card view-model, `RelativeTimeFormatter`, tips, catalog keys, `WorkspaceViewModel` integration, `AppComposition` registration of the store.
+- [x] Tests in `tests/Squill.Presentation.Tests/Home/`: at most 6 cards newest first with shortcuts, a deleted profile is skipped and forgotten, subtitle never contains the password, relative text per range (minutes, yesterday with time, weekday, date) in fr and en, tip navigation wraps and persists, hiding persists, visibility rule (launch with setting on / off, tab opened hides, last tab closed with no connection shows), opening a card touches the store.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched.
