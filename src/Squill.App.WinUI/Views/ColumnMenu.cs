@@ -120,7 +120,7 @@ internal sealed class ColumnMenu
         AutomationProperties.SetName(search, UiText.Get("results.columnMenu.searchValue"));
         // Plain check boxes in a stack panel: no ItemsSource marshalling, no containers to recycle (the list is capped at 500 values).
         var list = new StackPanel();
-        var scroller = new ScrollViewer { MaxHeight = 190, Padding = new Thickness(0, 0, 12, 0), Content = list, IsEnabled = canChange, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        var scroller = new ScrollViewer { Height = 190, Padding = new Thickness(0, 0, 12, 0), Content = list, IsEnabled = canChange, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         var loading = new ProgressBar { IsIndeterminate = true, Visibility = vm.IsLoadingValues ? Visibility.Visible : Visibility.Collapsed };
         var hint = new TextBlock { Foreground = Brush(owner, "SquillFg3Brush"), FontSize = 11, Text = vm.ValuesHint ?? "", Visibility = vm.ValuesHint is null ? Visibility.Collapsed : Visibility.Visible };
         var apply = new Button { Style = Res("PrimaryButtonStyle"), Content = UiText.Get("results.filter.editor.apply"), Height = 28, MinHeight = 28, HorizontalAlignment = HorizontalAlignment.Right, IsEnabled = canChange && !vm.IsLoadingValues };
