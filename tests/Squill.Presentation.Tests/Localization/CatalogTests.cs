@@ -21,6 +21,7 @@ public sealed partial class CatalogTests
         "dialog.ok", // same word
         "workspace.terminal", // same word
         "explorer.tables", // same word
+        "palette.kind.table", // same word
         "properties.kindTable", // same word
         "results.type.date", // same word
         "results.exportJsonDetail", // file extension

@@ -1,6 +1,6 @@
 # P17-12 - Presentation: palette objects provider (risky)
 
-Status: todo
+Status: done
 Depends on: P17-11
 
 ## Goal
@@ -18,8 +18,8 @@ Search tables, views, materialized views, routines and triggers of every open co
 - History and line (P17-13), the merged view-model (P17-14), searching column names, objects of connections that are not open.
 
 ## Tasks
-- [ ] Provider, index, run behavior, catalog keys (`palette.kind.*`, `palette.objects.hint`).
-- [ ] Tests `tests/Squill.Presentation.Tests/Palette/PaletteObjectProviderTests.cs` with fake sessions and a built `SchemaSnapshot`: ranking and the 200 cap, active connection first, several connections with the same table name give two rows with their connection names, schema detail text, `Run` opens the table through the workspace (fake) for a table, a view, a procedure, `Run(NewTab)` produces the quoted `SELECT *` text per dialect (SQLite, PostgreSQL, MySQL, SQL Server quoting), cancellation of the first of two searches publishes nothing, an index rebuild happens after `RefreshSchemaAsync` replaced the snapshot, 50,000 objects searched under a generous bound, hidden-by-filter tables are found.
+- [x] Provider, index, run behavior, catalog keys (`palette.kind.*`, `palette.objects.hint`).
+- [x] Tests `tests/Squill.Presentation.Tests/Palette/PaletteObjectProviderTests.cs` with fake sessions and a built `SchemaSnapshot`: ranking and the 200 cap, active connection first, several connections with the same table name give two rows with their connection names, schema detail text, `Run` opens the table through the workspace (fake) for a table, a view, a procedure, `Run(NewTab)` produces the quoted `SELECT *` text per dialect (SQLite, PostgreSQL, MySQL, SQL Server quoting), cancellation of the first of two searches publishes nothing, an index rebuild happens after `RefreshSchemaAsync` replaced the snapshot, 50,000 objects searched under a generous bound, hidden-by-filter tables are found.
 
 ## Acceptance criteria
 - Common acceptance of the recipe (section 7), no head touched.
@@ -27,3 +27,8 @@ Search tables, views, materialized views, routines and triggers of every open co
 
 ## Suggested commit message
 Add the palette objects provider
+
+## Implementation notes
+- The provider talks to the workspace through the new `IPaletteObjectHost` (implemented explicitly by `WorkspaceViewModel`): `OpenTableAsync` makes the session active, then runs the explorer's `OpenTableOnAsync`; `OpenScript` makes it active and opens a tab with the caret at the end. No explorer logic was duplicated; the explorer's private `OpenDefinition` only builds `DefinitionScript` text, which the provider reuses directly.
+- `Run(NewTab)` on a table builds `SELECT * FROM <SqlQuoting.QualifiedName>`; the explorer has no equivalent command.
+- `palette.kind.table` joined the same-in-both-languages allow list of `CatalogTests`.

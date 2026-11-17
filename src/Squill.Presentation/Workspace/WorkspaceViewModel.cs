@@ -16,6 +16,7 @@ using Squill.Presentation.Explorer;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
 using Squill.Presentation.Safety;
+using Squill.Presentation.Palette;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Terminal;
 using Squill.Sql.Ddl;
@@ -23,7 +24,7 @@ using Squill.Sql.Ddl;
 namespace Squill.Presentation.Workspace;
 
 /// <summary>The shell view-model tying the connection list, the open sessions, the object explorer and the query tabs together.</summary>
-public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable
+public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPaletteObjectHost
 {
     private readonly SessionManager _manager;
     private readonly IQueryHistoryStore _history;
@@ -571,10 +572,26 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable
         return ActiveSession is { } session ? AddTab(session, sql) : null;
     }
 
-    private QueryTabViewModel AddTab(ConnectionSession session, string text)
+    IReadOnlyList<ConnectionSession> IPaletteObjectHost.Sessions => [.. AllSessions()];
+
+    async ValueTask IPaletteObjectHost.OpenTableAsync(ConnectionSession session, TableInfo table)
+    {
+        ActiveSession = session;
+        await OpenTableOnAsync(session, table);
+    }
+
+    void IPaletteObjectHost.OpenScript(ConnectionSession session, string text)
+    {
+        ActiveSession = session;
+        AddTab(session, text, caretAtEnd: true);
+    }
+
+    private QueryTabViewModel AddTab(ConnectionSession session, string text, bool caretAtEnd = false)
     {
         var editor = _editorFactory();
         editor.Text = text;
+        if (caretAtEnd)
+            editor.CaretOffset = text.Length;
         _tabCounters[session] = _tabCounters.GetValueOrDefault(session) + 1;
         var tab = new QueryTabViewModel(session, editor, _history, _settings, _dispatcher, _dialogs)
         {
