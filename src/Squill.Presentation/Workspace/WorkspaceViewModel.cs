@@ -93,6 +93,12 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         _measureText = measureText;
         // shortcut: the timer runs for the life of the workspace instead of starting when a transaction opens; the tick is one cheap pass.
         _elapsedTimer = (time ?? TimeProvider.System).CreateTimer(_ => _dispatcher.Post(RefreshElapsed), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        var objects = new PaletteObjectProvider(this);
+        var historySearch = new PaletteHistoryProvider(history, profiles, this, time);
+        var line = new PaletteLineProvider(this);
+        Palette = new PaletteViewModel(
+            PaletteActionRegistry.ForWorkspace(this), objects.Search, historySearch.Search, historySearch.ReloadAsync, line.Search,
+            () => AllSessions().Any(), dispatcher, dialogs);
         Explorer = new ExplorerTreeViewModel(connectionList, manager.Sessions, tableFilters);
         Explorer.OpenTableRequested += (_, r) => _ = OpenTableOnAsync(r.Session, r.Table);
         Explorer.DesignTableRequested += (_, r) => DesignTableOn(r.Session, r.Table);
@@ -113,11 +119,22 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     /// <summary>Gets the saved connections.</summary>
     public ConnectionListViewModel ConnectionList { get; }
 
+    /// <summary>Gets the command palette; its <see cref="PaletteViewModel.Registry"/> takes the head-only actions.</summary>
+    public PaletteViewModel Palette { get; }
+
+    /// <summary>Opens the command palette; bound to <c>Ctrl+K</c> and to the title bar search box.</summary>
+    [RelayCommand]
+    private void OpenPalette() => Palette.Open();
+
     /// <summary>Gets whether any open session, or database opened from one, has a transaction that is open or failed.</summary>
     public bool HasOpenTransaction => AllSessions().Any(s => s.Transaction.State != TransactionState.None);
 
-    /// <summary>Stops the timer that refreshes the duration of open transactions.</summary>
-    public void Dispose() => _elapsedTimer.Dispose();
+    /// <summary>Stops the timer that refreshes the duration of open transactions and the running palette search.</summary>
+    public void Dispose()
+    {
+        _elapsedTimer.Dispose();
+        Palette.Dispose();
+    }
 
     /// <summary>Asks what to do with every open transaction before the application exits; closes nothing itself.</summary>
     /// <param name="ct">Cancels a commit or rollback.</param>

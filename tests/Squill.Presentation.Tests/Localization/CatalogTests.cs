@@ -61,6 +61,8 @@ public sealed partial class CatalogTests
         "tab.plan", // the name is the same word in both languages
         "plan.raw", // the name is the same word in both languages
         "plan.explainShortcut", // key chord
+        "palette.section.actions", // the name is the same word in both languages
+        "palette.mode.actions", // the name is the same word in both languages
     ];
 
     private static Dictionary<string, string> Fr => UiTextCatalogFr.Entries.ToDictionary(e => e.Key, e => e.Value);

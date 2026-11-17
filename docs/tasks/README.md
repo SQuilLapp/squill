@@ -334,7 +334,7 @@ Depends on: <card ids, ranges allowed>
 | [P17-11](phase-17/P17-11-presentation-palette-items-and-actions.md) | Presentation: palette items and the action registry | P17-10 | done |
 | [P17-12](phase-17/P17-12-presentation-palette-objects-provider.md) | Presentation: palette objects provider (risky) | P17-11 | done |
 | [P17-13](phase-17/P17-13-presentation-palette-history-and-line.md) | Presentation: palette history and go-to-line providers | P17-11 | done |
-| [P17-14](phase-17/P17-14-presentation-palette-view-model.md) | Presentation: the palette view-model | P17-12, P17-13 | todo |
+| [P17-14](phase-17/P17-14-presentation-palette-view-model.md) | Presentation: the palette view-model | P17-12, P17-13 | done |
 | [P17-15](phase-17/P17-15-winui-command-palette.md) | WinUI head: the command palette overlay (risky) | P17-14, P9-09 | todo |
 | [P17-16](phase-17/P17-16-avalonia-command-palette.md) | Avalonia head: the command palette overlay (risky) | P17-15 | todo |
 | [P17-17](phase-17/P17-17-verify-grid-filter-and-palette.md) | End-to-end verification: grid filter and command palette | P17-09, P17-16 | todo |

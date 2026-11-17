@@ -1,6 +1,6 @@
 # P17-14 - Presentation: the palette view-model
 
-Status: todo
+Status: done
 Depends on: P17-12, P17-13
 
 ## Goal
@@ -18,8 +18,8 @@ One view-model both heads bind: text, mode pills, sections, selection, footer, a
 - Overlay and focus handling (P17-15, P17-16), recent-actions memory, mouse hover selection (heads).
 
 ## Tasks
-- [ ] `PaletteViewModel`, `PaletteSection`, `WorkspaceViewModel.Palette` / `OpenPaletteCommand`, composition, catalog keys.
-- [ ] Tests `tests/Squill.Presentation.Tests/Palette/PaletteViewModelTests.cs` (fake providers, immediate dispatcher, gates for staleness): `All` order and limits, each prefix mode, mode pills rewrite the text, selection wraps and resets after a new publish, `Enter` runs the selected action and closes first (assert order), `Ctrl+Entrée` passes `NewTab`, a disabled item does nothing and stays open, a stale slow search never overwrites a newer one, empty text hints per mode, footer text plural and time, an exception from `Run` reaches the dialog service, `Open` reloads history and resets state.
+- [x] `PaletteViewModel`, `PaletteSection`, `WorkspaceViewModel.Palette` / `OpenPaletteCommand`, composition, catalog keys.
+- [x] Tests `tests/Squill.Presentation.Tests/Palette/PaletteViewModelTests.cs` (fake providers, immediate dispatcher, gates for staleness): `All` order and limits, each prefix mode, mode pills rewrite the text, selection wraps and resets after a new publish, `Enter` runs the selected action and closes first (assert order), `Ctrl+Entrée` passes `NewTab`, a disabled item does nothing and stays open, a stale slow search never overwrites a newer one, empty text hints per mode, footer text plural and time, an exception from `Run` reaches the dialog service, `Open` reloads history and resets state.
 
 ## Acceptance criteria
 - Common acceptance of the recipe (section 7), no head touched. Tests pass repeatedly (`rtk bypass dotnet test` twice): no timing dependence beyond explicit gates.
