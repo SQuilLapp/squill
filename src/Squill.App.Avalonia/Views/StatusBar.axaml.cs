@@ -6,6 +6,7 @@ using Squill.Core;
 using Squill.Core.Transactions;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Activity;
 using Squill.Presentation.Compare;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Results;
@@ -21,6 +22,7 @@ public sealed partial class StatusBar : UserControl
     private QueryTabViewModel? _tab;
     private PlanTabViewModel? _plan;
     private SchemaCompareViewModel? _compare;
+    private SessionsMonitorViewModel? _monitor;
     private SessionTransaction? _transaction;
 
     /// <summary>Creates the view.</summary>
@@ -67,6 +69,20 @@ public sealed partial class StatusBar : UserControl
         _compare = compare;
         if (_compare is not null)
             _compare.PropertyChanged += OnTabChanged;
+        Refresh();
+    }
+
+    /// <summary>Shows the last read of the sessions monitor while its tab is active.</summary>
+    /// <param name="monitor">The active monitor tab, or <see langword="null"/> when another kind of tab is shown.</param>
+    public void ShowMonitor(SessionsMonitorViewModel? monitor)
+    {
+        if (ReferenceEquals(_monitor, monitor))
+            return;
+        if (_monitor is not null)
+            _monitor.PropertyChanged -= OnTabChanged;
+        _monitor = monitor;
+        if (_monitor is not null)
+            _monitor.PropertyChanged += OnTabChanged;
         Refresh();
     }
 
@@ -122,7 +138,7 @@ public sealed partial class StatusBar : UserControl
         ConnectionText.Text = profile is null ? UiText.Get("home.noConnection") : ConnectionLabel(profile);
         ConnectionDot.IsVisible = profile is null;
         ServerVersionText.Text = _compare is { } c ? $"{c.SourceServerVersion} → {c.TargetServerVersion}" : _plan?.ServerVersion ?? _workspace?.ActiveSession?.Connection.ServerVersion;
-        EncodingSegment.IsVisible = _plan is null && _compare is null;
+        EncodingSegment.IsVisible = _plan is null && _compare is null && _monitor is null;
         RefreshCompare();
         RefreshTransaction();
         RefreshRunStatus();
@@ -161,7 +177,7 @@ public sealed partial class StatusBar : UserControl
     // The transaction belongs to the session of the active query tab: nothing is shown for plans and other kinds of tab.
     private void RefreshTransaction()
     {
-        var text = _plan is null && _compare is null ? _transaction?.StatusText ?? "" : "";
+        var text = _plan is null && _compare is null && _monitor is null ? _transaction?.StatusText ?? "" : "";
         TransactionSegment.IsVisible = text.Length > 0;
         TransactionText.Text = text;
         var brush = Brush(_transaction?.State == TransactionState.Failed ? "SquillDangerBrush" : "SquillWarningBrush");
@@ -171,6 +187,14 @@ public sealed partial class StatusBar : UserControl
 
     private void RefreshRunStatus()
     {
+        if (_monitor is { } monitor)
+        {
+            StatusSegment.Text = monitor.StatusText;
+            StatusSegment.Foreground = Brush("SquillFg2Brush");
+            ElapsedSegment.Text = null;
+            return;
+        }
+
         if (_compare is { } compare)
         {
             StatusSegment.Text = compare.DifferencesText;
@@ -210,7 +234,7 @@ public sealed partial class StatusBar : UserControl
 
     private void RefreshPosition()
     {
-        if (_compare is not null)
+        if (_compare is not null || _monitor is not null)
         {
             PositionText.Text = null;
             return;

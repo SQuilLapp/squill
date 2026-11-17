@@ -21,6 +21,10 @@ src/Squill.App.Avalonia/Views/ProductionConfirmWindow.cs|SquillFg3Brush|resource
 src/Squill.App.Avalonia/Views/ProductionConfirmWindow.cs|SquillFgBrush|resource key
 src/Squill.App.Avalonia/Views/QueryTabView.axaml|CSV|file format name
 src/Squill.App.Avalonia/Views/QueryTabView.axaml|JSON|file format name
+src/Squill.App.Avalonia/Views/SessionsMonitorView.cs|N0|number format string
+src/Squill.App.Avalonia/Views/SessionsMonitorView.cs|SquillFg2Brush|resource key
+src/Squill.App.Avalonia/Views/SessionsMonitorView.cs|SquillFg3Brush|resource key
+src/Squill.App.Avalonia/Views/SessionsMonitorView.cs|SquillFgBrush|resource key
 src/Squill.App.Avalonia/Views/TableDesignerView.axaml|Ctrl+S|keyboard accelerator text, not translated
 src/Squill.App.Avalonia/Views/TransactionAskWindow.cs|SquillFg2Brush|resource key
 src/Squill.App.Avalonia/Views/TransactionAskWindow.cs|SquillFgBrush|resource key

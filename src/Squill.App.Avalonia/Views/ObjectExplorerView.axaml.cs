@@ -62,6 +62,7 @@ public sealed partial class ObjectExplorerView : UserControl
                 "ConnectItem" => connection && !node.IsConnected,
                 "DisconnectItem" => connection && node.IsConnected,
                 "CompareItem" => connection && node.IsConnected,
+                "MonitorItem" => connection && node.IsConnected,
                 "ChooseTablesItem" => database,
                 "ShowAllItem" => database && node.Kind == ExplorerNodeKind.Database && node.HiddenCount > 0,
                 "HideTableItem" => listed,
@@ -69,6 +70,12 @@ public sealed partial class ObjectExplorerView : UserControl
                 "DefinitionItem" => definition,
                 _ => table,
             };
+            if (item.Name == "MonitorItem" && item.IsVisible)
+            {
+                item.IsEnabled = Workspace?.OpenSessionsMonitorCommand.CanExecute(null) ?? false;
+                ToolTip.SetTip(item, item.IsEnabled ? null : Workspace?.SessionsMonitorDisabledReason);
+            }
+
             if (item.Name == "CompareItem" && item.IsVisible)
             {
                 item.IsEnabled = Workspace?.OpenSchemaCompareCommand.CanExecute(node.Profile?.Id) ?? false;
@@ -91,6 +98,8 @@ public sealed partial class ObjectExplorerView : UserControl
 
     private void OnCompareClicked(object? sender, RoutedEventArgs e) =>
         Workspace?.OpenSchemaCompareCommand.Execute((sender as Control)?.DataContext is ExplorerNode node ? node.Profile?.Id : null);
+
+    private void OnMonitorClicked(object? sender, RoutedEventArgs e) => Workspace?.OpenSessionsMonitorCommand.Execute(null);
 
     private void OnDisconnectClicked(object? sender, RoutedEventArgs e) => Workspace?.DisconnectCommand.Execute(null);
 
