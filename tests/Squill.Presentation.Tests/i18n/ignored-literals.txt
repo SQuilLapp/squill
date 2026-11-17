@@ -14,6 +14,9 @@ src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SQL Server|product na
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SQLite|product name, not translated
 src/Squill.App.Avalonia/Views/DiagramTabView.axaml|Ctrl+0|keyboard accelerator text, not translated
 src/Squill.App.Avalonia/Views/FilterBar.axaml|Ctrl+F|keyboard accelerator text, not translated
+src/Squill.App.Avalonia/Views/HomePage.axaml|Ctrl+K|keyboard shortcut, not translated
+src/Squill.App.Avalonia/Views/HomePage.axaml|Ctrl+N|keyboard shortcut, not translated
+src/Squill.App.Avalonia/Views/HomePage.axaml|SQuilL|product name, not translated
 src/Squill.App.Avalonia/Views/ProductionConfirmWindow.cs|SquillFg3Brush|resource key
 src/Squill.App.Avalonia/Views/ProductionConfirmWindow.cs|SquillFgBrush|resource key
 src/Squill.App.Avalonia/Views/QueryTabView.axaml|CSV|file format name

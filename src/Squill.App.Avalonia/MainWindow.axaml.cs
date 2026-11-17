@@ -95,7 +95,8 @@ public sealed partial class MainWindow : Window
     /// <summary>Connects the history, snippets and settings view-models and the data directory the File menu opens.</summary>
     /// <param name="services">The shared root view-models.</param>
     /// <param name="dataDirectory">The directory the File menu opens.</param>
-    public void Attach(AppServices services, string dataDirectory)
+    /// <param name="loading">The pending load of the connection list, awaited before the home page starts; <see langword="null"/> when it is already loaded.</param>
+    public void Attach(AppServices services, string dataDirectory, Task? loading = null)
     {
         Sidebar.Attach(services.History, services.Snippets);
         services.Workspace.Explorer.Picker = new Services.AvaloniaTablePicker(() => this);
@@ -119,6 +120,7 @@ public sealed partial class MainWindow : Window
         AttachUpdates(services.Updates, services.About);
         InitializeMacMenu();
         AttachPalette(services.Workspace);
+        AttachHome(services.Workspace, loading ?? Task.CompletedTask);
     }
 
     private void AttachPalette(WorkspaceViewModel workspace)

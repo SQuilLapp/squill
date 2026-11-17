@@ -343,7 +343,7 @@ Depends on: <card ids, ranges allowed>
 | [P18-01](phase-18/P18-01-platform-recent-connections-and-home-settings.md) | Platform: recent connections and home settings | none | done |
 | [P18-02](phase-18/P18-02-presentation-home-view-model.md) | Presentation: the home view-model | P18-01 | done |
 | [P18-03](phase-18/P18-03-winui-home-page.md) | WinUI head: the home page | P18-02 | done |
-| [P18-04](phase-18/P18-04-avalonia-home-page.md) | Avalonia head: the home page | P18-03 | todo |
+| [P18-04](phase-18/P18-04-avalonia-home-page.md) | Avalonia head: the home page | P18-03 | done |
 | [P18-05](phase-18/P18-05-core-schema-comparison.md) | Core: schema comparison model | none | todo |
 | [P18-06](phase-18/P18-06-sql-migration-script.md) | Sql: migration script generation | P18-05 | todo |
 | [P18-07](phase-18/P18-07-presentation-line-diff.md) | Presentation: line diff for the side-by-side DDL | none | todo |

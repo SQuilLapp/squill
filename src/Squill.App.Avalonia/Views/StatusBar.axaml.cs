@@ -91,7 +91,8 @@ public sealed partial class StatusBar : UserControl
     {
         RefreshEnvironment();
         var profile = _workspace?.ActiveSession?.Profile;
-        ConnectionText.Text = profile is null ? UiText.Get("status.notConnected") : ConnectionLabel(profile);
+        ConnectionText.Text = profile is null ? UiText.Get("home.noConnection") : ConnectionLabel(profile);
+        ConnectionDot.IsVisible = profile is null;
         ServerVersionText.Text = _plan?.ServerVersion ?? _workspace?.ActiveSession?.Connection.ServerVersion;
         EncodingSegment.IsVisible = _plan is null;
         RefreshTransaction();

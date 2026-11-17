@@ -220,8 +220,8 @@
       </DockPanel>
     </Border>
     <v:SidebarView Grid.Row="2" Grid.Column="1" Name="Sidebar" />
-    <GridSplitter Grid.Row="2" Grid.Column="2" Width="4" Background="{DynamicResource SquillBorderBrush}" />
-    <Grid Grid.Row="2" Grid.Column="3" RowDefinitions="Auto,*">
+    <GridSplitter Name="SidebarSplitter" Grid.Row="2" Grid.Column="2" Width="4" Background="{DynamicResource SquillBorderBrush}" />
+    <Grid Name="MainArea" Grid.Row="2" Grid.Column="3" RowDefinitions="Auto,*">
       <Border Name="TabStripBar" Background="{DynamicResource SquillBgSurfaceBrush}" Height="36"
               BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
         <DockPanel>
@@ -269,6 +269,7 @@
     <Panel Grid.Row="2" Grid.Column="5" Name="PropertiesHost">
       <v:PropertiesPanel Name="Properties" />
     </Panel>
+    <v:HomePage Name="HomeArea" Grid.Row="2" Grid.ColumnSpan="6" IsVisible="False" />
     <v:StatusBar Grid.Row="3" Name="Status" Grid.ColumnSpan="6" />
   </Grid>
 </Window>

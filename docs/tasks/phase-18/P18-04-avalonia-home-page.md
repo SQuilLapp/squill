@@ -1,6 +1,6 @@
 # P18-04 - Avalonia head: the home page
 
-Status: todo
+Status: done
 Depends on: P18-03
 
 ## Goal
@@ -15,8 +15,8 @@ The same M01 page in the Avalonia head, same layout and numbers as P18-03. Recip
 - Anything the WinUI card left out.
 
 ## Tasks
-- [ ] `HomePage`, templates, accelerators, hiding rail / explorer / panel.
-- [ ] Headless tests in `tests/Squill.App.Avalonia.Tests` (card count, empty state, accelerator opens the first card, light and dark render different pixels).
+- [x] `HomePage`, templates, accelerators, hiding rail / explorer / panel.
+- [x] Headless tests in `tests/Squill.App.Avalonia.Tests` (card count, empty state, accelerator opens the first card, light and dark render different pixels).
 
 ## Acceptance criteria
 - Common acceptance (recipe 7) with the Avalonia AOT publish; compare with M01 as far as a capture allows and list the rest.

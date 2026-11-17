@@ -35,7 +35,10 @@
         <TextBlock Name="PositionText" Classes="mono" />
       </Border>
       <Border DockPanel.Dock="Left" Classes="segment">
-        <TextBlock Name="ConnectionText" Classes="mono" Foreground="{DynamicResource SquillFgBrush}" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Ellipse Name="ConnectionDot" Width="8" Height="8" VerticalAlignment="Center" Fill="{DynamicResource SquillFg3Brush}" />
+          <TextBlock Name="ConnectionText" Classes="mono" Foreground="{DynamicResource SquillFgBrush}" />
+        </StackPanel>
       </Border>
       <Border Name="TransactionSegment" DockPanel.Dock="Left" Classes="segment" IsVisible="False">
         <StackPanel Orientation="Horizontal" Spacing="6">
