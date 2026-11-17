@@ -133,6 +133,7 @@ public sealed partial class QueryTabView : UserControl
         };
         results.KeyboardAccelerators.Add(find);
         _grid.Canvas.ColumnMenuRequested += OnColumnMenuRequested;
+        _grid.Canvas.ColumnSortRequested += (_, e) => _viewState?.ToggleSort(e.Column);
         Grid.SetRow(_filterBar, 1);
         Grid.SetRow(_editBar, 2);
         Grid.SetRow(_progress, 3);

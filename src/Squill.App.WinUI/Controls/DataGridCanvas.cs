@@ -31,7 +31,8 @@ public sealed partial class DataGridCanvas : Grid
     private const float StateBarWidth = 3;
     private const float KeyGlyphWidth = 14;
     private const float MarkWidth = 14;
-    private const float ChevronZone = 20;
+    private const float ButtonWidth = 20;
+    private const float ButtonsZone = ButtonWidth * 2;
 
     /// <summary>Width of the row-number column drawn left of the data columns.</summary>
     internal const double GutterWidth = 36;
@@ -54,7 +55,8 @@ public sealed partial class DataGridCanvas : Grid
     private GridEditController? _edit;
     private Faces? _faces;
     private int _hoverColumn = -1;
-    private bool _hoverChevron;
+    // 0 none, 1 sort button, 2 filter button.
+    private int _hoverButton;
     private int _sortColumn = -1;
     private bool _sortDescending;
     private HashSet<int> _filteredColumns = [];
@@ -73,7 +75,7 @@ public sealed partial class DataGridCanvas : Grid
         _canvas.PointerPressed += OnPointerPressed;
         _canvas.PointerMoved += OnPointerMoved;
         _canvas.PointerReleased += OnPointerReleased;
-        _canvas.PointerExited += (_, _) => SetHover(-1, false);
+        _canvas.PointerExited += (_, _) => SetHover(-1, 0);
         _canvas.IsTabStop = true;
         _canvas.KeyDown += OnKeyDown;
         _canvas.CharacterReceived += OnCharacterReceived;
@@ -121,8 +123,11 @@ public sealed partial class DataGridCanvas : Grid
         }
     }
 
-    /// <summary>Raised when the user asks for the menu of a column (chevron, right click on the header, or the menu key).</summary>
+    /// <summary>Raised when the user asks for the filter popup of a column (filter button, right click on the header, or the menu key).</summary>
     public event EventHandler<ColumnMenuRequestedEventArgs>? ColumnMenuRequested;
+
+    /// <summary>Raised when the user clicks the sort button of a column header; <see cref="ColumnMenuRequestedEventArgs.Anchor"/> is unused.</summary>
+    public event EventHandler<ColumnMenuRequestedEventArgs>? ColumnSortRequested;
 
     /// <summary>Gets or sets the column whose header shows a sort arrow, or -1.</summary>
     public int SortColumn
@@ -365,7 +370,7 @@ public sealed partial class DataGridCanvas : Grid
             ds.DrawTextLayout(type, (float)GridEditGeometry.HeaderTypeX(headerX, name.LayoutBounds.Width + marksWidth), (headerHeight - (float)type.LayoutBounds.Height) / 2, c.Muted);
             if (col == _hoverColumn || col == _menuColumn)
             {
-                DrawChevron(ds, c, left + colWidth - ChevronZone, headerHeight, col == _menuColumn || _hoverChevron);
+                DrawButtons(ds, c, col, left + colWidth - ButtonsZone, headerHeight);
             }
         }
 
@@ -399,17 +404,39 @@ public sealed partial class DataGridCanvas : Grid
         return used;
     }
 
-    private static void DrawChevron(CanvasDrawingSession ds, GridColors c, float x, float headerHeight, bool hot)
+    // The sort button then the filter button, right edge of a hovered header; the hovered one (or the filter one while its popup is open) is lit.
+    private void DrawButtons(CanvasDrawingSession ds, GridColors c, int col, float x, float headerHeight)
     {
         var cy = headerHeight / 2;
-        if (hot)
+        var hover = col == _hoverColumn ? _hoverButton : 0;
+        if (hover == 1)
         {
-            ds.FillRoundedRectangle(x + 1, cy - 9, ChevronZone - 4, 18, 4, 4, c.Selection);
+            ds.FillRoundedRectangle(x + 1, cy - 9, ButtonWidth - 2, 18, 4, 4, c.Selection);
         }
 
-        var mx = x + ((ChevronZone - 2) / 2);
-        ds.DrawLine(mx - 3, cy - 1.5f, mx, cy + 1.5f, c.Text, 1.5f);
-        ds.DrawLine(mx, cy + 1.5f, mx + 3, cy - 1.5f, c.Text, 1.5f);
+        if (hover == 2 || col == _menuColumn)
+        {
+            ds.FillRoundedRectangle(x + ButtonWidth + 1, cy - 9, ButtonWidth - 2, 18, 4, 4, c.Selection);
+        }
+
+        var sx = x + (ButtonWidth / 2);
+        var sorted = col == _sortColumn;
+        var color = sorted ? c.Accent : c.Text;
+        if (!sorted || !_sortDescending)
+        {
+            ds.DrawLine(sx - 3, cy - 1.5f, sx, cy - 5, color, 1.5f);
+            ds.DrawLine(sx, cy - 5, sx + 3, cy - 1.5f, color, 1.5f);
+        }
+
+        if (!sorted || _sortDescending)
+        {
+            ds.DrawLine(sx - 3, cy + 1.5f, sx, cy + 5, color, 1.5f);
+            ds.DrawLine(sx, cy + 5, sx + 3, cy + 1.5f, color, 1.5f);
+        }
+
+        var fx = x + ButtonWidth + (ButtonWidth / 2) - 5;
+        using var funnel = CanvasGeometry.CreatePolygon(ds, [new Vector2(fx, cy - 5), new Vector2(fx + 10, cy - 5), new Vector2(fx + 6, cy), new Vector2(fx + 6, cy + 5), new Vector2(fx + 4, cy + 4), new Vector2(fx + 4, cy)]);
+        ds.FillGeometry(funnel, _filteredColumns.Contains(col) ? c.Accent : c.Text);
     }
 
     private void DrawGutter(CanvasDrawingSession ds, GridColors c, long firstRow, long endRow, float height)
@@ -517,7 +544,7 @@ public sealed partial class DataGridCanvas : Grid
         for (var col = 0; col < widths.Length; col++)
         {
             var info = source.Columns[col];
-            var max = TextLayout(creator, info.Name, Face.UiSemibold).LayoutBounds.Width + 6 + TextLayout(creator, info.DataTypeName, Face.MonoSmall).LayoutBounds.Width + KeyGlyphWidth + ChevronZone;
+            var max = TextLayout(creator, info.Name, Face.UiSemibold).LayoutBounds.Width + 6 + TextLayout(creator, info.DataTypeName, Face.MonoSmall).LayoutBounds.Width + KeyGlyphWidth + ButtonsZone;
             for (var row = 0; row < sample; row++)
             {
                 var value = CellFormatter.FormatDisplay(source.GetCell(row, col), info) ?? "NULL";
@@ -597,8 +624,15 @@ public sealed partial class DataGridCanvas : Grid
         var shift = e.KeyModifiers.HasFlag(VirtualKeyModifiers.Shift);
         if (point.Y <= _layout.HeaderHeight)
         {
-            var (hit, onChevron) = HeaderHit(point);
-            if (hit >= 0 && (onChevron || e.GetCurrentPoint(_canvas).Properties.IsRightButtonPressed))
+            var (hit, button) = HeaderHit(point);
+            if (hit >= 0 && button == 1)
+            {
+                ColumnSortRequested?.Invoke(this, new ColumnMenuRequestedEventArgs(hit, MenuAnchor(hit)));
+                e.Handled = true;
+                return;
+            }
+
+            if (hit >= 0 && (button == 2 || e.GetCurrentPoint(_canvas).Properties.IsRightButtonPressed))
             {
                 ColumnMenuRequested?.Invoke(this, new ColumnMenuRequestedEventArgs(hit, MenuAnchor(hit)));
                 e.Handled = true;
@@ -649,36 +683,37 @@ public sealed partial class DataGridCanvas : Grid
             return;
         }
 
-        var (hover, chevron) = point.Y <= _layout.HeaderHeight ? HeaderHit(point) : (-1, false);
-        SetHover(hover, chevron);
+        var (hover, button) = point.Y <= _layout.HeaderHeight ? HeaderHit(point) : (-1, 0);
+        SetHover(hover, button);
         var onHandle = point.Y <= _layout.HeaderHeight && _layout.ResizeHandleAt(point.X - GutterWidth, _scrollX, ResizeTolerance) >= 0;
         ProtectedCursor = onHandle ? InputSystemCursor.Create(InputSystemCursorShape.SizeWestEast) : null;
     }
 
-    // The column under a header point and whether the point is in its chevron zone (the resize handle wins over the zone).
-    private (int Column, bool Chevron) HeaderHit(Point point)
+    // The column under a header point and the button under it (0 none, 1 sort, 2 filter); the resize handle wins over the buttons.
+    private (int Column, int Button) HeaderHit(Point point)
     {
         if (point.X < GutterWidth || _layout.ResizeHandleAt(point.X - GutterWidth, _scrollX, ResizeTolerance) >= 0)
         {
-            return (-1, false);
+            return (-1, 0);
         }
 
         var column = _layout.ColumnAt(point.X - GutterWidth + _scrollX);
         if (column < 0)
         {
-            return (-1, false);
+            return (-1, 0);
         }
 
         var right = GutterWidth + _layout.ColumnLeft(column) + _layout.ColumnWidth(column) - _scrollX;
-        return (column, point.X >= right - ChevronZone);
+        var from = right - ButtonsZone;
+        return (column, point.X < from ? 0 : point.X < from + ButtonWidth ? 1 : 2);
     }
 
-    private void SetHover(int column, bool chevron)
+    private void SetHover(int column, int button)
     {
-        if (column != _hoverColumn || chevron != _hoverChevron)
+        if (column != _hoverColumn || button != _hoverButton)
         {
             _hoverColumn = column;
-            _hoverChevron = chevron;
+            _hoverButton = button;
             _canvas.Invalidate();
         }
     }
