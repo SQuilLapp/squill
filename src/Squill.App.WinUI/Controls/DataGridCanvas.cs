@@ -55,7 +55,7 @@ public sealed partial class DataGridCanvas : Grid
     private GridEditController? _edit;
     private Faces? _faces;
     private int _hoverColumn = -1;
-    // 0 none, 1 sort button, 2 filter button.
+    // 0 none, 1 sort button (right), 2 filter button (left).
     private int _hoverButton;
     private int _sortColumn = -1;
     private bool _sortDescending;
@@ -404,22 +404,22 @@ public sealed partial class DataGridCanvas : Grid
         return used;
     }
 
-    // The sort button then the filter button, right edge of a hovered header; the hovered one (or the filter one while its popup is open) is lit.
+    // The filter button then the sort button, right edge of a hovered header; the hovered one (or the filter one while its popup is open) is lit.
     private void DrawButtons(CanvasDrawingSession ds, GridColors c, int col, float x, float headerHeight)
     {
         var cy = headerHeight / 2;
         var hover = col == _hoverColumn ? _hoverButton : 0;
-        if (hover == 1)
+        if (hover == 2 || col == _menuColumn)
         {
             ds.FillRoundedRectangle(x + 1, cy - 9, ButtonWidth - 2, 18, 4, 4, c.Selection);
         }
 
-        if (hover == 2 || col == _menuColumn)
+        if (hover == 1)
         {
             ds.FillRoundedRectangle(x + ButtonWidth + 1, cy - 9, ButtonWidth - 2, 18, 4, 4, c.Selection);
         }
 
-        var sx = x + (ButtonWidth / 2);
+        var sx = x + ButtonWidth + (ButtonWidth / 2);
         var sorted = col == _sortColumn;
         var color = sorted ? c.Accent : c.Text;
         if (!sorted || !_sortDescending)
@@ -434,7 +434,7 @@ public sealed partial class DataGridCanvas : Grid
             ds.DrawLine(sx, cy + 5, sx + 3, cy + 1.5f, color, 1.5f);
         }
 
-        var fx = x + ButtonWidth + (ButtonWidth / 2) - 5;
+        var fx = x + (ButtonWidth / 2) - 5;
         using var funnel = CanvasGeometry.CreatePolygon(ds, [new Vector2(fx, cy - 5), new Vector2(fx + 10, cy - 5), new Vector2(fx + 6, cy), new Vector2(fx + 6, cy + 5), new Vector2(fx + 4, cy + 4), new Vector2(fx + 4, cy)]);
         ds.FillGeometry(funnel, _filteredColumns.Contains(col) ? c.Accent : c.Text);
     }
@@ -705,7 +705,7 @@ public sealed partial class DataGridCanvas : Grid
 
         var right = GutterWidth + _layout.ColumnLeft(column) + _layout.ColumnWidth(column) - _scrollX;
         var from = right - ButtonsZone;
-        return (column, point.X < from ? 0 : point.X < from + ButtonWidth ? 1 : 2);
+        return (column, point.X < from ? 0 : point.X < from + ButtonWidth ? 2 : 1);
     }
 
     private void SetHover(int column, int button)
