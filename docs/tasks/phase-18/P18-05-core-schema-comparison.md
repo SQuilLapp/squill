@@ -1,6 +1,6 @@
 # P18-05 - Core: schema comparison model
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -18,8 +18,8 @@ A pure function that compares two `SchemaSnapshot`s of the same dialect and list
 - Script generation (P18-06), data compare, rename detection, UI.
 
 ## Tasks
-- [ ] Model and comparer, XML doc, `SchemaCompareOptions`.
-- [ ] Tests in `tests/Squill.Core.Tests/Schema/`: identical snapshots give none, one table only in source / target, column added / removed / changed (type, nullability, default), primary key change, foreign key change, index added, view definition changed with whitespace only (not reported) and real (reported), routine changed, null definitions, case-insensitive names, deterministic order, 5,000 tables compare under a second.
+- [x] Model and comparer, XML doc (no options type, per the design decisions).
+- [x] Tests in `tests/Squill.Core.Tests/Schema/`: identical snapshots give none, one table only in source / target, column added / removed / changed (type, nullability, default), primary key change, foreign key change, index added, view definition changed with whitespace only (not reported) and real (reported), routine changed, null definitions, case-insensitive names, deterministic order, 5,000 tables compare under a second.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched.
