@@ -1,6 +1,6 @@
 # P18-11 - Data: server activity contract and PostgreSQL reader
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -17,8 +17,8 @@ A read-only snapshot of what a server is doing (sessions, waits, who blocks whom
 - MySQL, SQL Server (P18-12), Presentation, heads.
 
 ## Tasks
-- [ ] Core model, contract, PostgreSQL reader, provider hook, `ActivityActionFailedException`.
-- [ ] Tests: model and parse helpers unit tested without a server; Docker-gated `tests/Squill.Data.Postgres.Tests/ActivityReaderTests.cs`: a second connection holds a transaction open (`idle in transaction`), a third updates the same row and waits: snapshot shows both states, the edge blocker -> blocked, the lock info, `MaxConnections`; cancel makes the blocked statement fail with the cancel error; terminate removes the session; the reader's own pid is absent; a non-numeric id is rejected.
+- [x] Core model, contract, PostgreSQL reader, provider hook, `ActivityActionFailedException`.
+- [x] Tests: model and parse helpers unit tested without a server; Docker-gated `tests/Squill.Data.Postgres.Tests/ActivityReaderTests.cs`: a second connection holds a transaction open (`idle in transaction`), a third updates the same row and waits: snapshot shows both states, the edge blocker -> blocked, the lock info, `MaxConnections`; cancel makes the blocked statement fail with the cancel error; terminate removes the session; the reader's own pid is absent; a non-numeric id is rejected.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched; the Docker-gated test ran on PostgreSQL (say so in the report).
