@@ -1,6 +1,6 @@
 # P18-06 - Sql: migration script generation
 
-Status: todo
+Status: done
 Depends on: P18-05
 
 ## Goal
@@ -19,9 +19,9 @@ Turn a `SchemaComparison` and the user's selection into the SQL script of M09 (`
 - Executing the script (P18-08), data compare, cross-dialect scripts.
 
 ## Tasks
-- [ ] Builder, options, notes, ordering.
-- [ ] Tests in `tests/Squill.Sql.Tests/Migration/`: golden text per dialect for add table + add column + changed column + added index + view change + dropped routine (excluded and included), ordering with a foreign key between two new tables and with a cycle, the wrapper per dialect, `WrapInTransaction=false`, notes, determinism.
-- [ ] Engine proof: SQLite always (apply the script produced from two real databases, compare again, expect no difference); PostgreSQL, MySQL, SQL Server Docker-gated with the shared sample schema of `tests/Shared/SampleSchema` (two copies, one altered).
+- [x] Builder, options, notes, ordering.
+- [x] Tests in `tests/Squill.Sql.Tests/Migration/`: golden text per dialect for add table + add column + changed column + added index + view change + dropped routine (excluded and included), ordering with a foreign key between two new tables and with a cycle, the wrapper per dialect, `WrapInTransaction=false`, notes, determinism.
+- [x] Engine proof: SQLite always (apply the script produced from two real databases, compare again, expect no difference); PostgreSQL, MySQL, SQL Server Docker-gated with the shared sample schema of `tests/Shared/SampleSchema` (two copies, one altered).
 
 ## Acceptance criteria
 - Common acceptance (recipe 7); applying a generated script then comparing again gives no difference for the included objects on every engine the environment can run (state which ones ran).
