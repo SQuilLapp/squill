@@ -11,6 +11,8 @@ The owner's hand test of the WinUI Release build crashed the app when clicking t
 - Mitigated, in `Views/ColumnMenu.cs`: the value list was a `ListView` fed an `IReadOnlyList<ValueItem>` (a non-WinRT collection marshalled as `ItemsSource`) whose container `Content` was overwritten in `ContainerContentChanging`; the same `Flyout` instance was reused; `ShowAt` had no `XamlRoot` guard. Now: plain `CheckBox` rows in a `StackPanel` inside a `ScrollViewer` (no `ItemsSource`, no containers), a new `Flyout` per show, and `Show` returns (disposing the view-model) when the grid has no `XamlRoot`.
 - Checked and fine: every style, icon and token key the menu reads exists in both themes.
 
+- Proved by the crash log (second hand test): the `+ Filter` popup threw `ArgumentException 0x80070057` in `ItemsControl.set_ItemsSource` from `FilterBar.BuildEditor` (a `ComboBox` fed `IReadOnlyList<ColumnChoice>` with `DisplayMemberPath`). Managed object collections as `ItemsSource` fail under Native AOT, so the column menu was most likely the same defect. `FilterBar` now lists plain strings and maps the selected index back. Other `ItemsSource` uses of object lists (history, snippets, properties, sidebar, diagram, table designer) were not touched or tested here.
+
 ## Design decisions (final)
 - `CrashLog` (WinUI head): appends time, source, and type, message and stack of the exception and each inner one to `%APPDATA%\SQuilL\logs\crash.log` (`SQUILL_DATA_DIR\logs\crash.log` when set). Hooked to `Application.UnhandledException` (`Handled` untouched), `AppDomain.UnhandledException` and `TaskScheduler.UnobservedTaskException`. It never throws.
 - Space on a value row is the native `CheckBox` behaviour; Enter still applies, Escape closes.

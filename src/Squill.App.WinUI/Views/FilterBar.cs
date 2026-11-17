@@ -223,10 +223,22 @@ internal sealed partial class FilterBar : UserControl
         _flyout.Content = null;
     }
 
+    private static int IndexOf<T>(IReadOnlyList<T> items, T? selected) where T : class
+    {
+        for (var i = 0; i < items.Count; i++)
+        {
+            if (ReferenceEquals(items[i], selected))
+                return i;
+        }
+
+        return -1;
+    }
+
     private StackPanel BuildEditor(FilterEditorViewModel editor)
     {
-        var column = new ComboBox { ItemsSource = editor.Columns, DisplayMemberPath = nameof(ColumnChoice.Name), SelectedItem = editor.SelectedColumn, HorizontalAlignment = HorizontalAlignment.Stretch, Header = UiText.Get("results.filter.editor.column") };
-        var op = new ComboBox { DisplayMemberPath = nameof(OperatorChoice.Text), HorizontalAlignment = HorizontalAlignment.Stretch, Header = UiText.Get("results.filter.editor.operator") };
+        // The combo boxes list plain strings and map the index back: an object ItemsSource with DisplayMemberPath does not survive Native AOT.
+        var column = new ComboBox { ItemsSource = editor.Columns.Select(c => c.Name).ToArray(), SelectedIndex = IndexOf(editor.Columns, editor.SelectedColumn), HorizontalAlignment = HorizontalAlignment.Stretch, Header = UiText.Get("results.filter.editor.column") };
+        var op = new ComboBox { HorizontalAlignment = HorizontalAlignment.Stretch, Header = UiText.Get("results.filter.editor.operator") };
         var value = new TextBox { Header = UiText.Get("results.filter.editor.value"), Text = editor.OperandText };
         var error = new TextBlock { Foreground = Tokens.Brush(this, "SquillDangerBrush"), TextWrapping = TextWrapping.Wrap, FontSize = 12, Visibility = Visibility.Collapsed };
         var apply = new Button { Style = Res("PrimaryButtonStyle"), Content = UiText.Get("results.filter.editor.apply"), Height = 28, MinHeight = 28 };
@@ -237,8 +249,8 @@ internal sealed partial class FilterBar : UserControl
 
         void ShowOperators()
         {
-            op.ItemsSource = editor.Operators;
-            op.SelectedItem = editor.SelectedOperator;
+            op.ItemsSource = editor.Operators.Select(o => o.Text).ToArray();
+            op.SelectedIndex = IndexOf(editor.Operators, editor.SelectedOperator);
         }
 
         void ShowState()
@@ -256,13 +268,13 @@ internal sealed partial class FilterBar : UserControl
         ShowState();
         column.SelectionChanged += (_, _) =>
         {
-            if (column.SelectedItem is ColumnChoice choice)
-                editor.SelectedColumn = choice;
+            if (column.SelectedIndex >= 0 && column.SelectedIndex < editor.Columns.Count)
+                editor.SelectedColumn = editor.Columns[column.SelectedIndex];
         };
         op.SelectionChanged += (_, _) =>
         {
-            if (op.SelectedItem is OperatorChoice choice)
-                editor.SelectedOperator = choice;
+            if (op.SelectedIndex >= 0 && op.SelectedIndex < editor.Operators.Count)
+                editor.SelectedOperator = editor.Operators[op.SelectedIndex];
         };
         value.TextChanged += (_, _) => editor.OperandText = value.Text;
         editor.PropertyChanged += (_, e) =>
@@ -270,7 +282,7 @@ internal sealed partial class FilterBar : UserControl
             if (e.PropertyName == nameof(FilterEditorViewModel.Operators))
                 ShowOperators();
             else if (e.PropertyName == nameof(FilterEditorViewModel.SelectedOperator))
-                op.SelectedItem = editor.SelectedOperator;
+                op.SelectedIndex = IndexOf(editor.Operators, editor.SelectedOperator);
             ShowState();
         };
         apply.Click += (_, _) => editor.ApplyCommand.Execute(null);
