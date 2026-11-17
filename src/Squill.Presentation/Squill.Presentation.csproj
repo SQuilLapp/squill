@@ -7,6 +7,10 @@
     <ProjectReference Include="..\Squill.Platform\Squill.Platform.csproj" />
     <InternalsVisibleTo Include="Squill.Presentation.Tests" />
     <InternalsVisibleTo Include="Squill.App.Avalonia.Tests" />
+    <InternalsVisibleTo Include="Squill.Data.Sqlite.Tests" />
+    <InternalsVisibleTo Include="Squill.Data.Postgres.Tests" />
+    <InternalsVisibleTo Include="Squill.Data.MySql.Tests" />
+    <InternalsVisibleTo Include="Squill.Data.SqlServer.Tests" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\..\CHANGELOG.md" LogicalName="Squill.Presentation.CHANGELOG.md" />

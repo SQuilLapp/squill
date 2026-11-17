@@ -1,6 +1,6 @@
 # P17-17 - End-to-end verification: grid filter and command palette
 
-Status: todo
+Status: automated done, manual pending
 Depends on: P17-09, P17-16
 
 ## Goal
@@ -16,7 +16,7 @@ Prove the filter and the palette through the real Presentation classes with real
 - Docs and ADR (P17-18).
 
 ## Tasks
-- [ ] Scenario and one test class per driver test project, palette flow tests, `docs/verification/grid-filter-palette.md`, clean-up (`podman ps -a` empty, `dotnet build-server shutdown`).
+- [x] Scenario and one test class per driver test project, palette flow tests, `docs/verification/grid-filter-palette.md`, clean-up (`podman ps -a` empty, `dotnet build-server shutdown`).
 
 ## Acceptance criteria
 - Common acceptance of the recipe, section 7, Docker run for all engines green with nothing skipped, no container left. The card status is `automated done, manual pending` until the owner ticks the checklist.
