@@ -42,6 +42,9 @@ internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, Np
         PostgresPlanReader.ExplainAsync(connection, commandTimeoutSeconds, sql, parameters, mode, cancellationToken);
 
     /// <inheritdoc />
+    public bool SupportsCancelQuery => true;
+
+    /// <inheritdoc />
     public ValueTask<ActivitySnapshot> ReadAsync(CancellationToken cancellationToken) =>
         PostgresActivityReader.ReadAsync(dataSource, cancellationToken);
 

@@ -39,11 +39,12 @@ public sealed class SqlServerDatabaseProvider : IDatabaseProvider
     /// <inheritdoc />
     public async ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken)
     {
-        var connection = new SqlConnection(BuildConnectionString(profile, password));
+        var connectionString = BuildConnectionString(profile, password);
+        var connection = new SqlConnection(connectionString);
         try
         {
             await connection.OpenAsync(cancellationToken);
-            return new SqlServerDatabaseConnection(connection, profile.CommandTimeoutSeconds);
+            return new SqlServerDatabaseConnection(connection, profile.CommandTimeoutSeconds, connectionString);
         }
         catch (SqlException ex) when (ex.InnerException is not null)
         {

@@ -1,6 +1,6 @@
 # P18-12 - Data: activity readers for MySQL and SQL Server
 
-Status: todo
+Status: done
 Depends on: P18-11
 
 ## Goal
@@ -15,8 +15,8 @@ Depends on: P18-11
 - Oracle, SQLite (no capability), UI.
 
 ## Tasks
-- [ ] Both readers, model flag, exception type, provider hooks.
-- [ ] Docker-gated tests per engine like P18-11 (open transaction, blocked update, edges, cancel / terminate, permission failure on SQL Server with a login lacking `VIEW SERVER STATE`, MySQL `BlockingUnavailable` when the lock tables are denied if reproducible, else covered by a unit test over the parse of an empty result).
+- [x] Both readers, model flag, exception type, provider hooks.
+- [x] Docker-gated tests per engine like P18-11 (open transaction, blocked update, edges, cancel / terminate, permission failure on SQL Server with a login lacking `VIEW SERVER STATE`, MySQL `BlockingUnavailable` when the lock tables are denied if reproducible, else covered by a unit test over the parse of an empty result).
 
 ## Acceptance criteria
 - Common acceptance (recipe 7); Docker-gated tests ran on MySQL and SQL Server (say which ran). If the lock tables of a MySQL version behave differently from the card, stop and report with a proposed fix.

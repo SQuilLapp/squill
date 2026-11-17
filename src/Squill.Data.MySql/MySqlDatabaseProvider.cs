@@ -41,11 +41,12 @@ public sealed class MySqlDatabaseProvider : IDatabaseProvider
     /// <inheritdoc />
     public async ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken)
     {
-        var connection = new MySqlConnection(BuildConnectionString(profile, password));
+        var connectionString = BuildConnectionString(profile, password);
+        var connection = new MySqlConnection(connectionString);
         try
         {
             await connection.OpenAsync(cancellationToken);
-            return new MySqlDatabaseConnection(connection, profile.CommandTimeoutSeconds);
+            return new MySqlDatabaseConnection(connection, profile.CommandTimeoutSeconds, connectionString);
         }
         catch
         {
