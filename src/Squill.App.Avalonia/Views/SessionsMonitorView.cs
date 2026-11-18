@@ -33,8 +33,7 @@ public sealed class SessionsMonitorView : UserControl
     private static readonly string[] ColumnKeys =
         ["activity.col.pid", "activity.col.user", "activity.col.application", "activity.col.client", "activity.col.state", "activity.col.duration", "activity.col.wait", "activity.col.query"];
 
-    // shortcut: only the first rows are built as elements (no virtualization); the filter box narrows the rest, upgrade to a virtualized list if a server routinely lists more.
-    private const int MaxRows = 400;
+    // shortcut: only the first SessionsMonitorViewModel.MaxShownRows are built as elements (no virtualization), a notice under the list says so; upgrade to a virtualized list if a server routinely lists more.
 
     private readonly Border _topLine = new() { Height = 2, VerticalAlignment = VerticalAlignment.Top };
     private readonly Border _header = new() { Padding = new Thickness(24, 14, 24, 12), BorderThickness = new Thickness(0, 0, 0, 1) };
@@ -468,12 +467,15 @@ public sealed class SessionsMonitorView : UserControl
         _rows.Children.Clear();
         _rowElements.Clear();
         var selected = vm.SelectedSession?.Id;
-        foreach (var row in vm.Rows.Take(MaxRows))
+        foreach (var row in vm.Rows.Take(SessionsMonitorViewModel.MaxShownRows))
         {
             var element = BuildRow(row, row.Id == selected);
             _rowElements[row.Id] = element;
             _rows.Children.Add(element);
         }
+
+        if (vm.HiddenRowCount > 0)
+            _rows.Children.Add(new TextBlock { Name = "RowsCutNotice", Text = vm.RowsCutText, Foreground = Brush("SquillFg3Brush"), Margin = new Thickness(12, 8) });
     }
 
     private void BuildTableHeaderCells(SessionsMonitorViewModel vm)

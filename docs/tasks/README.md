@@ -378,7 +378,7 @@ Depends on: <card ids, ranges allowed>
 | [P19-02](phase-19/P19-02-presentation-events-on-ui-thread.md) | Presentation: raise view-model events on the UI thread | none | done |
 | [P19-03](phase-19/P19-03-stabilize-test-run.md) | Stabilize the full test run (timing tests) | none | done |
 | [P19-04](phase-19/P19-04-presentation-winui-rows-cut-notice.md) | Say when the sessions and privileges lists are cut (Presentation, WinUI) | none | done |
-| [P19-05](phase-19/P19-05-avalonia-rows-cut-notice.md) | Say when the sessions and privileges lists are cut (Avalonia) | P19-04 | todo |
+| [P19-05](phase-19/P19-05-avalonia-rows-cut-notice.md) | Say when the sessions and privileges lists are cut (Avalonia) | P19-04 | done |
 | [P19-06](phase-19/P19-06-aot-warning-guard.md) | Guard the AOT publish against new trim and AOT warnings | none | todo |
 | [P19-07](phase-19/P19-07-capture-window-reliable.md) | Capture-Window captures the window, not the desktop | none | todo |
 | [P19-08](phase-19/P19-08-verification-scenario-script.md) | One script that prepares the data of the verification checklists | none | todo |

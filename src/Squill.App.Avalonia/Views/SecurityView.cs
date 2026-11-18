@@ -32,6 +32,7 @@ public sealed class SecurityView : UserControl
     private readonly CheckBox _showInherited = new() { MinWidth = 0 };
     private readonly StackPanel _legend = new() { Orientation = Orientation.Horizontal, Spacing = 14, VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _message = new() { TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24, 8) };
+    private readonly TextBlock _rowsCut = new() { Name = "RowsCutNotice", Margin = new Thickness(12, 8), IsVisible = false };
     private readonly PrivilegeMatrixCanvas _matrix = new() { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
     private readonly TextBlock _sqlTitle = new() { FontSize = 12, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center };
     private readonly Border _changesPill = new() { Padding = new Thickness(6, 1), CornerRadius = new CornerRadius(4), VerticalAlignment = VerticalAlignment.Center, Child = new TextBlock { FontSize = 11, FontWeight = FontWeight.Bold } };
@@ -148,7 +149,7 @@ public sealed class SecurityView : UserControl
         var title = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { _roleName, _badges } };
         var header = new StackPanel { Spacing = 4, Margin = new Thickness(24, 16, 24, 8), Children = { title, _roleSubtitle } };
         var tools = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Margin = new Thickness(24, 4, 24, 8), Children = { _schemas, _showInherited, _legend } };
-        var scroll = new ScrollViewer { Content = _matrix, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Padding = new Thickness(24, 0, 24, 16) };
+        var scroll = new ScrollViewer { Content = new StackPanel { Children = { _matrix, _rowsCut } }, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Padding = new Thickness(24, 0, 24, 16) };
         var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,Auto,*") };
         Grid.SetRow(tools, 1);
         Grid.SetRow(_message, 2);
@@ -226,6 +227,9 @@ public sealed class SecurityView : UserControl
         SyncRoles(vm);
         SyncHeader(vm);
         _matrix.Refresh();
+        _rowsCut.Text = vm.RowsCutText;
+        _rowsCut.Foreground = Brush("SquillFg3Brush");
+        _rowsCut.IsVisible = vm.HiddenRowCount > 0;
         SyncSql(vm);
     }
 

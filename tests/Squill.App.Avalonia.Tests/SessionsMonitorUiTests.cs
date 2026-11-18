@@ -21,14 +21,14 @@ public sealed class SessionsMonitorUiTests
     private static ServerSession Session(string id, SessionState state, double seconds, bool system = false) =>
         new(id, "app", "psql", "10.0.0.1:5000", state, state.ToString(), TimeSpan.FromSeconds(seconds), null, "select " + id, null, null, null, system);
 
-    private sealed class Reader : IActivityReader
+    private sealed class Reader(int extraRows = 0) : IActivityReader
     {
         public bool SupportsCancelQuery => true;
 
         public ValueTask<ActivitySnapshot> ReadAsync(CancellationToken cancellationToken) =>
             ValueTask.FromResult(new ActivitySnapshot(
                 DateTimeOffset.UtcNow, 3, 100, null,
-                [Session("1", SessionState.IdleInTransaction, 400), Session("2", SessionState.Waiting, 90), Session("3", SessionState.Active, 1), Session("4", SessionState.Active, 1, system: true)],
+                [Session("1", SessionState.IdleInTransaction, 400), Session("2", SessionState.Waiting, 90), Session("3", SessionState.Active, 1), Session("4", SessionState.Active, 1, system: true), .. Enumerable.Range(0, extraRows).Select(i => Session("x" + i, SessionState.Active, 1))],
                 [new BlockingEdge("1", "2", null, null)], SourceName: "pg_stat_activity"));
 
         public ValueTask CancelQueryAsync(string sessionId, CancellationToken cancellationToken) => ValueTask.CompletedTask;
@@ -36,12 +36,12 @@ public sealed class SessionsMonitorUiTests
         public ValueTask TerminateSessionAsync(string sessionId, CancellationToken cancellationToken) => ValueTask.CompletedTask;
     }
 
-    private static async Task WithViewAsync(Func<Window, SessionsMonitorView, SessionsMonitorViewModel, Task> body)
+    private static async Task WithViewAsync(Func<Window, SessionsMonitorView, SessionsMonitorViewModel, Task> body, int extraRows = 0)
     {
         await Headless.Session.Dispatch(async () =>
         {
             var profile = new ConnectionProfile(Guid.NewGuid(), "main", DatabaseDialect.PostgreSql, "h", 1, "appdb", "u", null, null, ConnectionEnvironment.Staging);
-            using var vm = new SessionsMonitorViewModel(profile, new Reader(), new Dialogs(), new ImmediateDispatcher(), TimeProvider.System);
+            using var vm = new SessionsMonitorViewModel(profile, new Reader(extraRows), new Dialogs(), new ImmediateDispatcher(), TimeProvider.System);
             await vm.RefreshAsync();
             var view = new SessionsMonitorView { DataContext = vm };
             var window = new Window { Content = view, Width = 1280, Height = 800 };
@@ -145,5 +145,21 @@ public sealed class SessionsMonitorUiTests
             Assert.NotEqual(frames[0], frames[1]);
             return Task.CompletedTask;
         });
+    }
+
+    [Theory]
+    [InlineData(397, false)]
+    [InlineData(398, true)]
+    public async Task The_rows_cut_notice_shows_only_beyond_the_limit(int extraRows, bool cut)
+    {
+        await WithViewAsync((_, view, vm) =>
+        {
+            Assert.Equal(cut, vm.HiddenRowCount > 0);
+            var notices = view.GetLogicalDescendants().OfType<TextBlock>().Where(t => t.Name == "RowsCutNotice").ToList();
+            Assert.Equal(cut ? 1 : 0, notices.Count);
+            if (cut)
+                Assert.Equal(vm.RowsCutText, notices[0].Text);
+            return Task.CompletedTask;
+        }, extraRows);
     }
 }

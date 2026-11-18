@@ -25,9 +25,7 @@ public sealed class PrivilegeMatrixCanvas : Control
     /// <summary>Height of the header row.</summary>
     internal const double HeaderHeight = 32;
 
-    // shortcut: only the first rows are drawn and hit (no virtualization); pick fewer schemas to narrow the rest, upgrade to a visible-range draw if a database routinely lists more.
-    internal const int MaxRows = 400;
-
+    // shortcut: only the first SecurityViewModel.MaxShownRows are drawn and hit (no virtualization), a notice under the matrix says so; upgrade to a visible-range draw if a database routinely lists more.
     private static readonly PrivilegeKind[] Kinds = Enum.GetValues<PrivilegeKind>();
     private static readonly Typeface Face = new(ErDiagramCanvas.Mono);
     private static readonly Typeface BoldFace = new(ErDiagramCanvas.Mono, weight: FontWeight.Bold);
@@ -63,7 +61,8 @@ public sealed class PrivilegeMatrixCanvas : Control
     /// <summary>Gets the column of the focused cell.</summary>
     internal int FocusColumn => _column;
 
-    private int RowCount => Math.Min(_vm?.Rows.Count ?? 0, MaxRows);
+    /// <summary>Gets the number of rows drawn and hit, at most <see cref="SecurityViewModel.MaxShownRows"/>.</summary>
+    internal int RowCount => Math.Min(_vm?.Rows.Count ?? 0, SecurityViewModel.MaxShownRows);
 
     /// <summary>Re-measures and redraws after the rows or their cells changed.</summary>
     public void Refresh()

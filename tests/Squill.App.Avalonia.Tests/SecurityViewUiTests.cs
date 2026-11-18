@@ -23,7 +23,7 @@ public sealed class SecurityViewUiTests
     private static readonly RoleInfo Analysts = new("analysts", false, false, true, [], ["alice"]);
     private static readonly RoleInfo Alice = new("alice", true, false, true, ["analysts"], []);
 
-    private sealed class Reader : ISecurityReader
+    private sealed class Reader(int extraRows = 0) : ISecurityReader
     {
         public ValueTask<IReadOnlyList<RoleInfo>> ReadRolesAsync(CancellationToken cancellationToken) =>
             ValueTask.FromResult<IReadOnlyList<RoleInfo>>([Analysts, Alice]);
@@ -36,6 +36,7 @@ public sealed class SecurityViewUiTests
             [
                 new("public", "orders", ObjectKind.Table, new Dictionary<PrivilegeKind, PrivilegeState> { [PrivilegeKind.Select] = PrivilegeState.Granted, [PrivilegeKind.Insert] = PrivilegeState.Inherited("analysts") }),
                 new("public", "items", ObjectKind.Table, new Dictionary<PrivilegeKind, PrivilegeState>()),
+                .. Enumerable.Range(0, extraRows).Select(i => new ObjectPrivileges("public", "t" + i, ObjectKind.Table, new Dictionary<PrivilegeKind, PrivilegeState>())),
             ]);
     }
 
@@ -52,12 +53,12 @@ public sealed class SecurityViewUiTests
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 
-    private static async Task WithViewAsync(Func<Window, SecurityView, PrivilegeMatrixCanvas, SecurityViewModel, Task> body)
+    private static async Task WithViewAsync(Func<Window, SecurityView, PrivilegeMatrixCanvas, SecurityViewModel, Task> body, int extraRows = 0)
     {
         await Headless.Session.Dispatch(async () =>
         {
             var profile = new ConnectionProfile(Guid.NewGuid(), "main", DatabaseDialect.PostgreSql, "h", 1, "appdb", "u", null, null, ConnectionEnvironment.Staging);
-            using var vm = new SecurityViewModel(profile, new Reader(), new Connection(), null, new Dialogs());
+            using var vm = new SecurityViewModel(profile, new Reader(extraRows), new Connection(), null, new Dialogs());
             await vm.LoadAsync();
             await vm.SelectRoleAsync(Alice);
             var view = new SecurityView { DataContext = vm };
@@ -131,6 +132,23 @@ public sealed class SecurityViewUiTests
             Assert.Equal(1, vm.ChangeCount);
             return Task.CompletedTask;
         });
+    }
+
+    [Theory]
+    [InlineData(398, false)]
+    [InlineData(399, true)]
+    public async Task The_rows_cut_notice_shows_only_beyond_the_limit_and_row_401_cannot_be_hit(int extraRows, bool cut)
+    {
+        await WithViewAsync((_, view, matrix, vm) =>
+        {
+            var notice = view.GetLogicalDescendants().OfType<TextBlock>().Single(t => t.Name == "RowsCutNotice");
+            Assert.Equal(cut, notice.IsVisible);
+            Assert.Equal(cut ? vm.RowsCutText : "", cut ? notice.Text : "");
+            Assert.Equal(Math.Min(vm.Rows.Count, SecurityViewModel.MaxShownRows), matrix.RowCount);
+            var y = PrivilegeMatrixCanvas.HeaderHeight + (PrivilegeMatrixCanvas.RowHeight * SecurityViewModel.MaxShownRows) + 5; // row 401
+            Assert.Null(SecurityFormat.HitTest(PrivilegeMatrixCanvas.NameWidth + 10, y - PrivilegeMatrixCanvas.HeaderHeight, PrivilegeMatrixCanvas.NameWidth, PrivilegeMatrixCanvas.CellWidth, PrivilegeMatrixCanvas.RowHeight, matrix.RowCount, 7));
+            return Task.CompletedTask;
+        }, extraRows);
     }
 
     [Fact]
