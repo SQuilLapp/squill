@@ -11,6 +11,7 @@ using Squill.Presentation.Activity;
 using Squill.Presentation.Compare;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
+using Squill.Presentation.Security;
 using Squill.Presentation.Palette;
 using Squill.Core.Plans;
 using Squill.Presentation.Plans;
@@ -90,7 +91,7 @@ public sealed partial class MainWindow : Window
     // Only while a query tab is active (a plan tab or the designer has no transaction group).
     private void RunTransactionCommand(Func<QueryTabViewModel, IAsyncRelayCommand> pick)
     {
-        if (!PlanArea.IsVisible && !CompareArea.IsVisible && !MonitorArea.IsVisible && _tabs?.Selected?.Source is QueryTabViewModel { } query && pick(query) is { } command && command.CanExecute(null))
+        if (!PlanArea.IsVisible && !CompareArea.IsVisible && !MonitorArea.IsVisible && !SecurityArea.IsVisible && _tabs?.Selected?.Source is QueryTabViewModel { } query && pick(query) is { } command && command.CanExecute(null))
             command.Execute(null);
     }
 
@@ -222,6 +223,10 @@ public sealed partial class MainWindow : Window
         MonitorArea.DataContext = monitor;
         MonitorArea.IsVisible = monitor is not null;
         Status.ShowMonitor(monitor);
+        var security = source as SecurityViewModel;
+        SecurityArea.DataContext = security;
+        SecurityArea.IsVisible = security is not null;
+        Status.ShowSecurity(security);
         var designer = source as TableDesignerViewModel;
         DesignerArea.DataContext = designer;
         DesignerArea.IsVisible = designer is not null;

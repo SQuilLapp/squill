@@ -10,6 +10,7 @@ using Squill.Presentation.Activity;
 using Squill.Presentation.Compare;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Results;
+using Squill.Presentation.Security;
 using Squill.Presentation.Query;
 using Squill.Presentation.Workspace;
 
@@ -23,6 +24,7 @@ public sealed partial class StatusBar : UserControl
     private PlanTabViewModel? _plan;
     private SchemaCompareViewModel? _compare;
     private SessionsMonitorViewModel? _monitor;
+    private SecurityViewModel? _security;
     private SessionTransaction? _transaction;
 
     /// <summary>Creates the view.</summary>
@@ -86,6 +88,20 @@ public sealed partial class StatusBar : UserControl
         Refresh();
     }
 
+    /// <summary>Shows the number of unapplied privilege changes while a security tab is active.</summary>
+    /// <param name="security">The active security tab, or <see langword="null"/> when another kind of tab is shown.</param>
+    public void ShowSecurity(SecurityViewModel? security)
+    {
+        if (ReferenceEquals(_security, security))
+            return;
+        if (_security is not null)
+            _security.PropertyChanged -= OnTabChanged;
+        _security = security;
+        if (_security is not null)
+            _security.PropertyChanged += OnTabChanged;
+        Refresh();
+    }
+
     private void RefreshCompare()
     {
         var source = _compare?.Source?.Environment ?? ConnectionEnvironment.None;
@@ -138,7 +154,7 @@ public sealed partial class StatusBar : UserControl
         ConnectionText.Text = profile is null ? UiText.Get("home.noConnection") : ConnectionLabel(profile);
         ConnectionDot.IsVisible = profile is null;
         ServerVersionText.Text = _compare is { } c ? $"{c.SourceServerVersion} → {c.TargetServerVersion}" : _plan?.ServerVersion ?? _workspace?.ActiveSession?.Connection.ServerVersion;
-        EncodingSegment.IsVisible = _plan is null && _compare is null && _monitor is null;
+        EncodingSegment.IsVisible = _plan is null && _compare is null && _monitor is null && _security is null;
         RefreshCompare();
         RefreshTransaction();
         RefreshRunStatus();
@@ -177,7 +193,7 @@ public sealed partial class StatusBar : UserControl
     // The transaction belongs to the session of the active query tab: nothing is shown for plans and other kinds of tab.
     private void RefreshTransaction()
     {
-        var text = _plan is null && _compare is null && _monitor is null ? _transaction?.StatusText ?? "" : "";
+        var text = _plan is null && _compare is null && _monitor is null && _security is null ? _transaction?.StatusText ?? "" : "";
         TransactionSegment.IsVisible = text.Length > 0;
         TransactionText.Text = text;
         var brush = Brush(_transaction?.State == TransactionState.Failed ? "SquillDangerBrush" : "SquillWarningBrush");
@@ -187,6 +203,14 @@ public sealed partial class StatusBar : UserControl
 
     private void RefreshRunStatus()
     {
+        if (_security is { } security)
+        {
+            StatusSegment.Text = security.StatusText;
+            StatusSegment.Foreground = Brush(security.ChangeCount > 0 ? "SquillWarningBrush" : "SquillFg2Brush");
+            ElapsedSegment.Text = null;
+            return;
+        }
+
         if (_monitor is { } monitor)
         {
             StatusSegment.Text = monitor.StatusText;
@@ -234,7 +258,7 @@ public sealed partial class StatusBar : UserControl
 
     private void RefreshPosition()
     {
-        if (_compare is not null || _monitor is not null)
+        if (_compare is not null || _monitor is not null || _security is not null)
         {
             PositionText.Text = null;
             return;
