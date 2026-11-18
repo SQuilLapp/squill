@@ -386,7 +386,7 @@ Depends on: <card ids, ranges allowed>
 | [P19-10](phase-19/P19-10-winui-sessions-privileges-postgres.md) | WinUI: M11 and M12 on a PostgreSQL container | P19-07, P19-08 | done |
 | [P19-11](phase-19/P19-11-avalonia-new-screens.md) | Avalonia: M01, M09, M10, M11 and M12 | P19-09, P19-10 | done |
 | [P19-12](phase-19/P19-12-winui-transactions-plan-dark-english.md) | WinUI: transactions, production dialog and plan, dark and English | P19-07, P19-08 | done |
-| [P19-13](phase-19/P19-13-winui-completion-grid-palette-designer-er.md) | WinUI: completion, grid filter, palette, designer, ER, control states | P19-07, P19-08 | todo |
+| [P19-13](phase-19/P19-13-winui-completion-grid-palette-designer-er.md) | WinUI: completion, grid filter, palette, designer, ER, control states | P19-07, P19-08 | partial (dark grid filter only) |
 | [P19-14](phase-19/P19-14-avalonia-transactions-plan-dark-english.md) | Avalonia: transactions, production dialog and plan | P19-12 | todo |
 | [P19-15](phase-19/P19-15-avalonia-completion-grid-palette-designer-er.md) | Avalonia: completion, grid filter, palette, designer, ER | P19-13 | todo |
 | [P19-16](phase-19/P19-16-docs-and-adr.md) | Docs, ADR 0016 and changelog for phase 19 | P19-01 ... P19-15 | todo |

@@ -1,6 +1,6 @@
 # P19-13 - WinUI: completion popup, grid filter, palette, designer, ER diagram and shared control states
 
-Status: todo
+Status: partial (time)
 Depends on: P19-07, P19-08
 
 ## Goal
@@ -31,3 +31,8 @@ The WinUI checklists `completion.md` and `grid-filter-palette.md` are mostly `ag
 
 ## Suggested commit message
 Compare the WinUI grid filter, palette, designer and ER screens in both themes
+
+## Done notes
+- Driven: WinUI AOT head, dark, French, SQLite Full scenario: grid, `+ Filtre` popup, a filter chip and footer against `M05-Grille-sombre-Windows.png` (recorded in `grid-filter-palette.md`). No code changed.
+- `not driven (time)`: grid steps 4-13 in dark and English, the palette in dark (synthetic keys did not open it), completion popup, designer (M07), ER (M08), shared control states. Left for a follow-up card; `visual-spec.md` section 12 not changed because nothing new was fully compared.
+- Seen once, not investigated: after `Ctrl+Enter` on `select * from clients` a completion popup with the single entry `clients` stayed open over the editor until Escape.
