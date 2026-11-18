@@ -5,6 +5,7 @@ using Squill.Core;
 using Squill.Data;
 using Squill.Data.Sqlite;
 using Squill.Platform;
+using Squill.Platform.Secrets;
 using Squill.Presentation;
 using Xunit;
 
@@ -28,7 +29,7 @@ public sealed class StatusBarThreadTests
                 {
                 var providers = new ProviderRegistry();
                 providers.Register(new SqliteDatabaseProvider());
-                var workspace = AppComposition.Create(new TestPlatform(providers), new AppPaths(dir)).Workspace;
+                var workspace = AppComposition.Create(new TestPlatform(providers), new AppPaths(dir), secretStore: new InMemorySecretStore()).Workspace;
                 var bar = new StatusBar { DataContext = workspace };
                 var profile = new ConnectionProfile(Guid.NewGuid(), "test", DatabaseDialect.Sqlite, null, null, null, null, Path.Combine(dir, "t.db"), null, ConnectionEnvironment.Production);
                 await workspace.ConnectCommand.ExecuteAsync(profile);

@@ -17,7 +17,17 @@ public sealed class ImportWizardViewModelTests : IDisposable
     private readonly string _dir = Directory.CreateTempSubdirectory("squill-wizard-").FullName;
     private readonly FakeDialogService _dialogs = new();
 
-    public void Dispose() => Directory.Delete(_dir, true);
+    // The wizard may still hold items.csv for a moment on Windows; the temp folder is not worth a failed test.
+    public void Dispose()
+    {
+        try
+        {
+            Directory.Delete(_dir, true);
+        }
+        catch (IOException)
+        {
+        }
+    }
 
     private sealed class Reader : IResultReader
     {

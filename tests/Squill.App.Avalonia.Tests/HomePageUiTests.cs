@@ -31,7 +31,7 @@ public sealed class HomePageUiTests
             await Headless.Session.Dispatch(async () =>
             {
                 var paths = new AppPaths(dir);
-                using (var profiles = new JsonProfileStore(paths, SecretStoreFactory.Create(paths.DataDirectory)))
+                using (var profiles = new JsonProfileStore(paths, new InMemorySecretStore()))
                 using (var recent = new JsonRecentConnectionsStore(paths))
                 {
                     for (var i = 0; i < cards; i++)
@@ -44,7 +44,7 @@ public sealed class HomePageUiTests
 
                 var providers = new ProviderRegistry();
                 providers.Register(new SqliteDatabaseProvider());
-                var services = AppComposition.Create(new TestPlatform(providers), paths);
+                var services = AppComposition.Create(new TestPlatform(providers), paths, secretStore: new InMemorySecretStore());
                 var window = new MainWindow { DataContext = services.Workspace, Width = 1280, Height = 720 };
                 var loading = services.Workspace.ConnectionList.LoadCommand.ExecuteAsync(null);
                 window.Attach(services, dir, loading);
