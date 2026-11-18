@@ -97,35 +97,32 @@ public sealed partial class StatusBar : UserControl
 
     /// <summary>Shows the plan status line and the plan figures (node count, time, server version) in place of the run status and cursor position while a plan tab is active.</summary>
     /// <param name="plan">The active plan tab, or <see langword="null"/> when another kind of tab is shown.</param>
-    public void ShowPlan(PlanTabViewModel? plan)
-    {
-        if (PropertyChangedSwap.Swap(ref _plan, plan, OnTabChanged))
-            Refresh();
-    }
+    public void ShowPlan(PlanTabViewModel? plan) => Show(ref _plan, plan);
 
     /// <summary>Shows the compared environments (<c>STAGING → PRODUCTION</c>), the difference counts and both server versions while a schema compare tab is active.</summary>
     /// <param name="compare">The active compare tab, or <see langword="null"/> when another kind of tab is shown.</param>
-    public void ShowCompare(SchemaCompareViewModel? compare)
-    {
-        if (PropertyChangedSwap.Swap(ref _compare, compare, OnTabChanged))
-            Refresh();
-    }
+    public void ShowCompare(SchemaCompareViewModel? compare) => Show(ref _compare, compare);
 
     /// <summary>Shows the last read of the sessions monitor (<c>pg_stat_activity · 47 rows · 6 ms</c>) while its tab is active.</summary>
     /// <param name="monitor">The active monitor tab, or <see langword="null"/> when another kind of tab is shown.</param>
-    public void ShowMonitor(SessionsMonitorViewModel? monitor)
-    {
-        if (PropertyChangedSwap.Swap(ref _monitor, monitor, OnTabChanged))
-            Refresh();
-    }
+    public void ShowMonitor(SessionsMonitorViewModel? monitor) => Show(ref _monitor, monitor);
 
     /// <summary>Shows the connection and the number of unapplied privilege changes while a security tab is active.</summary>
     /// <param name="security">The active security tab, or <see langword="null"/> when another kind of tab is shown.</param>
-    public void ShowSecurity(SecurityViewModel? security)
+    public void ShowSecurity(SecurityViewModel? security) => Show(ref _security, security);
+
+    private void Show<T>(ref T? field, T? value)
+
+        where T : class, INotifyPropertyChanged
+
     {
-        if (PropertyChangedSwap.Swap(ref _security, security, OnTabChanged))
+
+        if (PropertyChangedSwap.Swap(ref field, value, OnTabChanged))
+
             Refresh();
+
     }
+
 
     private void RefreshCompare()
     {

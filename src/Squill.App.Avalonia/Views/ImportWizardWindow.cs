@@ -344,46 +344,27 @@ internal sealed class ImportWizardWindow : Window
 
     private void OnChanged(object? sender, PropertyChangedEventArgs e)
     {
-        switch (e.PropertyName)
-        {
-            case nameof(ImportWizardViewModel.Step):
-                BuildPage();
-                UpdateFooter();
-                break;
-            case nameof(ImportWizardViewModel.Steps):
-                BuildRail();
-                break;
-            case nameof(ImportWizardViewModel.CanGoNext) or nameof(ImportWizardViewModel.CanGoBack) or nameof(ImportWizardViewModel.IsRunning)
-                or nameof(ImportWizardViewModel.MappingSummary) or nameof(ImportWizardViewModel.FileSummary):
-                UpdateFooter();
-                UpdateSource();
-                UpdateRun();
-                break;
-            case nameof(ImportWizardViewModel.Preview) or nameof(ImportWizardViewModel.FilePath) or nameof(ImportWizardViewModel.ColumnsText):
-                UpdateSource();
-                break;
-            case nameof(ImportWizardViewModel.EncodingName) or nameof(ImportWizardViewModel.Delimiter) or nameof(ImportWizardViewModel.Quote) or nameof(ImportWizardViewModel.HasHeader):
-                SyncSourceOptions();
-                break;
-            case nameof(ImportWizardViewModel.TableNames):
-                FillTables();
-                break;
-            case nameof(ImportWizardViewModel.Environment):
-                UpdatePill();
-                break;
-            case nameof(ImportWizardViewModel.WarningText) or nameof(ImportWizardViewModel.Issues):
-                UpdateWarnings();
-                break;
-            case nameof(ImportWizardViewModel.LargeFileHint) or nameof(ImportWizardViewModel.RejectsPath):
-                UpdateOptions();
-                break;
-            case nameof(ImportWizardViewModel.Read) or nameof(ImportWizardViewModel.Inserted) or nameof(ImportWizardViewModel.Rejected)
-                or nameof(ImportWizardViewModel.Fraction) or nameof(ImportWizardViewModel.RateText) or nameof(ImportWizardViewModel.RemainingText)
-                or nameof(ImportWizardViewModel.Summary) or nameof(ImportWizardViewModel.Result) or nameof(ImportWizardViewModel.HasRejects):
-                UpdateRun();
-                UpdateFooter();
-                break;
-        }
+        var refresh = ImportWizardRefreshMap.For(e.PropertyName);
+        if (refresh.HasFlag(ImportWizardRefresh.Page))
+            BuildPage();
+        if (refresh.HasFlag(ImportWizardRefresh.Rail))
+            BuildRail();
+        if (refresh.HasFlag(ImportWizardRefresh.Footer))
+            UpdateFooter();
+        if (refresh.HasFlag(ImportWizardRefresh.Source))
+            UpdateSource();
+        if (refresh.HasFlag(ImportWizardRefresh.SourceOptions))
+            SyncSourceOptions();
+        if (refresh.HasFlag(ImportWizardRefresh.Tables))
+            FillTables();
+        if (refresh.HasFlag(ImportWizardRefresh.Pill))
+            UpdatePill();
+        if (refresh.HasFlag(ImportWizardRefresh.Warnings))
+            UpdateWarnings();
+        if (refresh.HasFlag(ImportWizardRefresh.Options))
+            UpdateOptions();
+        if (refresh.HasFlag(ImportWizardRefresh.Run))
+            UpdateRun();
     }
 
     private void BuildPage()
