@@ -1,6 +1,6 @@
 # P19-11 - Avalonia: look at M01, M09, M10, M11 and M12
 
-Status: todo
+Status: done
 Depends on: P19-09, P19-10
 
 ## Goal
@@ -16,9 +16,9 @@ The Avalonia versions of the five phase 18 screens were only tested headless (ca
 - Linux/macOS drivers, ticking owner boxes, redesigns.
 
 ## Tasks
-- [ ] Publish, prepare, drive, capture, read PNGs, compare.
-- [ ] Small fixes with headless tests where the pattern exists; proposed cards for bigger ones.
-- [ ] Update docs; stop containers and processes.
+- [x] Publish, prepare, drive, capture, read PNGs, compare.
+- [x] Small fixes with headless tests where the pattern exists; proposed cards for bigger ones.
+- [x] Update docs; stop containers and processes.
 
 ## Acceptance criteria
 - Common acceptance (recipe 4) if code changed (`Squill.slnx`, Avalonia AOT publish, app starts, `LayoutOverlapTests` green); report separates compared / not driven; `podman ps -a` empty.
@@ -28,3 +28,7 @@ The Avalonia versions of the five phase 18 screens were only tested headless (ca
 
 ## Suggested commit message
 Compare the Avalonia home, compare, import, privileges and sessions screens with their mockups
+
+## Done notes
+- Compared: M01 only (Avalonia published AOT head, Windows, scale 1.5, French light, French dark, English dark). Differences recorded in `new-screens.md`, proposed as P19-19; no code changed.
+- Not driven: M09, M10, M11, M12 (no UI automation of the native window in this session); they stay open for a session that can click the window. Nothing was started that needed a container.
