@@ -52,4 +52,15 @@ public interface IDialogService
     /// <param name="request">The localized question.</param>
     /// <returns>The choice; <see cref="TransactionChoice.Cancel"/> when the dialog was dismissed.</returns>
     ValueTask<TransactionChoice> AskTransactionAsync(TransactionCloseRequest request);
+
+    /// <summary>Asks the user to choose an existing file to read.</summary>
+    /// <param name="title">Dialog title.</param>
+    /// <param name="extensions">Accepted file extensions without the leading dot.</param>
+    /// <returns>The chosen path, or <see langword="null"/> when cancelled. The default implementation, kept until the heads draw the import wizard, cancels.</returns>
+    ValueTask<string?> PickOpenFileAsync(string title, IReadOnlyList<string> extensions) => ValueTask.FromResult<string?>(null);
+
+    /// <summary>Shows the import wizard in its own modal window and returns when it is closed.</summary>
+    /// <param name="wizard">The wizard to draw. The default implementation, kept until the heads draw it, shows nothing.</param>
+    /// <returns>A task that completes when the window is closed.</returns>
+    ValueTask ShowImportWizardAsync(Import.ImportWizardViewModel wizard) => ValueTask.CompletedTask;
 }

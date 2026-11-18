@@ -90,6 +90,7 @@ public sealed class PaletteActionRegistry
         Add("workspace.openSchemaCompare", "menu.database", null, "action", () => workspace.OpenSchemaCompareCommand.CanExecute(null), () => Do(() => workspace.OpenSchemaCompareCommand.Execute(null)));
         Add("workspace.openSessionsMonitor", "menu.database", null, "action", () => workspace.OpenSessionsMonitorCommand.CanExecute(null), () => Do(() => workspace.OpenSessionsMonitorCommand.Execute(null)));
         Add("workspace.openSecurity", "menu.database", null, "action", () => workspace.OpenSecurityCommand.CanExecute(null), () => Do(() => workspace.OpenSecurityCommand.Execute(null)));
+        Add("workspace.importData", "menu.database", null, "action", () => workspace.ImportDataCommand.CanExecute(null), () => workspace.ImportDataCommand.ExecuteAsync(null));
         Add("workspace.newTerminal", "menu.tools", null, "action", () => true, () => workspace.NewTerminalCommand.ExecuteAsync(null));
         Add("workspace.disconnect", "menu.database", null, "action", () => workspace.DisconnectCommand.CanExecute(null), () => workspace.DisconnectCommand.ExecuteAsync(null));
         Add("grid.clearFilter", "menu.view", null, "action", () => ActiveView(workspace)?.IsActive == true, () => Do(() => ActiveView(workspace)?.ClearFilters()));

@@ -1,6 +1,6 @@
 # P18-25 - Presentation: the import wizard view-model
 
-Status: todo
+Status: done
 Depends on: P18-22, P18-23, P18-24, P18-02
 
 ## Goal
@@ -20,8 +20,8 @@ The five steps of M10 as one view-model and the ways to start it. Recipe 1, 2.
 - Views (P18-26, P18-27), other sources, table creation.
 
 ## Tasks
-- [ ] View-model, step state machine, workspace commands, palette action, catalog keys, `IDialogService` contract addition (and fake in tests).
-- [ ] Tests in `tests/Squill.Presentation.Tests/Import/`: step rules (next disabled until valid), sniffed options applied and editable, preview refresh on option change, auto map and manual change, warning counts, run reports progress and summary, cancel mid-run, Production confirmation, pre-selected table from the explorer.
+- [x] View-model, step state machine, workspace commands, palette action, catalog keys, `IDialogService` contract addition (and fake in tests).
+- [x] Tests in `tests/Squill.Presentation.Tests/Import/`: step rules (next disabled until valid), sniffed options applied and editable, preview refresh on option change, auto map and manual change, warning counts, run reports progress and summary, cancel mid-run, Production confirmation, pre-selected table from the explorer.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched.

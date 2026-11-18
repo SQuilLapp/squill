@@ -56,6 +56,9 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     /// <summary>Raised when the user asks to design a table.</summary>
     public event EventHandler<TableRequest>? DesignTableRequested;
 
+    /// <summary>Raised when the user asks to import a CSV file into a table.</summary>
+    public event EventHandler<TableRequest>? ImportTableRequested;
+
     /// <summary>Raised when the user asks to drop a table.</summary>
     public event EventHandler<TableRequest>? DropTableRequested;
 
@@ -209,6 +212,13 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     {
         if (node is { Kind: ExplorerNodeKind.Table, Table: { } table, Session: { } session })
             DesignTableRequested?.Invoke(this, new TableRequest(session, table));
+    }
+
+    [RelayCommand]
+    private void Import(ExplorerNode? node)
+    {
+        if (node is { Kind: ExplorerNodeKind.Table, Table: { Kind: TableKind.Table } table, Session: { } session })
+            ImportTableRequested?.Invoke(this, new TableRequest(session, table));
     }
 
     [RelayCommand]

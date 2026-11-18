@@ -78,4 +78,16 @@ internal sealed class FakeDialogService : IDialogService
         ParameterPrompts.Add(new Dictionary<string, ParameterValue>(defaults));
         return ValueTask.FromResult(ParametersResult?.Invoke(names, defaults));
     }
+
+    public string? OpenFileResult { get; set; }
+
+    public List<Squill.Presentation.Import.ImportWizardViewModel> Wizards { get; } = [];
+
+    public ValueTask<string?> PickOpenFileAsync(string title, IReadOnlyList<string> extensions) => ValueTask.FromResult(OpenFileResult);
+
+    public ValueTask ShowImportWizardAsync(Squill.Presentation.Import.ImportWizardViewModel wizard)
+    {
+        Wizards.Add(wizard);
+        return ValueTask.CompletedTask;
+    }
 }

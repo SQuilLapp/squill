@@ -13,6 +13,11 @@ public sealed partial class CatalogTests
     private static readonly HashSet<string> SameInBothLanguages =
     [
         "home.env.prod", // environment pill, same short form in both languages
+        "import.step.source", // step name, same word in both languages
+        "import.step.options", // step name
+        "import.error.title", // dialog title
+        "import.fileSize", // bare size, no wording
+        "import.status.ok", // status word
         "home.env.staging", // environment pill
         "home.env.dev", // environment pill
         "home.env.local", // environment pill

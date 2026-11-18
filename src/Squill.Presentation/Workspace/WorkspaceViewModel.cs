@@ -17,6 +17,7 @@ using Squill.Presentation.Diagram;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Explorer;
 using Squill.Presentation.Home;
+using Squill.Presentation.Import;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
 using Squill.Presentation.Safety;
@@ -119,6 +120,12 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         manager.Sessions.CollectionChanged += (_, _) => RaiseSchemaCompareAvailability();
         manager.Sessions.CollectionChanged += (_, _) => RaiseMonitorAvailability();
         manager.Sessions.CollectionChanged += (_, _) => RaiseSecurityAvailability();
+        manager.Sessions.CollectionChanged += (_, _) => RaiseImportAvailability();
+        Explorer.ImportTableRequested += (_, r) =>
+        {
+            ActiveSession = r.Session;
+            _ = ImportOnAsync(r.Session, r.Table);
+        };
         Explorer.OpenTableRequested += (_, r) => _ = OpenTableOnAsync(r.Session, r.Table);
         Explorer.DesignTableRequested += (_, r) => DesignTableOn(r.Session, r.Table);
         Explorer.DropTableRequested += (_, r) =>
@@ -365,6 +372,39 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             ActiveSecurity = SecurityTabs.Count == 0 ? null : SecurityTabs[Math.Min(index, SecurityTabs.Count - 1)];
     }
 
+    private bool CanImportData() => ImportWizardViewModel.DisabledReason(ActiveSession).Length == 0;
+
+    /// <summary>Gets why the import wizard cannot be opened (the tooltip of the disabled menu item and palette action), empty when it can.</summary>
+    public string ImportDisabledReason => ImportWizardViewModel.DisabledReason(ActiveSession);
+
+    private void RaiseImportAvailability()
+    {
+        ImportDataCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(ImportDisabledReason));
+    }
+
+    /// <summary>Opens the import wizard on the active session.</summary>
+    /// <param name="table">The table to pre-select, or <see langword="null"/>.</param>
+    /// <returns>A task that completes when the wizard window is closed.</returns>
+    [RelayCommand(CanExecute = nameof(CanImportData))]
+    public Task ImportDataAsync(TableInfo? table) => ActiveSession is { } session ? ImportOnAsync(session, table) : Task.CompletedTask;
+
+    private async Task ImportOnAsync(ConnectionSession session, TableInfo? table)
+    {
+        if (table?.Kind is { } kind && kind != TableKind.Table)
+            return;
+        var wizard = new ImportWizardViewModel([.. AllSessions()], _dialogs, session, table, _dispatcher);
+        wizard.ViewTableRequested += (s, t) => _ = OpenTableOnAsync(s, t);
+        try
+        {
+            await _dialogs.ShowImportWizardAsync(wizard);
+        }
+        finally
+        {
+            wizard.Dispose();
+        }
+    }
+
     /// <summary>Gets or sets the schema compare tab shown.</summary>
     [ObservableProperty]
     public partial SchemaCompareViewModel? ActiveCompare { get; set; }
@@ -494,6 +534,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         RaiseSchemaCompareAvailability();
         RaiseMonitorAvailability();
         RaiseSecurityAvailability();
+        RaiseImportAvailability();
         if (value is null)
             _shownSession = null; // not connected: no tab can be on screen
         OnPropertyChanged(nameof(ActiveEnvironment));
