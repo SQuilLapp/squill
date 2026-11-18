@@ -1,6 +1,6 @@
 # P19-10 - WinUI: look at M11 (privileges) and M12 (sessions) on a PostgreSQL container
 
-Status: todo
+Status: done
 Depends on: P19-07, P19-08
 
 ## Goal
@@ -16,9 +16,9 @@ M11 and M12 need a live PostgreSQL server; no capture of either was ever compare
 - MySQL / SQL Server monitor, Avalonia (P19-11), the 400-row limit (P19-04/05).
 
 ## Tasks
-- [ ] Start the container, prepare roles and blocked sessions, drive and capture; read every PNG.
-- [ ] Fixes, proposed cards, `new-screens.md` and `visual-spec.md` updates.
-- [ ] Stop the container (Enter in its terminal), `podman ps -a` shows nothing from this run, background `psql` processes ended, app closed.
+- [x] Start the container, prepare roles and blocked sessions, drive and capture; read every PNG.
+- [x] Fixes, proposed cards, `new-screens.md` and `visual-spec.md` updates.
+- [x] Stop the container (Enter in its terminal), `podman ps -a` shows nothing from this run, background `psql` processes ended, app closed.
 
 ## Acceptance criteria
 - Common acceptance (recipe 4) if code changed; report lists compared / not driven; no credential printed or committed.
@@ -29,3 +29,6 @@ M11 and M12 need a live PostgreSQL server; no capture of either was ever compare
 
 ## Suggested commit message
 Compare the WinUI sessions and privileges screens with their mockups on PostgreSQL
+
+## Done notes
+Compared and driven on a PostgreSQL 17 container; results and the differences are in the Note of `docs/verification/new-screens.md` (rows 5 to 7); gaps proposed as P19-18. Podman: the machine had to be started; the container was run by hand (`eng/run-docker-tests.ps1 -Keep` waits on stdin, which a background shell does not provide), removed at the end. No code changed.

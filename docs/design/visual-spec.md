@@ -87,7 +87,7 @@ Built in phase 17 (`CommandPalette` in both heads, [ADR 0014](../adr/0014-grid-f
 
 ## 10. What the app still does not have
 
-M01, M09, M10, M11 and M12 were built in phase 18 ([ADR 0015](../adr/0015-remaining-mockups.md), sections 15 to 19); none was compared with its PNG (see `docs/verification/new-screens.md`). Not built, because no feature stands behind them:
+M01, M09, M10, M11 and M12 were built in phase 18 ([ADR 0015](../adr/0015-remaining-mockups.md), sections 15 to 19); M11 and M12 were compared in P19-10 (WinUI only; differences in card P19-18); M01 in P19-09; M09, M10 and Avalonia not yet (see `docs/verification/new-screens.md`). Not built, because no feature stands behind them:
 
 - M01: projects, importing other tools' connections, the ephemeral DuckDB console, `.duckdb` / `.parquet`, the driver count.
 - M09: the data tab, cross-engine compare, "ignore whitespace and column order".
