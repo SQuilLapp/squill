@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.4.0] - 2026-11-18
+
 ### Added
 
 - Home page: when no tab is open and no connection is active, the main area shows the recent connections (`Ctrl+1` to `Ctrl+6`), quick actions, a tip and a search box that opens the command palette. A setting decides whether it shows at startup.
@@ -31,6 +35,7 @@
 - Home page: each recent connection shows its details line and open-tab count, and the new connection card has its subtitle. The Avalonia tip text wraps inside its card.
 - WinUI privileges: the seven privilege columns fit at 1440 px, the legend is no longer cut off, and a role with one member reads in the singular. The sessions table columns are narrower so the wait and query columns are visible.
 - WinUI: with the light theme chosen and a dark system theme, the editor, filter bar, plan table and splitters now follow the chosen theme; confirmation dialogs use the app theme; the production confirmation dialog has its danger frame and highlighted keywords.
+- Schema compare: the Added, Modified and Removed filter chips scroll sideways instead of being cut off in the narrow list pane.
 - Avalonia: the command palette footer hints no longer run into the result count.
 - Typing in a long script is no longer slowed down by the SQL diagnostics, which now run in the background.
 - The formatter keeps `TOP` and `WITH TIES` with their `SELECT`.
