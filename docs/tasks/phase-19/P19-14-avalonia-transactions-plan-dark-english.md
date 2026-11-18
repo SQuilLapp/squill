@@ -1,6 +1,6 @@
 # P19-14 - Avalonia: transactions, production dialog and plan
 
-Status: todo
+Status: done
 Depends on: P19-12
 
 ## Goal
@@ -17,7 +17,7 @@ The Avalonia transaction toolbar, status segment, `ProductionConfirmWindow`, `Tr
 - Completion, grid, palette, designer, ER (P19-15), ticking owner boxes.
 
 ## Tasks
-- [ ] Drive, capture, read PNGs; fixes; docs; close everything.
+- [x] Drive, capture, read PNGs; fixes; docs; close everything.
 
 ## Acceptance criteria
 - Common acceptance (recipe 4) if code changed (`Squill.slnx`, Avalonia AOT publish, app starts, `LayoutOverlapTests` green); report lists compared / not driven.
@@ -27,3 +27,6 @@ The Avalonia transaction toolbar, status segment, `ProductionConfirmWindow`, `Tr
 
 ## Suggested commit message
 Compare the Avalonia transaction, production and plan screens with their mockups
+
+## Done notes
+Driven on the published Avalonia AOT head (SQLite profile `pg-prod-eu` of environment Production from `New-VisualProfile.ps1 -Scenario Full`, dark, fr, 1440 x 900 logical = 2160 x 1350 px at scale 1.5; UI Automation plus SendKeys from a scratch script). Compared: production confirmation window with M15 dark (same structure; a real `Entrée` cancels, status `Annulé`), plan tab (`Graphique`, SQLite) with M06 dark (toolbar order matches; explorer stays open where the mockup hides it). Not driven: light, English, `Manuel` mode (the UIA click on the toggle did not engage it), pill, `Valider` / `Annuler`, close questions, `Failed` variant, PostgreSQL plan rows, AltGr, macOS `Quit`, narrow window. The dialog is a separate window that the main-window UIA tree and SendKeys reach only after focusing a control inside it. No code changed; no card proposed.
