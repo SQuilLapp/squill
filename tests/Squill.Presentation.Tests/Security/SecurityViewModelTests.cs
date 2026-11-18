@@ -49,6 +49,41 @@ public sealed class SecurityViewModelTests : IDisposable
         return vm;
     }
 
+    [Theory]
+    [InlineData(399, 0)]
+    [InlineData(400, 0)]
+    [InlineData(401, 1)]
+    public async Task HiddenRowCount_CountsRowsBeyondTheLimit(int tables, int hidden)
+    {
+        using var _ = UiText.Override(UiLanguage.English);
+        _reader.Privileges["alice"] = [.. Enumerable.Range(1, tables).Select(i => Table("t" + i))];
+        var vm = Create();
+        await vm.LoadAsync();
+        await vm.SelectRoleAsync(Alice);
+
+        Assert.Equal(400, SecurityViewModel.MaxShownRows);
+        Assert.Equal(hidden, vm.HiddenRowCount);
+        Assert.Equal(hidden == 0 ? "" : "1 object not shown: choose fewer schemas", vm.RowsCutText);
+    }
+
+    [Fact]
+    public async Task HiddenRowCount_ChangesWithTheRoleRows_AndNotifies()
+    {
+        _reader.Privileges["alice"] = [.. Enumerable.Range(1, 405).Select(i => Table("t" + i))];
+        _reader.Privileges["root"] = [Table("only")];
+        var vm = Create();
+        await vm.LoadAsync();
+        await vm.SelectRoleAsync(Alice);
+        Assert.Equal(5, vm.HiddenRowCount);
+
+        var raised = new List<string?>();
+        vm.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+        await vm.SelectRoleAsync(Root);
+
+        Assert.Equal(0, vm.HiddenRowCount);
+        Assert.Contains(nameof(SecurityViewModel.HiddenRowCount), raised);
+    }
+
     [Fact]
     public async Task Load_SplitsGroupsAndUsers_AndFiltersByName()
     {

@@ -26,9 +26,7 @@ public sealed partial class SecurityView : UserControl
     private const double CellWidth = 92;
     private const double RowHeight = 28;
 
-    // shortcut: only the first rows are built as elements (no virtualization); pick fewer schemas to narrow the rest, upgrade to a Win2D canvas if a database routinely lists more.
-    private const int MaxRows = 400;
-
+    // shortcut: only the first SecurityViewModel.MaxShownRows are built as elements (no virtualization), a notice under the matrix says so; upgrade to a Win2D canvas if a database routinely lists more.
     private static readonly PrivilegeKind[] Kinds = Enum.GetValues<PrivilegeKind>();
 
     private readonly Border _topLine = new() { Height = 2 };
@@ -41,6 +39,7 @@ public sealed partial class SecurityView : UserControl
     private readonly CheckBox _showInherited = new() { MinWidth = 0 };
     private readonly StackPanel _legend = new() { Orientation = Orientation.Horizontal, Spacing = 14, VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _message = new() { TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24, 8, 24, 8) };
+    private readonly TextBlock _rowsCut = new() { Margin = new Thickness(12, 8, 12, 8), Visibility = Visibility.Collapsed };
     private readonly Grid _matrixHeader = new() { Height = RowHeight + 4 };
     private readonly Grid _matrixBody = new() { Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent) };
     private readonly Border _matrix = new() { IsTabStop = true, BorderThickness = new Thickness(0) };
@@ -195,7 +194,7 @@ public sealed partial class SecurityView : UserControl
         var title = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { _roleName, _badges } };
         var header = new StackPanel { Spacing = 4, Padding = new Thickness(24, 16, 24, 8), Children = { title, _roleSubtitle } };
         var tools = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Padding = new Thickness(24, 4, 24, 8), Children = { _schemas, _showInherited, _legend } };
-        _matrix.Child = new StackPanel { Children = { _matrixHeader, _matrixBody }, MinWidth = NameWidth + CellWidth * Kinds.Length };
+        _matrix.Child = new StackPanel { Children = { _matrixHeader, _matrixBody, _rowsCut }, MinWidth = NameWidth + CellWidth * Kinds.Length };
         var scroll = new ScrollViewer { Content = _matrix, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Padding = new Thickness(24, 0, 24, 16) };
         var grid = new Grid();
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -374,6 +373,9 @@ public sealed partial class SecurityView : UserControl
 
     private void SyncMatrix(SecurityViewModel vm)
     {
+        _rowsCut.Text = vm.RowsCutText;
+        _rowsCut.Foreground = Brush("SquillFg3Brush");
+        _rowsCut.Visibility = vm.HiddenRowCount > 0 ? Visibility.Visible : Visibility.Collapsed;
         _matrixHeader.Children.Clear();
         _matrixBody.Children.Clear();
         _matrixBody.RowDefinitions.Clear();
@@ -381,7 +383,7 @@ public sealed partial class SecurityView : UserControl
         _matrixHeader.Children.Add(HeaderText(UiText.Get("security.col.object"), 0, TextAlignment.Left));
         for (var i = 0; i < Kinds.Length; i++)
             _matrixHeader.Children.Add(HeaderText(Kinds[i].ToString().ToUpperInvariant(), i + 1, TextAlignment.Center));
-        var rows = Math.Min(vm.Rows.Count, MaxRows);
+        var rows = Math.Min(vm.Rows.Count, SecurityViewModel.MaxShownRows);
         _row = Math.Clamp(_row, 0, Math.Max(rows - 1, 0));
         for (var r = 0; r < rows; r++)
         {
@@ -444,7 +446,7 @@ public sealed partial class SecurityView : UserControl
         if (_vm is not { } vm)
             return;
         var point = e.GetPosition(_matrixBody);
-        if (SecurityFormat.HitTest(point.X, point.Y, NameWidth, CellWidth, RowHeight, Math.Min(vm.Rows.Count, MaxRows), Kinds.Length) is not var (row, column))
+        if (SecurityFormat.HitTest(point.X, point.Y, NameWidth, CellWidth, RowHeight, Math.Min(vm.Rows.Count, SecurityViewModel.MaxShownRows), Kinds.Length) is not var (row, column))
             return;
         _row = row;
         _column = column;
@@ -478,7 +480,7 @@ public sealed partial class SecurityView : UserControl
         };
         if (rowStep == 0 && columnStep == 0)
             return;
-        (_row, _column) = SecurityFormat.Move(rowStep, columnStep, _row, _column, Math.Min(vm.Rows.Count, MaxRows), Kinds.Length);
+        (_row, _column) = SecurityFormat.Move(rowStep, columnStep, _row, _column, Math.Min(vm.Rows.Count, SecurityViewModel.MaxShownRows), Kinds.Length);
         SyncMatrix(vm);
         e.Handled = true;
     }

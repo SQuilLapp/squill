@@ -174,8 +174,17 @@ public sealed partial class SecurityViewModel : ViewModelBase, IDisposable
 
     // ---- matrix -----------------------------------------------------------------------------------------------------
 
+    /// <summary>The number of matrix rows the heads draw; they build one element per row, so the rest is cut.</summary>
+    public const int MaxShownRows = 400;
+
     /// <summary>Gets the matrix rows of the selected role and schemas.</summary>
     public ObservableCollection<PrivilegeRowViewModel> Rows { get; } = [];
+
+    /// <summary>Gets how many rows lie beyond <see cref="MaxShownRows"/> and are not drawn.</summary>
+    public int HiddenRowCount => Math.Max(0, Rows.Count - MaxShownRows);
+
+    /// <summary>Gets the notice telling that rows are cut, empty when none is.</summary>
+    public string RowsCutText => HiddenRowCount == 0 ? "" : UiText.FormatPlural("security.rowsCut", HiddenRowCount);
 
     private IReadOnlyList<ObjectPrivileges> _privileges = [];
 
@@ -199,6 +208,8 @@ public sealed partial class SecurityViewModel : ViewModelBase, IDisposable
         var role = SelectedRole?.Name ?? "";
         foreach (var p in _privileges)
             Rows.Add(new PrivilegeRowViewModel(p, _changes, role, ShowInherited));
+        OnPropertyChanged(nameof(HiddenRowCount)); // once per rebuild, not per row
+        OnPropertyChanged(nameof(RowsCutText));
     }
 
     private void ChangesChanged()

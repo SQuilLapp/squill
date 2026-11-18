@@ -421,9 +421,19 @@ public sealed partial class SessionsMonitorViewModel : ViewModelBase, IDisposabl
     /// <summary>Gets a value indicating whether the sort is descending.</summary>
     public bool SortDescending => _sortDescending;
 
+    /// <summary>The number of rows the heads draw; they build one element per row, so the rest is cut (the filter narrows it).</summary>
+    public const int MaxShownRows = 400;
+
     /// <summary>Gets the rows the table shows.</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HiddenRowCount), nameof(RowsCutText))]
     public partial IReadOnlyList<SessionRowViewModel> Rows { get; private set; } = [];
+
+    /// <summary>Gets how many filtered rows lie beyond <see cref="MaxShownRows"/> and are not drawn.</summary>
+    public int HiddenRowCount => Math.Max(0, Rows.Count - MaxShownRows);
+
+    /// <summary>Gets the notice telling that rows are cut, empty when none is.</summary>
+    public string RowsCutText => HiddenRowCount == 0 ? "" : UiText.FormatPlural("activity.rowsCut", HiddenRowCount);
 
     /// <summary>Gets the text of the <c>Toutes n</c> filter tab.</summary>
     public string AllTabText => UiText.Format("activity.filter.all", _counts[0]);

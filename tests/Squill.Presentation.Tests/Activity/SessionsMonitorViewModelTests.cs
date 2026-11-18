@@ -51,6 +51,41 @@ public sealed class SessionsMonitorViewModelTests : IDisposable
         await vm.RefreshAsync();
     }
 
+    private static IReadOnlyList<ServerSession> Many(int count, Func<int, string> user) =>
+        [.. Enumerable.Range(1, count).Select(i => Session(i.ToString(System.Globalization.CultureInfo.InvariantCulture), user: user(i)))];
+
+    [Theory]
+    [InlineData(399, 0)]
+    [InlineData(400, 0)]
+    [InlineData(401, 1)]
+    public async Task HiddenRowCount_CountsRowsBeyondTheLimit(int sessions, int hidden)
+    {
+        var vm = Create();
+        await LoadAsync(vm, Snapshot(Many(sessions, _ => "app")));
+
+        Assert.Equal(400, SessionsMonitorViewModel.MaxShownRows);
+        Assert.Equal(hidden, vm.HiddenRowCount);
+        Assert.Equal(hidden == 0, vm.RowsCutText.Length == 0);
+    }
+
+    [Fact]
+    public async Task HiddenRowCount_FollowsTheFilter_AndNotifies()
+    {
+        using var _ = UiText.Override(UiLanguage.English);
+        var vm = Create();
+        await LoadAsync(vm, Snapshot(Many(405, i => i <= 10 ? "alice" : "bob")));
+        Assert.Equal(5, vm.HiddenRowCount);
+        Assert.Equal("5 sessions not shown: narrow with the filter", vm.RowsCutText);
+
+        var raised = new List<string?>();
+        vm.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+        vm.FilterText = "alice";
+
+        Assert.Equal(0, vm.HiddenRowCount);
+        Assert.Contains(nameof(SessionsMonitorViewModel.HiddenRowCount), raised);
+        Assert.Contains(nameof(SessionsMonitorViewModel.RowsCutText), raised);
+    }
+
     // ---- chains -----------------------------------------------------------------------------------------------------
 
     [Fact]
