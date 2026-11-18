@@ -123,6 +123,25 @@ public sealed class HomePageUiTests
     }
 
     [Fact]
+    public async Task Home_LongTipText_WrapsInsideTheTipCard()
+    {
+        await WithHomeAsync(1, (window, services) =>
+        {
+            var page = Page(window);
+            var tip = page.FindControl<ItemsControl>("TipText")!;
+            var card = page.FindControl<Border>("TipCard")!;
+            for (var i = 0; i < HomeTips.Keys.Count; i++)
+            {
+                window.UpdateLayout();
+                Assert.True(tip.Bounds.Right <= card.Bounds.Width, $"tip {i}: {tip.Bounds.Right} > {card.Bounds.Width}");
+                services.Workspace.Home.NextTipCommand.Execute(null);
+            }
+
+            return Task.CompletedTask;
+        });
+    }
+
+    [Fact]
     public async Task Home_RendersDifferentPixelsInLightAndDark()
     {
         await WithHomeAsync(2, (window, _) =>

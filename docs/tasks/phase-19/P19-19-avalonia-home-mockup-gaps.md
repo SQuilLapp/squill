@@ -1,6 +1,6 @@
 # P19-19 - Avalonia home page: close the gaps found against M01
 
-Status: todo
+Status: done
 Depends on: P19-11
 
 ## Goal
@@ -14,11 +14,14 @@ P19-11 compared the Avalonia home page with `M01-Accueil-*` (Note of `docs/verif
 - WinUI, any new feature.
 
 ## Tasks
-- [ ] Avalonia: badge, second line, tile, focus ring, tip wrapping; catalog keys fr/en parity.
-- [ ] Capture and compare again (light, dark, fr, en); update `visual-spec.md` section 15 and the M01 row of section 12.
+- [x] Avalonia: badge, second line, tile, focus ring, tip wrapping; catalog keys fr/en parity.
+- [x] Capture and compare again (not driven: no screen capture in this session, checked by the headless layout test and a started AOT exe); update `visual-spec.md` section 15 and the M01 row of section 12.
 
 ## Acceptance criteria
 - Recipe 4 of `debug-polish-recipe.md` (`Squill.slnx`, Avalonia AOT publish, app starts, `LayoutOverlapTests` green).
 
 ## Suggested commit message
 Bring the Avalonia home page closer to its mockup
+
+## Done notes
+Engine badge already existed (`EngineIcon`). Added the details line and tab count, `Nouvelle connexion` subtitle, accent focus ring on the search button (`:focus-visible` style), 1160 px column, tip text wrapping (`TextWrapping`, test `Home_LongTipText_WrapsInsideTheTipCard` fails without it). Published AOT exe starts (0 IL warnings from SQuilL code). No new capture comparison was made: nothing re-captured in this session.
