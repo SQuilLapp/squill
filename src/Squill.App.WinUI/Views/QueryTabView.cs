@@ -23,6 +23,7 @@ namespace Squill.App.WinUI.Views;
 /// <summary>The editor of a query tab above its result.</summary>
 public sealed partial class QueryTabView : UserControl
 {
+    private Border? _toolbarBorder;
     private readonly Border _editorHost = new() { Background = Brush("SquillBgBaseBrush") };
     private readonly ParametersPanel _parameters = new();
     private readonly Border _envStripe = new() { Width = 3, Visibility = Visibility.Collapsed };
@@ -39,6 +40,7 @@ public sealed partial class QueryTabView : UserControl
     private readonly Button _txRollback = new() { Style = Res("OutlineDangerButtonStyle"), Height = 28, MinHeight = 28, Visibility = Visibility.Collapsed };
     private readonly Border _toolbarSeparator = new() { Width = 1, Height = 18, Margin = new Thickness(4, 0, 4, 0), VerticalAlignment = VerticalAlignment.Center };
     private readonly List<FrameworkElement> _chips = [];
+    private readonly List<FrameworkElement> _txChips = [];
     private readonly List<FrameworkElement> _txIcons = [];
     private readonly List<FrameworkElement> _txLabels = [];
     private StackPanel _toolbarLeft = null!;
@@ -263,6 +265,20 @@ public sealed partial class QueryTabView : UserControl
     private void PaintResults()
     {
         _results.Background = ThemeBrush("SquillBgBaseBrush");
+        _editorHost.Background = ThemeBrush("SquillBgBaseBrush");
+        if (_toolbarBorder is not null)
+        {
+            _toolbarBorder.Background = ThemeBrush("SquillBgBaseBrush");
+            _toolbarBorder.BorderBrush = ThemeBrush("SquillBorderSubtleBrush");
+        }
+
+        _message.Foreground = ThemeBrush("SquillFgBrush");
+        _empty.Foreground = ThemeBrush("SquillFg3Brush");
+        _issuesButton.Foreground = ThemeBrush("SquillDangerBrush");
+        _sidePanel.Background = ThemeBrush("SquillBgSurfaceBrush");
+        _sidePanel.BorderBrush = ThemeBrush("SquillBorderSubtleBrush");
+        _format.Content = Icons.Create("SquillIconFormat", 14, ThemeBrush("SquillFg2Brush"));
+        _historyToggle.Content = Icons.Create("SquillIconHistory", 14, ThemeBrush("SquillFg2Brush"));
         _parameters.Paint();
         _resultsHeader!.BorderBrush = ThemeBrush("SquillBorderSubtleBrush");
         _resultsHeader.Background = ThemeBrush("SquillBgBaseBrush");
@@ -336,7 +352,7 @@ public sealed partial class QueryTabView : UserControl
         _toolbarRight = right;
         _toolbarRow = row;
         row.SizeChanged += (_, _) => LayoutToolbar();
-        return new Border { Height = 38, Padding = new Thickness(8, 0, 8, 0), BorderThickness = new Thickness(0, 0, 0, 1), BorderBrush = Brush("SquillBorderSubtleBrush"), Background = Brush("SquillBgBaseBrush"), Child = row };
+        return _toolbarBorder = new Border { Height = 38, Padding = new Thickness(8, 0, 8, 0), BorderThickness = new Thickness(0, 0, 0, 1), BorderBrush = Brush("SquillBorderSubtleBrush"), Background = Brush("SquillBgBaseBrush"), Child = row };
     }
 
     private StackPanel ButtonLabel(string text, string hint, bool chip)
@@ -361,7 +377,7 @@ public sealed partial class QueryTabView : UserControl
         _txLabels.Add(label);
         panel.Children.Add(label);
         var chip = new ContentControl { Content = hint, Style = Res("KeyboardChipStyle"), VerticalAlignment = VerticalAlignment.Center };
-        _chips.Add(chip);
+        _txChips.Add(chip);
         panel.Children.Add(chip);
         return panel;
     }
@@ -413,6 +429,8 @@ public sealed partial class QueryTabView : UserControl
         {
             foreach (var chip in _chips)
                 chip.Visibility = level >= 1 ? Visibility.Collapsed : Visibility.Visible;
+            foreach (var chip in _txChips)
+                chip.Visibility = level >= 2 ? Visibility.Collapsed : Visibility.Visible;
             _pillText.Text = level >= 2 ? count : full;
             foreach (var icon in _txIcons)
                 icon.Visibility = level is 3 or 4 ? Visibility.Collapsed : Visibility.Visible;
@@ -775,5 +793,5 @@ public sealed partial class QueryTabView : UserControl
 
     private static Style Res(string key) => (Style)Application.Current.Resources[key];
 
-    private static Microsoft.UI.Xaml.Media.Brush Brush(string key) => (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources[key];
+    private static Microsoft.UI.Xaml.Media.Brush Brush(string key) => Tokens.Brush(key);
 }

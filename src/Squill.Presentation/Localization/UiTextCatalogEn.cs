@@ -748,6 +748,7 @@ internal static class UiTextCatalogEn
         ("prod.title.commit", "Commit the transaction on production?"),
         ("prod.target.unknown", "the table"),
         ("prod.message.deleteAll", "This statement has no WHERE clause: it will delete every row of the table."),
+        ("prod.message.noWhere", "has no WHERE clause"),
         ("prod.message.modifyAll", "This statement has no WHERE clause: it will modify every row of the table."),
         ("prod.message.run", "This connection is a production database. Nothing is sent before you confirm."),
         ("prod.message.figure.one", "It will touch about {0:N0} row (planner estimate)."),

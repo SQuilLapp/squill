@@ -748,6 +748,7 @@ internal static class UiTextCatalogFr
         ("prod.title.commit", "Valider la transaction en production ?"),
         ("prod.target.unknown", "la table"),
         ("prod.message.deleteAll", "Cette instruction n'a pas de clause WHERE : elle supprimera toutes les lignes de la table."),
+        ("prod.message.noWhere", "n'a pas de clause WHERE"),
         ("prod.message.modifyAll", "Cette instruction n'a pas de clause WHERE : elle modifiera toutes les lignes de la table."),
         ("prod.message.run", "Cette connexion est une base de production. Rien n'est envoyé avant votre confirmation."),
         ("prod.message.figure.one", "Elle touchera environ {0:N0} ligne (estimation du planificateur)."),

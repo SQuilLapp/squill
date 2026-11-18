@@ -45,7 +45,11 @@ public sealed partial class MainWindow
         BuildHamburger();
         BuildRail();
         BuildCommandSearch();
-        Root.ActualThemeChanged += (_, _) => PaintChrome();
+        Root.ActualThemeChanged += (_, _) =>
+        {
+            Tokens.Active = Root.ActualTheme;
+            PaintChrome();
+        };
         TitleBar.SizeChanged += (_, _) => UpdateTitleLayout();
         Root.Loaded += (_, _) =>
         {

@@ -80,7 +80,7 @@ public sealed partial class CellPreviewPanel : UserControl
     /// <summary>Raised when the pane is shown or hidden; the argument tells which.</summary>
     public event EventHandler<bool>? OpenChanged;
 
-    private static Brush Brush(string key) => (Brush)Application.Current.Resources[key];
+    private static Brush Brush(string key) => Tokens.Brush(key);
 
     /// <summary>Shows the preview of another result, or nothing when <see langword="null"/>.</summary>
     /// <param name="model">The preview view-model of the result on screen.</param>

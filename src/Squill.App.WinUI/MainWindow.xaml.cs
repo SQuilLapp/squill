@@ -137,12 +137,17 @@ public sealed partial class MainWindow : Window
         window.Activate();
     }
 
-    private void ApplyTheme(ThemeMode mode) => Root.RequestedTheme = mode switch
+    private void ApplyTheme(ThemeMode mode)
     {
-        ThemeMode.Light => ElementTheme.Light,
-        ThemeMode.Dark => ElementTheme.Dark,
-        _ => ElementTheme.Default,
-    };
+        Root.RequestedTheme = mode switch
+        {
+            ThemeMode.Light => ElementTheme.Light,
+            ThemeMode.Dark => ElementTheme.Dark,
+            _ => ElementTheme.Default,
+        };
+        // Hand-built visuals read tokens through this theme; Default follows the system one.
+        Tokens.Active = Root.RequestedTheme == ElementTheme.Default ? Root.ActualTheme : Root.RequestedTheme;
+    }
 
     private void OnEditRequested(object? sender, ConnectionEditorViewModel editor)
     {

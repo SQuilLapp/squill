@@ -393,7 +393,7 @@ Depends on: <card ids, ranges allowed>
 | [P19-17](phase-19/P19-17-winui-home-mockup-gaps.md) | WinUI: close the home page gaps found against M01 | P19-09 | done |
 | [P19-18](phase-19/P19-18-winui-sessions-privileges-gaps.md) | WinUI: close the sessions and privileges gaps found against M11 and M12 | P19-10 | done |
 | [P19-19](phase-19/P19-19-avalonia-home-mockup-gaps.md) | Avalonia: close the home page gaps found against M01 | P19-11 | done |
-| [P19-20](phase-19/P19-20-winui-light-theme-and-production-dialog.md) | WinUI: light theme with a dark system theme, production dialog frame | P19-12 | todo |
+| [P19-20](phase-19/P19-20-winui-light-theme-and-production-dialog.md) | WinUI: light theme with a dark system theme, production dialog frame | P19-12 | partial |
 
 ### Phase 9 - Visual conformance
 
@@ -483,7 +483,7 @@ Goal: build the five mockups the app does not have (`visual-spec.md` section 10)
 
 Goal: fix what phase 18 and earlier phases recorded as broken or silently limited, and look at every screen that was only tested headless or in one theme, before any new feature. The owner's own list of issues was not available: the work comes from the repository (`docs/verification/`, `visual-spec.md` section 12, `shortcut:` comments, card done notes). Decisions (final, details in [debug-polish-recipe.md](phase-19/debug-polish-recipe.md) and in ADR 0016 written by P19-16): fix cards start with a failing test; agent verification cards never tick the owner's checklist boxes (they write `agent: ok / bug / not driven` in the `Result` column); a difference one small edit fixes is fixed in the verification card, a bigger one becomes a card `P19-17` onwards; no feature is built.
 
-- Status: P19-01 ... P19-12 and P19-14 done, P19-13 and P19-15 partial, P19-16 ... P19-20 todo.
+- Status: P19-01 ... P19-12 and P19-14 done, P19-13, P19-15 and P19-20 partial, P19-16 ... P19-19 per their rows.
 - Branch: implement phase 19 on the branch `phase-19-debug-polish`; do not create another branch.
 - Order: P19-01 ... P19-08 are independent (P19-04 before P19-05; P19-07 and P19-08 before every verification card). Then WinUI before Avalonia: P19-09, P19-10, P19-12, P19-13, then P19-11 (after P19-09 and P19-10), P19-14 (after P19-12), P19-15 (after P19-13). Last P19-16 (docs).
 - Riskiest cards: P19-01 (every completion insertion goes through the quoting method), P19-02 (the inventory may find no production producer: stop rule), P19-07 (`PrintWindow` may return black for WinUI; the covered-window check is the supported fix), P19-13 (largest matrix: record `not driven (time)` rather than stretch a claim). Docker-gated drives need Podman ([verification-recipe.md](phase-11/verification-recipe.md)). Bugs found by the verification cards too big for the card get `P19-17` onwards (added to this index).
