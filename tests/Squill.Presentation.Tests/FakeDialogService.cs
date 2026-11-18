@@ -9,8 +9,6 @@ internal sealed class FakeDialogService : IDialogService
     public bool ConfirmResult { get; set; } = true;
     public string? PromptResult { get; set; }
     public string? SavePathResult { get; set; }
-    public Func<IReadOnlyList<string>, IReadOnlyDictionary<string, ParameterValue>, IReadOnlyList<ParameterValue>?>? ParametersResult { get; set; }
-    public List<IReadOnlyDictionary<string, ParameterValue>> ParameterPrompts { get; } = [];
     public List<(string Title, string Message)> Errors { get; } = [];
 
     public List<(string Title, string Message)> Confirms { get; } = [];
@@ -69,14 +67,6 @@ internal sealed class FakeDialogService : IDialogService
     {
         Errors.Add((title, message));
         return ValueTask.CompletedTask;
-    }
-
-    public ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(
-        IReadOnlyList<string> names,
-        IReadOnlyDictionary<string, ParameterValue> defaults)
-    {
-        ParameterPrompts.Add(new Dictionary<string, ParameterValue>(defaults));
-        return ValueTask.FromResult(ParametersResult?.Invoke(names, defaults));
     }
 
     public string? OpenFileResult { get; set; }

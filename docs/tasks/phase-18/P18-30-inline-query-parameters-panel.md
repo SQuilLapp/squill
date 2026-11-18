@@ -1,6 +1,6 @@
 # P18-30 - Query parameters panel under the editor (both heads)
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -15,11 +15,14 @@ M04 draws the query parameters prompt as a panel under the editor (`Paramètres 
 - New parameter features, the other M04 gaps (wavy underline, inline pill, popup styling), which depend on the editor controls and stay open.
 
 ## Tasks
-- [ ] View-model change and tests (`QueryTabViewModel` parameter flow: panel opens, ignore runs nothing, run executes, validation, remembered values, a second run with the same values does not reopen it only if the existing rule says so).
-- [ ] WinUI and Avalonia panel views, tests in both head test projects.
+- [x] View-model change and tests (`QueryTabViewModel` parameter flow: panel opens, ignore runs nothing, run executes, validation, remembered values, a second run with the same values does not reopen it only if the existing rule says so).
+- [x] WinUI and Avalonia panel views, tests in both head test projects.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7) with both AOT publishes; capture the panel in both heads next to `M04-Editeur-*`.
 
 ## Suggested commit message
 Show the query parameters in a panel under the editor
+
+## Done
+`QueryTabViewModel` owns the panel (`IsParametersPanelOpen`, `ParameterRows`, `RunParametersCommand`, `IgnoreParametersCommand`, `ParametersHeader`); `Stop` also closes it. `IDialogService.PromptParametersAsync` and both heads' `ParameterPromptRow` were removed (nothing else called them). Both heads show the panel under the editor (`QueryTabView.axaml`, `ParametersPanel.cs`), focus the first empty value, `Echap` = Ignorer, `Ctrl+Entree` = Executer. Deviations: the 165-wide type dropdown is not drawn, because values are still bound as strings and a dropdown with no effect would be a new parameter feature; no screenshots were captured (to do with the P18-31 verification).

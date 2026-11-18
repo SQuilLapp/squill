@@ -113,9 +113,42 @@
         </ScrollViewer>
       </DockPanel>
     </Border>
-    <Grid Grid.Row="1" ColumnDefinitions="3,*">
+    <Grid Grid.Row="1" ColumnDefinitions="3,*" RowDefinitions="*,Auto">
       <Border Name="EnvStripe" IsVisible="False" />
       <Border Name="EditorHost" Grid.Column="1" Background="{DynamicResource SquillBgBaseBrush}" />
+      <Border Name="ParametersPanel" Grid.Row="1" Grid.ColumnSpan="2" Padding="12,8" IsVisible="{Binding IsParametersPanelOpen}"
+              Background="{DynamicResource SquillBgSurfaceBrush}" BorderBrush="{DynamicResource SquillBorderBrush}" BorderThickness="0,1,0,0">
+        <Border.KeyBindings>
+          <KeyBinding Gesture="Escape" Command="{Binding IgnoreParametersCommand}" />
+          <KeyBinding Gesture="Ctrl+Enter" Command="{Binding RunParametersCommand}" />
+        </Border.KeyBindings>
+        <StackPanel Spacing="8">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock Text="{loc:Text editor.parameters}" FontWeight="SemiBold" />
+            <TextBlock Name="ParametersHeader" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource SquillFg3Brush}"
+                       Text="{Binding ParametersHeader}" />
+          </StackPanel>
+          <ItemsControl Name="ParameterRows" ItemsSource="{Binding ParameterRows}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="q:ParameterRowViewModel">
+                <StackPanel Spacing="2" Margin="0,0,0,4">
+                  <Grid ColumnDefinitions="120,*,Auto" ColumnSpacing="8">
+                    <TextBlock Classes="mono" VerticalAlignment="Center" Text="{Binding Name, StringFormat=':{0}'}" />
+                    <TextBox Grid.Column="1" Classes="mono" Text="{Binding Text}" IsEnabled="{Binding IsValueEnabled}" />
+                    <CheckBox Grid.Column="2" Content="{loc:Text editor.passNull}" IsChecked="{Binding IsNull}" />
+                  </Grid>
+                  <TextBlock FontSize="12" Margin="128,0,0,0" Foreground="{DynamicResource SquillDangerBrush}"
+                             Text="{Binding Error}" IsVisible="{Binding HasError}" />
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+            <Button Name="IgnoreParametersButton" Classes="ghost" Content="{loc:Text editor.ignore}" Command="{Binding IgnoreParametersCommand}" />
+            <Button Name="RunParametersButton" Classes="primary" Content="{loc:Text editor.runWithValues}" Command="{Binding RunParametersCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
     </Grid>
     <GridSplitter Grid.Row="2" Height="4" Background="{DynamicResource SquillBorderBrush}"
                   ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" />

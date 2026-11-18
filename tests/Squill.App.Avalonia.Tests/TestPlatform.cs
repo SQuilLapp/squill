@@ -28,7 +28,4 @@ internal sealed class Dialogs : IDialogService
     public ValueTask<string?> PromptAsync(string title, string message, string? initial) => ValueTask.FromResult<string?>(null);
     public ValueTask<string?> PickSaveFileAsync(string suggestedName, string extension) => ValueTask.FromResult<string?>(null);
     public ValueTask ShowErrorAsync(string title, string message) => throw new InvalidOperationException(message);
-    public ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(
-        IReadOnlyList<string> names,
-        IReadOnlyDictionary<string, ParameterValue> defaults) => ValueTask.FromResult<IReadOnlyList<ParameterValue>?>(null);
 }

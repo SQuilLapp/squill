@@ -152,8 +152,5 @@ public static class ImportScenario
         public ValueTask<string?> PickSaveFileAsync(string suggestedName, string extension) => ValueTask.FromResult<string?>(null);
 
         public ValueTask ShowErrorAsync(string title, string message) => ValueTask.CompletedTask;
-
-        public ValueTask<IReadOnlyList<Squill.Presentation.Query.ParameterValue>?> PromptParametersAsync(IReadOnlyList<string> names, IReadOnlyDictionary<string, Squill.Presentation.Query.ParameterValue> defaults) =>
-            ValueTask.FromResult<IReadOnlyList<Squill.Presentation.Query.ParameterValue>?>(null);
     }
 }

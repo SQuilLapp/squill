@@ -24,7 +24,6 @@
     <Compile Include="..\..\src\Squill.App.WinUI\Views\ConnectionEditorFormat.cs" Link="ConnectionEditorFormat.cs" />
     <Compile Include="..\..\src\Squill.App.WinUI\Views\SettingsFormat.cs" Link="SettingsFormat.cs" />
     <Compile Include="..\..\src\Squill.App.WinUI\Views\TableDesignerFormat.cs" Link="TableDesignerFormat.cs" />
-    <Compile Include="..\..\src\Squill.App.WinUI\Services\ParameterPromptRow.cs" Link="ParameterPromptRow.cs" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\PropertiesPanel.xaml" Link="Xaml\PropertiesPanel.xaml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\PropertiesPanel.xaml.cs" Link="Xaml\PropertiesPanel.xaml.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\tokens\squill.tokens.json" Link="squill.tokens.json" CopyToOutputDirectory="PreserveNewest" />

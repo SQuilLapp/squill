@@ -1,8 +1,8 @@
-using Squill.App.WinUI.Services;
 using Squill.App.WinUI.Views;
 using Squill.Core;
 using Squill.Platform.Storage;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Query;
 using Xunit;
 
 namespace Squill.App.WinUI.Tests;
@@ -12,9 +12,9 @@ public class EditorToolbarTests
     [Fact]
     public void ParameterRow_needs_a_value_unless_null_is_passed()
     {
-        var row = new ParameterPromptRow("id");
+        var row = new ParameterRowViewModel("id", null, false);
         Assert.Equal(UiText.Get("editor.valueRequired"), row.Error);
-        Assert.False(ParameterPromptRow.AllValid([row]));
+        Assert.True(row.HasError);
 
         row.Text = "7";
         Assert.Null(row.Error);
@@ -22,7 +22,7 @@ public class EditorToolbarTests
         row.Text = "";
         row.IsNull = true;
         Assert.Null(row.Error);
-        Assert.True(ParameterPromptRow.AllValid([row, new ParameterPromptRow("x") { Text = "a" }]));
+        Assert.False(row.IsValueEnabled);
     }
 
     [Fact]

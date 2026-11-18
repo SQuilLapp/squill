@@ -24,6 +24,7 @@ namespace Squill.App.WinUI.Views;
 public sealed partial class QueryTabView : UserControl
 {
     private readonly Border _editorHost = new() { Background = Brush("SquillBgBaseBrush") };
+    private readonly ParametersPanel _parameters = new();
     private readonly Border _envStripe = new() { Width = 3, Visibility = Visibility.Collapsed };
     private readonly Button _run = new() { Style = Res("PrimaryButtonStyle"), Height = 28, MinHeight = 28 };
     private readonly Button _script = new() { Height = 28, MinHeight = 28 };
@@ -96,8 +97,15 @@ public sealed partial class QueryTabView : UserControl
     {
         var splitter = new Splitter(false) { ResizeBefore = true };
         var toolbar = BuildToolbar();
-        var editor = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(3) }, new ColumnDefinition() } };
+        var editor = new Grid
+        {
+            ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(3) }, new ColumnDefinition() },
+            RowDefinitions = { new RowDefinition(), new RowDefinition { Height = GridLength.Auto } },
+        };
         Grid.SetColumn(_editorHost, 1);
+        Grid.SetRow(_parameters, 1);
+        Grid.SetColumnSpan(_parameters, 2);
+        editor.Children.Add(_parameters);
         _editorHost.PreviewKeyDown += OnEditorPreviewKeyDown;
         editor.Children.Add(_envStripe);
         editor.Children.Add(_editorHost);
@@ -255,6 +263,7 @@ public sealed partial class QueryTabView : UserControl
     private void PaintResults()
     {
         _results.Background = ThemeBrush("SquillBgBaseBrush");
+        _parameters.Paint();
         _resultsHeader!.BorderBrush = ThemeBrush("SquillBorderSubtleBrush");
         _resultsHeader.Background = ThemeBrush("SquillBgBaseBrush");
         _editBar.Background = ThemeBrush("SquillInfoSoftBrush");
@@ -515,6 +524,7 @@ public sealed partial class QueryTabView : UserControl
             _editorHost.Child = (tab.Editor as IEditorControl)?.Control;
         }
 
+        _parameters.Attach(tab);
         _run.Command = tab?.RunCommand;
         _script.Command = tab?.RunAllCommand;
         _stop.Command = tab?.CancelCommand;

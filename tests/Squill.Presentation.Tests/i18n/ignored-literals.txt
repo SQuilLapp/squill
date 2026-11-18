@@ -2,7 +2,6 @@
 src/Squill.App.Avalonia/Controls/ErDiagramCanvas.cs|avares://Squill.App.Avalonia/Assets/Fonts#JetBrains Mono, Cascadia Code, monospace|font family resource uri
 src/Squill.App.Avalonia/MainWindow.MacOS.cs|About Avalonia|matches the default Avalonia menu item to replace, not shown
 src/Squill.App.Avalonia/MainWindow.axaml|Ctrl+K|keyboard accelerator text, not translated
-src/Squill.App.Avalonia/Services/AvaloniaDialogService.cs|mono|style class name, not text
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFg3Brush|resource key
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFgBrush|resource key
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|group|style class name
@@ -44,8 +43,6 @@ src/Squill.App.Avalonia/Views/TransactionAskWindow.cs|SquillFgBrush|resource key
 src/Squill.App.WinUI/Editors/PlainSqlEditor.cs|Cascadia Code, Consolas|font family list
 src/Squill.App.WinUI/MainWindow.xaml|Ctrl+K|keyboard accelerator text, not translated
 src/Squill.App.WinUI/MainWindow.xaml|SQuilL|product name, not translated
-src/Squill.App.WinUI/Services/WinUiDialogService.cs|MonoTextBlockStyle|resource key, not text
-src/Squill.App.WinUI/Services/WinUiDialogService.cs|SquillFontMono|resource key, not text
 src/Squill.App.WinUI/Views/ConnectionEditorFormat.cs|SQL Server|product name, not translated
 src/Squill.App.WinUI/Views/ConnectionEditorWindow.xaml.cs|SquillFg3Brush|resource key
 src/Squill.App.WinUI/Views/ConnectionEditorWindow.xaml.cs|SquillFgBrush|resource key
@@ -62,6 +59,8 @@ src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|SquillFg2Brush|resource ke
 src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|SquillFg3Brush|resource key
 src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|SquillFgBrush|resource key
 src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|yyyy-MM-dd|date format pattern placeholder
+src/Squill.App.WinUI/Views/ParametersPanel.cs|MonoTextBlockStyle|resource key, not text
+src/Squill.App.WinUI/Views/ParametersPanel.cs|SquillFontMono|resource key, not text
 src/Squill.App.WinUI/Views/ProductionConfirmDialog.cs|SquillDangerBrush|resource key
 src/Squill.App.WinUI/Views/ProductionConfirmDialog.cs|SquillFgBrush|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFg2Brush|resource key

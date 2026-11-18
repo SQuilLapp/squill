@@ -96,8 +96,5 @@ public static class SchemaCompareFlowScenario
         public ValueTask<string?> PickSaveFileAsync(string suggestedName, string extension) => ValueTask.FromResult<string?>(null);
 
         public ValueTask ShowErrorAsync(string title, string message) => ValueTask.FromException(new InvalidOperationException($"{title}: {message}"));
-
-        public ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(IReadOnlyList<string> names, IReadOnlyDictionary<string, ParameterValue> defaults) =>
-            ValueTask.FromResult<IReadOnlyList<ParameterValue>?>(null);
     }
 }

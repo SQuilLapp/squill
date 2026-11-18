@@ -1,4 +1,6 @@
 using Avalonia.Controls;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Squill.App.Avalonia.Editors;
 using Squill.App.Avalonia.Services;
 using Squill.App.Avalonia.Views;
@@ -191,20 +193,25 @@ public sealed class EditorToolbarTests
     });
 
     [Fact]
-    public void ParameterRow_NeedsAValueUnlessNullIsPassed()
+    public Task ParametersPanel_ShowsRowsUnderTheEditor_AndRunsWithTheTypedValue() => WithViewAsync(async (view, tab) =>
     {
-        var row = new ParameterPromptRow("id");
-        Assert.Equal(UiText.Get("editor.valueRequired"), row.Error);
-        Assert.False(ParameterPromptRow.AllValid([row]));
-
-        row.Text = "7";
-        Assert.Null(row.Error);
-
-        row.Text = "";
-        row.IsNull = true;
-        Assert.Null(row.Error);
-        Assert.True(ParameterPromptRow.AllValid([row, new ParameterPromptRow("x") { Text = "a" }]));
-    }
+        var panel = view.FindControl<Border>("ParametersPanel")!;
+        Assert.False(panel.IsVisible);
+        ((AvaloniaSqlEditor)tab.Editor).Text = "select :a";
+        var run = tab.RunCommand.ExecuteAsync(null);
+        for (var i = 0; i < 100 && !tab.IsParametersPanelOpen; i++)
+            await Task.Delay(20, TestContext.Current.CancellationToken);
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(panel.IsVisible);
+        var box = Assert.Single(view.FindControl<ItemsControl>("ParameterRows")!.GetVisualDescendants().OfType<TextBox>());
+        Assert.False(view.FindControl<Button>("RunParametersButton")!.Command!.CanExecute(null));
+        box.Text = "7";
+        Assert.Equal("7", tab.ParameterRows[0].Text);
+        Assert.True(view.FindControl<Button>("RunParametersButton")!.Command!.CanExecute(null));
+        view.FindControl<Button>("IgnoreParametersButton")!.Command!.Execute(null);
+        await run;
+        Assert.False(tab.IsParametersPanelOpen);
+    });
 
     [Fact]
     public void HistoryDetail_ShowsTimeDurationAndKnownRowCount()

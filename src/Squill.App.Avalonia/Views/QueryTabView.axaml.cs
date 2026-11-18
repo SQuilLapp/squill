@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Controls;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia;
@@ -180,8 +182,16 @@ public sealed partial class QueryTabView : UserControl
     {
         if (e.PropertyName == nameof(QueryTabViewModel.SelectedResult))
             ShowResult();
+        else if (e.PropertyName == nameof(QueryTabViewModel.IsParametersPanelOpen) && _tab?.IsParametersPanelOpen == true)
+            Dispatcher.UIThread.Post(FocusFirstEmptyParameter, DispatcherPriority.Loaded);
         else if (e.PropertyName is nameof(QueryTabViewModel.CanExplain) or nameof(QueryTabViewModel.CanAnalyze) or nameof(QueryTabViewModel.ExplainDisabledReason) or nameof(QueryTabViewModel.AnalyzeDisabledReason))
             ShowPlanButtons();
+    }
+
+    private void FocusFirstEmptyParameter()
+    {
+        var boxes = ParameterRows.GetVisualDescendants().OfType<TextBox>().Where(b => b.IsEffectivelyEnabled).ToList();
+        (boxes.FirstOrDefault(b => string.IsNullOrEmpty(b.Text)) ?? boxes.FirstOrDefault())?.Focus();
     }
 
     // The commands stay executable; the view-model says through CanExplain / CanAnalyze whether the statement qualifies and why not.
