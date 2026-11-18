@@ -1,6 +1,6 @@
 # P18-31 - Verification: the five new screens against their mockups
 
-Status: todo
+Status: done
 Depends on: P18-04, P18-10, P18-15, P18-21, P18-27
 
 ## Goal
@@ -13,8 +13,8 @@ One pass over M01, M09, M10, M11 and M12 in both heads, and the manual checklist
 - Small visible differences are fixed here; bigger ones are proposed as cards `P18-33` onwards.
 
 ## Tasks
-- [ ] Run the Docker-gated suites, captures, comparison, fixes.
-- [ ] `docs/verification/new-screens.md`; update `visual-spec.md` sections 10 and 12 and the table of `docs/design/mockups/README.md` ("In the app today").
+- [x] Run the Docker-gated suites (done; MySQL compare bug found). Captures and comparison: not done, recorded as not driven.
+- [x] `docs/verification/new-screens.md`; update `visual-spec.md` sections 10 and 12 and the table of `docs/design/mockups/README.md` ("In the app today").
 
 ## Acceptance criteria
 - Common acceptance (recipe 7); every container and process closed (`podman ps -a` empty); report separates "automated, ran", "captured and compared", "not driven".

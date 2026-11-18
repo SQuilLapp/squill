@@ -87,7 +87,7 @@ Built in phase 17 (`CommandPalette` in both heads, [ADR 0014](../adr/0014-grid-f
 
 ## 10. What the app does not have (not drawn in phase 9)
 
-M01 start page, M09 schema compare, M10 transfer, M11 privileges, M12 sessions, the row panel of M05, tags/SSL/proxy/driver tabs of M02, impact estimate of M07, shortcuts/drivers/accent/material/density of M14. Each is a feature, not a style, and needs its own phase.
+M01, M09, M10, M11 and M12 were built in phase 18 (not compared with the PNGs, see `docs/verification/new-screens.md`); the row panel of M05, tags/SSL/proxy/driver tabs of M02, impact estimate of M07, shortcuts/drivers/accent/material/density of M14. Each is a feature, not a style, and needs its own phase.
 
 ## 11. Verification procedure (every head card)
 
