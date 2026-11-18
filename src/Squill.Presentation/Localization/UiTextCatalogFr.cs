@@ -1002,5 +1002,11 @@ internal static class UiTextCatalogFr
         ("security.discard", "Annuler"),
         ("security.apply", "Appliquer"),
         ("security.loading", "Chargement..."),
+        ("import.issue.nullNotAllowed", "La colonne {0} n'accepte pas de valeur vide"),
+        ("import.issue.notJson", "\"{0}\" n'est pas du JSON valide"),
+        ("import.issue.badTimeZone", "Fuseau horaire inconnu \"{0}\""),
+        ("import.issue.unsupportedType", "Le texte ne peut pas être converti vers le type {0}"),
+        ("import.issue.duplicateTarget", "La colonne {0} est associée plusieurs fois"),
+        ("import.issue.requiredUnmapped", "La colonne {0} est obligatoire mais aucune colonne CSV ne l'alimente"),
     ];
 }

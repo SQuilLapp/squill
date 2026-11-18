@@ -1,6 +1,6 @@
 # P18-23 - Presentation: import column mapping and value conversion
 
-Status: todo
+Status: done
 Depends on: P18-22
 
 ## Goal
@@ -17,8 +17,8 @@ Step 3 of M10 as pure logic: map CSV columns to table columns, convert text to t
 - Writing to the database (P18-24), value maps, conflict handling, UI.
 
 ## Tasks
-- [ ] Mapper, format options, converter reusing the P8-05 parser, validator, row conversion, catalog keys.
-- [ ] Tests in `tests/Squill.Presentation.Tests/Import/`: auto-map by name and by position, French decimal `1 298,00`, date `03/01/2026 09:14` with `Europe/Paris` to the right instant (DST-safe test dates), boolean words, empty to null, invalid number reports first example, invalid JSON, NOT NULL unmapped, duplicate target, unknown time zone rejected, per-column counts over a sample.
+- [x] Mapper, format options, converter reusing the P8-05 parser, validator, row conversion, catalog keys.
+- [x] Tests in `tests/Squill.Presentation.Tests/Import/`: auto-map by name and by position, French decimal `1 298,00`, date `03/01/2026 09:14` with `Europe/Paris` to the right instant (DST-safe test dates), boolean words, empty to null, invalid number reports first example, invalid JSON, NOT NULL unmapped, duplicate target, unknown time zone rejected, per-column counts over a sample.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched.

@@ -362,7 +362,7 @@ Depends on: <card ids, ranges allowed>
 | [P18-20](phase-18/P18-20-winui-security-view.md) | WinUI head: the security view | P18-19, P9-10 | done |
 | [P18-21](phase-18/P18-21-avalonia-security-view.md) | Avalonia head: the security view | P18-20 | done |
 | [P18-22](phase-18/P18-22-presentation-csv-reader.md) | Presentation: CSV reader and preview | none | done |
-| [P18-23](phase-18/P18-23-presentation-import-mapping.md) | Presentation: import column mapping and value conversion | P18-22 | todo |
+| [P18-23](phase-18/P18-23-presentation-import-mapping.md) | Presentation: import column mapping and value conversion | P18-22 | done |
 | [P18-24](phase-18/P18-24-presentation-import-runner.md) | Presentation: the import runner (risky) | P18-23 | todo |
 | [P18-25](phase-18/P18-25-presentation-import-wizard.md) | Presentation: the import wizard view-model | P18-22 ... P18-24, P18-02 | todo |
 | [P18-26](phase-18/P18-26-winui-import-wizard.md) | WinUI head: the import wizard window | P18-25, P9-18 | todo |

@@ -1002,5 +1002,11 @@ internal static class UiTextCatalogEn
         ("security.discard", "Cancel"),
         ("security.apply", "Apply"),
         ("security.loading", "Loading..."),
+        ("import.issue.nullNotAllowed", "Column {0} does not accept an empty value"),
+        ("import.issue.notJson", "\"{0}\" is not valid JSON"),
+        ("import.issue.badTimeZone", "Unknown time zone \"{0}\""),
+        ("import.issue.unsupportedType", "Text cannot be converted to type {0}"),
+        ("import.issue.duplicateTarget", "Column {0} is mapped more than once"),
+        ("import.issue.requiredUnmapped", "Column {0} is required but no CSV column feeds it"),
     ];
 }
