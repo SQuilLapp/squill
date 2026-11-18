@@ -1,6 +1,6 @@
 # P18-22 - Presentation: CSV reader and preview
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -16,8 +16,8 @@ Read a CSV file the way step 1 and the preview of M10 need: encoding, delimiter,
 - JSON / Parquet / Excel, type inference beyond what P18-23 does, UI.
 
 ## Tasks
-- [ ] Sniffer, reader, preview.
-- [ ] Tests in `tests/Squill.Presentation.Tests/Import/`: BOM and non-BOM UTF-8, Latin-1 accents, delimiter detection for each candidate, quoted delimiter and newline inside quotes, doubled quotes, ragged rows flagged, header off gives `col1..`, empty file, 200 MB generated stream reads in bounded memory (assert peak via row-by-row enumeration, not by measuring GC), cancellation.
+- [x] Sniffer, reader, preview.
+- [x] Tests in `tests/Squill.Presentation.Tests/Import/`: BOM and non-BOM UTF-8, Latin-1 accents, delimiter detection for each candidate, quoted delimiter and newline inside quotes, doubled quotes, ragged rows flagged, header off gives `col1..`, empty file, 200 MB generated stream reads in bounded memory (assert peak via row-by-row enumeration, not by measuring GC), cancellation.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched.
