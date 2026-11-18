@@ -66,7 +66,8 @@ public sealed class StatusBarThreadTests
             }
         }
 
-        Assert.Null(failure?.ToString());
+        // Assert.Null would cut the exception text at 50 characters; the full text is needed to read a CI failure.
+        Assert.True(failure is null, failure?.ToString());
         Assert.True(visibleBefore);
         Assert.True(visibleAfter);
     }
