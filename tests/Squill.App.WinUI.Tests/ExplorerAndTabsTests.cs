@@ -17,6 +17,25 @@ public class ExplorerAndTabsTests
     public void Tab_style_suffix_follows_the_environment(ConnectionEnvironment environment, string suffix) =>
         Assert.Equal(suffix, TabInfo.StyleSuffix(environment));
 
+    [Fact]
+    public void Explorer_tree_rows_are_24_high()
+    {
+        var text = File.ReadAllText(Path.Combine("Xaml", "SidebarView.xaml"));
+        Assert.Contains("<Setter Property=\"Height\" Value=\"24\" />", text);
+        Assert.DoesNotContain("<Setter Property=\"Height\" Value=\"28\" />", text);
+    }
+
+    [Theory]
+    [InlineData(ConnectionEnvironment.Production, "PROD")]
+    [InlineData(ConnectionEnvironment.Staging, "STAGING")]
+    [InlineData(ConnectionEnvironment.Development, "DEV")]
+    [InlineData(ConnectionEnvironment.Local, "LOCAL")]
+    public void Explorer_pill_uses_the_short_environment_label(ConnectionEnvironment environment, string text)
+    {
+        var profile = new ConnectionProfile(Guid.NewGuid(), "p", DatabaseDialect.PostgreSql, "h", 1, "d", "u", null, null, environment, null);
+        Assert.Equal(text, new ExplorerNode("p", ExplorerNodeKind.Connection) { Profile = profile }.EnvironmentText);
+    }
+
     private static TableInfo Table(TableKind kind = TableKind.Table, string schema = "public") =>
         new(
             schema,

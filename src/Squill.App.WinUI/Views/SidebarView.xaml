@@ -41,7 +41,7 @@
           <TreeView.ItemContainerStyle>
             <Style TargetType="TreeViewItem">
               <Setter Property="MinHeight" Value="24" />
-              <Setter Property="Height" Value="28" />
+              <Setter Property="Height" Value="24" />
               <Setter Property="Padding" Value="0" />
             </Style>
           </TreeView.ItemContainerStyle>

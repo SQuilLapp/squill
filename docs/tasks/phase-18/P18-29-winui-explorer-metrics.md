@@ -1,6 +1,6 @@
 # P18-29 - WinUI head: explorer metrics and environment pills
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -16,8 +16,8 @@ Remove the two WinUI differences recorded in `visual-spec.md` section 12 for M03
 - Anything else in the status table.
 
 ## Tasks
-- [ ] Measure, fix row height and pills, keys, tests (an explorer view-model test is not enough: add a head test that asserts the row height constant, if the harness allows).
-- [ ] Update the M03 WinUI row of `visual-spec.md` section 12.
+- [x] Measure, fix row height and pills, keys, tests (an explorer view-model test is not enough: add a head test that asserts the row height constant, if the harness allows).
+- [x] Update the M03 WinUI row of `visual-spec.md` section 12.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7) with the WinUI AOT publish; before / after capture of the explorer next to `M03-Workspace-*`.
