@@ -227,7 +227,8 @@ public sealed partial class SchemaCompareViewModel : ViewModelBase, IDisposable
     {
         if (Source is not { } source || Target is not { } target)
             return;
-        _compareCts?.Cancel();
+        if (_compareCts is { } previousCompare)
+            await previousCompare.CancelAsync();
         using var cts = new CancellationTokenSource();
         _compareCts = cts;
         var ct = cts.Token;
@@ -534,10 +535,13 @@ public sealed partial class SchemaCompareViewModel : ViewModelBase, IDisposable
                 var routine = snapshot.Routines.FirstOrDefault(r => Eq(r.Schema, x.Schema) && Eq(r.Signature, x.Name));
                 return routine is null ? "" : routine.Definition ?? UiText.Get("compare.noDefinition");
             default:
-                foreach (var t in snapshot.Tables.Where(t => t.Kind == TableKind.Table && Eq(t.Schema, x.Schema)))
-                    foreach (var i in t.Indexes.Where(i => Eq($"{t.Name}.{i.Name}", x.Name)))
-                        return $"CREATE {(i.IsUnique ? "UNIQUE " : "")}INDEX {i.Name} ON {t.Name} ({string.Join(", ", i.Columns)})";
-                return "";
+                var index = snapshot.Tables
+                    .Where(t => t.Kind == TableKind.Table && Eq(t.Schema, x.Schema))
+                    .SelectMany(t => t.Indexes.Where(i => Eq($"{t.Name}.{i.Name}", x.Name)).Select(i => (Table: t, Index: i)))
+                    .FirstOrDefault();
+                return index.Index is { } i
+                    ? $"CREATE {(i.IsUnique ? "UNIQUE " : "")}INDEX {i.Name} ON {index.Table.Name} ({string.Join(", ", i.Columns)})"
+                    : "";
         }
     }
 
@@ -592,6 +596,7 @@ public sealed partial class SchemaCompareViewModel : ViewModelBase, IDisposable
             return;
         var version = ++_buildVersion;
         _buildCts?.Cancel();
+        _buildCts?.Dispose();
         var cts = _buildCts = new CancellationTokenSource();
         var included = _items.Where(i => i.IsIncluded).Select(i => i.Key).ToHashSet();
         var options = new MigrationOptions(src.Label, tgt.Label, _time.GetLocalNow().DateTime);
@@ -661,7 +666,7 @@ public sealed partial class SchemaCompareViewModel : ViewModelBase, IDisposable
             return;
         try
         {
-            await File.WriteAllTextAsync(path, Script);
+            await File.WriteAllTextAsync(path, Script, CancellationToken.None);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

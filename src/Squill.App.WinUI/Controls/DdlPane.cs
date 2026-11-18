@@ -103,7 +103,7 @@ public sealed partial class DdlPane : Grid
     private void SetOffset(double value, bool fromBar)
     {
         var clamped = Math.Clamp(value, 0, MaxOffset);
-        if (clamped == Offset && fromBar == false && !_syncing && _lines.Count > 0)
+        if (Math.Abs(clamped - Offset) < double.Epsilon && fromBar == false && !_syncing && _lines.Count > 0)
             return;
         Offset = clamped;
         if (!fromBar)

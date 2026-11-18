@@ -238,14 +238,20 @@ public sealed partial class SessionsMonitorViewModel : ViewModelBase, IDisposabl
     {
         if (_disposed)
             return;
-        _readCts?.Cancel();
+        if (_readCts is { } previous)
+        {
+            await previous.CancelAsync();
+            previous.Dispose();
+        }
+
         var cts = _readCts = new CancellationTokenSource();
+        var token = cts.Token;
         var mine = ++_sequence;
         _inFlight = true;
         var started = _time.GetTimestamp();
         try
         {
-            var snapshot = await Task.Run(() => _reader.ReadAsync(cts.Token).AsTask(), cts.Token);
+            var snapshot = await Task.Run(() => _reader.ReadAsync(token).AsTask(), token);
             if (mine != _sequence || _disposed)
                 return; // a newer read superseded this one: never let the older picture replace it
             Apply(snapshot, _time.GetElapsedTime(started));
@@ -687,5 +693,7 @@ public sealed partial class SessionsMonitorViewModel : ViewModelBase, IDisposabl
         _disposed = true;
         _timer.Dispose();
         _readCts?.Cancel();
+        _readCts?.Dispose();
+        _readCts = null;
     }
 }

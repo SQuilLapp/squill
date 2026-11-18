@@ -15,7 +15,7 @@ namespace Squill.Sql.Migration;
 /// </summary>
 public static class MigrationScriptBuilder
 {
-    private static readonly Regex CreateKeyword = new(@"^\s*CREATE\s+(?!OR\s+ALTER\b)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    private static readonly Regex CreateKeyword = new(@"^\s*CREATE\s+(?!OR\s+ALTER\b)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
 
     /// <summary>Builds the script for the included differences.</summary>
     /// <param name="dialect">The engine of both snapshots.</param>

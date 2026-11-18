@@ -100,8 +100,9 @@ internal static class SqlServerActivityReader
         var id = ParseId(sessionId);
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync(cancellationToken);
-        // KILL takes no parameter: the id was parsed as a number above, so the concatenation cannot carry anything else.
-        await using var command = new SqlCommand("KILL " + id.ToString(CultureInfo.InvariantCulture), connection);
+        // KILL takes no parameter itself, so the numeric id is passed to EXEC as a parameter.
+        await using var command = new SqlCommand("EXEC('KILL ' + CAST(@id AS varchar(10)))", connection);
+        command.Parameters.Add(new SqlParameter("@id", System.Data.SqlDbType.Int) { Value = id });
         try
         {
             await command.ExecuteNonQueryAsync(cancellationToken);

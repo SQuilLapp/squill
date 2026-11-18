@@ -274,7 +274,7 @@ public sealed partial class ImportWizardViewModel : ViewModelBase, IDisposable
             int read;
             await using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
-                read = await stream.ReadAsync(head).ConfigureAwait(true);
+                read = await stream.ReadAsync(head, CancellationToken.None).ConfigureAwait(true);
             }
 
             var sniffed = CsvSniffer.Detect(head.AsSpan(0, read));
@@ -302,7 +302,8 @@ public sealed partial class ImportWizardViewModel : ViewModelBase, IDisposable
     {
         if (FilePath.Length == 0)
             return;
-        _previewCts?.Cancel();
+        if (_previewCts is { } previousPreview)
+            await previousPreview.CancelAsync();
         var cts = _previewCts = new CancellationTokenSource();
         var options = CsvOptions;
         try
