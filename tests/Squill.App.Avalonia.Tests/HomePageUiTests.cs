@@ -28,7 +28,7 @@ public sealed class HomePageUiTests
         Directory.CreateDirectory(dir);
         try
         {
-            await Headless.Session.Dispatch(async () =>
+            await Headless.Dispatch(async () =>
             {
                 var paths = new AppPaths(dir);
                 using (var profiles = new JsonProfileStore(paths, new InMemorySecretStore()))
@@ -125,7 +125,7 @@ public sealed class HomePageUiTests
     [Fact]
     public async Task Home_LongTipText_WrapsInsideTheTipCard()
     {
-        await WithHomeAsync(1, (window, services) =>
+        await WithHomeAsync(1, async (window, services) =>
         {
             var page = Page(window);
             var tip = page.FindControl<ItemsControl>("TipText")!;
@@ -134,10 +134,8 @@ public sealed class HomePageUiTests
             {
                 window.UpdateLayout();
                 Assert.True(tip.Bounds.Right <= card.Bounds.Width, $"tip {i}: {tip.Bounds.Right} > {card.Bounds.Width}");
-                services.Workspace.Home.NextTipCommand.Execute(null);
+                await services.Workspace.Home.NextTipCommand.ExecuteAsync(null);
             }
-
-            return Task.CompletedTask;
         });
     }
 

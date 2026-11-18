@@ -23,7 +23,7 @@ public sealed class StatusBarThreadTests
         bool? visibleBefore = null, visibleAfter = null;
         try
         {
-            await Headless.Session.Dispatch(async () =>
+            await Headless.Dispatch(async () =>
             {
                 try
                 {
