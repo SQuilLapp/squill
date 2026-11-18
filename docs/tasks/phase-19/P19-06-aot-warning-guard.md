@@ -1,6 +1,6 @@
 # P19-06 - Guard the AOT publish against new trim and AOT warnings
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -18,9 +18,9 @@ Every head card repeats "zero IL2xxx/IL3xxx from SQuilL code, only the known thi
 - Fixing the third-party warnings, upgrading drivers, CI wiring.
 
 ## Tasks
-- [ ] Script and baseline from a real publish of both heads (run in the background; each takes minutes; close every process after).
-- [ ] Self-test: two small fixture logs under `eng/testdata/` (`aot-clean.log` with only baseline warnings, `aot-new-warning.log` with an extra `IL2026` from a `src/` path); `pwsh eng/check-aot-warnings.ps1 -LogFile eng/testdata/aot-clean.log` exits 0 and the other exits 1. Put the two commands in `docs/testing.md`.
-- [ ] Run `-Head All` once for real: exit 0.
+- [x] Script and baseline from a real publish of both heads (run in the background; each takes minutes; close every process after).
+- [x] Self-test: two small fixture logs under `eng/testdata/` (`aot-clean.log` with only baseline warnings, `aot-new-warning.log` with an extra `IL2026` from a `src/` path); `pwsh eng/check-aot-warnings.ps1 -LogFile eng/testdata/aot-clean.log` exits 0 and the other exits 1. Put the two commands in `docs/testing.md`.
+- [x] Run `-Head All` once for real: exit 0.
 
 ## Acceptance criteria
 - The script exits 0 on the real current publish of both heads and 1 on the fixture with a new warning; `artifacts/aot-check` is removed afterwards; nothing else in the repository changed except `docs/testing.md` and the fixtures.
@@ -32,3 +32,9 @@ Every head card repeats "zero IL2xxx/IL3xxx from SQuilL code, only the known thi
 
 ## Suggested commit message
 Add a script that fails an AOT publish on a warning outside the known third-party ones
+
+## Done notes
+- Real publish log format: `<nuget path>\<assembly>.dll : warning IL2104: Assembly '...' produced trim warnings.` (MSBuild line, trailing `[project.csproj]`). A real publish of each head prints exactly four warnings, the same for both: IL2104 `Microsoft.Data.SqlClient.dll`, IL2104 `Microsoft.Data.SqlClient.Internal.Logging.dll`, IL2104 `System.Configuration.ConfigurationManager.dll`, IL3053 `Microsoft.Data.SqlClient.dll`. The baseline holds these four.
+- Warnings only print when ILC really runs; a publish into a new `-o` folder with an up-to-date `obj/` printed none (the first `-Head All` run found 0 and reported four stale entries). The script therefore publishes with `-t:Rebuild;Publish`.
+- `-Head All` run for real: exit 0, 4 warnings, all in the baseline; `artifacts/aot-check` removed.
+- Newer SqlClient: NuGet lists 7.1.2 (and 8.0.0-preview1) after 7.1.1; whether either is trim-annotated was not checked. No upgrade made.
