@@ -101,7 +101,7 @@ internal static class SqlServerActivityReader
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync(cancellationToken);
         // KILL takes no parameter itself, so the numeric id is passed to EXEC as a parameter.
-        await using var command = new SqlCommand("EXEC('KILL ' + CAST(@id AS varchar(10)))", connection);
+        await using var command = new SqlCommand("DECLARE @sql nvarchar(20) = N'KILL ' + CAST(@id AS nvarchar(10)); EXEC(@sql);", connection);
         command.Parameters.Add(new SqlParameter("@id", System.Data.SqlDbType.Int) { Value = id });
         try
         {
