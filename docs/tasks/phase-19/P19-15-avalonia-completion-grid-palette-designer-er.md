@@ -1,6 +1,6 @@
 # P19-15 - Avalonia: completion popup, grid filter, palette, designer and ER diagram
 
-Status: todo
+Status: partial (time)
 Depends on: P19-13
 
 ## Goal
@@ -15,7 +15,7 @@ Avalonia was never looked at for M05, M13, M07 and M08 (`visual-spec.md` section
 - Linux / macOS, features recorded as not built, ticking owner boxes.
 
 ## Tasks
-- [ ] Drive, capture, read PNGs; fixes; docs; close everything.
+- [x] Drive, capture, read PNGs; fixes; docs; close everything (partial, see Done notes).
 
 ## Acceptance criteria
 - Common acceptance (recipe 4) if code changed (`Squill.slnx`, Avalonia AOT publish, app starts, `LayoutOverlapTests` green); report lists compared / not driven per area.
@@ -25,3 +25,9 @@ Avalonia was never looked at for M05, M13, M07 and M08 (`visual-spec.md` section
 
 ## Suggested commit message
 Compare the Avalonia grid filter, palette, designer and ER screens in both themes
+
+## Done notes
+- Driven on the Avalonia AOT head (dark, fr, SQLite `-Scenario Full`, 1440 x 900): grid filter (popup, chip, funnel, footer, chip removal, column menu), command palette (`Ctrl+K`, `comm`), completion popup after `select * from cl`, ER diagram (toolbar, six tables, relations, minimap, `Exporter` -> `SVG vectoriel`). Composites for M05, M13 and M08 read.
+- Fixed: palette footer hints ran into the result count (same defect as WinUI in P18-28), `Controls/CommandPalette.cs`.
+- Not driven (time): light theme, English, designer (M07), completion join / snippet rows, hops tooltip, pointer-over / pressed states, filter steps 3-4, 7, 9-14, palette steps 18-27. P19-13 stays partial; no card proposed.
+

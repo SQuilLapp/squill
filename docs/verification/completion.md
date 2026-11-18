@@ -53,3 +53,6 @@ Columns: WinUI / Avalonia = tick when it behaves as described in that head. Resu
 | `SQUILL_LANGUAGE=fr`: the popup works the same (SQL keywords and details are not translated, by design) | [ ] | [ ] | | |
 
 ## Notes
+
+- P19-15 (agent): Avalonia published AOT head, dark, French, SQLite. Typing `select * from cl` opens the popup by itself with `clients` (selected) and `v_ca_par_client`, a `St` kind tag, and a documentation panel (`table`, `clients - table, 5 columns`). Seen: the popup is about 520 px tall with the documentation text at the bottom and empty space between the two rows and the text, unlike a compact list. The `join` / `ON`, Enter, Tab, Ctrl+Z, snippet and keyword-case rows were not driven (time): all other Avalonia rows are `agent: not driven`. WinUI popup comparison not possible (P19-13 did not drive it); P19-13 saw a single-entry popup stay open after `Ctrl+Enter`, not seen on Avalonia (popup closed by Escape only here).
+

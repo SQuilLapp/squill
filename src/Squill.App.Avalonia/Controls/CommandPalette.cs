@@ -158,7 +158,7 @@ public sealed class CommandPalette : Grid
 
     private Grid BuildFooter()
     {
-        var keys = new TextBlock { FontSize = 11, VerticalAlignment = VerticalAlignment.Center };
+        var keys = new TextBlock { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0), TextTrimming = TextTrimming.CharacterEllipsis };
         keys.Text = $"↑ ↓ {UiText.Get("palette.footer.navigate")}    {UiText.Get("palette.footer.open")}    {UiText.Get("palette.footer.newTab")}";
         _paint.Add(() => keys.Foreground = Brush(Muted));
         var grid = new Grid { Margin = new Thickness(16, 8), ColumnDefinitions = new ColumnDefinitions("*,Auto") };
