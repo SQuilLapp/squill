@@ -23,7 +23,17 @@ public sealed class ImportWizardUiTests : IDisposable
     private static readonly TableInfo Items = new("public", "items", TableKind.Table, Columns, [], []);
     private readonly string _dir = Directory.CreateTempSubdirectory("squill-wizard-ui-").FullName;
 
-    public void Dispose() => Directory.Delete(_dir, true);
+    // The wizard may still hold items.csv for a moment on Windows; the temp folder is not worth a failed test.
+    public void Dispose()
+    {
+        try
+        {
+            Directory.Delete(_dir, true);
+        }
+        catch (IOException)
+        {
+        }
+    }
 
     private sealed class Reader : IResultReader
     {

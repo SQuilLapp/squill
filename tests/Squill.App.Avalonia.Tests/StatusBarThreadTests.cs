@@ -24,6 +24,8 @@ public sealed class StatusBarThreadTests
         {
             await Headless.Session.Dispatch(async () =>
             {
+                try
+                {
                 var providers = new ProviderRegistry();
                 providers.Register(new SqliteDatabaseProvider());
                 var workspace = AppComposition.Create(new TestPlatform(providers), new AppPaths(dir)).Workspace;
@@ -46,6 +48,11 @@ public sealed class StatusBarThreadTests
                 {
                     failure = ex;
                 }
+                }
+                catch (Exception ex)
+                {
+                    failure ??= ex;
+                }
             }, TestContext.Current.CancellationToken);
         }
         finally
@@ -59,7 +66,7 @@ public sealed class StatusBarThreadTests
             }
         }
 
-        Assert.Null(failure);
+        Assert.Null(failure?.ToString());
         Assert.True(visibleBefore);
         Assert.True(visibleAfter);
     }
