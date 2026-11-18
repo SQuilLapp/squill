@@ -146,6 +146,11 @@ public sealed partial class SidebarView : UserControl
                 monitor.IsEnabled = _workspace.OpenSessionsMonitorCommand.CanExecute(null);
                 if (!monitor.IsEnabled)
                     ToolTipService.SetToolTip(monitor, _workspace.SessionsMonitorDisabledReason);
+                Add(UiText.Get("explorer.security"), () => _workspace.OpenSecurityCommand.Execute(null));
+                var security = (MenuFlyoutItem)menu.Items[^1];
+                security.IsEnabled = _workspace.OpenSecurityCommand.CanExecute(null);
+                if (!security.IsEnabled)
+                    ToolTipService.SetToolTip(security, _workspace.SecurityDisabledReason);
                 Add(UiText.Get("explorer.disconnect"), () => _workspace.DisconnectCommand.Execute(null));
             }
             else

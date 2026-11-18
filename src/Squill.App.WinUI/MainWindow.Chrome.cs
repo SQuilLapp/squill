@@ -170,7 +170,8 @@ public sealed partial class MainWindow
             Item("menu.format", () => Workspace.ActiveTab?.FormatDocumentCommand, null, OnFormatClicked, VirtualKey.F, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift)));
         _compareItem = Item("menu.compareSchemas", () => Workspace.OpenSchemaCompareCommand, null, OnCompareClicked);
         _monitorItem = Item("menu.sessionsMonitor", () => Workspace.OpenSessionsMonitorCommand, null, OnMonitorClicked);
-        MainMenu.Items.Add(Menu("menu.database", Item("menu.newTable", () => Workspace.NewTableCommand, null, OnNewTableClicked), _compareItem, _monitorItem));
+        _securityItem = Item("menu.security", () => Workspace.OpenSecurityCommand, null, OnSecurityClicked);
+        MainMenu.Items.Add(Menu("menu.database", Item("menu.newTable", () => Workspace.NewTableCommand, null, OnNewTableClicked), _compareItem, _monitorItem, _securityItem));
         ToolsMenu = Menu("menu.tools", Plain("menu.settings", OnSettingsClicked));
         MainMenu.Items.Add(ToolsMenu);
         MainMenu.Items.Add(Menu("menu.help", Plain("menu.checkForUpdates", OnCheckForUpdatesClicked), Plain("menu.about", OnAboutClicked)));
@@ -181,6 +182,10 @@ public sealed partial class MainWindow
     private MenuFlyoutItem? _compareItem;
 
     private MenuFlyoutItem? _monitorItem;
+
+    private MenuFlyoutItem? _securityItem;
+
+    private void OnSecurityClicked(object sender, RoutedEventArgs e) => Workspace.OpenSecurityCommand.Execute(null);
 
     private void OnMonitorClicked(object sender, RoutedEventArgs e) => Workspace.OpenSessionsMonitorCommand.Execute(null);
 
@@ -290,6 +295,8 @@ public sealed partial class MainWindow
             ToolTipService.SetToolTip(_compareItem, _compareItem.IsEnabled ? null : Workspace.SchemaCompareDisabledReason);
         if (_monitorItem is not null && _workspace is not null)
             ToolTipService.SetToolTip(_monitorItem, _monitorItem.IsEnabled ? null : Workspace.SessionsMonitorDisabledReason);
+        if (_securityItem is not null && _workspace is not null)
+            ToolTipService.SetToolTip(_securityItem, _securityItem.IsEnabled ? null : Workspace.SecurityDisabledReason);
     }
 
     private void AttachMenu(WorkspaceViewModel workspace)
@@ -299,6 +306,7 @@ public sealed partial class MainWindow
         workspace.NewTableCommand.CanExecuteChanged += (_, _) => SyncMenu();
         workspace.OpenSchemaCompareCommand.CanExecuteChanged += (_, _) => SyncMenu();
         workspace.OpenSessionsMonitorCommand.CanExecuteChanged += (_, _) => SyncMenu();
+        workspace.OpenSecurityCommand.CanExecuteChanged += (_, _) => SyncMenu();
         WatchMenuTab();
     }
 

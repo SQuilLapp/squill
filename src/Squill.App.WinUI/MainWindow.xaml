@@ -109,6 +109,7 @@
       <v:PlanTabView x:Name="PlanArea" Grid.Row="1" Visibility="Collapsed" />
       <v:SchemaCompareView x:Name="CompareArea" Grid.Row="1" Visibility="Collapsed" />
       <v:SessionsMonitorView x:Name="MonitorArea" Grid.Row="1" Visibility="Collapsed" />
+      <v:SecurityView x:Name="SecurityArea" Grid.Row="1" Visibility="Collapsed" />
       <Grid x:Name="TerminalArea" Grid.Row="1" Visibility="Collapsed" />
     </Grid>
     <v:PropertiesPanel x:Name="Properties" Grid.Row="2" Grid.Column="5" />

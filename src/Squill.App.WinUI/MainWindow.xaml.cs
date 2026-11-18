@@ -14,6 +14,7 @@ using Squill.Presentation.Activity;
 using Squill.Presentation.Compare;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
+using Squill.Presentation.Security;
 using Squill.Presentation.Settings;
 using Squill.Presentation.Terminal;
 using Squill.Presentation.Workspace;
@@ -177,6 +178,9 @@ public sealed partial class MainWindow : Window
             case nameof(WorkspaceViewModel.ActiveMonitor) when Workspace.ActiveMonitor is { } monitor:
                 SelectExtraTab(monitor);
                 break;
+            case nameof(WorkspaceViewModel.ActiveSecurity) when Workspace.ActiveSecurity is { } security:
+                SelectExtraTab(security);
+                break;
             case nameof(WorkspaceViewModel.ActiveCompare) when Workspace.ActiveCompare is { } compare:
                 SelectExtraTab(compare);
                 break;
@@ -246,6 +250,10 @@ public sealed partial class MainWindow : Window
                 Workspace.ActiveMonitor = monitor;
                 ShowMonitor(monitor);
                 break;
+            case SecurityViewModel security:
+                Workspace.ActiveSecurity = security;
+                ShowSecurity(security);
+                break;
             case TerminalTabViewModel terminal:
                 ShowTerminal(terminal);
                 break;
@@ -266,6 +274,8 @@ public sealed partial class MainWindow : Window
             compare.CloseCommand.Execute(null);
         else if (args.Tab.Tag is SessionsMonitorViewModel monitor)
             monitor.CloseCommand.Execute(null);
+        else if (args.Tab.Tag is SecurityViewModel security)
+            security.CloseCommand.Execute(null);
         else if (args.Tab.Tag is TableDesignerViewModel designer)
             Workspace.CloseDesignerCommand.Execute(designer);
     }
@@ -303,6 +313,8 @@ public sealed partial class MainWindow : Window
             compare.CloseCommand.Execute(null);
         else if (selected is SessionsMonitorViewModel monitor)
             monitor.CloseCommand.Execute(null);
+        else if (selected is SecurityViewModel security)
+            security.CloseCommand.Execute(null);
         else if (selected is TableDesignerViewModel designer)
             Workspace.CloseDesignerCommand.Execute(designer);
         else

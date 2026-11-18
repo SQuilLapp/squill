@@ -4,6 +4,7 @@ using Squill.Presentation.Compare;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
 using Squill.Presentation.Plans;
+using Squill.Presentation.Security;
 using Squill.Presentation.Query;
 using Squill.Presentation.Terminal;
 
@@ -21,6 +22,7 @@ internal static class TabInfo
         TableDesignerViewModel d => (d.Title, d.Session.Profile.Environment, d.HasChanges),
         DiagramTabViewModel g => (g.Title, g.Session.Profile.Environment, false),
         PlanTabViewModel p => (p.Title, p.Environment, false),
+        SecurityViewModel s => (s.Title, s.Environment, false),
         SessionsMonitorViewModel m => (m.Title, m.Environment, false),
         SchemaCompareViewModel c => (c.Title, c.Environment, false),
         TerminalTabViewModel t => (t.Title, ConnectionEnvironment.None, false),
