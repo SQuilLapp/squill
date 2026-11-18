@@ -1,6 +1,6 @@
 # P19-07 - Make `Capture-Window.ps1` capture the window, not the desktop
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -16,9 +16,9 @@ P18-31 recorded: "A WinUI launch at the start of the card captured the desktop i
 - UI automation (clicks, keys), video, capturing popups outside the window.
 
 ## Tasks
-- [ ] Script changes as above.
-- [ ] Prove it on the published or `dotnet run` WinUI head with the profile of `New-VisualProfile.ps1`: (1) window behind a PowerShell console: `-Method Screen` now brings it up and the PNG shows SQuilL; (2) a deliberately covering topmost window: exit 2, no PNG written; (3) `-Method PrintWindow` while covered: PNG shows SQuilL, or exit 3 when black. Read each PNG with the Read tool and say in the Done notes what was seen.
-- [ ] Same for the Avalonia head (process `Squill.App.Avalonia`).
+- [x] Script changes as above.
+- [x] Prove it on the published or `dotnet run` WinUI head with the profile of `New-VisualProfile.ps1`: (1) window behind a PowerShell console: `-Method Screen` now brings it up and the PNG shows SQuilL; (2) a deliberately covering topmost window: exit 2, no PNG written; (3) `-Method PrintWindow` while covered: PNG shows SQuilL, or exit 3 when black. Read each PNG with the Read tool and say in the Done notes what was seen.
+- [x] Same for the Avalonia head (process `Squill.App.Avalonia`).
 
 ## Acceptance criteria
 - The three scenarios behave as described for both heads; no PNG of the desktop can be produced with exit 0. Processes closed; `dotnet build-server shutdown`.
@@ -30,3 +30,10 @@ P18-31 recorded: "A WinUI launch at the start of the card captured the desktop i
 
 ## Suggested commit message
 Capture the target window reliably and refuse to save a covered capture
+
+## Done notes
+- Script: `Screen` sets `HWND_TOPMOST` while positioning, checks `WindowFromPoint` at the client center (root window via `GetAncestor`, process via `GetWindowThreadProcessId`), captures, then `HWND_NOTOPMOST` in a `finally`. `PrintWindow` (flag 2) captures the whole window and crops the client area; a 15x15 pixel grid that is all black exits 3.
+- Proved (WinUI head, existing Release build, profile of `New-VisualProfile.ps1`, 1440x900): (1) `Screen`: PNG shows SQuilL (toolbar, Explorer/History/Snippets, connection `pg-prod-eu`, status bar), exit 0, `window on top: yes`. (2) a topmost red window re-asserting itself: `Window of 'Squill.App.WinUI' is covered by 'pwsh'`, exit 2, no PNG. (3) `PrintWindow` while covered: exit 0, PNG shows SQuilL but shrunk (about 2/3) and cropped with white margins, no title bar: recorded as a known limit in the README; `Screen` is the supported method.
+- Avalonia head (scale 1.5, 2160x1350): `Screen` exit 0, PNG shows the SQuilL home screen; covered: exit 2, no PNG; `PrintWindow` exit 0, PNG shows the same home screen correctly.
+- Note: our window is made topmost last, so it wins over a topmost window that appeared earlier; only a cover that appears (or keeps re-asserting itself) during the 1.2 s delay is detected, which is the case the check is for.
+- Not built/tested with `dotnet` (script and docs only, as the recipe allows). Everything started was stopped; nothing left running.
