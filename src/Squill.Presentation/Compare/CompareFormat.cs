@@ -1,10 +1,9 @@
 using Squill.Core;
-using Squill.Presentation.Compare;
 
-namespace Squill.App.WinUI.Views;
+namespace Squill.Presentation.Compare;
 
 /// <summary>How a row of one DDL pane is drawn.</summary>
-internal enum DdlRowKind
+public enum DdlRowKind
 {
     /// <summary>A line both sides share: no tint, no mark.</summary>
     Same,
@@ -20,7 +19,7 @@ internal enum DdlRowKind
 }
 
 /// <summary>Texts and row classification of the schema compare view that need no UI thread.</summary>
-internal static class CompareFormat
+public static class CompareFormat
 {
     /// <summary>Reads what one pane shows for an aligned row.</summary>
     /// <param name="line">The aligned row.</param>
@@ -50,5 +49,17 @@ internal static class CompareFormat
         DatabaseDialect.Sqlite => "SL",
         DatabaseDialect.Oracle => "OR",
         _ => "DB",
+    };
+
+    /// <summary>Gets the token suffix (<c>SquillEnv{suffix}Brush</c>) and the status text key of an environment.</summary>
+    /// <param name="environment">The environment of a connection.</param>
+    /// <returns>The suffix and the localization key, or <see langword="null"/> for no environment.</returns>
+    public static (string Suffix, string Key)? Environment(ConnectionEnvironment environment) => environment switch
+    {
+        ConnectionEnvironment.Production => ("Prod", "status.production"),
+        ConnectionEnvironment.Staging => ("Staging", "status.staging"),
+        ConnectionEnvironment.Development => ("Dev", "status.dev"),
+        ConnectionEnvironment.Local => ("Local", "status.local"),
+        _ => null,
     };
 }

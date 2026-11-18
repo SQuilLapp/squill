@@ -1,9 +1,7 @@
-using Squill.Presentation.Security;
-
-namespace Squill.App.Avalonia.Views;
+namespace Squill.Presentation.Security;
 
 /// <summary>Maps the privilege matrix classifications to the design tokens, glyphs, catalog keys and keyboard moves the security view draws with.</summary>
-internal static class SecurityFormat
+public static class SecurityFormat
 {
     /// <summary>Gets the key of the localized state name of a cell, used for the tooltip legend and the Narrator text.</summary>
     /// <param name="display">How the cell is drawn.</param>

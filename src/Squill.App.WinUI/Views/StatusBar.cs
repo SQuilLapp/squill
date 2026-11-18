@@ -1,3 +1,4 @@
+using Squill.Presentation;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.UI.Xaml;
@@ -98,56 +99,32 @@ public sealed partial class StatusBar : UserControl
     /// <param name="plan">The active plan tab, or <see langword="null"/> when another kind of tab is shown.</param>
     public void ShowPlan(PlanTabViewModel? plan)
     {
-        if (ReferenceEquals(_plan, plan))
-            return;
-        if (_plan is not null)
-            _plan.PropertyChanged -= OnTabChanged;
-        _plan = plan;
-        if (_plan is not null)
-            _plan.PropertyChanged += OnTabChanged;
-        Refresh();
+        if (PropertyChangedSwap.Swap(ref _plan, plan, OnTabChanged))
+            Refresh();
     }
 
     /// <summary>Shows the compared environments (<c>STAGING → PRODUCTION</c>), the difference counts and both server versions while a schema compare tab is active.</summary>
     /// <param name="compare">The active compare tab, or <see langword="null"/> when another kind of tab is shown.</param>
     public void ShowCompare(SchemaCompareViewModel? compare)
     {
-        if (ReferenceEquals(_compare, compare))
-            return;
-        if (_compare is not null)
-            _compare.PropertyChanged -= OnTabChanged;
-        _compare = compare;
-        if (_compare is not null)
-            _compare.PropertyChanged += OnTabChanged;
-        Refresh();
+        if (PropertyChangedSwap.Swap(ref _compare, compare, OnTabChanged))
+            Refresh();
     }
 
     /// <summary>Shows the last read of the sessions monitor (<c>pg_stat_activity · 47 rows · 6 ms</c>) while its tab is active.</summary>
     /// <param name="monitor">The active monitor tab, or <see langword="null"/> when another kind of tab is shown.</param>
     public void ShowMonitor(SessionsMonitorViewModel? monitor)
     {
-        if (ReferenceEquals(_monitor, monitor))
-            return;
-        if (_monitor is not null)
-            _monitor.PropertyChanged -= OnTabChanged;
-        _monitor = monitor;
-        if (_monitor is not null)
-            _monitor.PropertyChanged += OnTabChanged;
-        Refresh();
+        if (PropertyChangedSwap.Swap(ref _monitor, monitor, OnTabChanged))
+            Refresh();
     }
 
     /// <summary>Shows the connection and the number of unapplied privilege changes while a security tab is active.</summary>
     /// <param name="security">The active security tab, or <see langword="null"/> when another kind of tab is shown.</param>
     public void ShowSecurity(SecurityViewModel? security)
     {
-        if (ReferenceEquals(_security, security))
-            return;
-        if (_security is not null)
-            _security.PropertyChanged -= OnTabChanged;
-        _security = security;
-        if (_security is not null)
-            _security.PropertyChanged += OnTabChanged;
-        Refresh();
+        if (PropertyChangedSwap.Swap(ref _security, security, OnTabChanged))
+            Refresh();
     }
 
     private void RefreshCompare()
