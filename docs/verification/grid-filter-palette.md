@@ -1,6 +1,6 @@
 # Grid filter and command palette verification (P17-17)
 
-Status: **automated done, agent pass partial (P18-28), manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
+Status: **automated done, agent pass partial (P18-28, P19-13 WinUI dark grid filter, P19-15 Avalonia dark fr; the rest not driven), manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
 
 ## Automated (done)
 

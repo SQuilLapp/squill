@@ -1,6 +1,6 @@
 # Execution plan verification (P13-21)
 
-Status: **automated done, manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
+Status: **automated done, agent pass partial (P19-14 Avalonia plan tab, dark fr only; PostgreSQL plan rows not driven), manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
 
 ## Automated (done)
 

@@ -16,3 +16,5 @@ Risk R3: every ADO.NET driver must work under Native AOT. Each driver card adds 
 ```
 OK 2
 ```
+
+The Native AOT publish warnings are checked by [eng/check-aot-warnings.ps1](../../eng/check-aot-warnings.ps1) against [eng/aot-warnings.baseline.txt](../../eng/aot-warnings.baseline.txt) (P19-06).

@@ -1,6 +1,6 @@
 # Completion verification (P14-18)
 
-Status: **automated done, manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
+Status: **automated done, agent pass partial (P19-15 Avalonia: popup after `select * from cl`; WinUI popup, designer and ER not driven), manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
 
 ## Automated (done)
 

@@ -1,6 +1,6 @@
 # P19-16 - Docs, ADR 0016 and changelog for phase 19
 
-Status: todo
+Status: done
 Depends on: P19-01 ... P19-15
 
 ## Goal
@@ -14,11 +14,14 @@ Record what phase 19 fixed, what it looked at, and what is still open, so the ow
 - Check every relative link added (`rtk grep` for the file names).
 
 ## Tasks
-- [ ] ADR, changelog, index and status lines, spec rows, mockups README.
-- [ ] Link check by hand (open each new link target path).
+- [x] ADR, changelog, index and status lines, spec rows, mockups README.
+- [x] Link check by hand (open each new link target path).
 
 ## Acceptance criteria
 - Docs only: no build required, `rtk git status` shows only documentation files; the index table has one row per card file in `docs/tasks/phase-19/`, and the card statuses match the files.
 
 ## Suggested commit message
 Document phase 19: debug, verification passes and polish
+
+## Done notes
+- ADR 0016, changelog (Fixed), `Status:` lines of the five checklists (no box ticked), mockups README rows M01 and M09-M12, one line in `docs/poc/aot-drivers.md`. `docs/design/visual-spec.md` needed no change: P19-09 to P19-11 already updated it. Links checked by path. P19-13, P19-15 and P19-20 stay partial; unverified items are in ADR 0016 Known limits.

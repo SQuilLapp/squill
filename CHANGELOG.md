@@ -26,6 +26,12 @@
 
 ### Fixed
 
+- Names that are SQL keywords (a role or table called `user`, for example) are quoted in completion and in generated `GRANT` scripts.
+- The sessions list and the privilege matrix say how many rows are not shown when there are more than 400.
+- Home page: each recent connection shows its details line and open-tab count, and the new connection card has its subtitle. The Avalonia tip text wraps inside its card.
+- WinUI privileges: the seven privilege columns fit at 1440 px, the legend is no longer cut off, and a role with one member reads in the singular. The sessions table columns are narrower so the wait and query columns are visible.
+- WinUI: with the light theme chosen and a dark system theme, the editor, filter bar, plan table and splitters now follow the chosen theme; confirmation dialogs use the app theme; the production confirmation dialog has its danger frame and highlighted keywords.
+- Avalonia: the command palette footer hints no longer run into the result count.
 - Typing in a long script is no longer slowed down by the SQL diagnostics, which now run in the background.
 - The formatter keeps `TOP` and `WITH TIES` with their `SELECT`.
 - A custom delimiter glued to the statement, such as `END$$`, now splits the script correctly.

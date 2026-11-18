@@ -1,6 +1,6 @@
 # Transactions and production confirmation verification (P15-19)
 
-Status: **automated done, manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
+Status: **automated done, agent pass partial (P19-12 WinUI, P19-14 Avalonia: production dialog, toolbar group, plan tab; the Failed variant, PostgreSQL rows, light and English on Avalonia not driven), manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
 
 ## Automated (done)
 

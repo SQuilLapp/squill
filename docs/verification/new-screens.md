@@ -1,6 +1,6 @@
 # New screens verification (P18-31): home, schema compare, import, privileges, sessions
 
-Status: **automated done (one failure found), agent window pass not done, manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
+Status: **automated done (one failure found), agent passes partial (phase 19: M01 both heads, M11 and M12 WinUI; M09 and M10 not driven, M09-M12 not driven on Avalonia), manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
 
 ## Automated (done)
 
