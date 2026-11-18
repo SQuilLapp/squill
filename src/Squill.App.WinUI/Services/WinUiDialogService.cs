@@ -58,6 +58,29 @@ internal sealed class WinUiDialogService : IDialogService
     }
 
     /// <inheritdoc />
+    public async ValueTask<string?> PickOpenFileAsync(string title, IReadOnlyList<string> extensions)
+    {
+        if (_window is null)
+            return null;
+        var picker = new FileOpenPicker();
+        foreach (var extension in extensions)
+            picker.FileTypeFilter.Add($".{extension}");
+        InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(_window));
+        var file = await picker.PickSingleFileAsync();
+        return file?.Path;
+    }
+
+    /// <inheritdoc />
+    public async ValueTask ShowImportWizardAsync(Squill.Presentation.Import.ImportWizardViewModel wizard)
+    {
+        if (_window is null)
+            return;
+        var window = new Views.ImportWizardWindow(_window, wizard);
+        window.Activate();
+        await window.Closure;
+    }
+
+    /// <inheritdoc />
     public async ValueTask ShowErrorAsync(string title, string message) =>
         await ShowAsync(title, message, null, UiText.Get("dialog.ok"), null);
 

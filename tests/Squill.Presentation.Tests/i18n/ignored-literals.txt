@@ -55,6 +55,11 @@ src/Squill.App.WinUI/Views/HomePage.cs|SquillFg3Brush|resource key
 src/Squill.App.WinUI/Views/HomePage.cs|SquillFontBrand|resource key
 src/Squill.App.WinUI/Views/HomePage.cs|SquillFontMono|resource key
 src/Squill.App.WinUI/Views/HomePage.cs|SquillFontSizeBodySm|resource key
+src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|Europe/Paris|IANA time zone placeholder
+src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|SquillFg2Brush|resource key
+src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|SquillFg3Brush|resource key
+src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|SquillFgBrush|resource key
+src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|yyyy-MM-dd|date format pattern placeholder
 src/Squill.App.WinUI/Views/ProductionConfirmDialog.cs|SquillDangerBrush|resource key
 src/Squill.App.WinUI/Views/ProductionConfirmDialog.cs|SquillFgBrush|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFg2Brush|resource key

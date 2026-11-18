@@ -31,6 +31,8 @@
     <Content Include="..\..\src\Squill.App.WinUI\Views\SchemaCompareView.cs" Link="Xaml\SchemaCompareView.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\SessionsMonitorView.cs" Link="Xaml\SessionsMonitorView.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\SecurityView.cs" Link="Xaml\SecurityView.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\ImportWizardWindow.xaml.cs" Link="Xaml\ImportWizardWindow.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Services\WinUiDialogService.cs" Link="Xaml\WinUiDialogService.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\MainWindow.Diagram.cs" Link="Xaml\MainWindow.Diagram.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\HomePage.cs" Link="Xaml\HomePage.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\MainWindow.Home.cs" Link="Xaml\MainWindow.Home.cs" CopyToOutputDirectory="PreserveNewest" />

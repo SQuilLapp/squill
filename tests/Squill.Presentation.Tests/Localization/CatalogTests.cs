@@ -18,6 +18,9 @@ public sealed partial class CatalogTests
         "import.error.title", // dialog title
         "import.fileSize", // bare size, no wording
         "import.status.ok", // status word
+        "import.ui.table", // same word in both languages
+        "import.ui.colConversion", // same word in both languages
+        "import.ui.quote.double", // symbol and word identical in both languages
         "home.env.staging", // environment pill
         "home.env.dev", // environment pill
         "home.env.local", // environment pill
