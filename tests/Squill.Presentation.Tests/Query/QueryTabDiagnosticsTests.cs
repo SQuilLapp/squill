@@ -24,6 +24,15 @@ public sealed class QueryTabDiagnosticsTests
             return timer;
         }
 
+        public int TimerCount
+        {
+            get
+            {
+                lock (_timers)
+                    return _timers.Count;
+            }
+        }
+
         public void Advance(TimeSpan by)
         {
             ManualTimer[] due;
@@ -216,6 +225,8 @@ public sealed class QueryTabDiagnosticsTests
     {
         var f = new Fixture();
         f.Editor.Text = "select * from nope";
+        // The timer is created on a pool thread: cancel only once it exists, or a late timer is never disposed by the cancel.
+        WaitFor(() => f.Time.TimerCount > 0);
         f.Vm.CancelPendingDiagnostics();
         f.Time.Advance(Delay);
         Thread.Sleep(100);
