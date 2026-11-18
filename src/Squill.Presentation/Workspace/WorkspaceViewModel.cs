@@ -20,6 +20,7 @@ using Squill.Presentation.Home;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
 using Squill.Presentation.Safety;
+using Squill.Presentation.Security;
 using Squill.Presentation.Palette;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Terminal;
@@ -113,10 +114,11 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
                 foreach (var added in e.NewItems.OfType<ConnectionSession>().Where(x => x.Parent is null))
                     _ = Home.TouchAsync(added.Profile.Id, CancellationToken.None);
         };
-        foreach (var collection in new INotifyCollectionChanged[] { manager.Sessions, Tabs, Terminals, Designers, Diagrams, Plans, Compares, Monitors })
+        foreach (var collection in new INotifyCollectionChanged[] { manager.Sessions, Tabs, Terminals, Designers, Diagrams, Plans, Compares, Monitors, SecurityTabs })
             collection.CollectionChanged += (_, _) => UpdateHomeVisibility();
         manager.Sessions.CollectionChanged += (_, _) => RaiseSchemaCompareAvailability();
         manager.Sessions.CollectionChanged += (_, _) => RaiseMonitorAvailability();
+        manager.Sessions.CollectionChanged += (_, _) => RaiseSecurityAvailability();
         Explorer.OpenTableRequested += (_, r) => _ = OpenTableOnAsync(r.Session, r.Table);
         Explorer.DesignTableRequested += (_, r) => DesignTableOn(r.Session, r.Table);
         Explorer.DropTableRequested += (_, r) =>
@@ -153,7 +155,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     }
 
     private bool HasNothingOpen() =>
-        Sessions.Count == 0 && Tabs.Count == 0 && Terminals.Count == 0 && Designers.Count == 0 && Diagrams.Count == 0 && Plans.Count == 0 && Compares.Count == 0 && Monitors.Count == 0;
+        Sessions.Count == 0 && Tabs.Count == 0 && Terminals.Count == 0 && Designers.Count == 0 && Diagrams.Count == 0 && Plans.Count == 0 && Compares.Count == 0 && Monitors.Count == 0 && SecurityTabs.Count == 0;
 
     private void UpdateHomeVisibility() => IsHomeVisible = HasNothingOpen();
 
@@ -307,6 +309,62 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             ActiveMonitor = Monitors.Count == 0 ? null : Monitors[Math.Min(index, Monitors.Count - 1)];
     }
 
+    /// <summary>Gets the open security tabs, at most one per connection session.</summary>
+    public ObservableCollection<SecurityViewModel> SecurityTabs { get; } = [];
+
+    /// <summary>Gets or sets the security tab shown.</summary>
+    [ObservableProperty]
+    public partial SecurityViewModel? ActiveSecurity { get; set; }
+
+    private bool CanOpenSecurity() => SecurityViewModel.DisabledReason(ActiveSession).Length == 0;
+
+    /// <summary>Gets why the security tab cannot be opened (the tooltip of the disabled menu item and palette action), empty when it can.</summary>
+    public string SecurityDisabledReason => SecurityViewModel.DisabledReason(ActiveSession);
+
+    private void RaiseSecurityAvailability()
+    {
+        OpenSecurityCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(SecurityDisabledReason));
+    }
+
+    /// <summary>Opens the security tab of the active session, or shows it when it is already open.</summary>
+    [RelayCommand(CanExecute = nameof(CanOpenSecurity))]
+    public void OpenSecurity()
+    {
+        if (ActiveSession is not { } session)
+            return;
+        if (SecurityTabs.FirstOrDefault(s => s.Session == session) is { } open)
+        {
+            ActiveSecurity = open;
+            return;
+        }
+
+        var security = new SecurityViewModel(session, _dialogs);
+        security.CloseRequested += RemoveSecurity;
+        SecurityTabs.Add(security);
+        ActiveSecurity = security;
+        _ = security.LoadAsync();
+    }
+
+    [RelayCommand]
+    private void CloseSecurity(SecurityViewModel? security)
+    {
+        if (security is not null)
+            RemoveSecurity(security);
+    }
+
+    private void RemoveSecurity(SecurityViewModel security)
+    {
+        var index = SecurityTabs.IndexOf(security);
+        if (index < 0)
+            return;
+        SecurityTabs.RemoveAt(index);
+        security.CloseRequested -= RemoveSecurity;
+        security.Dispose();
+        if (ActiveSecurity == security)
+            ActiveSecurity = SecurityTabs.Count == 0 ? null : SecurityTabs[Math.Min(index, SecurityTabs.Count - 1)];
+    }
+
     /// <summary>Gets or sets the schema compare tab shown.</summary>
     [ObservableProperty]
     public partial SchemaCompareViewModel? ActiveCompare { get; set; }
@@ -419,6 +477,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             PlanTabViewModel p => p.Source.Session,
             SchemaCompareViewModel c => c.Session,
             SessionsMonitorViewModel m => m.Session,
+            SecurityViewModel s => s.Session,
             _ => null,
         };
         foreach (var monitor in Monitors)
@@ -434,6 +493,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     {
         RaiseSchemaCompareAvailability();
         RaiseMonitorAvailability();
+        RaiseSecurityAvailability();
         if (value is null)
             _shownSession = null; // not connected: no tab can be on screen
         OnPropertyChanged(nameof(ActiveEnvironment));
@@ -450,6 +510,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     partial void OnActiveCompareChanged(SchemaCompareViewModel? value) => ShowTabIfAny(value);
 
     partial void OnActiveMonitorChanged(SessionsMonitorViewModel? value) => ShowTabIfAny(value);
+
+    partial void OnActiveSecurityChanged(SecurityViewModel? value) => ShowTabIfAny(value);
 
     private void ShowTabIfAny(object? tab)
     {
@@ -510,6 +572,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             RemoveCompare(compare);
         foreach (var monitor in Monitors.Where(m => m.Session?.Root == session).ToList())
             RemoveMonitor(monitor);
+        foreach (var security in SecurityTabs.Where(s => s.Session?.Root == session).ToList())
+            RemoveSecurity(security);
         foreach (var opened in session.OpenedDatabases.Prepend(session))
             _tabCounters.Remove(opened);
         await _manager.CloseAsync(session);

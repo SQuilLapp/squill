@@ -19,6 +19,7 @@ public sealed partial class CatalogTests
         "compare.source", // SOURCE label of the compare header, same in both languages
         "activity.session", // SESSION caption of the detail pane, same word
         "activity.col.pid", // technical column name
+        "security.connectedAs", // user@connection / database, language-neutral
         "activity.col.application", // column title, same word
         "activity.col.client", // column title, same word
         "compare.env.production", // environment name in the status bar

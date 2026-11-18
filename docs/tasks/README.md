@@ -358,7 +358,7 @@ Depends on: <card ids, ranges allowed>
 | [P18-16](phase-18/P18-16-core-privileges-model.md) | Core: role and privilege model | none | done |
 | [P18-17](phase-18/P18-17-data-postgres-roles-and-privileges.md) | Data.Postgres: read roles and privileges | P18-16 | done |
 | [P18-18](phase-18/P18-18-sql-grant-revoke-script.md) | Sql: GRANT and REVOKE script | P18-16 | done |
-| [P18-19](phase-18/P18-19-presentation-security-tab.md) | Presentation: the security tab (risky) | P18-16 ... P18-18, P18-02 | todo |
+| [P18-19](phase-18/P18-19-presentation-security-tab.md) | Presentation: the security tab (risky) | P18-16 ... P18-18, P18-02 | done |
 | [P18-20](phase-18/P18-20-winui-security-view.md) | WinUI head: the security view | P18-19, P9-10 | todo |
 | [P18-21](phase-18/P18-21-avalonia-security-view.md) | Avalonia head: the security view | P18-20 | todo |
 | [P18-22](phase-18/P18-22-presentation-csv-reader.md) | Presentation: CSV reader and preview | none | todo |

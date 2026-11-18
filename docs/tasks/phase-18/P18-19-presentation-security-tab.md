@@ -1,6 +1,6 @@
 # P18-19 - Presentation: the security tab (risky)
 
-Status: todo
+Status: done
 Depends on: P18-16, P18-17, P18-18, P18-02
 
 ## Goal
@@ -20,9 +20,9 @@ The M11 screen as a workspace tab for PostgreSQL connections: role list, privile
 - Heads (P18-20, P18-21), role creation or deletion, other engines.
 
 ## Tasks
-- [ ] View-model, row and cell view-models, workspace command, palette action, catalog keys.
-- [ ] Tests in `tests/Squill.Presentation.Tests/Security/` with a fake reader and runner: list split and filter, load per role with stale result dropped, toggles and pending counts, inherited cell refuses, script text follows changes, apply success reloads, apply failure keeps changes, Production confirmation required and nothing runs when refused, unsupported engine disables the command, switching role with pending changes asks.
-- [ ] A PostgreSQL Docker-gated scenario in `tests/Shared` or the Postgres test project: through the view-model, revoke a grant and grant another, apply, reload: state matches.
+- [x] View-model, row and cell view-models, workspace command, palette action, catalog keys.
+- [x] Tests in `tests/Squill.Presentation.Tests/Security/` with a fake reader and runner: list split and filter, load per role with stale result dropped, toggles and pending counts, inherited cell refuses, script text follows changes, apply success reloads, apply failure keeps changes, Production confirmation required and nothing runs when refused, unsupported engine disables the command, switching role with pending changes asks.
+- [x] A PostgreSQL Docker-gated scenario in `tests/Shared` or the Postgres test project: through the view-model, revoke a grant and grant another, apply, reload: state matches.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched. Riskiest: apply must never bypass the production confirmation; a test proves it.
