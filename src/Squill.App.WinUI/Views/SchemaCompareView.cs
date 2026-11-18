@@ -250,6 +250,8 @@ public sealed partial class SchemaCompareView : UserControl
     private Grid BuildLeft()
     {
         var chips = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Margin = new Thickness(16, 12, 16, 0), Children = { _added, _modified, _removed } };
+        // The three chips are wider than the narrow list pane: scroll them sideways instead of cutting the last one.
+        var chipScroll = new ScrollViewer { Content = chips, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled };
         _filter.Margin = new Thickness(16, 10, 16, 0);
         _all.Margin = new Thickness(16, 8, 16, 0);
         var scroll = new ScrollViewer { Content = _list, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, Margin = new Thickness(0, 8, 0, 0) };
@@ -257,7 +259,7 @@ public sealed partial class SchemaCompareView : UserControl
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         panel.RowDefinitions.Add(new RowDefinition());
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        panel.Children.Add(new StackPanel { Children = { chips, _filter, _all } });
+        panel.Children.Add(new StackPanel { Children = { chipScroll, _filter, _all } });
         Grid.SetRow(scroll, 1);
         Grid.SetRow(_hint, 2);
         panel.Children.Add(scroll);
