@@ -97,7 +97,7 @@ internal sealed partial class FilterBar : UserControl
 
     private static Style Res(string key) => (Style)Application.Current.Resources[key];
 
-    private static Microsoft.UI.Xaml.Media.Brush Brush(string key) => (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources[key];
+    private static Microsoft.UI.Xaml.Media.Brush Brush(string key) => Tokens.Brush(key);
 
     private FrameworkElement Track(FrameworkElement icon, string brush)
     {

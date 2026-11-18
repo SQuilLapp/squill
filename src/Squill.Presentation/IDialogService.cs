@@ -30,14 +30,6 @@ public interface IDialogService
     /// <param name="message">Error text.</param>
     ValueTask ShowErrorAsync(string title, string message);
 
-    /// <summary>Asks the user for the values of named statement parameters.</summary>
-    /// <param name="names">Parameter names without sigil.</param>
-    /// <param name="defaults">Values entered the last time, to offer as defaults; may be empty.</param>
-    /// <returns>One value per name, or <see langword="null"/> when cancelled.</returns>
-    ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(
-        IReadOnlyList<string> names,
-        IReadOnlyDictionary<string, ParameterValue> defaults);
-
     /// <summary>Asks whether to trust the host key an SSH server presented for the first time.</summary>
     /// <param name="request">The host, port, algorithm and fingerprint of the key.</param>
     /// <returns><see langword="true"/> to trust the key and remember it.</returns>
@@ -52,4 +44,15 @@ public interface IDialogService
     /// <param name="request">The localized question.</param>
     /// <returns>The choice; <see cref="TransactionChoice.Cancel"/> when the dialog was dismissed.</returns>
     ValueTask<TransactionChoice> AskTransactionAsync(TransactionCloseRequest request);
+
+    /// <summary>Asks the user to choose an existing file to read.</summary>
+    /// <param name="title">Dialog title.</param>
+    /// <param name="extensions">Accepted file extensions without the leading dot.</param>
+    /// <returns>The chosen path, or <see langword="null"/> when cancelled. The default implementation, kept until the heads draw the import wizard, cancels.</returns>
+    ValueTask<string?> PickOpenFileAsync(string title, IReadOnlyList<string> extensions) => ValueTask.FromResult<string?>(null);
+
+    /// <summary>Shows the import wizard in its own modal window and returns when it is closed.</summary>
+    /// <param name="wizard">The wizard to draw. The default implementation, kept until the heads draw it, shows nothing.</param>
+    /// <returns>A task that completes when the window is closed.</returns>
+    ValueTask ShowImportWizardAsync(Import.ImportWizardViewModel wizard) => ValueTask.CompletedTask;
 }

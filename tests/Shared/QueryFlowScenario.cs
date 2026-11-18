@@ -93,20 +93,29 @@ public static class QueryFlowScenario
 
     private static async Task NamedAndPositionalParameters(Rig rig, string t, QueryFlowSpec spec)
     {
-        rig.Dialogs.Answer = names => [.. names.Select(n => new ParameterValue(n, "c", false))];
         rig.Editor.Text = $"select id from {t} where name = {spec.Sigil}who";
-        await rig.Tab.RunCommand.ExecuteAsync(null);
-        Assert.Equal(["who"], rig.Dialogs.AskedNames);
+        var named = rig.Tab.RunCommand.ExecuteAsync(null);
+        await WaitForPanelAsync(rig.Tab);
+        Assert.Equal(["who"], rig.Tab.ParameterRows.Select(r => r.Name));
+        rig.Tab.ParameterRows[0].Text = "c";
+        rig.Tab.RunParametersCommand.Execute(null);
+        await named.WaitAsync(TimeSpan.FromSeconds(30), Ct);
         Assert.Equal(3, Convert.ToInt32(Assert.Single(rig.Tab.Results).Grid!.GetCell(0, 0), CultureInfo.InvariantCulture));
 
         if (spec.Positional is null)
             return;
-        rig.Dialogs.AskedNames = [];
         rig.Editor.Text = $"select id from {t} where name = {spec.Positional}";
         await rig.Tab.RunCommand.ExecuteAsync(null);
         var message = Assert.Single(rig.Tab.Results);
         Assert.Equal(ResultKind.Message, message.Kind);
         Assert.Equal(UiText.Get("query.positionalUnsupported"), message.Text);
+    }
+
+    private static async Task WaitForPanelAsync(QueryTabViewModel tab)
+    {
+        for (var i = 0; i < 100 && !tab.IsParametersPanelOpen; i++)
+            await Task.Delay(100, TestContext.Current.CancellationToken);
+        Assert.True(tab.IsParametersPanelOpen);
     }
 
     private static async Task CancelStopsTheRun(Rig rig, QueryFlowSpec spec)
@@ -202,10 +211,6 @@ public static class QueryFlowScenario
     {
         public List<(string Title, string Message)> Errors { get; } = [];
 
-        public Func<IReadOnlyList<string>, IReadOnlyList<ParameterValue>?> Answer { get; set; } = _ => null;
-
-        public IReadOnlyList<string> AskedNames { get; set; } = [];
-
         public string? SavePath { get; set; }
 
         public ValueTask<bool> ConfirmSshHostKeyAsync(Squill.Platform.Ssh.SshHostKeyRequest request) => ValueTask.FromResult(false);
@@ -226,12 +231,6 @@ public static class QueryFlowScenario
         {
             Errors.Add((title, message));
             return ValueTask.CompletedTask;
-        }
-
-        public ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(IReadOnlyList<string> names, IReadOnlyDictionary<string, ParameterValue> defaults)
-        {
-            AskedNames = names;
-            return ValueTask.FromResult(Answer(names));
         }
     }
 }

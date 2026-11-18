@@ -3,7 +3,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Squill.Presentation.Localization;
+using DatabaseDialect = Squill.Core.DatabaseDialect;
 using Squill.Presentation.Safety;
+using Squill.Sql.Highlighting;
 
 namespace Squill.App.WinUI.Views;
 
@@ -19,14 +21,14 @@ internal static class ProductionConfirmDialog
         Microsoft.UI.Xaml.Media.Brush Brush(string key) => Tokens.Brush(root, key);
         var mono = (Microsoft.UI.Xaml.Media.FontFamily)Application.Current.Resources["SquillFontMono"];
         var confirmed = false;
-        var dialog = new ContentDialog { XamlRoot = root.XamlRoot, RequestedTheme = root.ActualTheme, Padding = new Thickness(0), Background = Brush("SquillBgRaisedBrush") };
+        var dialog = new ContentDialog { XamlRoot = root.XamlRoot, RequestedTheme = root.ActualTheme, Padding = new Thickness(0), Background = Brush("SquillBgRaisedBrush"), BorderBrush = Brush("SquillDangerBrush"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
         dialog.Resources["ContentDialogMaxWidth"] = 560.0;
         dialog.Resources["ContentDialogMinWidth"] = 560.0;
 
         var header = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center };
         header.Children.Add(Icons.Create("SquillIconWarning", 16, Brush("SquillOnEnvProdBrush")));
         header.Children.Add(new TextBlock { Text = UiText.Format("prod.header", request.ConnectionName, request.Database), Foreground = Brush("SquillOnEnvProdBrush"), FontWeight = FontWeights.Bold, VerticalAlignment = VerticalAlignment.Center });
-        var band = new Border { Background = Brush("SquillDangerBrush"), Padding = new Thickness(24, 12, 24, 12), Child = header };
+        var band = new Border { Background = Brush("SquillDangerBrush"), Padding = new Thickness(24, 12, 24, 12), CornerRadius = new CornerRadius(7, 7, 0, 0), Child = header };
 
         var body = new StackPanel { Spacing = 14, Padding = new Thickness(24, 20, 24, 8) };
         body.Children.Add(new TextBlock { Text = request.Title, FontSize = 20, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap, Foreground = Brush("SquillFgBrush") });
@@ -80,8 +82,8 @@ internal static class ProductionConfirmDialog
                 dialog.Hide();
             }
         };
-        // The dialog moves the focus to its first button after it opened: take it back on the next turn.
-        dialog.Opened += (_, _) => root.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => (typed is null ? (Control)cancel : typed).Focus(FocusState.Keyboard));
+        // Annuler is the default button (M15): the dialog moves the focus to its first button after it opened, so set it on the next turn.
+        dialog.Opened += (_, _) => root.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => cancel.Focus(FocusState.Keyboard));
         dialog.Content = new StackPanel { Children = { band, body, footer } };
         await dialog.ShowAsync();
         return new ProductionConfirmationResult(confirmed, confirmed && option?.IsChecked == true);
@@ -95,14 +97,49 @@ internal static class ProductionConfirmDialog
         var at = figure is null ? -1 : request.Message.IndexOf(figure, StringComparison.Ordinal);
         if (figure is null || at < 0 || request.Message.IndexOf(figure, at + 1, StringComparison.Ordinal) >= 0)
         {
-            text.Text = request.Message;
+            AddWithFact(text, request.Message);
             return text;
         }
 
-        text.Inlines.Add(new Run { Text = request.Message[..at] });
+        AddWithFact(text, request.Message[..at]);
         text.Inlines.Add(new Run { Text = figure, FontFamily = mono, FontWeight = FontWeights.Bold, Foreground = brush("SquillDangerBrush") });
-        text.Inlines.Add(new Run { Text = request.Message[(at + figure.Length)..] });
+        AddWithFact(text, request.Message[(at + figure.Length)..]);
         return text;
+    }
+
+    // "has no WHERE clause" is the fact the user must read: it is bold.
+    private static void AddWithFact(TextBlock text, string part)
+    {
+        var fact = UiText.Get("prod.message.noWhere");
+        var at = part.IndexOf(fact, StringComparison.Ordinal);
+        if (at < 0)
+        {
+            text.Inlines.Add(new Run { Text = part });
+            return;
+        }
+
+        text.Inlines.Add(new Run { Text = part[..at] });
+        text.Inlines.Add(new Run { Text = fact, FontWeight = FontWeights.Bold });
+        text.Inlines.Add(new Run { Text = part[(at + fact.Length)..] });
+    }
+
+    // Keywords take the accent color; the ANSI tokenizer is enough, the request does not carry the dialect.
+    private static TextBlock Highlighted(string sql, Func<string, Microsoft.UI.Xaml.Media.Brush> brush, Microsoft.UI.Xaml.Media.FontFamily mono)
+    {
+        var block = new TextBlock { FontFamily = mono, FontSize = 12, TextWrapping = TextWrapping.Wrap, MaxLines = 4, TextTrimming = TextTrimming.CharacterEllipsis, Foreground = brush("SquillFgBrush") };
+        var accent = brush("SquillAccentTextBrush");
+        var at = 0;
+        foreach (var span in SqlHighlighter.Classify(sql, DatabaseDialect.Oracle))
+        {
+            if (span.Kind != HighlightKind.Keyword)
+                continue;
+            block.Inlines.Add(new Run { Text = sql[at..span.Start] });
+            block.Inlines.Add(new Run { Text = sql.Substring(span.Start, span.Length), Foreground = accent, FontWeight = FontWeights.SemiBold });
+            at = span.Start + span.Length;
+        }
+
+        block.Inlines.Add(new Run { Text = sql[at..] });
+        return block;
     }
 
     private static Border Statements(ProductionConfirmationRequest request, Func<string, Microsoft.UI.Xaml.Media.Brush> brush, Microsoft.UI.Xaml.Media.FontFamily mono)
@@ -110,7 +147,7 @@ internal static class ProductionConfirmDialog
         var list = new StackPanel { Spacing = 6 };
         // The request already holds at most five statements and the localized "+ N others" line.
         foreach (var statement in request.Statements)
-            list.Children.Add(new TextBlock { Text = statement.Text, FontFamily = mono, FontSize = 12, TextWrapping = TextWrapping.Wrap, MaxLines = 4, TextTrimming = TextTrimming.CharacterEllipsis, Foreground = brush("SquillFgBrush") });
+            list.Children.Add(Highlighted(statement.Text, brush, mono));
         return new Border { Background = brush("SquillBgBaseBrush"), BorderBrush = brush("SquillDangerBrush"), BorderThickness = new Thickness(3, 0, 0, 0), Padding = new Thickness(12, 10, 12, 10), Child = list };
     }
 }

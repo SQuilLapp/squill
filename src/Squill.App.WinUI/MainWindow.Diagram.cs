@@ -3,8 +3,11 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Squill.App.WinUI.Views;
 using Squill.Presentation.Designer;
+using Squill.Presentation.Activity;
+using Squill.Presentation.Compare;
 using Squill.Presentation.Diagram;
 using Squill.Presentation.Plans;
+using Squill.Presentation.Security;
 using Squill.Presentation.Workspace;
 
 namespace Squill.App.WinUI;
@@ -19,6 +22,9 @@ public sealed partial class MainWindow
         workspace.Diagrams.CollectionChanged += OnExtraTabsChanged;
         workspace.Designers.CollectionChanged += OnExtraTabsChanged;
         workspace.Plans.CollectionChanged += OnExtraTabsChanged;
+        workspace.Compares.CollectionChanged += OnExtraTabsChanged;
+        workspace.Monitors.CollectionChanged += OnExtraTabsChanged;
+        workspace.SecurityTabs.CollectionChanged += OnExtraTabsChanged;
     }
 
     private void OnExtraTabsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -31,6 +37,12 @@ public sealed partial class MainWindow
 
         foreach (var added in e.NewItems ?? new List<object>())
         {
+            if (added is SchemaCompareViewModel compare)
+                compare.CopyRequested += CopyToClipboard;
+            if (added is SessionsMonitorViewModel monitor)
+                monitor.CopyRequested += CopyToClipboard;
+            if (added is SecurityViewModel security)
+                security.CopyRequested += CopyToClipboard;
             var item = TabHeader.Create(added);
             _extraItems[added] = item;
             Tabs.TabItems.Add(item);
@@ -58,7 +70,13 @@ public sealed partial class MainWindow
         DiagramArea.Visibility = Visibility.Collapsed;
         DesignerArea.Visibility = Visibility.Collapsed;
         PlanArea.Visibility = Visibility.Collapsed;
+        CompareArea.Visibility = Visibility.Collapsed;
+        MonitorArea.Visibility = Visibility.Collapsed;
+        SecurityArea.Visibility = Visibility.Collapsed;
         Status.ShowPlan(null);
+        Status.ShowCompare(null);
+        Status.ShowMonitor(null);
+        Status.ShowSecurity(null);
     }
 
     private void ShowDiagram(DiagramTabViewModel diagram)
@@ -72,6 +90,34 @@ public sealed partial class MainWindow
         ShowOnly(PlanArea);
         PlanArea.ViewModel = plan;
         Status.ShowPlan(plan);
+    }
+
+    private void ShowCompare(SchemaCompareViewModel compare)
+    {
+        ShowOnly(CompareArea);
+        CompareArea.ViewModel = compare;
+        Status.ShowCompare(compare);
+    }
+
+    private void ShowMonitor(SessionsMonitorViewModel monitor)
+    {
+        ShowOnly(MonitorArea);
+        MonitorArea.ViewModel = monitor;
+        Status.ShowMonitor(monitor);
+    }
+
+    private void ShowSecurity(SecurityViewModel security)
+    {
+        ShowOnly(SecurityArea);
+        SecurityArea.ViewModel = security;
+        Status.ShowSecurity(security);
+    }
+
+    private static void CopyToClipboard(string text)
+    {
+        var package = new Windows.ApplicationModel.DataTransfer.DataPackage();
+        package.SetText(text);
+        Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(package);
     }
 
     private void ShowDesigner(TableDesignerViewModel designer)

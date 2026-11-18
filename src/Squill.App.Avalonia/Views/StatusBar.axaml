@@ -19,6 +19,10 @@
   <Border Background="{DynamicResource SquillBgSurfaceBrush}" BorderBrush="{DynamicResource SquillBorderSubtleBrush}"
           BorderThickness="0,1,0,0" Height="26">
     <DockPanel>
+      <Border Name="SourceBlock" DockPanel.Dock="Left" Padding="14,0" IsVisible="False">
+        <TextBlock Name="SourceLabel" FontSize="{DynamicResource SquillFontSizeBodySm}" FontWeight="Bold" />
+      </Border>
+      <TextBlock Name="FlowArrow" DockPanel.Dock="Left" Text="→" Margin="8,0" IsVisible="False" Foreground="{DynamicResource SquillFg3Brush}" />
       <Border Name="EnvironmentBlock" DockPanel.Dock="Left" Padding="14,0" IsVisible="False">
         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
           <Path Name="EnvironmentWarning" Classes="icon" Width="13" Height="13" Data="{StaticResource SquillIconWarning}" IsVisible="False" />
@@ -35,7 +39,10 @@
         <TextBlock Name="PositionText" Classes="mono" />
       </Border>
       <Border DockPanel.Dock="Left" Classes="segment">
-        <TextBlock Name="ConnectionText" Classes="mono" Foreground="{DynamicResource SquillFgBrush}" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Ellipse Name="ConnectionDot" Width="8" Height="8" VerticalAlignment="Center" Fill="{DynamicResource SquillFg3Brush}" />
+          <TextBlock Name="ConnectionText" Classes="mono" Foreground="{DynamicResource SquillFgBrush}" />
+        </StackPanel>
       </Border>
       <Border Name="TransactionSegment" DockPanel.Dock="Left" Classes="segment" IsVisible="False">
         <StackPanel Orientation="Horizontal" Spacing="6">

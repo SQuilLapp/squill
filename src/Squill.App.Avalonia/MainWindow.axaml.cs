@@ -7,8 +7,11 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using Squill.App.Avalonia.Views;
 using Squill.Presentation;
+using Squill.Presentation.Activity;
+using Squill.Presentation.Compare;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
+using Squill.Presentation.Security;
 using Squill.Presentation.Palette;
 using Squill.Core.Plans;
 using Squill.Presentation.Plans;
@@ -88,14 +91,15 @@ public sealed partial class MainWindow : Window
     // Only while a query tab is active (a plan tab or the designer has no transaction group).
     private void RunTransactionCommand(Func<QueryTabViewModel, IAsyncRelayCommand> pick)
     {
-        if (!PlanArea.IsVisible && _tabs?.Selected?.Source is QueryTabViewModel { } query && pick(query) is { } command && command.CanExecute(null))
+        if (!PlanArea.IsVisible && !CompareArea.IsVisible && !MonitorArea.IsVisible && !SecurityArea.IsVisible && _tabs?.Selected?.Source is QueryTabViewModel { } query && pick(query) is { } command && command.CanExecute(null))
             command.Execute(null);
     }
 
     /// <summary>Connects the history, snippets and settings view-models and the data directory the File menu opens.</summary>
     /// <param name="services">The shared root view-models.</param>
     /// <param name="dataDirectory">The directory the File menu opens.</param>
-    public void Attach(AppServices services, string dataDirectory)
+    /// <param name="loading">The pending load of the connection list, awaited before the home page starts; <see langword="null"/> when it is already loaded.</param>
+    public void Attach(AppServices services, string dataDirectory, Task? loading = null)
     {
         Sidebar.Attach(services.History, services.Snippets);
         services.Workspace.Explorer.Picker = new Services.AvaloniaTablePicker(() => this);
@@ -119,6 +123,7 @@ public sealed partial class MainWindow : Window
         AttachUpdates(services.Updates, services.About);
         InitializeMacMenu();
         AttachPalette(services.Workspace);
+        AttachHome(services.Workspace, loading ?? Task.CompletedTask);
     }
 
     private void AttachPalette(WorkspaceViewModel workspace)
@@ -210,6 +215,18 @@ public sealed partial class MainWindow : Window
         PlanArea.DataContext = plan;
         PlanArea.IsVisible = plan is not null;
         Status.ShowPlan(plan);
+        var compare = source as SchemaCompareViewModel;
+        CompareArea.DataContext = compare;
+        CompareArea.IsVisible = compare is not null;
+        Status.ShowCompare(compare);
+        var monitor = source as SessionsMonitorViewModel;
+        MonitorArea.DataContext = monitor;
+        MonitorArea.IsVisible = monitor is not null;
+        Status.ShowMonitor(monitor);
+        var security = source as SecurityViewModel;
+        SecurityArea.DataContext = security;
+        SecurityArea.IsVisible = security is not null;
+        Status.ShowSecurity(security);
         var designer = source as TableDesignerViewModel;
         DesignerArea.DataContext = designer;
         DesignerArea.IsVisible = designer is not null;

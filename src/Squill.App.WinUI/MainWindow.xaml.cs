@@ -10,8 +10,11 @@ using Squill.Presentation;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
+using Squill.Presentation.Activity;
+using Squill.Presentation.Compare;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
+using Squill.Presentation.Security;
 using Squill.Presentation.Settings;
 using Squill.Presentation.Terminal;
 using Squill.Presentation.Workspace;
@@ -29,6 +32,7 @@ public sealed partial class MainWindow : Window
     private AboutWindow? _aboutWindow;
     private ConnectionEditorWindow? _editorWindow;
     private SettingsWindow? _settingsWindow;
+    private Splitter? _sidebarSplitter;
     private bool _syncing;
     private bool _closeConfirmed;
     private bool _askingToClose;
@@ -41,6 +45,7 @@ public sealed partial class MainWindow : Window
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "squill.ico"));
         AppWindow.Closing += OnAppWindowClosing;
         var splitter = new Splitter(true);
+        _sidebarSplitter = splitter;
         Grid.SetRow(splitter, 2);
         Grid.SetColumn(splitter, 2);
         Root.Children.Add(splitter);
@@ -76,7 +81,7 @@ public sealed partial class MainWindow : Window
         Root.KeyboardAccelerators.Add(SettingsAccelerator());
         services.Settings.ThemeChanged += (_, _) => ApplyTheme(services.Settings.Theme);
         services.Settings.LoadCommand.Execute(null);
-        services.Workspace.ConnectionList.LoadCommand.Execute(null);
+        var loading = services.Workspace.ConnectionList.LoadCommand.ExecuteAsync(null);
         services.Workspace.ConnectionList.EditRequested += OnEditRequested;
         services.Workspace.Tabs.CollectionChanged += OnTabsChanged;
         services.Workspace.PropertyChanged += OnWorkspaceChanged;
@@ -91,6 +96,7 @@ public sealed partial class MainWindow : Window
         AttachMenu(services.Workspace);
         AttachUpdates();
         AttachPalette(services.Workspace);
+        AttachHome(services.Workspace, loading);
     }
 
     private WorkspaceViewModel Workspace => _workspace!;
@@ -131,12 +137,17 @@ public sealed partial class MainWindow : Window
         window.Activate();
     }
 
-    private void ApplyTheme(ThemeMode mode) => Root.RequestedTheme = mode switch
+    private void ApplyTheme(ThemeMode mode)
     {
-        ThemeMode.Light => ElementTheme.Light,
-        ThemeMode.Dark => ElementTheme.Dark,
-        _ => ElementTheme.Default,
-    };
+        Root.RequestedTheme = mode switch
+        {
+            ThemeMode.Light => ElementTheme.Light,
+            ThemeMode.Dark => ElementTheme.Dark,
+            _ => ElementTheme.Default,
+        };
+        // Hand-built visuals read tokens through this theme; Default follows the system one.
+        Tokens.Active = Root.RequestedTheme == ElementTheme.Default ? Root.ActualTheme : Root.RequestedTheme;
+    }
 
     private void OnEditRequested(object? sender, ConnectionEditorViewModel editor)
     {
@@ -168,6 +179,15 @@ public sealed partial class MainWindow : Window
                 break;
             case nameof(WorkspaceViewModel.ActivePlan) when Workspace.ActivePlan is { } plan:
                 SelectExtraTab(plan);
+                break;
+            case nameof(WorkspaceViewModel.ActiveMonitor) when Workspace.ActiveMonitor is { } monitor:
+                SelectExtraTab(monitor);
+                break;
+            case nameof(WorkspaceViewModel.ActiveSecurity) when Workspace.ActiveSecurity is { } security:
+                SelectExtraTab(security);
+                break;
+            case nameof(WorkspaceViewModel.ActiveCompare) when Workspace.ActiveCompare is { } compare:
+                SelectExtraTab(compare);
                 break;
             case nameof(WorkspaceViewModel.ActiveDesigner) when Workspace.ActiveDesigner is { } designer:
                 SelectExtraTab(designer);
@@ -227,6 +247,18 @@ public sealed partial class MainWindow : Window
                 Workspace.ActivePlan = plan;
                 ShowPlan(plan);
                 break;
+            case SchemaCompareViewModel compare:
+                Workspace.ActiveCompare = compare;
+                ShowCompare(compare);
+                break;
+            case SessionsMonitorViewModel monitor:
+                Workspace.ActiveMonitor = monitor;
+                ShowMonitor(monitor);
+                break;
+            case SecurityViewModel security:
+                Workspace.ActiveSecurity = security;
+                ShowSecurity(security);
+                break;
             case TerminalTabViewModel terminal:
                 ShowTerminal(terminal);
                 break;
@@ -243,6 +275,12 @@ public sealed partial class MainWindow : Window
             Workspace.CloseDiagramCommand.Execute(diagram);
         else if (args.Tab.Tag is PlanTabViewModel plan)
             plan.CloseCommand.Execute(null);
+        else if (args.Tab.Tag is SchemaCompareViewModel compare)
+            compare.CloseCommand.Execute(null);
+        else if (args.Tab.Tag is SessionsMonitorViewModel monitor)
+            monitor.CloseCommand.Execute(null);
+        else if (args.Tab.Tag is SecurityViewModel security)
+            security.CloseCommand.Execute(null);
         else if (args.Tab.Tag is TableDesignerViewModel designer)
             Workspace.CloseDesignerCommand.Execute(designer);
     }
@@ -276,6 +314,12 @@ public sealed partial class MainWindow : Window
             Workspace.CloseDiagramCommand.Execute(diagram);
         else if (selected is PlanTabViewModel plan)
             plan.CloseCommand.Execute(null);
+        else if (selected is SchemaCompareViewModel compare)
+            compare.CloseCommand.Execute(null);
+        else if (selected is SessionsMonitorViewModel monitor)
+            monitor.CloseCommand.Execute(null);
+        else if (selected is SecurityViewModel security)
+            security.CloseCommand.Execute(null);
         else if (selected is TableDesignerViewModel designer)
             Workspace.CloseDesignerCommand.Execute(designer);
         else

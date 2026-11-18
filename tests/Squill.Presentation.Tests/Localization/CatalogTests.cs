@@ -12,6 +12,41 @@ public sealed partial class CatalogTests
     // Keys whose English text is legitimately identical to the French one.
     private static readonly HashSet<string> SameInBothLanguages =
     [
+        "home.newConnection.subtitle", // list of engine names
+        "home.env.prod", // environment pill, same short form in both languages
+        "import.step.source", // step name, same word in both languages
+        "import.step.options", // step name
+        "import.error.title", // dialog title
+        "import.fileSize", // bare size, no wording
+        "import.status.ok", // status word
+        "import.ui.table", // same word in both languages
+        "import.ui.colConversion", // same word in both languages
+        "import.ui.quote.double", // symbol and word identical in both languages
+        "home.env.staging", // environment pill
+        "home.env.dev", // environment pill
+        "home.env.local", // environment pill
+        "compare.source", // SOURCE label of the compare header, same in both languages
+        "activity.session", // SESSION caption of the detail pane, same word
+        "activity.col.pid", // technical column name
+        "security.connectedAs", // user@connection / database, language-neutral
+        "activity.col.application", // column title, same word
+        "activity.col.client", // column title, same word
+        "compare.env.production", // environment name in the status bar
+        "compare.env.staging", // environment name in the status bar
+        "compare.env.development", // environment name in the status bar
+        "compare.env.local", // environment name in the status bar
+        "compare.group.table", // group title, same word
+        "compare.duration", // seconds, same unit
+        "compare.sourceCaption", // same word
+        "activity.pause", // same word
+        "activity.duration.ms", // unit, same in both languages
+        "activity.duration.s", // unit
+        "activity.duration.minS", // units
+        "activity.duration.hMin", // units
+        "activity.field.application", // same word
+        "activity.field.client", // same word
+        "activity.confirm.who", // pid and login, language-neutral
+        "activity.tile.transactions", // same label
         "results.filter.op.greaterThan", // comparison symbol
         "results.filter.op.greaterOrEqual", // comparison symbol
         "results.filter.op.lessThan", // comparison symbol

@@ -67,6 +67,7 @@ public static class AppComposition
     /// <param name="measureText">Text measurer of the head's diagram font; <see langword="null"/> disables the diagram.</param>
     /// <param name="currentVersion">Version of the running build; <see langword="null"/> uses <see cref="AppVersion.Current"/> (tests pass their own).</param>
     /// <param name="updateEngine">Update engine; <see langword="null"/> uses the Velopack engine over the GitHub releases (tests pass a fake).</param>
+    /// <param name="secretStore">Holds the profile passwords; <see langword="null"/> uses the store native to the operating system (tests pass an in-memory one, as a CI runner has no libsecret).</param>
     /// <returns>The root view-models.</returns>
     public static AppServices Create(
         IPlatformServices platform,
@@ -74,7 +75,8 @@ public static class AppComposition
         IDiagramLayoutStore? diagramStore = null,
         Func<string, double>? measureText = null,
         string? currentVersion = null,
-        IUpdateEngine? updateEngine = null)
+        IUpdateEngine? updateEngine = null,
+        ISecretStore? secretStore = null)
     {
         ArgumentNullException.ThrowIfNull(platform);
         paths ??= new AppPaths();
@@ -82,7 +84,7 @@ public static class AppComposition
         var installState = new InstallStateStore(paths);
         var previousVersion = installState.Load()?.LastRunVersion;
         var runKind = installState.Record(currentVersion);
-        var profiles = new JsonProfileStore(paths, SecretStoreFactory.Create(paths.DataDirectory));
+        var profiles = new JsonProfileStore(paths, secretStore ?? SecretStoreFactory.Create(paths.DataDirectory));
         var history = new JsonQueryHistoryStore(paths);
         var settings = new JsonSettingsStore(paths);
         LanguageSetup.Apply(settings, Environment.GetEnvironmentVariable("SQUILL_LANGUAGE"), CultureInfo.CurrentUICulture);
@@ -92,7 +94,8 @@ public static class AppComposition
         var list = new ConnectionListViewModel(profiles, platform.Providers, platform.Dialogs);
         var workspace = new WorkspaceViewModel(
             sessions, list, history, settings, platform.Dispatcher, platform.Dialogs, platform.EditorFactory,
-            profiles, platform.TerminalHostFactory, diagramStore: diagramStore, measureText: measureText, tableFilters: new JsonTableFilterStore(paths));
+            profiles, platform.TerminalHostFactory, diagramStore: diagramStore, measureText: measureText, tableFilters: new JsonTableFilterStore(paths),
+            recent: new JsonRecentConnectionsStore(paths));
         var updates = new UpdateViewModel(
             new UpdateService(
                 updateEngine ?? UpdateEngineFactory.Create("https://github.com/squillapp/squill", Environment.GetEnvironmentVariable("SQUILL_UPDATE_FEED")),

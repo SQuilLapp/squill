@@ -1,6 +1,6 @@
 # Execution plan verification (P13-21)
 
-Status: **automated done, manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
+Status: **automated done, agent pass partial (P19-14 Avalonia plan tab, dark fr only; PostgreSQL plan rows not driven), manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
 
 ## Automated (done)
 
@@ -29,15 +29,15 @@ Columns: WinUI / Avalonia = tick when it behaves as described in that head. Resu
 
 | Step | WinUI | Avalonia | Result | Note |
 |---|---|---|---|---|
-| 1 Type the join, caret in it, click `Expliquer`: a tab `Requête 1 · Plan` opens next to the query tab, with the query tab's environment color | [ ] | [ ] | | |
-| 2 The three views `Arbre` / `Graphique` / `Texte`: table only, canvas above table, raw `EXPLAIN QUERY PLAN` rows in monospace (selectable) | [ ] | [ ] | | |
+| 1 Type the join, caret in it, click `Expliquer`: a tab `Requête 1 · Plan` opens next to the query tab, with the query tab's environment color | [ ] | [ ] | agent: ok | agent (Avalonia only, dark fr, scale 1.5, join adapted to the seed tables): tab `Requête 1 · Plan` opens with the Production color. |
+| 2 The three views `Arbre` / `Graphique` / `Texte`: table only, canvas above table, raw `EXPLAIN QUERY PLAN` rows in monospace (selectable) | [ ] | [ ] | agent: ok | agent (Avalonia only, dark fr): the three view buttons exist and `Graphique` shows canvas above table; `Arbre` and `Texte` not clicked. |
 | 3 Cost-free plan: no relative-cost bars, no `%`, no `Coût` figure in the summary, cells show an en dash, nothing invented | [ ] | [ ] | | |
 | 4 Click a row, then a card in the graph: selection follows in both, the details panel (right, 264 wide) shows the node | [ ] | [ ] | | |
 | 5 Zoom `-` / `100 %` / `+` (and Ctrl+wheel): the graph scales, the table does not | [ ] | [ ] | | |
 | 6 Edit the query text, click `Relancer` (and press Ctrl+Maj+E): the plan of the **old** statement is shown again | [ ] | [ ] | | |
 | 7 `Analyser` is disabled and its tooltip gives the reason (not available on SQLite) | [ ] | [ ] | | |
 | 8 Put the caret in an `insert` statement: `Expliquer` works, `Analyser` is disabled with a reason; put it in a `create table`: both disabled with a reason | [ ] | [ ] | | |
-| 9 Status bar on the plan tab: engine message, `<n> nœuds`, server version | [ ] | [ ] | | |
+| 9 Status bar on the plan tab: engine message, `<n> nœuds`, server version | [ ] | [ ] | agent: ok | agent (Avalonia only, dark fr): `Plan estimé : l'instruction n'a pas été exécutée`, `5 nœuds`, `3.53.4`. |
 
 ### PostgreSQL
 
@@ -87,6 +87,6 @@ Columns: WinUI / Avalonia = tick when it behaves as described in that head. Resu
 
 | Step | WinUI | Avalonia | Result | Note |
 |---|---|---|---|---|
-| 1 Repeat the PostgreSQL steps 1, 4 and 12 with `SQUILL_LANGUAGE=en`: every label of the plan tab is English (no French left, no missing key shown as `plan.*`) | [ ] | [ ] | | |
-| 2 Compare the plan tab (`Graphique` view, Light) with `M06-Plan-clair-Windows.png` at 1440 x 900: toolbar order, card size, colors, table columns, details panel width, legend | [ ] | [ ] | | |
-| 3 Same in Dark with `M06-Plan-sombre-Windows.png` | [ ] | [ ] | | |
+| 1 Repeat the PostgreSQL steps 1, 4 and 12 with `SQUILL_LANGUAGE=en`: every label of the plan tab is English (no French left, no missing key shown as `plan.*`) | [ ] | [ ] | agent: not driven (session budget: the plan tab was not opened) | |
+| 2 Compare the plan tab (`Graphique` view, Light) with `M06-Plan-clair-Windows.png` at 1440 x 900: toolbar order, card size, colors, table columns, details panel width, legend | [ ] | [ ] | agent: not driven (session budget: the plan tab was not opened) | |
+| 3 Same in Dark with `M06-Plan-sombre-Windows.png` | [ ] | [ ] | agent: not driven (session budget: the plan tab was not opened) | agent (Avalonia, SQLite plan, dark fr, composite read): toolbar order, zoom and `Relancer` as in M06; the explorer stays open where the mockup hides it; the SQLite plan has no cost, so no bars, figures or details panel content to compare; the four cards of the plan are tall and cut at the canvas bottom. WinUI not driven. |

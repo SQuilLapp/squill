@@ -149,10 +149,14 @@ public static class PlanFlowScenario
 
     private static async Task ParametersThenExplain(Rig rig, string t, PlanFlowSpec spec)
     {
-        rig.Dialogs.Answer = names => [.. names.Select(n => new ParameterValue(n, "c", false))];
         rig.Editor.Text = $"select id from {t} where name = {spec.Sigil}who";
-        await rig.Tab.ExplainCommand.ExecuteAsync(null);
-        Assert.Equal(["who"], rig.Dialogs.AskedNames);
+        var explain = rig.Tab.ExplainCommand.ExecuteAsync(null);
+        for (var i = 0; i < 100 && !rig.Tab.IsParametersPanelOpen; i++)
+            await Task.Delay(100, TestContext.Current.CancellationToken);
+        Assert.Equal(["who"], rig.Tab.ParameterRows.Select(r => r.Name));
+        rig.Tab.ParameterRows[0].Text = "c";
+        rig.Tab.RunParametersCommand.Execute(null);
+        await explain.WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
         // The engine explains the statement with its parameter, or the provider says so (reason "parameters"): never a silent substitution.
         var planTab = rig.Workspace.Plans.Single();
         Assert.True(
@@ -264,10 +268,6 @@ public static class PlanFlowScenario
 
     private sealed class Dialogs : IDialogService
     {
-        public Func<IReadOnlyList<string>, IReadOnlyList<ParameterValue>?> Answer { get; set; } = _ => null;
-
-        public IReadOnlyList<string> AskedNames { get; private set; } = [];
-
         public ValueTask<bool> ConfirmSshHostKeyAsync(Squill.Platform.Ssh.SshHostKeyRequest request) => ValueTask.FromResult(false);
 
         public ValueTask<Squill.Presentation.Safety.ProductionConfirmationResult> ConfirmProductionAsync(Squill.Presentation.Safety.ProductionConfirmationRequest request) =>
@@ -283,11 +283,5 @@ public static class PlanFlowScenario
         public ValueTask<string?> PickSaveFileAsync(string suggestedName, string extension) => ValueTask.FromResult<string?>(null);
 
         public ValueTask ShowErrorAsync(string title, string message) => ValueTask.CompletedTask;
-
-        public ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(IReadOnlyList<string> names, IReadOnlyDictionary<string, ParameterValue> defaults)
-        {
-            AskedNames = names;
-            return ValueTask.FromResult(Answer(names));
-        }
     }
 }

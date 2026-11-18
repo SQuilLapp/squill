@@ -1,6 +1,6 @@
 # Grid filter and command palette verification (P17-17)
 
-Status: **automated done, manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
+Status: **automated done, agent pass partial (P18-28, P19-13 WinUI dark grid filter, P19-15 Avalonia dark fr; the rest not driven), manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
 
 ## Automated (done)
 
@@ -47,41 +47,48 @@ Columns: WinUI / Avalonia = tick when it behaves as described in that head. Resu
 
 | # | Step | WinUI | Avalonia | Result |
 |---|------|:-----:|:--------:|--------|
-| 1 | Run a `select *`; the filter bar shows `+ Filtre`, the search box and no chip; the footer reads `Lignes 1-N sur N chargées`. | [ ] | [ ] | |
-| 2 | `+ Filtre`, pick a number column, `>`, a value: a chip appears, rows are filtered, the footer reads `x lignes sur N · filtre actif`, the header of that column shows the funnel mark. | [ ] | [ ] | |
-| 3 | Same with a text column and `contient` (with an accent and other case), with `est NULL`, with a date `>=`, with a boolean. An invalid operand shows the message and keeps the popup open. | [ ] | [ ] | |
-| 4 | Column menu (header chevron or right click): `Trier croissant` / `Trier décroissant` show the sort arrow in the header; clicking the header cycles ascending, descending, none. | [ ] | [ ] | |
-| 5 | Column menu value list: counts, a `NULL` row, the value search box; uncheck some values, apply: an `est dans` chip appears; reopen the menu, the checks match the chip; `Effacer` on the column removes it. | [ ] | [ ] | |
-| 6 | Remove a chip with its cross; `Effacer les filtres` removes every chip, the search text and the sort at once. | [ ] | [ ] | |
-| 7 | Search box and `Ctrl+F` (focus goes to the box; `Esc` clears and returns to the grid): the grid narrows to rows containing the text in any column; typing quickly does not stutter. | [ ] | [ ] | |
-| 8 | While a filter is active the read-only marker `filtre actif` shows, a double click or typing on a cell edits nothing, no new row can be added. | [ ] | [ ] | |
-| 9 | Edit a cell without committing: the bar is disabled with the explanation (`Validez ou annulez les modifications avant de filtrer`); commit or revert, the bar works again. | [ ] | [ ] | |
-| 10 | Export CSV while filtered: the file holds every loaded row, not only the filtered ones. | [ ] | [ ] | |
-| 11 | Run a slow, large query and add a filter while rows are still arriving: the count grows, nothing freezes, no error. | [ ] | [ ] | |
-| 12 | A 100,000-row result: filter, sort and search stay responsive (the window can still be dragged and the grid scrolled during the rebuild). | [ ] | [ ] | |
-| 13 | Run another query in the same tab: the previous filters do not leak into the new result. | [ ] | [ ] | |
-| 14 | Compare with `M05-Grille-*`: list every visible difference (spacing, chip look, funnel and arrow, footer wording) in the Note below. | [ ] | [ ] | |
+| 1 | Run a `select *`; the filter bar shows `+ Filtre`, the search box and no chip; the footer reads `Lignes 1-N sur N chargées`. | [ ] | [ ] | agent: ok (WinUI, light, fr; footer `Lignes 1–12 sur 12 chargées`) |
+| 2 | `+ Filtre`, pick a number column, `>`, a value: a chip appears, rows are filtered, the footer reads `x lignes sur N · filtre actif`, the header of that column shows the funnel mark. | [ ] | [ ] | agent: ok (WinUI, light, fr; chip `id = 10110`, funnel on the header, footer `1 ligne sur 12 · filtre actif`) |
+| 3 | Same with a text column and `contient` (with an accent and other case), with `est NULL`, with a date `>=`, with a boolean. An invalid operand shows the message and keeps the popup open. | [ ] | [ ] | agent: partial (empty operand shows `Valeur requise` and keeps the popup; other types not driven) |
+| 4 | Column menu (header chevron or right click): `Trier croissant` / `Trier décroissant` show the sort arrow in the header; clicking the header cycles ascending, descending, none. | [ ] | [ ] | agent: not driven |
+| 5 | Column menu value list: counts, a `NULL` row, the value search box; uncheck some values, apply: an `est dans` chip appears; reopen the menu, the checks match the chip; `Effacer` on the column removes it. | [ ] | [ ] | agent: not driven |
+| 6 | Remove a chip with its cross; `Effacer les filtres` removes every chip, the search text and the sort at once. | [ ] | [ ] | agent: not driven |
+| 7 | Search box and `Ctrl+F` (focus goes to the box; `Esc` clears and returns to the grid): the grid narrows to rows containing the text in any column; typing quickly does not stutter. | [ ] | [ ] | agent: not driven |
+| 8 | While a filter is active the read-only marker `filtre actif` shows, a double click or typing on a cell edits nothing, no new row can be added. | [ ] | [ ] | agent: not driven; the marker still reads `Modifiable · clé primaire id` while a filter is active, owner to check against ADR 0014 |
+| 9 | Edit a cell without committing: the bar is disabled with the explanation (`Validez ou annulez les modifications avant de filtrer`); commit or revert, the bar works again. | [ ] | [ ] | agent: not driven |
+| 10 | Export CSV while filtered: the file holds every loaded row, not only the filtered ones. | [ ] | [ ] | agent: not driven |
+| 11 | Run a slow, large query and add a filter while rows are still arriving: the count grows, nothing freezes, no error. | [ ] | [ ] | agent: not driven |
+| 12 | A 100,000-row result: filter, sort and search stay responsive (the window can still be dragged and the grid scrolled during the rebuild). | [ ] | [ ] | agent: not driven |
+| 13 | Run another query in the same tab: the previous filters do not leak into the new result. | [ ] | [ ] | agent: not driven |
+| 14 | Compare with `M05-Grille-*`: list every visible difference (spacing, chip look, funnel and arrow, footer wording) in the Note below. | [ ] | [ ] | agent: see Note |
 
 ## Checklist: command palette
 
 | # | Step | WinUI | Avalonia | Result |
 |---|------|:-----:|:--------:|--------|
-| 15 | `Ctrl+K` from the editor, from the grid and from the explorer opens the palette; a click on the title bar search box opens it too. | [ ] | [ ] | |
-| 16 | With nothing typed: the `ACTIONS` and `HISTORY` sections; the mode pills `Tout`, `Actions`, `Objets`, `Historique`, `Ligne` select a mode and rewrite the prefix. | [ ] | [ ] | |
-| 17 | Type `comm` (or a table name present on two connections): `OBJETS`, `ACTIONS`, `HISTORIQUE` in that order, matched letters highlighted, the footer reads `n résultats · x ms`. | [ ] | [ ] | |
-| 18 | Prefixes: `>` actions only (`Valider` greyed out without a transaction), `#` tables, views, routines and triggers, `!` history newest first, `:12` go to line. | [ ] | [ ] | |
-| 19 | Keys: Up / Down move (and wrap), `Enter` runs, `Ctrl+Entrée` on a table opens a query tab with the `SELECT *`, `Esc` closes, a click outside closes. | [ ] | [ ] | |
-| 20 | Focus returns to where it was (editor or grid) after `Esc` and after running an item; no key typed in the palette reaches the editor behind it. | [ ] | [ ] | |
-| 21 | `!` then `Enter` on an entry inserts its text at the end of the editor, caret on the first inserted line, and runs nothing. | [ ] | [ ] | |
-| 22 | `:3` then `Enter` moves the caret to line 3 of the active editor; with no editor open the row is greyed out with a notice. | [ ] | [ ] | |
-| 23 | With two connections open (Production and Staging): objects of both are listed with their connection name and the environment square; `Enter` on a table of the non-active connection switches to that connection and opens the table. | [ ] | [ ] | |
-| 24 | Close and re-open: the text is empty again; a slow search never shows stale rows after more typing. | [ ] | [ ] | |
-| 25 | Narrow window (about 600 px): the palette stays inside the window, rows truncate, pills wrap or scroll. | [ ] | [ ] | |
-| 26 | Screen reader (Narrator): the input, the result count and the selected row are announced. | [ ] | [ ] | |
-| 27 | Compare with `M13-Palette-*`: list every visible difference in the Note below. | [ ] | [ ] | |
+| 15 | `Ctrl+K` from the editor, from the grid and from the explorer opens the palette; a click on the title bar search box opens it too. | [ ] | [ ] | agent: partial (synthetic Ctrl+K did not open the palette; Enter on the focused title bar box did) |
+| 16 | With nothing typed: the `ACTIONS` and `HISTORY` sections; the mode pills `Tout`, `Actions`, `Objets`, `Historique`, `Ligne` select a mode and rewrite the prefix. | [ ] | [ ] | agent: partial (pills `Tout`, `> Actions`, `# Objets`, `: Ligne`, `! Historique` present; empty state not captured) |
+| 17 | Type `comm` (or a table name present on two connections): `OBJETS`, `ACTIONS`, `HISTORIQUE` in that order, matched letters highlighted, the footer reads `n résultats · x ms`. | [ ] | [ ] | agent: ok (WinUI, light, fr; OBJETS, ACTIONS, HISTORIQUE, highlights, `15 résultats · 2 ms`); footer spacing fixed |
+| 18 | Prefixes: `>` actions only (`Valider` greyed out without a transaction), `#` tables, views, routines and triggers, `!` history newest first, `:12` go to line. | [ ] | [ ] | agent: not driven |
+| 19 | Keys: Up / Down move (and wrap), `Enter` runs, `Ctrl+Entrée` on a table opens a query tab with the `SELECT *`, `Esc` closes, a click outside closes. | [ ] | [ ] | agent: not driven |
+| 20 | Focus returns to where it was (editor or grid) after `Esc` and after running an item; no key typed in the palette reaches the editor behind it. | [ ] | [ ] | agent: not driven |
+| 21 | `!` then `Enter` on an entry inserts its text at the end of the editor, caret on the first inserted line, and runs nothing. | [ ] | [ ] | agent: not driven |
+| 22 | `:3` then `Enter` moves the caret to line 3 of the active editor; with no editor open the row is greyed out with a notice. | [ ] | [ ] | agent: not driven |
+| 23 | With two connections open (Production and Staging): objects of both are listed with their connection name and the environment square; `Enter` on a table of the non-active connection switches to that connection and opens the table. | [ ] | [ ] | agent: not driven (one connection only) |
+| 24 | Close and re-open: the text is empty again; a slow search never shows stale rows after more typing. | [ ] | [ ] | agent: not driven |
+| 25 | Narrow window (about 600 px): the palette stays inside the window, rows truncate, pills wrap or scroll. | [ ] | [ ] | agent: not driven |
+| 26 | Screen reader (Narrator): the input, the result count and the selected row are announced. | [ ] | [ ] | agent: not driven |
+| 27 | Compare with `M13-Palette-*`: list every visible difference in the Note below. | [ ] | [ ] | agent: see Note |
 
 ## Note
 
 Visible differences from M05 and M13, bugs found, and what was not driven (to be filled by the owner):
 
--
+- WinUI head, light theme, French, SQLite seed of `tools/visual/` (agent, P18-28). Not driven: dark theme, English, Avalonia, every step marked `not driven`.
+- M05: the filter bar, the `+ Filtre` popup, the chip with its funnel and the footer follow M05 (chip pill with funnel and cross, `+ Filtre`, search box with `Ctrl+F`). Differences: no pending-edits banner or row panel in the capture, `Bloc` selector and infinite scroll not built (ADR 0014), the grid is short because the editor keeps most of the height at 1440x900.
+- M13: the palette opens left of centre, with no dimmed backdrop, no environment squares, no shortcut keycaps on action rows, no `@ Symboles` pill and no `FICHIERS` section (the last two are known limits); the title bar search box shows a focus ring when clicked. The footer hints ran into the result count (`onglet15 résultats`); fixed in this card.
+
+- P19-13 (agent): WinUI published AOT head, dark theme, French, SQLite `-Scenario Full`, 1440 x 900, compared with `M05-Grille-sombre-Windows.png`. The grid, the `+ Filtre` popup (`Nouveau filtre`, `Colonne`, `Opérateur`, `Valeur`, `Annuler`, `Appliquer`), the chip `id = 10110` with its cross, the funnel on the `id` header, the highlighted column and the footer `1 ligne sur 12 · filtre actif` render correctly in dark (contrast, tokens); the visible differences from M05 are the same as in the light note above. Steps 4-13 were not driven (time). Palette (steps 15-27): synthetic keys and a click on the title bar box did not open the palette in this session (the click-and-Enter opened a new query tab instead), so the dark palette was not compared with `M13-Palette-sombre-Windows.png`. English and the filter steps beyond step 2 are `not driven (time)`.
+
+- P19-15 (agent): Avalonia published AOT head, dark theme, French, SQLite `-Scenario Full` (profile `local-sqlite`), 1440 x 900 logical (scale 1.5). Compared with `M05-Grille-sombre-Windows.png` and `M13-Palette-sombre-Windows.png` (composites read). Steps 1, 2, 6 (chip cross) and 17: agent: ok on Avalonia: `+ Filtre` popup (`Nouveau filtre`, `Colonne`, `Opérateur`, `Valeur`, `Annuler`, `Appliquer`), chip `id = 10110` with its cross, funnel on the `id` header, footer `1 ligne sur 12 · filtre actif`, and removing the chip restores `Lignes 1-12 sur 12 chargées`. Step 5 (partial): the column menu opens on right click with `Filtre local sur « ville »`, a value search box, sort up / down arrows, `Valeur` / `Nombre` list with counts and a `NULL` row, `Appliquer`; apply and re-open not driven. Difference from M05: the menu has no `Trier croissant` text items, `Masquer`, `Ajuster la largeur` or `Copier le nom` (not built, ADR 0014). Step 8: the marker still reads `Modifiable · clé primaire id` while a filter is active, as in WinUI; owner to check against ADR 0014. Step 15: `Ctrl+K` from the editor opens the palette (unlike WinUI). Step 16-17: pills `Tout`, `> Actions`, `# Objets`, `: Ligne`, `! Historique`; `comm` lists OBJETS, ACTIONS with environment squares and the dimmed backdrop; differences from M13: narrower popup, no keycaps on action rows, no `FICHIERS` / `@ Symboles` (known limits). Bug found and fixed in this card: the footer hints ran into the result count (`nouvel onglet4 résultats`), the same defect P18-28 fixed in WinUI (`Margin` and trimming added to the hint text in `Controls/CommandPalette.cs`). Not driven (time): light theme, English, steps 3-4 (sort cycle, other operand types), 7, 9-14, 18-27.
+

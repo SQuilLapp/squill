@@ -1,12 +1,14 @@
 using Npgsql;
 using Squill.Core;
+using Squill.Core.Activity;
 using Squill.Core.Plans;
+using Squill.Core.Security;
 using Squill.Core.Transactions;
 
 namespace Squill.Data.Postgres;
 
 /// <summary>Postgres implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, NpgsqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader, ITransactionProbe
+internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, NpgsqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader, ITransactionProbe, IActivityReader, ISecurityReader
 {
     /// <inheritdoc />
     public string ServerVersion => connection.PostgreSqlVersion.ToString();
@@ -39,6 +41,33 @@ internal sealed class PostgresDatabaseConnection(NpgsqlDataSource dataSource, Np
     /// <inheritdoc />
     public ValueTask<QueryPlan> ExplainAsync(string sql, IReadOnlyList<QueryParameter> parameters, PlanMode mode, CancellationToken cancellationToken) =>
         PostgresPlanReader.ExplainAsync(connection, commandTimeoutSeconds, sql, parameters, mode, cancellationToken);
+
+    /// <inheritdoc />
+    public bool SupportsCancelQuery => true;
+
+    /// <inheritdoc />
+    public ValueTask<ActivitySnapshot> ReadAsync(CancellationToken cancellationToken) =>
+        PostgresActivityReader.ReadAsync(dataSource, cancellationToken);
+
+    /// <inheritdoc />
+    public ValueTask CancelQueryAsync(string sessionId, CancellationToken cancellationToken) =>
+        PostgresActivityReader.CancelAsync(dataSource, sessionId, cancellationToken);
+
+    /// <inheritdoc />
+    public ValueTask TerminateSessionAsync(string sessionId, CancellationToken cancellationToken) =>
+        PostgresActivityReader.TerminateAsync(dataSource, sessionId, cancellationToken);
+
+    /// <inheritdoc />
+    public ValueTask<IReadOnlyList<RoleInfo>> ReadRolesAsync(CancellationToken cancellationToken) =>
+        PostgresSecurityReader.ReadRolesAsync(dataSource, includeSystem: false, cancellationToken);
+
+    /// <inheritdoc />
+    public ValueTask<IReadOnlyList<ObjectPrivileges>> ReadPrivilegesAsync(string role, IReadOnlyList<string> schemas, CancellationToken cancellationToken) =>
+        PostgresSecurityReader.ReadPrivilegesAsync(dataSource, role, schemas, cancellationToken);
+
+    /// <inheritdoc />
+    public ValueTask<IReadOnlyList<string>> ListSchemasAsync(CancellationToken cancellationToken) =>
+        PostgresSecurityReader.ListSchemasAsync(dataSource, cancellationToken);
 
     /// <inheritdoc />
     public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>

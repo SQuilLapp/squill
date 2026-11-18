@@ -23,7 +23,7 @@ public sealed partial class Splitter : UserControl
     public Splitter(bool vertical)
     {
         _vertical = vertical;
-        Content = new Border { Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SquillBorderBrush"] };
+        Content = new Border { Background = Views.Tokens.Brush("SquillBorderBrush") };
         if (vertical)
             Width = Thickness;
         else

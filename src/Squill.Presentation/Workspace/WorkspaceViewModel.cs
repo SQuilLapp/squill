@@ -1,5 +1,6 @@
 using Squill.Presentation.Localization;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
@@ -8,14 +9,19 @@ using Squill.Core.Design;
 using Squill.Platform.Profiles;
 using Squill.Platform.Settings;
 using Squill.Platform.Storage;
+using Squill.Presentation.Activity;
+using Squill.Presentation.Compare;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Explorer;
+using Squill.Presentation.Home;
+using Squill.Presentation.Import;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
 using Squill.Presentation.Safety;
+using Squill.Presentation.Security;
 using Squill.Presentation.Palette;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Terminal;
@@ -55,6 +61,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     /// <param name="measureText">Text measurer of the head's diagram font; <see langword="null"/> disables the diagram.</param>
     /// <param name="time">Clock of the 30-second refresh of the transaction duration; defaults to <see cref="TimeProvider.System"/>.</param>
     /// <param name="tableFilters">Persists the tables the explorer hides; <see langword="null"/> keeps them for the run only.</param>
+    /// <param name="recent">Remembers when each connection was opened for the home page; <see langword="null"/> keeps no history.</param>
     public WorkspaceViewModel(
         SessionManager manager,
         ConnectionListViewModel connectionList,
@@ -69,7 +76,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         IDiagramLayoutStore? diagramStore = null,
         Func<string, double>? measureText = null,
         TimeProvider? time = null,
-        ITableFilterStore? tableFilters = null)
+        ITableFilterStore? tableFilters = null,
+        IRecentConnectionsStore? recent = null)
     {
         ArgumentNullException.ThrowIfNull(manager);
         ArgumentNullException.ThrowIfNull(connectionList);
@@ -100,6 +108,27 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             PaletteActionRegistry.ForWorkspace(this), objects.Search, historySearch.Search, historySearch.ReloadAsync, line.Search,
             () => AllSessions().Any(), dispatcher, dialogs);
         Explorer = new ExplorerTreeViewModel(connectionList, manager.Sessions, tableFilters);
+        Home = new HomeViewModel(connectionList, recent ?? new NoRecentConnections(), settings, p => ConnectCommand.ExecuteAsync(p), Palette.Open, time ?? TimeProvider.System,
+            id => (Tabs.Count(t => t.Session.Root.Profile.Id == id), AllSessions().FirstOrDefault(x => x.Profile.Id == id)?.Connection.ServerVersion));
+        manager.Sessions.CollectionChanged += (_, e) =>
+        {
+            if (e.NewItems is not null)
+                foreach (var added in e.NewItems.OfType<ConnectionSession>().Where(x => x.Parent is null))
+                    _ = Home.TouchAsync(added.Profile.Id, CancellationToken.None);
+        };
+        foreach (var collection in new INotifyCollectionChanged[] { manager.Sessions, Tabs, Terminals, Designers, Diagrams, Plans, Compares, Monitors, SecurityTabs })
+            collection.CollectionChanged += (_, _) => UpdateHomeVisibility();
+        foreach (var collection in new INotifyCollectionChanged[] { manager.Sessions, Tabs })
+            collection.CollectionChanged += (_, _) => Home.RefreshLive();
+        manager.Sessions.CollectionChanged += (_, _) => RaiseSchemaCompareAvailability();
+        manager.Sessions.CollectionChanged += (_, _) => RaiseMonitorAvailability();
+        manager.Sessions.CollectionChanged += (_, _) => RaiseSecurityAvailability();
+        manager.Sessions.CollectionChanged += (_, _) => RaiseImportAvailability();
+        Explorer.ImportTableRequested += (_, r) =>
+        {
+            ActiveSession = r.Session;
+            _ = ImportOnAsync(r.Session, r.Table);
+        };
         Explorer.OpenTableRequested += (_, r) => _ = OpenTableOnAsync(r.Session, r.Table);
         Explorer.DesignTableRequested += (_, r) => DesignTableOn(r.Session, r.Table);
         Explorer.DropTableRequested += (_, r) =>
@@ -119,6 +148,27 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     /// <summary>Gets the saved connections.</summary>
     public ConnectionListViewModel ConnectionList { get; }
 
+    /// <summary>Gets the home page.</summary>
+    public HomeViewModel Home { get; }
+
+    /// <summary>Gets whether the home page is on screen: the startup setting at launch, then whenever no tab is open and no connection is active.</summary>
+    [ObservableProperty]
+    public partial bool IsHomeVisible { get; private set; }
+
+    /// <summary>Loads the home page and decides whether it shows at launch; call once after the connection list is loaded.</summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A task that completes when the home page is ready.</returns>
+    public async Task InitializeHomeAsync(CancellationToken ct)
+    {
+        await Home.InitializeAsync(ct);
+        IsHomeVisible = Home.ShowAtStartup && HasNothingOpen();
+    }
+
+    private bool HasNothingOpen() =>
+        Sessions.Count == 0 && Tabs.Count == 0 && Terminals.Count == 0 && Designers.Count == 0 && Diagrams.Count == 0 && Plans.Count == 0 && Compares.Count == 0 && Monitors.Count == 0 && SecurityTabs.Count == 0;
+
+    private void UpdateHomeVisibility() => IsHomeVisible = HasNothingOpen();
+
     /// <summary>Gets the command palette; its <see cref="PaletteViewModel.Registry"/> takes the head-only actions.</summary>
     public PaletteViewModel Palette { get; }
 
@@ -133,6 +183,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     public void Dispose()
     {
         _elapsedTimer.Dispose();
+        foreach (var monitor in Monitors)
+            monitor.Dispose();
         Palette.Dispose();
     }
 
@@ -159,6 +211,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             if (session.Transaction.State == TransactionState.Open)
                 session.Transaction.RefreshElapsed();
         }
+
+        foreach (var compare in Compares)
+            compare.RefreshComparedText();
     }
 
     /// <summary>Gets the open sessions.</summary>
@@ -178,6 +233,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
 
     /// <summary>Gets the open plan tabs, at most one per query tab.</summary>
     public ObservableCollection<PlanTabViewModel> Plans { get; } = [];
+
+    /// <summary>Gets the open schema compare tabs, at most one.</summary>
+    public ObservableCollection<SchemaCompareViewModel> Compares { get; } = [];
 
     /// <summary>Gets or sets the session shown in the explorer and used by new tabs.</summary>
     [ObservableProperty]
@@ -205,6 +263,212 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     /// <summary>Gets or sets the plan tab shown.</summary>
     [ObservableProperty]
     public partial PlanTabViewModel? ActivePlan { get; set; }
+
+    /// <summary>Gets the open sessions and locks monitors, at most one per connection session.</summary>
+    public ObservableCollection<SessionsMonitorViewModel> Monitors { get; } = [];
+
+    /// <summary>Gets or sets the sessions monitor tab shown.</summary>
+    [ObservableProperty]
+    public partial SessionsMonitorViewModel? ActiveMonitor { get; set; }
+
+    private bool CanOpenSessionsMonitor() => SessionsMonitorViewModel.DisabledReason(ActiveSession).Length == 0;
+
+    /// <summary>Gets why the sessions monitor cannot be opened (the tooltip of the disabled menu item and palette action), empty when it can.</summary>
+    public string SessionsMonitorDisabledReason => SessionsMonitorViewModel.DisabledReason(ActiveSession);
+
+    private void RaiseMonitorAvailability()
+    {
+        OpenSessionsMonitorCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(SessionsMonitorDisabledReason));
+    }
+
+    /// <summary>Opens the sessions and locks monitor of the active session, or shows it when it is already open.</summary>
+    [RelayCommand(CanExecute = nameof(CanOpenSessionsMonitor))]
+    public void OpenSessionsMonitor()
+    {
+        if (ActiveSession is not { } session)
+            return;
+        if (Monitors.FirstOrDefault(m => m.Session == session) is { } open)
+        {
+            ActiveMonitor = open;
+            return;
+        }
+
+        var monitor = new SessionsMonitorViewModel(session, _dialogs, _dispatcher);
+        monitor.CloseRequested += RemoveMonitor;
+        Monitors.Add(monitor);
+        ActiveMonitor = monitor;
+    }
+
+    [RelayCommand]
+    private void CloseMonitor(SessionsMonitorViewModel? monitor)
+    {
+        if (monitor is not null)
+            RemoveMonitor(monitor);
+    }
+
+    private void RemoveMonitor(SessionsMonitorViewModel monitor)
+    {
+        var index = Monitors.IndexOf(monitor);
+        if (index < 0)
+            return;
+        Monitors.RemoveAt(index);
+        monitor.CloseRequested -= RemoveMonitor;
+        monitor.Dispose();
+        if (ActiveMonitor == monitor)
+            ActiveMonitor = Monitors.Count == 0 ? null : Monitors[Math.Min(index, Monitors.Count - 1)];
+    }
+
+    /// <summary>Gets the open security tabs, at most one per connection session.</summary>
+    public ObservableCollection<SecurityViewModel> SecurityTabs { get; } = [];
+
+    /// <summary>Gets or sets the security tab shown.</summary>
+    [ObservableProperty]
+    public partial SecurityViewModel? ActiveSecurity { get; set; }
+
+    private bool CanOpenSecurity() => SecurityViewModel.DisabledReason(ActiveSession).Length == 0;
+
+    /// <summary>Gets why the security tab cannot be opened (the tooltip of the disabled menu item and palette action), empty when it can.</summary>
+    public string SecurityDisabledReason => SecurityViewModel.DisabledReason(ActiveSession);
+
+    private void RaiseSecurityAvailability()
+    {
+        OpenSecurityCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(SecurityDisabledReason));
+    }
+
+    /// <summary>Opens the security tab of the active session, or shows it when it is already open.</summary>
+    [RelayCommand(CanExecute = nameof(CanOpenSecurity))]
+    public void OpenSecurity()
+    {
+        if (ActiveSession is not { } session)
+            return;
+        if (SecurityTabs.FirstOrDefault(s => s.Session == session) is { } open)
+        {
+            ActiveSecurity = open;
+            return;
+        }
+
+        var security = new SecurityViewModel(session, _dialogs);
+        security.CloseRequested += RemoveSecurity;
+        SecurityTabs.Add(security);
+        ActiveSecurity = security;
+        _ = security.LoadAsync();
+    }
+
+    [RelayCommand]
+    private void CloseSecurity(SecurityViewModel? security)
+    {
+        if (security is not null)
+            RemoveSecurity(security);
+    }
+
+    private void RemoveSecurity(SecurityViewModel security)
+    {
+        var index = SecurityTabs.IndexOf(security);
+        if (index < 0)
+            return;
+        SecurityTabs.RemoveAt(index);
+        security.CloseRequested -= RemoveSecurity;
+        security.Dispose();
+        if (ActiveSecurity == security)
+            ActiveSecurity = SecurityTabs.Count == 0 ? null : SecurityTabs[Math.Min(index, SecurityTabs.Count - 1)];
+    }
+
+    private bool CanImportData() => ImportWizardViewModel.DisabledReason(ActiveSession).Length == 0;
+
+    /// <summary>Gets why the import wizard cannot be opened (the tooltip of the disabled menu item and palette action), empty when it can.</summary>
+    public string ImportDisabledReason => ImportWizardViewModel.DisabledReason(ActiveSession);
+
+    private void RaiseImportAvailability()
+    {
+        ImportDataCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(ImportDisabledReason));
+    }
+
+    /// <summary>Opens the import wizard on the active session.</summary>
+    /// <param name="table">The table to pre-select, or <see langword="null"/>.</param>
+    /// <returns>A task that completes when the wizard window is closed.</returns>
+    [RelayCommand(CanExecute = nameof(CanImportData))]
+    public Task ImportDataAsync(TableInfo? table) => ActiveSession is { } session ? ImportOnAsync(session, table) : Task.CompletedTask;
+
+    private async Task ImportOnAsync(ConnectionSession session, TableInfo? table)
+    {
+        if (table?.Kind is { } kind && kind != TableKind.Table)
+            return;
+        var wizard = new ImportWizardViewModel([.. AllSessions()], _dialogs, session, table, _dispatcher);
+        wizard.ViewTableRequested += (s, t) => _ = OpenTableOnAsync(s, t);
+        try
+        {
+            await _dialogs.ShowImportWizardAsync(wizard);
+        }
+        finally
+        {
+            wizard.Dispose();
+        }
+    }
+
+    /// <summary>Gets or sets the schema compare tab shown.</summary>
+    [ObservableProperty]
+    public partial SchemaCompareViewModel? ActiveCompare { get; set; }
+
+    private IReadOnlyList<CompareEndpoint> CompareEndpoints() => CompareEndpoint.List(AllSessions());
+
+    private bool CanOpenSchemaCompare() => CompareEndpoint.CanCompare(CompareEndpoints());
+
+    /// <summary>Gets why the schema comparison cannot be opened (the tooltip of the disabled menu item and palette action), empty when it can.</summary>
+    public string SchemaCompareDisabledReason =>
+        CanOpenSchemaCompare() ? ""
+        : UiText.Get(AllSessions().Any() && AllSessions().All(s => s.Profile.Dialect == DatabaseDialect.Oracle) ? "compare.disabled.oracle" : "compare.disabled.sessions");
+
+    private void RaiseSchemaCompareAvailability()
+    {
+        OpenSchemaCompareCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(SchemaCompareDisabledReason));
+    }
+
+    /// <summary>Opens the schema compare tab, or shows it when it is already open.</summary>
+    /// <param name="sessionId">The profile id of the connection to compare from; <see langword="null"/> uses the active session.</param>
+    [RelayCommand(CanExecute = nameof(CanOpenSchemaCompare))]
+    public void OpenSchemaCompare(Guid? sessionId)
+    {
+        var from = sessionId is { } id ? AllSessions().FirstOrDefault(s => s.Profile.Id == id) : ActiveSession;
+        if (Compares.FirstOrDefault() is { } open)
+        {
+            open.RefreshEndpoints();
+            if (from is not null)
+                open.SelectSource(from);
+            ActiveCompare = open;
+            return;
+        }
+
+        var compare = new SchemaCompareViewModel(() => AllSessions(), _dialogs);
+        if (from is not null)
+            compare.SelectSource(from);
+        compare.CloseRequested += RemoveCompare;
+        compare.ScriptRequested += (session, script) => AddTab(session, script);
+        Compares.Add(compare);
+        ActiveCompare = compare;
+    }
+
+    [RelayCommand]
+    private void CloseCompare(SchemaCompareViewModel? compare)
+    {
+        if (compare is not null)
+            RemoveCompare(compare);
+    }
+
+    private void RemoveCompare(SchemaCompareViewModel compare)
+    {
+        var index = Compares.IndexOf(compare);
+        if (index < 0)
+            return;
+        Compares.RemoveAt(index);
+        compare.CloseRequested -= RemoveCompare;
+        compare.Dispose();
+        if (ActiveCompare == compare)
+            ActiveCompare = Compares.Count == 0 ? null : Compares[Math.Min(index, Compares.Count - 1)];
+    }
 
     /// <summary>Shows a plan tab, adding it first when it is not open; a query tab keeps one plan tab whose content is replaced by each new plan.</summary>
     /// <param name="plan">The plan tab of a query tab.</param>
@@ -254,8 +518,13 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             TableDesignerViewModel d => d.Session,
             DiagramTabViewModel g => g.Session,
             PlanTabViewModel p => p.Source.Session,
+            SchemaCompareViewModel c => c.Session,
+            SessionsMonitorViewModel m => m.Session,
+            SecurityViewModel s => s.Session,
             _ => null,
         };
+        foreach (var monitor in Monitors)
+            monitor.SetActive(ReferenceEquals(monitor, tab)); // a monitor only polls while its tab is on screen
         _shownSession = session;
         if (session is not null && !ReferenceEquals(ActiveSession, session))
             ActiveSession = session; // raises ActiveEnvironment
@@ -265,6 +534,10 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
 
     partial void OnActiveSessionChanged(ConnectionSession? value)
     {
+        RaiseSchemaCompareAvailability();
+        RaiseMonitorAvailability();
+        RaiseSecurityAvailability();
+        RaiseImportAvailability();
         if (value is null)
             _shownSession = null; // not connected: no tab can be on screen
         OnPropertyChanged(nameof(ActiveEnvironment));
@@ -277,6 +550,12 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     partial void OnActiveDiagramChanged(DiagramTabViewModel? value) => ShowTabIfAny(value);
 
     partial void OnActivePlanChanged(PlanTabViewModel? value) => ShowTabIfAny(value);
+
+    partial void OnActiveCompareChanged(SchemaCompareViewModel? value) => ShowTabIfAny(value);
+
+    partial void OnActiveMonitorChanged(SessionsMonitorViewModel? value) => ShowTabIfAny(value);
+
+    partial void OnActiveSecurityChanged(SecurityViewModel? value) => ShowTabIfAny(value);
 
     private void ShowTabIfAny(object? tab)
     {
@@ -333,6 +612,12 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             RemoveDesigner(designer);
         foreach (var diagram in Diagrams.Where(d => d.Session.Root == session).ToList())
             RemoveDiagram(diagram);
+        foreach (var compare in Compares.Where(c => c.UsesServer(session)).ToList())
+            RemoveCompare(compare);
+        foreach (var monitor in Monitors.Where(m => m.Session?.Root == session).ToList())
+            RemoveMonitor(monitor);
+        foreach (var security in SecurityTabs.Where(s => s.Session?.Root == session).ToList())
+            RemoveSecurity(security);
         foreach (var opened in session.OpenedDatabases.Prepend(session))
             _tabCounters.Remove(opened);
         await _manager.CloseAsync(session);
@@ -624,4 +909,14 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         ActiveTab = tab;
         return tab;
     }
+}
+
+/// <summary>The recent-connections store of a workspace built without one: remembers nothing.</summary>
+internal sealed class NoRecentConnections : IRecentConnectionsStore
+{
+    public Task<IReadOnlyList<RecentConnection>> ListAsync(CancellationToken ct) => Task.FromResult<IReadOnlyList<RecentConnection>>([]);
+
+    public Task TouchAsync(Guid profileId, DateTimeOffset openedAt, CancellationToken ct) => Task.CompletedTask;
+
+    public Task ForgetAsync(Guid profileId, CancellationToken ct) => Task.CompletedTask;
 }

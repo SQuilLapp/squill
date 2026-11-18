@@ -83,7 +83,7 @@
       </Grid>
     </Border>
     <v:SidebarView x:Name="Sidebar" Grid.Row="2" Grid.Column="1" />
-    <Grid Grid.Row="2" Grid.Column="3">
+    <Grid x:Name="MainArea" Grid.Row="2" Grid.Column="3">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="*" />
@@ -107,9 +107,13 @@
       <v:DiagramTabView x:Name="DiagramArea" Grid.Row="1" Visibility="Collapsed" />
       <v:TableDesignerView x:Name="DesignerArea" Grid.Row="1" Visibility="Collapsed" />
       <v:PlanTabView x:Name="PlanArea" Grid.Row="1" Visibility="Collapsed" />
+      <v:SchemaCompareView x:Name="CompareArea" Grid.Row="1" Visibility="Collapsed" />
+      <v:SessionsMonitorView x:Name="MonitorArea" Grid.Row="1" Visibility="Collapsed" />
+      <v:SecurityView x:Name="SecurityArea" Grid.Row="1" Visibility="Collapsed" />
       <Grid x:Name="TerminalArea" Grid.Row="1" Visibility="Collapsed" />
     </Grid>
     <v:PropertiesPanel x:Name="Properties" Grid.Row="2" Grid.Column="5" />
+    <v:HomePage x:Name="HomeArea" Grid.Row="2" Grid.ColumnSpan="6" Visibility="Collapsed" />
     <v:StatusBar x:Name="Status" Grid.Row="3" Grid.ColumnSpan="6" />
   </Grid>
 </Window>

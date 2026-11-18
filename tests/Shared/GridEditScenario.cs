@@ -406,9 +406,6 @@ public static class GridEditScenario
             Errors.Add((title, message));
             return ValueTask.CompletedTask;
         }
-
-        public ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(IReadOnlyList<string> names, IReadOnlyDictionary<string, ParameterValue> defaults) =>
-            ValueTask.FromResult<IReadOnlyList<ParameterValue>?>(null);
     }
 
     private sealed class History : IQueryHistoryStore

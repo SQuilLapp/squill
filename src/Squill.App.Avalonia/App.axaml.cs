@@ -69,9 +69,9 @@ public sealed partial class App : Application
     {
         services.Settings.ThemeChanged += (_, _) => ApplyTheme(services.Settings.Theme);
         services.Settings.LoadCommand.Execute(null);
-        services.Workspace.ConnectionList.LoadCommand.Execute(null);
+        var loading = services.Workspace.ConnectionList.LoadCommand.ExecuteAsync(null);
         var window = new MainWindow { DataContext = services.Workspace };
-        window.Attach(services, _paths!.DataDirectory);
+        window.Attach(services, _paths!.DataDirectory, loading);
         window.Opened += async (_, _) => await window.StartUpdatesAsync();
         return window;
     }

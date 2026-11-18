@@ -184,4 +184,15 @@ public sealed class SchemaCompletionTests
         Assert.Equal("log", item.InsertText);
         Assert.Equal("table", item.Detail);
     }
+
+    [Theory]
+    [InlineData(DatabaseDialect.PostgreSql, "\"order\"")]
+    [InlineData(DatabaseDialect.MySql, "`order`")]
+    [InlineData(DatabaseDialect.SqlServer, "[order]")]
+    public void KeywordTableName_IsInsertedQuoted(DatabaseDialect dialect, string expected)
+    {
+        var schema = new SchemaSnapshot("public", [Table("public", "order", TableKind.Table, ("id", "int"))]);
+        var item = Assert.Single(At("select * from |", dialect, schema), i => i.Label == "order");
+        Assert.Equal(expected, item.InsertText);
+    }
 }

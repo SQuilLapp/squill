@@ -1,12 +1,13 @@
 using MySqlConnector;
 using Squill.Core;
+using Squill.Core.Activity;
 using Squill.Core.Plans;
 using Squill.Core.Transactions;
 
 namespace Squill.Data.MySql;
 
 /// <summary>MySQL implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class MySqlDatabaseConnection(MySqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader, ITransactionProbe
+internal sealed class MySqlDatabaseConnection(MySqlConnection connection, int commandTimeoutSeconds, string connectionString) : IDatabaseConnection, IPlanReader, ITransactionProbe, IActivityReader
 {
     /// <inheritdoc />
     public string ServerVersion => connection.ServerVersion;
@@ -39,6 +40,21 @@ internal sealed class MySqlDatabaseConnection(MySqlConnection connection, int co
     /// <inheritdoc />
     public ValueTask<QueryPlan> ExplainAsync(string sql, IReadOnlyList<QueryParameter> parameters, PlanMode mode, CancellationToken cancellationToken) =>
         MySqlPlanReader.ExplainAsync(connection, commandTimeoutSeconds, sql, parameters, mode, cancellationToken);
+
+    /// <inheritdoc />
+    public bool SupportsCancelQuery => true;
+
+    /// <inheritdoc />
+    public ValueTask<ActivitySnapshot> ReadAsync(CancellationToken cancellationToken) =>
+        MySqlActivityReader.ReadAsync(connectionString, cancellationToken);
+
+    /// <inheritdoc />
+    public ValueTask CancelQueryAsync(string sessionId, CancellationToken cancellationToken) =>
+        MySqlActivityReader.CancelAsync(connectionString, sessionId, cancellationToken);
+
+    /// <inheritdoc />
+    public ValueTask TerminateSessionAsync(string sessionId, CancellationToken cancellationToken) =>
+        MySqlActivityReader.TerminateAsync(connectionString, sessionId, cancellationToken);
 
     /// <inheritdoc />
     public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>

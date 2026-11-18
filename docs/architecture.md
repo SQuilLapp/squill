@@ -76,6 +76,13 @@ Done through phase 15 (transactions and production confirmation, see [ADR 0012](
 
 `Squill.Presentation/Results` has `FilteredGridDataSource` (the view that `ResultViewModel.DisplayGrid` returns while a filter, search or sort is active), `ResultViewState`, `GridFilter`, `GridSort`, `ColumnValueCounts`, `ColumnMenuViewModel` and `FilterEditorViewModel`; `Squill.Presentation/Palette` has `PaletteViewModel`, `FuzzyMatcher`, `PaletteActionRegistry` and the object, history and line providers. Both heads draw them (`FilterBar`, `ColumnMenu`, `CommandPalette`). Decisions and limits: [ADR 0014](adr/0014-grid-filter-and-command-palette.md).
 
+## Home, compare, sessions, privileges and import (phase 18)
+
+- **Core**: `Squill.Core/Activity` (`ServerSession`, `ActivitySnapshot`, `BlockingEdge`), `Squill.Core/Security` (`RoleInfo`, `ObjectPrivileges`, `PrivilegeChangeSet`), `Squill.Core/Schema/Compare` (`SchemaComparer`, `SchemaComparison`).
+- **Sql**: `Squill.Sql/Migration` (`MigrationScriptBuilder`), `Squill.Sql/Security` (`PostgresPrivilegeScript`).
+- **Data**: optional capability interfaces `IActivityReader` and `ISecurityReader`, found through the connection (`null` when unsupported); the PostgreSQL, MySQL and SQL Server drivers implement the first, PostgreSQL the second.
+- **Presentation**: `Home`, `Compare`, `Activity`, `Security` and `Import` folders hold the view-models (`HomeViewModel`, `SchemaCompareViewModel`, `SessionsMonitorViewModel`, `SecurityViewModel`, `ImportWizardViewModel`) and the pure logic (`LineDiff`, `BlockingChains`, `CsvReader`, `ImportRunner`). Writes go through the statement runner and the production confirmation. Decisions and limits: [ADR 0015](adr/0015-remaining-mockups.md).
+
 ## Transactions and production confirmation (phase 15)
 
 - **Layers.** `Squill.Core/Transactions` holds `TransactionMode`, `TransactionState` and `TransactionProbeResult`. `Squill.Sql/Transactions` holds the pure vocabulary: `StatementTraits`, `StatementClassifier`, `TransactionControl`, `TransactionSql` (per-dialect begin, commit, rollback, savepoint). `Squill.Data` has the optional `ITransactionProbe` on `IDatabaseConnection` (the four connections implement it; Oracle does not; the MySQL one always answers unknown). `Squill.Presentation/Sessions` has `SessionTransaction` (`ConnectionSession.Transaction`: mode, state, pending count, journal, `BeginOperation()`) and the savepoint scope of `SqlRunner`; `Squill.Presentation/Safety` has `ProductionGuard`, `ImpactEstimator`, `ProductionRequestBuilder`, `ProductionConfirmationRequest` / `Result`, `TransactionCloseRequest` and `TransactionChoice`.

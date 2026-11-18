@@ -61,6 +61,9 @@ public sealed partial class ObjectExplorerView : UserControl
                 "NewItem" or "EditItem" or "DeleteItem" => connection,
                 "ConnectItem" => connection && !node.IsConnected,
                 "DisconnectItem" => connection && node.IsConnected,
+                "CompareItem" => connection && node.IsConnected,
+                "MonitorItem" => connection && node.IsConnected,
+                "SecurityItem" => connection && node.IsConnected,
                 "ChooseTablesItem" => database,
                 "ShowAllItem" => database && node.Kind == ExplorerNodeKind.Database && node.HiddenCount > 0,
                 "HideTableItem" => listed,
@@ -68,6 +71,24 @@ public sealed partial class ObjectExplorerView : UserControl
                 "DefinitionItem" => definition,
                 _ => table,
             };
+            if (item.Name == "SecurityItem" && item.IsVisible)
+            {
+                item.IsEnabled = Workspace?.OpenSecurityCommand.CanExecute(null) ?? false;
+                ToolTip.SetTip(item, item.IsEnabled ? null : Workspace?.SecurityDisabledReason);
+            }
+
+            if (item.Name == "MonitorItem" && item.IsVisible)
+            {
+                item.IsEnabled = Workspace?.OpenSessionsMonitorCommand.CanExecute(null) ?? false;
+                ToolTip.SetTip(item, item.IsEnabled ? null : Workspace?.SessionsMonitorDisabledReason);
+            }
+
+            if (item.Name == "CompareItem" && item.IsVisible)
+            {
+                item.IsEnabled = Workspace?.OpenSchemaCompareCommand.CanExecute(node.Profile?.Id) ?? false;
+                ToolTip.SetTip(item, item.IsEnabled ? null : Workspace?.SchemaCompareDisabledReason);
+            }
+
             shown += item.IsVisible ? 1 : 0;
         }
         if (shown == 0)
@@ -81,6 +102,13 @@ public sealed partial class ObjectExplorerView : UserControl
     private void OnDeleteClicked(object? sender, RoutedEventArgs e) => Workspace?.ConnectionList.DeleteCommand.Execute(null);
 
     private void OnConnectClicked(object? sender, RoutedEventArgs e) => Workspace?.ConnectCommand.Execute((sender as Control)?.DataContext is ExplorerNode node ? node.Profile : null);
+
+    private void OnCompareClicked(object? sender, RoutedEventArgs e) =>
+        Workspace?.OpenSchemaCompareCommand.Execute((sender as Control)?.DataContext is ExplorerNode node ? node.Profile?.Id : null);
+
+    private void OnSecurityClicked(object? sender, RoutedEventArgs e) => Workspace?.OpenSecurityCommand.Execute(null);
+
+    private void OnMonitorClicked(object? sender, RoutedEventArgs e) => Workspace?.OpenSessionsMonitorCommand.Execute(null);
 
     private void OnDisconnectClicked(object? sender, RoutedEventArgs e) => Workspace?.DisconnectCommand.Execute(null);
 

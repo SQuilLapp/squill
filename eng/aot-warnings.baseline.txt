@@ -1,0 +1,6 @@
+# Third-party trim/AOT warnings that every publish of both heads prints today (docs/poc/aot-drivers.md).
+# One key per line: "<code> <file name>". A baseline that grows is a smell; delete a line when a package update fixes it.
+IL2104 Microsoft.Data.SqlClient.dll
+IL2104 Microsoft.Data.SqlClient.Internal.Logging.dll
+IL2104 System.Configuration.ConfigurationManager.dll
+IL3053 Microsoft.Data.SqlClient.dll

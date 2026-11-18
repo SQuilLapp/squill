@@ -44,8 +44,15 @@ public sealed class CompletionTriggerTests
     {
         var text = string.Concat(Enumerable.Repeat("select a, b from t where x = 1;\n", 3200)) + "select * from ";
         Assert.True(text.Length > 100_000);
-        var watch = Stopwatch.StartNew();
-        Assert.True(Opens(text));
-        Assert.True(watch.ElapsedMilliseconds < 500, $"took {watch.ElapsedMilliseconds} ms");
+        // Best of five: a loaded machine slows some runs, a real full-script scan slows every run.
+        var best = long.MaxValue;
+        for (var run = 0; run < 5; run++)
+        {
+            var watch = Stopwatch.StartNew();
+            Assert.True(Opens(text));
+            best = Math.Min(best, watch.ElapsedMilliseconds);
+        }
+
+        Assert.True(best < 500, $"best of five took {best} ms");
     }
 }

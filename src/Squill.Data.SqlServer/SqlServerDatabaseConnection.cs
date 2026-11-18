@@ -1,12 +1,13 @@
 using Microsoft.Data.SqlClient;
 using Squill.Core;
+using Squill.Core.Activity;
 using Squill.Core.Plans;
 using Squill.Core.Transactions;
 
 namespace Squill.Data.SqlServer;
 
 /// <summary>SQL Server implementation of <see cref="IDatabaseConnection"/> over one open connection.</summary>
-internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int commandTimeoutSeconds) : IDatabaseConnection, IPlanReader, ITransactionProbe
+internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int commandTimeoutSeconds, string connectionString) : IDatabaseConnection, IPlanReader, ITransactionProbe, IActivityReader
 {
     /// <inheritdoc />
     public string ServerVersion => connection.ServerVersion;
@@ -46,6 +47,22 @@ internal sealed class SqlServerDatabaseConnection(SqlConnection connection, int 
     /// <inheritdoc />
     public ValueTask<QueryPlan> ExplainAsync(string sql, IReadOnlyList<QueryParameter> parameters, PlanMode mode, CancellationToken cancellationToken) =>
         SqlServerPlanReader.ExplainAsync(connection, commandTimeoutSeconds, sql, parameters, mode, cancellationToken);
+
+    /// <inheritdoc />
+    public bool SupportsCancelQuery => false;
+
+    /// <inheritdoc />
+    public ValueTask<ActivitySnapshot> ReadAsync(CancellationToken cancellationToken) =>
+        SqlServerActivityReader.ReadAsync(connectionString, cancellationToken);
+
+    /// <inheritdoc />
+    /// <exception cref="NotSupportedException">Always: SQL Server cannot cancel the statement of another session.</exception>
+    public ValueTask CancelQueryAsync(string sessionId, CancellationToken cancellationToken) =>
+        throw new NotSupportedException("SQL Server cannot cancel the statement of another session; terminate the session instead.");
+
+    /// <inheritdoc />
+    public ValueTask TerminateSessionAsync(string sessionId, CancellationToken cancellationToken) =>
+        SqlServerActivityReader.TerminateAsync(connectionString, sessionId, cancellationToken);
 
     /// <inheritdoc />
     public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>

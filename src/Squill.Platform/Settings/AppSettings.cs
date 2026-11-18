@@ -10,6 +10,9 @@ namespace Squill.Platform.Settings;
 /// <param name="Language">Requested display language; applied after a restart.</param>
 /// <param name="UpdateFrequency">How often the application may check for updates on its own; nothing is checked until the user chose.</param>
 /// <param name="UpdateChannel">Release channel followed for updates.</param>
+/// <param name="ShowHomeAtStartup">Whether the home page opens at startup.</param>
+/// <param name="HomeTipIndex">Index of the tip shown on the home page.</param>
+/// <param name="HomeTipsHidden">Whether the home page tips are hidden.</param>
 public sealed record AppSettings(
     ThemeMode Theme,
     double EditorFontSize,
@@ -17,7 +20,10 @@ public sealed record AppSettings(
     KeywordCase FormatterKeywordCase,
     AppLanguage Language = AppLanguage.System,
     UpdateCheckFrequency UpdateFrequency = UpdateCheckFrequency.NotAsked,
-    UpdateChannel UpdateChannel = UpdateChannel.Stable)
+    UpdateChannel UpdateChannel = UpdateChannel.Stable,
+    bool ShowHomeAtStartup = true,
+    int HomeTipIndex = 0,
+    bool HomeTipsHidden = false)
 {
     /// <summary>Gets the settings used when nothing has been saved.</summary>
     public static AppSettings Default { get; } = new(ThemeMode.System, 13, 1_000_000, KeywordCase.Upper);

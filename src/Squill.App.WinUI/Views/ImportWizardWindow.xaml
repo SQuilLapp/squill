@@ -1,0 +1,6 @@
+<Window x:Class="Squill.App.WinUI.Views.ImportWizardWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- The rail, the pages and the footer are built in code: the mapping rows and the combo boxes hold plain strings (ItemsSource with objects crashes under Native AOT). -->
+  <Grid x:Name="Root" Background="{ThemeResource SquillBgBaseBrush}" />
+</Window>

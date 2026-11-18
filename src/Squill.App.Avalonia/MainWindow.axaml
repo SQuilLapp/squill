@@ -138,6 +138,9 @@
             </MenuItem>
             <MenuItem Header="{loc:Text menu.database}">
               <MenuItem Header="{loc:Text menu.newTable}" Command="{Binding NewTableCommand}" />
+              <MenuItem Header="{loc:Text menu.compareSchemas}" Command="{Binding OpenSchemaCompareCommand}" ToolTip.Tip="{Binding SchemaCompareDisabledReason}" />
+              <MenuItem Header="{loc:Text menu.sessionsMonitor}" Command="{Binding OpenSessionsMonitorCommand}" ToolTip.Tip="{Binding SessionsMonitorDisabledReason}" />
+              <MenuItem Header="{loc:Text menu.security}" Command="{Binding OpenSecurityCommand}" ToolTip.Tip="{Binding SecurityDisabledReason}" />
             </MenuItem>
             <MenuItem Name="ToolsMenu" Header="{loc:Text menu.tools}">
               <MenuItem Classes="appmenu" Header="{loc:Text menu.settings}" Click="OnSettingsClicked" />
@@ -220,8 +223,8 @@
       </DockPanel>
     </Border>
     <v:SidebarView Grid.Row="2" Grid.Column="1" Name="Sidebar" />
-    <GridSplitter Grid.Row="2" Grid.Column="2" Width="4" Background="{DynamicResource SquillBorderBrush}" />
-    <Grid Grid.Row="2" Grid.Column="3" RowDefinitions="Auto,*">
+    <GridSplitter Name="SidebarSplitter" Grid.Row="2" Grid.Column="2" Width="4" Background="{DynamicResource SquillBorderBrush}" />
+    <Grid Name="MainArea" Grid.Row="2" Grid.Column="3" RowDefinitions="Auto,*">
       <Border Name="TabStripBar" Background="{DynamicResource SquillBgSurfaceBrush}" Height="36"
               BorderBrush="{DynamicResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1">
         <DockPanel>
@@ -262,6 +265,9 @@
       <v:DiagramTabView Grid.Row="1" Name="DiagramArea" IsVisible="False" />
       <v:TableDesignerView Grid.Row="1" Name="DesignerArea" IsVisible="False" />
       <v:PlanTabView Grid.Row="1" Name="PlanArea" IsVisible="False" />
+      <v:SchemaCompareView Grid.Row="1" Name="CompareArea" IsVisible="False" />
+      <v:SessionsMonitorView Grid.Row="1" Name="MonitorArea" IsVisible="False" />
+      <v:SecurityView Grid.Row="1" Name="SecurityArea" IsVisible="False" />
       <Grid Name="TerminalArea" Grid.Row="1" IsVisible="False" Background="{DynamicResource SquillBgBaseBrush}" />
     </Grid>
     <!-- Hidden on a narrow window (MainWindow.TitleLayout.cs) so the editor keeps its room. -->
@@ -269,6 +275,7 @@
     <Panel Grid.Row="2" Grid.Column="5" Name="PropertiesHost">
       <v:PropertiesPanel Name="Properties" />
     </Panel>
+    <v:HomePage Name="HomeArea" Grid.Row="2" Grid.ColumnSpan="6" IsVisible="False" />
     <v:StatusBar Grid.Row="3" Name="Status" Grid.ColumnSpan="6" />
   </Grid>
 </Window>

@@ -1,13 +1,18 @@
+using Squill.Presentation;
 using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Squill.Core;
 using Squill.Core.Transactions;
 using Squill.Presentation.Sessions;
 using Squill.Presentation.Localization;
+using Squill.Presentation.Activity;
+using Squill.Presentation.Compare;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Results;
+using Squill.Presentation.Security;
 using Squill.Presentation.Query;
 using Squill.Presentation.Workspace;
 
@@ -19,6 +24,9 @@ public sealed partial class StatusBar : UserControl
     private WorkspaceViewModel? _workspace;
     private QueryTabViewModel? _tab;
     private PlanTabViewModel? _plan;
+    private SchemaCompareViewModel? _compare;
+    private SessionsMonitorViewModel? _monitor;
+    private SecurityViewModel? _security;
     private SessionTransaction? _transaction;
 
     /// <summary>Creates the view.</summary>
@@ -42,16 +50,43 @@ public sealed partial class StatusBar : UserControl
 
     /// <summary>Shows the plan status line and figures (node count, time, server version) in place of the run status and cursor position while a plan tab is active.</summary>
     /// <param name="plan">The active plan tab, or <see langword="null"/> when another kind of tab is shown.</param>
-    public void ShowPlan(PlanTabViewModel? plan)
+    public void ShowPlan(PlanTabViewModel? plan) => Show(ref _plan, plan);
+
+    /// <summary>Shows the compared environments (<c>STAGING → PRODUCTION</c>), the difference counts and both server versions while a schema compare tab is active.</summary>
+    /// <param name="compare">The active compare tab, or <see langword="null"/> when another kind of tab is shown.</param>
+    public void ShowCompare(SchemaCompareViewModel? compare) => Show(ref _compare, compare);
+
+    /// <summary>Shows the last read of the sessions monitor while its tab is active.</summary>
+    /// <param name="monitor">The active monitor tab, or <see langword="null"/> when another kind of tab is shown.</param>
+    public void ShowMonitor(SessionsMonitorViewModel? monitor) => Show(ref _monitor, monitor);
+
+    /// <summary>Shows the number of unapplied privilege changes while a security tab is active.</summary>
+    /// <param name="security">The active security tab, or <see langword="null"/> when another kind of tab is shown.</param>
+    public void ShowSecurity(SecurityViewModel? security) => Show(ref _security, security);
+
+    private void Show<T>(ref T? field, T? value)
+
+        where T : class, INotifyPropertyChanged
+
     {
-        if (ReferenceEquals(_plan, plan))
+
+        if (PropertyChangedSwap.Swap(ref field, value, OnTabChanged))
+
+            Refresh();
+
+    }
+
+
+    private void RefreshCompare()
+    {
+        var source = _compare?.Source?.Environment ?? ConnectionEnvironment.None;
+        var show = _compare is not null && CompareFormat.Environment(source) is not null;
+        SourceBlock.IsVisible = FlowArrow.IsVisible = show;
+        if (!show || CompareFormat.Environment(source) is not var (suffix, key))
             return;
-        if (_plan is not null)
-            _plan.PropertyChanged -= OnTabChanged;
-        _plan = plan;
-        if (_plan is not null)
-            _plan.PropertyChanged += OnTabChanged;
-        Refresh();
+        SourceBlock.Background = Brush($"SquillEnv{suffix}Brush");
+        SourceLabel.Foreground = Brush($"SquillOnEnv{suffix}Brush");
+        SourceLabel.Text = UiText.Get(key);
     }
 
     private void AttachTab(QueryTabViewModel? tab)
@@ -85,15 +120,31 @@ public sealed partial class StatusBar : UserControl
 
     private void OnTabChanged(object? sender, PropertyChangedEventArgs e) => Refresh();
 
-    private void OnCaretChanged(object? sender, EventArgs e) => RefreshPosition();
+    private void OnCaretChanged(object? sender, EventArgs e)
+    {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(RefreshPosition);
+            return;
+        }
+        RefreshPosition();
+    }
 
+    // Some view-model events are raised on worker threads (a connection or monitor read that finishes there); the controls are UI-thread only.
     private void Refresh()
     {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(Refresh);
+            return;
+        }
         RefreshEnvironment();
         var profile = _workspace?.ActiveSession?.Profile;
-        ConnectionText.Text = profile is null ? UiText.Get("status.notConnected") : ConnectionLabel(profile);
-        ServerVersionText.Text = _plan?.ServerVersion ?? _workspace?.ActiveSession?.Connection.ServerVersion;
-        EncodingSegment.IsVisible = _plan is null;
+        ConnectionText.Text = profile is null ? UiText.Get("home.noConnection") : ConnectionLabel(profile);
+        ConnectionDot.IsVisible = profile is null;
+        ServerVersionText.Text = _compare is { } c ? $"{c.SourceServerVersion} → {c.TargetServerVersion}" : _plan?.ServerVersion ?? _workspace?.ActiveSession?.Connection.ServerVersion;
+        EncodingSegment.IsVisible = _plan is null && _compare is null && _monitor is null && _security is null;
+        RefreshCompare();
         RefreshTransaction();
         RefreshRunStatus();
         RefreshPosition();
@@ -131,7 +182,7 @@ public sealed partial class StatusBar : UserControl
     // The transaction belongs to the session of the active query tab: nothing is shown for plans and other kinds of tab.
     private void RefreshTransaction()
     {
-        var text = _plan is null ? _transaction?.StatusText ?? "" : "";
+        var text = _plan is null && _compare is null && _monitor is null && _security is null ? _transaction?.StatusText ?? "" : "";
         TransactionSegment.IsVisible = text.Length > 0;
         TransactionText.Text = text;
         var brush = Brush(_transaction?.State == TransactionState.Failed ? "SquillDangerBrush" : "SquillWarningBrush");
@@ -141,6 +192,30 @@ public sealed partial class StatusBar : UserControl
 
     private void RefreshRunStatus()
     {
+        if (_security is { } security)
+        {
+            StatusSegment.Text = security.StatusText;
+            StatusSegment.Foreground = Brush(security.ChangeCount > 0 ? "SquillWarningBrush" : "SquillFg2Brush");
+            ElapsedSegment.Text = null;
+            return;
+        }
+
+        if (_monitor is { } monitor)
+        {
+            StatusSegment.Text = monitor.StatusText;
+            StatusSegment.Foreground = Brush("SquillFg2Brush");
+            ElapsedSegment.Text = null;
+            return;
+        }
+
+        if (_compare is { } compare)
+        {
+            StatusSegment.Text = compare.DifferencesText;
+            StatusSegment.Foreground = Brush("SquillFg2Brush");
+            ElapsedSegment.Text = null;
+            return;
+        }
+
         if (_plan is { } plan)
         {
             StatusSegment.Text = plan.Plan.StatusLine;
@@ -172,6 +247,12 @@ public sealed partial class StatusBar : UserControl
 
     private void RefreshPosition()
     {
+        if (_compare is not null || _monitor is not null || _security is not null)
+        {
+            PositionText.Text = null;
+            return;
+        }
+
         if (_plan is { } plan)
         {
             PositionText.Text = plan.SummaryText;

@@ -39,8 +39,8 @@ internal sealed partial class PlanTable : UserControl
         table.Children.Add(scroll);
         body.Children.Add(table);
         var panel = new Border { Child = _details, BorderThickness = new Thickness(1, 0, 0, 0) };
-        panel.Background = (Brush)Application.Current.Resources["SquillBgSurfaceBrush"];
-        panel.BorderBrush = (Brush)Application.Current.Resources["SquillBorderBrush"];
+        panel.Background = Tokens.Brush("SquillBgSurfaceBrush");
+        panel.BorderBrush = Tokens.Brush("SquillBorderBrush");
         Grid.SetColumn(panel, 1);
         body.Children.Add(panel);
         Content = body;

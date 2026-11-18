@@ -53,3 +53,18 @@ No test runs. The script starts the engine's container (`postgres:17-alpine`, `m
 ## CI
 
 CI runs on Linux with real Docker and keeps Ryuk enabled. In the `linux` job of `.github/workflows/ci.yml`, the full-solution test step runs with the gate off; a later step pulls the three images, then runs the PostgreSQL, MySQL and SQL Server test projects and the SSH tunnel test classes with `SQUILL_DOCKER_TESTS=1`. This script is only for Podman workstations.
+
+## AOT warning check
+
+`eng/check-aot-warnings.ps1` publishes a head with Native AOT (`-Head WinUI|Avalonia|All`, default All) and exits 1 on any trim/AOT warning (`ILxxxx`) that is not listed in `eng/aot-warnings.baseline.txt` (the known third-party `Microsoft.Data.SqlClient` and `System.Configuration.ConfigurationManager` ones), or that comes from a file under `src/` or `tools/`. Exit 2 means the publish failed. A baseline line that no longer appears is printed as `stale baseline entry`: delete it. It takes minutes and needs the WinUI workload, so it is not in `ci.yml`.
+
+```bash
+pwsh eng/check-aot-warnings.ps1 -Head All
+```
+
+Self-test on the fixture logs (no publish): the first exits 0, the second exits 1.
+
+```bash
+pwsh eng/check-aot-warnings.ps1 -LogFile eng/testdata/aot-clean.log
+pwsh eng/check-aot-warnings.ps1 -LogFile eng/testdata/aot-new-warning.log
+```

@@ -95,7 +95,7 @@ public sealed class PaletteFlowTests : IDisposable
         Assert.Equal(["commands", "commands"], objects.Select(o => o.Title));
         Assert.Equal(["prod", "stage"], objects.Select(o => o.Right).Order());
         Assert.Equal([ConnectionEnvironment.Production, ConnectionEnvironment.Staging], objects.Select(o => o.Environment!.Value).Order());
-        Assert.Contains("Commit", Titles(1)[0], StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(Titles(1), t => t.Contains("Commit", StringComparison.OrdinalIgnoreCase)); // "Compare schemas" is enabled, so it can rank first
         Assert.Equal(["update commands set id = 1", "select * from commands"], Titles(2)); // newest first
     }
 

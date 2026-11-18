@@ -9,8 +9,6 @@ internal sealed class FakeDialogService : IDialogService
     public bool ConfirmResult { get; set; } = true;
     public string? PromptResult { get; set; }
     public string? SavePathResult { get; set; }
-    public Func<IReadOnlyList<string>, IReadOnlyDictionary<string, ParameterValue>, IReadOnlyList<ParameterValue>?>? ParametersResult { get; set; }
-    public List<IReadOnlyDictionary<string, ParameterValue>> ParameterPrompts { get; } = [];
     public List<(string Title, string Message)> Errors { get; } = [];
 
     public List<(string Title, string Message)> Confirms { get; } = [];
@@ -71,11 +69,15 @@ internal sealed class FakeDialogService : IDialogService
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(
-        IReadOnlyList<string> names,
-        IReadOnlyDictionary<string, ParameterValue> defaults)
+    public string? OpenFileResult { get; set; }
+
+    public List<Squill.Presentation.Import.ImportWizardViewModel> Wizards { get; } = [];
+
+    public ValueTask<string?> PickOpenFileAsync(string title, IReadOnlyList<string> extensions) => ValueTask.FromResult(OpenFileResult);
+
+    public ValueTask ShowImportWizardAsync(Squill.Presentation.Import.ImportWizardViewModel wizard)
     {
-        ParameterPrompts.Add(new Dictionary<string, ParameterValue>(defaults));
-        return ValueTask.FromResult(ParametersResult?.Invoke(names, defaults));
+        Wizards.Add(wizard);
+        return ValueTask.CompletedTask;
     }
 }

@@ -437,31 +437,46 @@ public sealed class QueryTabViewModelTests
         Assert.NotNull(f.Editor.HoverProvider);
     }
 
-    private static IReadOnlyList<ParameterValue> Values(IReadOnlyList<string> names, string text) =>
-        [.. names.Select(n => new ParameterValue(n, text, false))];
+    private static async Task<Task> RunUntilPanelAsync(Fixture f, bool all = false)
+    {
+        var run = all ? f.Vm.RunAllCommand.ExecuteAsync(null) : f.Vm.RunCommand.ExecuteAsync(null);
+        for (var i = 0; i < 500 && !f.Vm.IsParametersPanelOpen; i++)
+            await Task.Delay(10, TestContext.Current.CancellationToken);
+        Assert.True(f.Vm.IsParametersPanelOpen);
+        return run;
+    }
 
     [Fact]
-    public async Task Run_NamedParameters_PromptsOnceAndBindsRewrittenSql()
+    public async Task Run_NamedParameters_OpensThePanelOnceAndBindsRewrittenSql()
     {
         var f = new Fixture("SELECT :a, $b; SELECT :a;", DatabaseDialect.Sqlite);
-        f.Dialogs.ParametersResult = (names, _) => [.. Values(names, "x").Where(v => v.Name != "b"), new("b", null, true)];
 
-        await f.Vm.RunAllCommand.ExecuteAsync(null);
+        var run = await RunUntilPanelAsync(f, all: true);
+        Assert.Equal(["a", "b"], f.Vm.ParameterRows.Select(r => r.Name));
+        Assert.Equal(UiText.Format("editor.parametersDetected", 2), f.Vm.ParametersHeader);
+        Assert.Empty(f.Connection.Executed);
+        f.Vm.ParameterRows[0].Text = "x";
+        f.Vm.ParameterRows[1].IsNull = true;
+        f.Vm.RunParametersCommand.Execute(null);
+        await run;
 
+        Assert.False(f.Vm.IsParametersPanelOpen);
         Assert.Equal(["SELECT @a, @b;", "SELECT @a;"], f.Connection.Executed);
-        Assert.Single(f.Dialogs.ParameterPrompts);
         Assert.Equal([new("a", "x"), new("b", null)], f.Connection.Bound[0]);
         Assert.Equal([new("a", "x")], f.Connection.Bound[1]);
         Assert.Equal("SELECT :a, $b;", f.History.Entries[0].Sql);
     }
 
     [Fact]
-    public async Task Run_PromptCancelled_RunsNothing()
+    public async Task Run_PanelIgnored_RunsNothing()
     {
         var f = new Fixture("SELECT :a;", DatabaseDialect.Sqlite);
 
-        await f.Vm.RunCommand.ExecuteAsync(null);
+        var run = await RunUntilPanelAsync(f);
+        f.Vm.IgnoreParametersCommand.Execute(null);
+        await run;
 
+        Assert.False(f.Vm.IsParametersPanelOpen);
         Assert.Empty(f.Connection.Executed);
         Assert.Empty(f.Vm.Results);
         Assert.Equal("Annulé", f.Vm.StatusText);
@@ -469,26 +484,66 @@ public sealed class QueryTabViewModelTests
     }
 
     [Fact]
-    public async Task Run_SecondTime_OffersLastValuesAsDefaults()
+    public async Task Run_PanelStopped_ClosesThePanelAndRunsNothing()
     {
         var f = new Fixture("SELECT :a;", DatabaseDialect.Sqlite);
-        f.Dialogs.ParametersResult = (names, _) => Values(names, "x");
 
-        await f.Vm.RunCommand.ExecuteAsync(null);
-        await f.Vm.RunCommand.ExecuteAsync(null);
+        var run = await RunUntilPanelAsync(f);
+        f.Vm.CancelCommand.Execute(null);
+        await run;
 
-        Assert.Empty(f.Dialogs.ParameterPrompts[0]);
-        Assert.Equal("x", f.Dialogs.ParameterPrompts[1]["a"].Text);
+        Assert.False(f.Vm.IsParametersPanelOpen);
+        Assert.Empty(f.Connection.Executed);
     }
 
     [Fact]
-    public async Task Run_NoParameters_DoesNotPrompt()
+    public async Task Run_PanelRowWithoutValue_BlocksRunUntilFilledOrNull()
+    {
+        var f = new Fixture("SELECT :a;", DatabaseDialect.Sqlite);
+
+        var run = await RunUntilPanelAsync(f);
+        var row = f.Vm.ParameterRows[0];
+        Assert.Equal(UiText.Get("editor.valueRequired"), row.Error);
+        Assert.False(f.Vm.RunParametersCommand.CanExecute(null));
+        row.Text = "7";
+        Assert.Null(row.Error);
+        Assert.True(f.Vm.RunParametersCommand.CanExecute(null));
+        row.Text = "";
+        row.IsNull = true;
+        Assert.Null(row.Error);
+        Assert.False(row.IsValueEnabled);
+        Assert.True(f.Vm.RunParametersCommand.CanExecute(null));
+        f.Vm.IgnoreParametersCommand.Execute(null);
+        await run;
+    }
+
+    [Fact]
+    public async Task Run_SecondTime_OffersLastValuesAsDefaults()
+    {
+        var f = new Fixture("SELECT :a;", DatabaseDialect.Sqlite);
+
+        var first = await RunUntilPanelAsync(f);
+        Assert.Null(f.Vm.ParameterRows[0].Text);
+        f.Vm.ParameterRows[0].Text = "x";
+        f.Vm.RunParametersCommand.Execute(null);
+        await first;
+
+        var second = await RunUntilPanelAsync(f);
+        Assert.Equal("x", f.Vm.ParameterRows[0].Text);
+        f.Vm.RunParametersCommand.Execute(null);
+        await second;
+        Assert.Equal(2, f.Connection.Executed.Count);
+    }
+
+    [Fact]
+    public async Task Run_NoParameters_DoesNotOpenThePanel()
     {
         var f = new Fixture("SELECT 1;", DatabaseDialect.Sqlite);
 
         await f.Vm.RunCommand.ExecuteAsync(null);
 
-        Assert.Empty(f.Dialogs.ParameterPrompts);
+        Assert.False(f.Vm.IsParametersPanelOpen);
+        Assert.Empty(f.Vm.ParameterRows);
     }
 
     [Fact]

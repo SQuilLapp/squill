@@ -155,13 +155,13 @@ public sealed partial class ExplorerNode(string title, ExplorerNodeKind kind, st
     /// <summary>Gets whether the environment is local.</summary>
     public bool IsLocal => Profile?.Environment == ConnectionEnvironment.Local;
 
-    /// <summary>Gets the caps label of the environment pill.</summary>
+    /// <summary>Gets the short caps label of the environment pill (PROD, STAGING, DEV, LOCAL).</summary>
     public string EnvironmentText => Profile?.Environment switch
     {
-        ConnectionEnvironment.Production => UiText.Get("status.production"),
-        ConnectionEnvironment.Staging => UiText.Get("status.staging"),
-        ConnectionEnvironment.Development => UiText.Get("status.dev"),
-        ConnectionEnvironment.Local => UiText.Get("status.local"),
+        ConnectionEnvironment.Production => UiText.Get("home.env.prod"),
+        ConnectionEnvironment.Staging => UiText.Get("home.env.staging"),
+        ConnectionEnvironment.Development => UiText.Get("home.env.dev"),
+        ConnectionEnvironment.Local => UiText.Get("home.env.local"),
         _ => "",
     };
 

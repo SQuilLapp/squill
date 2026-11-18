@@ -8,13 +8,30 @@
 
 ### Added
 
+- Home page: when no tab is open and no connection is active, the main area shows the recent connections (`Ctrl+1` to `Ctrl+6`), quick actions, a tip and a search box that opens the command palette. A setting decides whether it shows at startup.
+- Schema compare: compare the structure of two connected databases of the same dialect, see the differences side by side, and get an editable migration script to copy, save, open in the editor or run on the target (with the production confirmation).
+- Sessions and locks: a monitor for PostgreSQL, MySQL and SQL Server with the sessions table, who blocks whom, cancel query and end session. It refreshes only while its tab is active.
+- Roles and privileges (PostgreSQL): a matrix of the privileges of a role on tables and views, the generated `GRANT` and `REVOKE` statements, and Apply.
+- Import: a CSV file wizard into an existing table, with a preview, column mapping and conversions, an error policy, a file of rejected rows and progress.
+- Menu items, palette actions and explorer context items for each of these features, disabled with a reason when the connection or the engine does not support them.
 - Grid: a filter bar with typed filters (equals, contains, greater than, is null, in a list, ...), a search box (`Ctrl+F`) and a column menu with sort and a filter by value. Filtering works on the loaded rows, makes the grid read-only until it is cleared, and does not change what Export writes.
 - Command palette on `Ctrl+K` (or a click on the title bar search box): actions, tables and routines of every open connection, query history and go to line, with the matching letters highlighted. A history entry is inserted into the editor and never run.
 - SSH tunnels check the host key of the jump host: the first key is shown with its fingerprint and remembered only if you trust it, and a changed key is refused with both fingerprints and the file to edit if the server was reinstalled.
 - Table designer: a warning when a SQLite trigger uses a column that is renamed or dropped.
 
+### Changed
+
+- The query parameters prompt is now a panel under the editor instead of a dialog.
+- WinUI explorer: row height and environment pills match the mockup.
+
 ### Fixed
 
+- Names that are SQL keywords (a role or table called `user`, for example) are quoted in completion and in generated `GRANT` scripts.
+- The sessions list and the privilege matrix say how many rows are not shown when there are more than 400.
+- Home page: each recent connection shows its details line and open-tab count, and the new connection card has its subtitle. The Avalonia tip text wraps inside its card.
+- WinUI privileges: the seven privilege columns fit at 1440 px, the legend is no longer cut off, and a role with one member reads in the singular. The sessions table columns are narrower so the wait and query columns are visible.
+- WinUI: with the light theme chosen and a dark system theme, the editor, filter bar, plan table and splitters now follow the chosen theme; confirmation dialogs use the app theme; the production confirmation dialog has its danger frame and highlighted keywords.
+- Avalonia: the command palette footer hints no longer run into the result count.
 - Typing in a long script is no longer slowed down by the SQL diagnostics, which now run in the background.
 - The formatter keeps `TOP` and `WITH TIES` with their `SELECT`.
 - A custom delimiter glued to the statement, such as `END$$`, now splits the script correctly.

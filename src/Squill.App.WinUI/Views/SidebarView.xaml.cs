@@ -135,7 +135,24 @@ public sealed partial class SidebarView : UserControl
             Add(UiText.Get("explorer.edit"), () => List.EditCommand.Execute(null));
             Add(UiText.Get("explorer.delete"), () => List.DeleteCommand.Execute(null));
             if (node.IsConnected)
+            {
+                Add(UiText.Get("explorer.compareSchemas"), () => _workspace.OpenSchemaCompareCommand.Execute(node.Profile?.Id));
+                var compare = (MenuFlyoutItem)menu.Items[^1];
+                compare.IsEnabled = _workspace.OpenSchemaCompareCommand.CanExecute(node.Profile?.Id);
+                if (!compare.IsEnabled)
+                    ToolTipService.SetToolTip(compare, _workspace.SchemaCompareDisabledReason);
+                Add(UiText.Get("explorer.sessionsMonitor"), () => _workspace.OpenSessionsMonitorCommand.Execute(null));
+                var monitor = (MenuFlyoutItem)menu.Items[^1];
+                monitor.IsEnabled = _workspace.OpenSessionsMonitorCommand.CanExecute(null);
+                if (!monitor.IsEnabled)
+                    ToolTipService.SetToolTip(monitor, _workspace.SessionsMonitorDisabledReason);
+                Add(UiText.Get("explorer.security"), () => _workspace.OpenSecurityCommand.Execute(null));
+                var security = (MenuFlyoutItem)menu.Items[^1];
+                security.IsEnabled = _workspace.OpenSecurityCommand.CanExecute(null);
+                if (!security.IsEnabled)
+                    ToolTipService.SetToolTip(security, _workspace.SecurityDisabledReason);
                 Add(UiText.Get("explorer.disconnect"), () => _workspace.DisconnectCommand.Execute(null));
+            }
             else
                 Add(UiText.Get("explorer.connect"), () => _workspace.ConnectCommand.Execute(node.Profile));
         }

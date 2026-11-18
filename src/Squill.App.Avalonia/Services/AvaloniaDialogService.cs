@@ -54,53 +54,30 @@ internal sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
-    public async ValueTask ShowErrorAsync(string title, string message) =>
-        await ShowAsync(title, message, null, (UiText.Get("dialog.ok"), true));
+    public async ValueTask<string?> PickOpenFileAsync(string title, IReadOnlyList<string> extensions)
+    {
+        var storage = Owner?.StorageProvider;
+        if (storage is null)
+            return null;
+        var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = title,
+            AllowMultiple = false,
+            FileTypeFilter = [new FilePickerFileType(title) { Patterns = [.. extensions.Select(e => $"*.{e}")] }],
+        });
+        return files.Count > 0 ? files[0].TryGetLocalPath() : null;
+    }
 
     /// <inheritdoc />
-    public async ValueTask<IReadOnlyList<ParameterValue>?> PromptParametersAsync(
-        IReadOnlyList<string> names,
-        IReadOnlyDictionary<string, ParameterValue> defaults)
+    public async ValueTask ShowImportWizardAsync(Squill.Presentation.Import.ImportWizardViewModel wizard)
     {
-        var rows = new List<ParameterPromptRow>();
-        var panel = new StackPanel { Spacing = 8 };
-        var run = new Button { Content = UiText.Get("editor.runWithValues"), Classes = { "primary" } };
-        void Refresh() => run.IsEnabled = ParameterPromptRow.AllValid(rows);
-        panel.Children.Add(new TextBlock { Text = UiText.Format("editor.parametersDetected", names.Count), Classes = { "caps" } });
-        foreach (var name in names)
-        {
-            defaults.TryGetValue(name, out var previous);
-            var row = new ParameterPromptRow(name) { Text = previous?.Text, IsNull = previous?.IsNull ?? false };
-            rows.Add(row);
-            var box = new TextBox { Text = row.Text, Classes = { "mono" }, IsEnabled = !row.IsNull };
-            var isNull = new CheckBox { Content = UiText.Get("editor.passNull"), IsChecked = row.IsNull };
-            var error = new TextBlock { FontSize = 12, IsVisible = row.Error is not null, Text = row.Error };
-            error.Bind(TextBlock.ForegroundProperty, error.GetResourceObservable("SquillDangerBrush"));
-            void Sync()
-            {
-                error.Text = row.Error;
-                error.IsVisible = row.Error is not null;
-                box.IsEnabled = !row.IsNull;
-                Refresh();
-            }
-
-            box.TextChanged += (_, _) => { row.Text = box.Text; Sync(); };
-            isNull.IsCheckedChanged += (_, _) => { row.IsNull = isNull.IsChecked == true; Sync(); };
-            var line = new Grid { ColumnDefinitions = new ColumnDefinitions("120,*,Auto"), ColumnSpacing = 8 };
-            var label = new TextBlock { Text = name, VerticalAlignment = VerticalAlignment.Center, Classes = { "mono" } };
-            Grid.SetColumn(box, 1);
-            Grid.SetColumn(isNull, 2);
-            line.Children.Add(label);
-            line.Children.Add(box);
-            line.Children.Add(isNull);
-            panel.Children.Add(line);
-            panel.Children.Add(error);
-        }
-
-        Refresh();
-        var ok = await ShowAsync(UiText.Get("editor.parameters"), null, panel, run, true, (UiText.Get("editor.ignore"), false)) is true;
-        return ok ? [.. rows.Select(r => new ParameterValue(r.Name, r.Text, r.IsNull))] : null;
+        if (Owner is { } owner)
+            await Views.ImportWizardWindow.ShowAsync(owner, wizard);
     }
+
+    /// <inheritdoc />
+    public async ValueTask ShowErrorAsync(string title, string message) =>
+        await ShowAsync(title, message, null, (UiText.Get("dialog.ok"), true));
 
     private static Task<bool?> ShowAsync(string title, string message, Control? content, params (string Text, bool Result)[] buttons) =>
         ShowAsync(title, message, content, null, false, buttons);

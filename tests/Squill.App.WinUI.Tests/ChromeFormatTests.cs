@@ -13,7 +13,7 @@ public class ChromeFormatTests
 
     [Fact]
     public void Connection_without_profile_says_not_connected() =>
-        Assert.Equal(UiText.Get("status.notConnected"), ChromeFormat.Connection(null));
+        Assert.Equal(UiText.Get("home.noConnection"), ChromeFormat.Connection(null));
 
     [Theory]
     [InlineData("app", "sales", "app@prod-db / sales")]

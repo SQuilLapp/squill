@@ -3,10 +3,13 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Squill.Core;
+using Squill.Presentation.Activity;
+using Squill.Presentation.Compare;
 using Squill.Presentation.Designer;
 using Squill.Presentation.Diagram;
 using Squill.Presentation.Plans;
 using Squill.Presentation.Query;
+using Squill.Presentation.Security;
 using Squill.Presentation.Terminal;
 using Squill.Presentation.Workspace;
 
@@ -65,6 +68,9 @@ public sealed partial class WorkspaceTab : ObservableObject
             TableDesignerViewModel d => (d.Title, d.Session.Profile.Environment, d.HasChanges),
             DiagramTabViewModel g => (g.Title, g.Session.Profile.Environment, false),
             PlanTabViewModel p => (p.Source.Title, p.Environment, false),
+            SchemaCompareViewModel c => (c.Title, c.Environment, false),
+            SessionsMonitorViewModel m => (m.Title, m.Environment, false),
+            SecurityViewModel s => (s.Title, s.Environment, false),
             TerminalTabViewModel t => (t.Title, ConnectionEnvironment.None, false),
             _ => ("", ConnectionEnvironment.None, false),
         };
@@ -92,6 +98,9 @@ public sealed partial class WorkspaceTabList : ObservableObject
         workspace.Terminals.CollectionChanged += OnSourcesChanged;
         workspace.Diagrams.CollectionChanged += OnSourcesChanged;
         workspace.Plans.CollectionChanged += OnSourcesChanged;
+        workspace.Compares.CollectionChanged += OnSourcesChanged;
+        workspace.Monitors.CollectionChanged += OnSourcesChanged;
+        workspace.SecurityTabs.CollectionChanged += OnSourcesChanged;
         workspace.Designers.CollectionChanged += OnSourcesChanged;
         workspace.PropertyChanged += OnWorkspaceChanged;
         Sync(null);
@@ -115,6 +124,15 @@ public sealed partial class WorkspaceTabList : ObservableObject
                 break;
             case PlanTabViewModel plan:
                 _workspace.ActivePlan = plan;
+                break;
+            case SchemaCompareViewModel compare:
+                _workspace.ActiveCompare = compare;
+                break;
+            case SessionsMonitorViewModel monitor:
+                _workspace.ActiveMonitor = monitor;
+                break;
+            case SecurityViewModel security:
+                _workspace.ActiveSecurity = security;
                 break;
             case TableDesignerViewModel designer:
                 _workspace.ActiveDesigner = designer;
@@ -143,6 +161,15 @@ public sealed partial class WorkspaceTabList : ObservableObject
             case PlanTabViewModel plan:
                 plan.CloseCommand.Execute(null);
                 break;
+            case SchemaCompareViewModel compare:
+                compare.CloseCommand.Execute(null);
+                break;
+            case SessionsMonitorViewModel monitor:
+                monitor.CloseCommand.Execute(null);
+                break;
+            case SecurityViewModel security:
+                security.CloseCommand.Execute(null);
+                break;
             case TerminalTabViewModel terminal:
                 _workspace.CloseTerminalCommand.Execute(terminal);
                 break;
@@ -157,6 +184,9 @@ public sealed partial class WorkspaceTabList : ObservableObject
             nameof(WorkspaceViewModel.ActiveDesigner) => _workspace.ActiveDesigner,
             nameof(WorkspaceViewModel.ActiveDiagram) => _workspace.ActiveDiagram,
             nameof(WorkspaceViewModel.ActivePlan) => _workspace.ActivePlan,
+            nameof(WorkspaceViewModel.ActiveCompare) => _workspace.ActiveCompare,
+            nameof(WorkspaceViewModel.ActiveMonitor) => _workspace.ActiveMonitor,
+            nameof(WorkspaceViewModel.ActiveSecurity) => _workspace.ActiveSecurity,
             _ => null,
         };
         if (source is not null && _bySource.TryGetValue(source, out var tab))
@@ -180,6 +210,9 @@ public sealed partial class WorkspaceTabList : ObservableObject
             .. _workspace.Terminals,
             .. _workspace.Diagrams,
             .. _workspace.Plans,
+            .. _workspace.Compares,
+            .. _workspace.Monitors,
+            .. _workspace.SecurityTabs,
             .. _workspace.Designers,
         ];
         foreach (var stale in _bySource.Keys.Where(k => !desired.Contains(k)).ToList())

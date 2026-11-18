@@ -55,6 +55,18 @@ public sealed class WorkspaceViewModelTests : IDisposable
     public void Dispose() => _workspace.Dispose();
 
     [Fact]
+    public async Task OpenSecurity_IsDisabledWithAReason_WhenNotConnectedOrTheEngineHasNoRoles()
+    {
+        Assert.False(_workspace.OpenSecurityCommand.CanExecute(null));
+        Assert.Equal(UiText.Get("security.disabled.notConnected"), _workspace.SecurityDisabledReason);
+
+        await ConnectAsync();
+
+        Assert.False(_workspace.OpenSecurityCommand.CanExecute(null));
+        Assert.Equal(UiText.Get("security.disabled.engine"), _workspace.SecurityDisabledReason);
+    }
+
+    [Fact]
     public async Task ConfirmClose_WithoutUnsavedDesigner_DoesNotAsk()
     {
         Assert.True(await _workspace.ConfirmCloseAsync());

@@ -370,7 +370,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         _cancel = cts.Cancel;
         try
         {
-            var values = await PromptValuesAsync([original]);
+            var values = await PromptValuesAsync([original], cts.Token);
             if (values is null)
                 throw new OperationCanceledException();
             var sql = ParameterScanner.Rewrite(original, dialect);
@@ -458,7 +458,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         try
         {
             var maxRows = (await _settings.LoadAsync(cts.Token)).MaxGridRows;
-            var values = await PromptValuesAsync(statements);
+            var values = await PromptValuesAsync(statements, cts.Token);
             if (values is null)
                 throw new OperationCanceledException();
             if (await ConfirmRunAsync(statements, values, cts.Token) is not { } switchToManual)
@@ -487,26 +487,6 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             _cancel = null;
             IsRunning = false;
         }
-    }
-
-    private async Task<Dictionary<string, ParameterValue>?> PromptValuesAsync(IReadOnlyList<string> statements)
-    {
-        var dialect = _session.Profile.Dialect;
-        List<string> names = [];
-        foreach (var name in statements.SelectMany(s => ParameterScanner.Scan(s, dialect)))
-        {
-            if (!names.Contains(name))
-                names.Add(name);
-        }
-
-        if (names.Count == 0)
-            return [];
-        var entered = await _dialogs.PromptParametersAsync(names, _lastValues);
-        if (entered is null)
-            return null;
-        foreach (var value in entered)
-            _lastValues[value.Name] = value;
-        return entered.ToDictionary(v => v.Name);
     }
 
     private async Task<bool> RunStatementAsync(string original, int maxRows, Dictionary<string, ParameterValue> values, CancellationToken ct)

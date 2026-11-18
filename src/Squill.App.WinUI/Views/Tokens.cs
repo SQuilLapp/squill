@@ -8,6 +8,19 @@ namespace Squill.App.WinUI.Views;
 /// <summary>Reads design tokens for the theme an element is shown in, for code that builds its visuals by hand.</summary>
 internal static class Tokens
 {
+    /// <summary>Gets or sets the theme of the main window: code without an element at hand reads tokens for it, since the application resources follow the system theme instead.</summary>
+    public static ElementTheme Active { get; set; } = ElementTheme.Default;
+
+    /// <summary>Gets a token brush for the theme of the main window (<see cref="Active"/>).</summary>
+    /// <param name="brushKey">A token brush key such as <c>SquillFgBrush</c>.</param>
+    /// <returns>A new solid brush.</returns>
+    public static Brush Brush(string brushKey)
+    {
+        var variant = Active == ElementTheme.Light ? "Light" : "Default";
+        var color = brushKey[..^"Brush".Length] + "Color";
+        return new SolidColorBrush(Find(Application.Current.Resources, variant, color) ?? throw new KeyNotFoundException(color));
+    }
+
     /// <summary>Gets a token color for the actual theme of an element.</summary>
     /// <param name="element">The element, whose <see cref="FrameworkElement.ActualTheme"/> decides the variant.</param>
     /// <param name="brushKey">A token brush key such as <c>SquillFgBrush</c>; the color <c>SquillFgColor</c> is read.</param>

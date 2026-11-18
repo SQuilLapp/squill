@@ -58,7 +58,7 @@ public static partial class HardcodedStringScanner
         ("ErDiagram", "designer-er"), ("DesignIssue", "designer-er"), ("MainWindow.Diagram", "designer-er"),
         ("/Results/", "results"), ("/Editing/", "results"), ("DataGrid", "results"), ("EditBarFormat", "results"), ("GridEdit", "results"),
         ("/Query/", "query"), ("/Editor/", "query"), ("/Editors/", "query"), ("QueryTab", "query"), ("StatusBar", "query"),
-        ("ParameterPromptRow", "query"), ("SqlColorizer", "query"), ("SqlRunner", "query"),
+        ("ParametersPanel", "query"), ("SqlColorizer", "query"), ("SqlRunner", "query"),
         ("/Settings/", "settings-dialogs-errors"), ("SettingsWindow", "settings-dialogs-errors"), ("SettingsFormat", "settings-dialogs-errors"),
         ("DialogService", "settings-dialogs-errors"), ("AppComposition", "settings-dialogs-errors"),
         ("Program.cs", "settings-dialogs-errors"), ("/Workspace/", "settings-dialogs-errors"), ("/Sessions/", "settings-dialogs-errors"),

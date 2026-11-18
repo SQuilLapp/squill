@@ -340,6 +340,60 @@ Depends on: <card ids, ranges allowed>
 | [P17-17](phase-17/P17-17-verify-grid-filter-and-palette.md) | End-to-end verification: grid filter and command palette | P17-09, P17-16 | automated done, manual pending |
 | [P17-18](phase-17/P17-18-docs-and-adr.md) | Documentation: grid filter and palette ADR 0014, changelog and README | P17-17 | done |
 | [P17-19](phase-17/P17-19-winui-column-menu-crash.md) | WinUI column menu crash and crash log | P17-18 | done |
+| [P18-01](phase-18/P18-01-platform-recent-connections-and-home-settings.md) | Platform: recent connections and home settings | none | done |
+| [P18-02](phase-18/P18-02-presentation-home-view-model.md) | Presentation: the home view-model | P18-01 | done |
+| [P18-03](phase-18/P18-03-winui-home-page.md) | WinUI head: the home page | P18-02 | done |
+| [P18-04](phase-18/P18-04-avalonia-home-page.md) | Avalonia head: the home page | P18-03 | done |
+| [P18-05](phase-18/P18-05-core-schema-comparison.md) | Core: schema comparison model | none | done |
+| [P18-06](phase-18/P18-06-sql-migration-script.md) | Sql: migration script generation | P18-05 | done |
+| [P18-07](phase-18/P18-07-presentation-line-diff.md) | Presentation: line diff for the side-by-side DDL | none | done |
+| [P18-08](phase-18/P18-08-presentation-schema-compare-tab.md) | Presentation: schema compare view-model and tab (risky) | P18-05 ... P18-07, P18-02 | done |
+| [P18-09](phase-18/P18-09-winui-schema-compare-view.md) | WinUI head: the schema compare view | P18-08, P9-10 | done |
+| [P18-10](phase-18/P18-10-avalonia-schema-compare-view.md) | Avalonia head: the schema compare view | P18-09 | done |
+| [P18-11](phase-18/P18-11-data-activity-contract-and-postgres.md) | Data: server activity contract and PostgreSQL reader | none | done |
+| [P18-12](phase-18/P18-12-data-activity-mysql-sqlserver.md) | Data: activity readers for MySQL and SQL Server | P18-11 | done |
+| [P18-13](phase-18/P18-13-presentation-sessions-monitor.md) | Presentation: sessions and locks monitor (risky) | P18-11, P18-12, P18-02 | done |
+| [P18-14](phase-18/P18-14-winui-sessions-monitor-view.md) | WinUI head: the sessions and locks view | P18-13, P9-10 | done |
+| [P18-15](phase-18/P18-15-avalonia-sessions-monitor-view.md) | Avalonia head: the sessions and locks view | P18-14 | done |
+| [P18-16](phase-18/P18-16-core-privileges-model.md) | Core: role and privilege model | none | done |
+| [P18-17](phase-18/P18-17-data-postgres-roles-and-privileges.md) | Data.Postgres: read roles and privileges | P18-16 | done |
+| [P18-18](phase-18/P18-18-sql-grant-revoke-script.md) | Sql: GRANT and REVOKE script | P18-16 | done |
+| [P18-19](phase-18/P18-19-presentation-security-tab.md) | Presentation: the security tab (risky) | P18-16 ... P18-18, P18-02 | done |
+| [P18-20](phase-18/P18-20-winui-security-view.md) | WinUI head: the security view | P18-19, P9-10 | done |
+| [P18-21](phase-18/P18-21-avalonia-security-view.md) | Avalonia head: the security view | P18-20 | done |
+| [P18-22](phase-18/P18-22-presentation-csv-reader.md) | Presentation: CSV reader and preview | none | done |
+| [P18-23](phase-18/P18-23-presentation-import-mapping.md) | Presentation: import column mapping and value conversion | P18-22 | done |
+| [P18-24](phase-18/P18-24-presentation-import-runner.md) | Presentation: the import runner (risky) | P18-23 | done |
+| [P18-25](phase-18/P18-25-presentation-import-wizard.md) | Presentation: the import wizard view-model | P18-22 ... P18-24, P18-02 | done |
+| [P18-26](phase-18/P18-26-winui-import-wizard.md) | WinUI head: the import wizard window | P18-25, P9-18 | done |
+| [P18-27](phase-18/P18-27-avalonia-import-wizard.md) | Avalonia head: the import wizard window | P18-26 | done |
+| [P18-28](phase-18/P18-28-verify-m05-m13-captures.md) | Verification: M05 and M13 captures and the phase 17 checklist | none | done |
+| [P18-29](phase-18/P18-29-winui-explorer-metrics.md) | WinUI head: explorer metrics and environment pills | none | done |
+| [P18-30](phase-18/P18-30-inline-query-parameters-panel.md) | Query parameters panel under the editor (both heads) | none | done |
+| [P18-31](phase-18/P18-31-verify-new-screens.md) | Verification: the five new screens against their mockups | P18-04, P18-10, P18-15, P18-21, P18-27 | done |
+| [P18-32](phase-18/P18-32-docs-and-adr.md) | Documentation: ADR 0015, changelog and README | P18-28 ... P18-31 | done |
+| [P18-33](phase-18/P18-33-mysql-compare-schema.md) | Schema compare between two MySQL databases (default schema instead of database name) | P18-31 | done |
+| [P18-34](phase-18/P18-34-avalonia-status-bar-thread.md) | Avalonia status bar: refresh only on the UI thread | P18-31 | done |
+| [P19-01](phase-19/P19-01-sql-quote-reserved-words.md) | Sql: quote names that are keywords of the dialect (completion, GRANT script) | none | done |
+| [P19-02](phase-19/P19-02-presentation-events-on-ui-thread.md) | Presentation: raise view-model events on the UI thread | none | done |
+| [P19-03](phase-19/P19-03-stabilize-test-run.md) | Stabilize the full test run (timing tests) | none | done |
+| [P19-04](phase-19/P19-04-presentation-winui-rows-cut-notice.md) | Say when the sessions and privileges lists are cut (Presentation, WinUI) | none | done |
+| [P19-05](phase-19/P19-05-avalonia-rows-cut-notice.md) | Say when the sessions and privileges lists are cut (Avalonia) | P19-04 | done |
+| [P19-06](phase-19/P19-06-aot-warning-guard.md) | Guard the AOT publish against new trim and AOT warnings | none | done |
+| [P19-07](phase-19/P19-07-capture-window-reliable.md) | Capture-Window captures the window, not the desktop | none | done |
+| [P19-08](phase-19/P19-08-verification-scenario-script.md) | One script that prepares the data of the verification checklists | none | done |
+| [P19-09](phase-19/P19-09-winui-new-screens-sqlite.md) | WinUI: M01, M09 and M10 against their mockups | P19-07, P19-08 | done |
+| [P19-10](phase-19/P19-10-winui-sessions-privileges-postgres.md) | WinUI: M11 and M12 on a PostgreSQL container | P19-07, P19-08 | done |
+| [P19-11](phase-19/P19-11-avalonia-new-screens.md) | Avalonia: M01, M09, M10, M11 and M12 | P19-09, P19-10 | done |
+| [P19-12](phase-19/P19-12-winui-transactions-plan-dark-english.md) | WinUI: transactions, production dialog and plan, dark and English | P19-07, P19-08 | done |
+| [P19-13](phase-19/P19-13-winui-completion-grid-palette-designer-er.md) | WinUI: completion, grid filter, palette, designer, ER, control states | P19-07, P19-08 | partial (dark grid filter only) |
+| [P19-14](phase-19/P19-14-avalonia-transactions-plan-dark-english.md) | Avalonia: transactions, production dialog and plan | P19-12 | done |
+| [P19-15](phase-19/P19-15-avalonia-completion-grid-palette-designer-er.md) | Avalonia: completion, grid filter, palette, designer, ER | P19-13 | partial (dark, fr; see card) |
+| [P19-16](phase-19/P19-16-docs-and-adr.md) | Docs, ADR 0016 and changelog for phase 19 | P19-01 ... P19-15 | done |
+| [P19-17](phase-19/P19-17-winui-home-mockup-gaps.md) | WinUI: close the home page gaps found against M01 | P19-09 | done |
+| [P19-18](phase-19/P19-18-winui-sessions-privileges-gaps.md) | WinUI: close the sessions and privileges gaps found against M11 and M12 | P19-10 | done |
+| [P19-19](phase-19/P19-19-avalonia-home-mockup-gaps.md) | Avalonia: close the home page gaps found against M01 | P19-11 | done |
+| [P19-20](phase-19/P19-20-winui-light-theme-and-production-dialog.md) | WinUI: light theme with a dark system theme, production dialog frame | P19-12 | partial |
 
 ### Phase 9 - Visual conformance
 
@@ -415,3 +469,21 @@ Goal: the result grid gets the M05 filter bar (typed filter chips, a search box,
 - Branch: implement phase 17 on the branch `phase-17-grid-filter-palette`; do not create another branch.
 - Order: the two features are independent. Filter: P17-01 ... P17-05 (pure logic, view, view-models), WinUI P17-06 / P17-07 before Avalonia P17-08 / P17-09. Palette: P17-10 ... P17-14, WinUI P17-15 before Avalonia P17-16. Then verification P17-17 and docs P17-18. Either feature may be implemented first; do not interleave a head card before its Presentation cards.
 - Riskiest cards: P17-03 (a stale rebuild must never replace a newer one, 100,000+ rows must not freeze the UI thread), P17-04 (row identity: editing must be refused in Presentation while a view is active), P17-12 (50,000 objects searched per keystroke, opening an object of a non-active connection), P17-15 / P17-16 (focus and keys: `Ctrl+K` from the editor and the grid, no key reaching the editor behind the overlay; stop rules in the cards). Bugs found by P17-17 too big for the card get `P17-19` onwards (added to this index).
+
+### Phase 18 - The remaining mockups (M01, M09, M10, M11, M12) and polish
+
+Goal: build the five mockups the app does not have (`visual-spec.md` section 10): the home page (M01), schema compare with a migration script (M09), the CSV import wizard (M10), PostgreSQL roles and privileges (M11), the sessions and locks monitor (M12); then close the verification left open by phase 17 and two recorded visual gaps. Decisions (final, details in [mockups-recipe.md](phase-18/mockups-recipe.md) and in ADR 0015 written by P18-32): compare is structure only and between two databases of the same dialect; the privileges screen is PostgreSQL only; import is CSV into an existing table; the monitor covers PostgreSQL, MySQL and SQL Server; every write (migration script, GRANT / REVOKE, import, kill) goes through the statement runner, the session transaction rules and the phase 15 production confirmation; monitoring polls only while its tab is active. Not built (no feature behind it): projects, importing other tools' connections, DuckDB, data compare, role creation, default privileges, database-to-database transfer, value maps, Oracle in the monitor and compare.
+
+- Status: P18-01 ... P18-32 done; P18-33 done; P18-34 (Avalonia status bar thread) done.
+- Branch: implement phase 18 on the branch `phase-18-remaining-mockups`; do not create another branch.
+- Order: the four features are independent. Home: P18-01 ... P18-04 first (P18-02 provides the short environment keys and the recent store other cards may reuse). Compare: P18-05 ... P18-07 (any order), P18-08, WinUI P18-09 before Avalonia P18-10. Sessions: P18-11, P18-12, P18-13, WinUI P18-14 before Avalonia P18-15. Privileges: P18-16 ... P18-18, P18-19, P18-20, P18-21. Import: P18-22 ... P18-25, P18-26, P18-27. P18-28 ... P18-30 are independent at any time. Then P18-31 (verification) and P18-32 (docs). Do not start a head card before its Presentation card.
+- Riskiest cards: P18-08 and P18-19 (a write path that must never bypass the production confirmation), P18-13 (polling must never pile up or run in an inactive tab; MySQL lock tables stop rule), P18-24 (batch limits per engine, savepoints inside a user transaction, rejected rows). Docker-gated engine proofs need Podman ([verification-recipe.md](phase-11/verification-recipe.md)). Bugs found by P18-31 too big for the card get `P18-33` onwards (added to this index).
+
+### Phase 19 - Debug and polish (after the remaining mockups)
+
+Goal: fix what phase 18 and earlier phases recorded as broken or silently limited, and look at every screen that was only tested headless or in one theme, before any new feature. The owner's own list of issues was not available: the work comes from the repository (`docs/verification/`, `visual-spec.md` section 12, `shortcut:` comments, card done notes). Decisions (final, details in [debug-polish-recipe.md](phase-19/debug-polish-recipe.md) and in ADR 0016 written by P19-16): fix cards start with a failing test; agent verification cards never tick the owner's checklist boxes (they write `agent: ok / bug / not driven` in the `Result` column); a difference one small edit fixes is fixed in the verification card, a bigger one becomes a card `P19-17` onwards; no feature is built.
+
+- Status: P19-01 ... P19-12, P19-14, P19-16 ... P19-19 done, P19-13, P19-15 and P19-20 partial.
+- Branch: implement phase 19 on the branch `phase-19-debug-polish`; do not create another branch.
+- Order: P19-01 ... P19-08 are independent (P19-04 before P19-05; P19-07 and P19-08 before every verification card). Then WinUI before Avalonia: P19-09, P19-10, P19-12, P19-13, then P19-11 (after P19-09 and P19-10), P19-14 (after P19-12), P19-15 (after P19-13). Last P19-16 (docs).
+- Riskiest cards: P19-01 (every completion insertion goes through the quoting method), P19-02 (the inventory may find no production producer: stop rule), P19-07 (`PrintWindow` may return black for WinUI; the covered-window check is the supported fix), P19-13 (largest matrix: record `not driven (time)` rather than stretch a claim). Docker-gated drives need Podman ([verification-recipe.md](phase-11/verification-recipe.md)). Bugs found by the verification cards too big for the card get `P19-17` onwards (added to this index).

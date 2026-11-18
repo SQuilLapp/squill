@@ -190,7 +190,11 @@ public sealed partial class SettingsViewModel(ISettingsStore store, string? curr
         await previous;
         try
         {
-            await store.SaveAsync(settings, CancellationToken.None);
+            // The home page owns its three settings; keep what it saved.
+            var stored = await store.LoadAsync(CancellationToken.None);
+            await store.SaveAsync(
+                settings with { ShowHomeAtStartup = stored.ShowHomeAtStartup, HomeTipIndex = stored.HomeTipIndex, HomeTipsHidden = stored.HomeTipsHidden },
+                CancellationToken.None);
             SaveError = null;
         }
         catch (Exception ex)

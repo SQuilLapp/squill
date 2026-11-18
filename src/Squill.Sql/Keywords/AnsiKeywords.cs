@@ -19,7 +19,7 @@ internal static class AnsiKeywords
         "ORDER", "OUTER", "OVER", "PARTITION", "PRECEDING", "PRECISION", "PRIMARY", "RANGE", "REAL", "RECURSIVE",
         "REFERENCES", "RESTRICT", "REVOKE", "RIGHT", "ROLLBACK", "ROW", "ROWS", "SECOND", "SELECT", "SET",
         "SMALLINT", "SOME", "SUBSTRING", "SUM", "TABLE", "THEN", "TIME", "TIMESTAMP", "TO", "TOP", "TRAILING",
-        "TRIGGER", "TRIM", "TRUE", "UNBOUNDED", "UNION", "UNIQUE", "UPDATE", "USING", "VALUES", "VARCHAR", "VIEW",
+        "TRIGGER", "TRIM", "TRUE", "UNBOUNDED", "UNION", "UNIQUE", "UPDATE", "USER", "USING", "VALUES", "VARCHAR", "VIEW",
         "WHEN", "WHERE", "WINDOW", "WITH", "YEAR", "ZONE",
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 }

@@ -41,6 +41,11 @@ public class JoinConditionTextTests
         => Assert.Equal(expected, JoinConditionText.Build(Rel("customers", "orders", ["Order Id"], ["x"]), "c", "o", dialect));
 
     [Fact]
+    public void KeywordColumnIsQuoted()
+        => Assert.Equal("c.\"group\" = o.x",
+            JoinConditionText.Build(Rel("customers", "orders", ["group"], ["x"]), "c", "o", DatabaseDialect.PostgreSql));
+
+    [Fact]
     public void PostgresQuotesCapitals()
         => Assert.Equal("c.\"Id\" = o.customer_id",
             JoinConditionText.Build(Rel("customers", "orders", ["Id"], ["customer_id"]), "c", "o", DatabaseDialect.PostgreSql));

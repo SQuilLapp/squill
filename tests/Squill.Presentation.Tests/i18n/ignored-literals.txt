@@ -2,7 +2,6 @@
 src/Squill.App.Avalonia/Controls/ErDiagramCanvas.cs|avares://Squill.App.Avalonia/Assets/Fonts#JetBrains Mono, Cascadia Code, monospace|font family resource uri
 src/Squill.App.Avalonia/MainWindow.MacOS.cs|About Avalonia|matches the default Avalonia menu item to replace, not shown
 src/Squill.App.Avalonia/MainWindow.axaml|Ctrl+K|keyboard accelerator text, not translated
-src/Squill.App.Avalonia/Services/AvaloniaDialogService.cs|mono|style class name, not text
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFg3Brush|resource key
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|SquillFgBrush|resource key
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml.cs|group|style class name
@@ -14,29 +13,71 @@ src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SQL Server|product na
 src/Squill.App.Avalonia/Views/ConnectionEditorWindow.axaml|SQLite|product name, not translated
 src/Squill.App.Avalonia/Views/DiagramTabView.axaml|Ctrl+0|keyboard accelerator text, not translated
 src/Squill.App.Avalonia/Views/FilterBar.axaml|Ctrl+F|keyboard accelerator text, not translated
+src/Squill.App.Avalonia/Views/HomePage.axaml|Ctrl+K|keyboard shortcut, not translated
+src/Squill.App.Avalonia/Views/HomePage.axaml|Ctrl+N|keyboard shortcut, not translated
+src/Squill.App.Avalonia/Views/HomePage.axaml|SQuilL|product name, not translated
+src/Squill.App.Avalonia/Views/ImportWizardWindow.cs|Europe/Paris|IANA time zone placeholder
+src/Squill.App.Avalonia/Views/ImportWizardWindow.cs|yyyy-MM-dd|date format pattern placeholder
 src/Squill.App.Avalonia/Views/ProductionConfirmWindow.cs|SquillFg3Brush|resource key
 src/Squill.App.Avalonia/Views/ProductionConfirmWindow.cs|SquillFgBrush|resource key
 src/Squill.App.Avalonia/Views/QueryTabView.axaml|CSV|file format name
 src/Squill.App.Avalonia/Views/QueryTabView.axaml|JSON|file format name
+src/Squill.App.Avalonia/Views/SecurityView.cs|SquillAccentBrush|resource key
+src/Squill.App.Avalonia/Views/SecurityView.cs|SquillAccentSoftBrush|resource key
+src/Squill.App.Avalonia/Views/SecurityView.cs|SquillAccentTextBrush|resource key
+src/Squill.App.Avalonia/Views/SecurityView.cs|SquillBgActiveBrush|resource key
+src/Squill.App.Avalonia/Views/SecurityView.cs|SquillBgSurfaceBrush|resource key
+src/Squill.App.Avalonia/Views/SecurityView.cs|SquillBorderBrush|resource key
+src/Squill.App.Avalonia/Views/SecurityView.cs|SquillDangerBrush|resource key
+src/Squill.App.Avalonia/Views/SecurityView.cs|SquillDangerSoftBrush|resource key
+src/Squill.App.Avalonia/Views/SecurityView.cs|SquillFg2Brush|resource key
+src/Squill.App.Avalonia/Views/SecurityView.cs|SquillFgBrush|resource key
+src/Squill.App.Avalonia/Views/SecurityView.cs|SquillOnAccentBrush|resource key
+src/Squill.App.Avalonia/Views/SessionsMonitorView.cs|N0|number format string
+src/Squill.App.Avalonia/Views/SessionsMonitorView.cs|SquillFg2Brush|resource key
+src/Squill.App.Avalonia/Views/SessionsMonitorView.cs|SquillFg3Brush|resource key
+src/Squill.App.Avalonia/Views/SessionsMonitorView.cs|SquillFgBrush|resource key
 src/Squill.App.Avalonia/Views/TableDesignerView.axaml|Ctrl+S|keyboard accelerator text, not translated
 src/Squill.App.Avalonia/Views/TransactionAskWindow.cs|SquillFg2Brush|resource key
 src/Squill.App.Avalonia/Views/TransactionAskWindow.cs|SquillFgBrush|resource key
 src/Squill.App.WinUI/Editors/PlainSqlEditor.cs|Cascadia Code, Consolas|font family list
 src/Squill.App.WinUI/MainWindow.xaml|Ctrl+K|keyboard accelerator text, not translated
 src/Squill.App.WinUI/MainWindow.xaml|SQuilL|product name, not translated
-src/Squill.App.WinUI/Services/WinUiDialogService.cs|MonoTextBlockStyle|resource key, not text
-src/Squill.App.WinUI/Services/WinUiDialogService.cs|SquillFontMono|resource key, not text
 src/Squill.App.WinUI/Views/ConnectionEditorFormat.cs|SQL Server|product name, not translated
 src/Squill.App.WinUI/Views/ConnectionEditorWindow.xaml.cs|SquillFg3Brush|resource key
 src/Squill.App.WinUI/Views/ConnectionEditorWindow.xaml.cs|SquillFgBrush|resource key
 src/Squill.App.WinUI/Views/DiagramTabView.xaml|Ctrl+0|keyboard accelerator text, not translated
 src/Squill.App.WinUI/Views/FilterBar.cs|MonoTextBlockStyle|resource key, not text
+src/Squill.App.WinUI/Views/HomePage.cs|CapsTextBlockStyle|style key
+src/Squill.App.WinUI/Views/HomePage.cs|SQuilL|product name, not translated
+src/Squill.App.WinUI/Views/HomePage.cs|SquillFg3Brush|resource key
+src/Squill.App.WinUI/Views/HomePage.cs|SquillFontBrand|resource key
+src/Squill.App.WinUI/Views/HomePage.cs|SquillFontMono|resource key
+src/Squill.App.WinUI/Views/HomePage.cs|SquillFontSizeBodySm|resource key
+src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|Europe/Paris|IANA time zone placeholder
+src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|SquillFg2Brush|resource key
+src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|SquillFg3Brush|resource key
+src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|SquillFgBrush|resource key
+src/Squill.App.WinUI/Views/ImportWizardWindow.xaml.cs|yyyy-MM-dd|date format pattern placeholder
+src/Squill.App.WinUI/Views/ParametersPanel.cs|MonoTextBlockStyle|resource key, not text
+src/Squill.App.WinUI/Views/ParametersPanel.cs|SquillFontMono|resource key, not text
 src/Squill.App.WinUI/Views/ProductionConfirmDialog.cs|SquillDangerBrush|resource key
 src/Squill.App.WinUI/Views/ProductionConfirmDialog.cs|SquillFgBrush|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFg2Brush|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFg3Brush|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillFontMono|resource key
 src/Squill.App.WinUI/Views/QueryTabView.cs|SquillIconCollapse|resource key
+src/Squill.App.WinUI/Views/SchemaCompareView.cs|SquillFg2Brush|resource key
+src/Squill.App.WinUI/Views/SchemaCompareView.cs|SquillFgBrush|resource key
+src/Squill.App.WinUI/Views/SchemaCompareView.cs|SquillFontMono|resource key
+src/Squill.App.WinUI/Views/SecurityView.cs|SquillDangerBrush|resource key
+src/Squill.App.WinUI/Views/SecurityView.cs|SquillFg2Brush|resource key
+src/Squill.App.WinUI/Views/SecurityView.cs|SquillFgBrush|resource key
+src/Squill.App.WinUI/Views/SecurityView.cs|SquillOnAccentBrush|resource key
+src/Squill.App.WinUI/Views/SessionsMonitorView.cs|N0|number format string
+src/Squill.App.WinUI/Views/SessionsMonitorView.cs|SquillFg2Brush|resource key
+src/Squill.App.WinUI/Views/SessionsMonitorView.cs|SquillFg3Brush|resource key
+src/Squill.App.WinUI/Views/SessionsMonitorView.cs|SquillFgBrush|resource key
 src/Squill.App.WinUI/Views/TableDesignerView.xaml|Ctrl+S|keyboard accelerator text, not translated
 src/Squill.App.WinUI/Views/TableDesignerView.xaml|ON DELETE|SQL keyword, not translated
 src/Squill.App.WinUI/Views/TableDesignerView.xaml|ON UPDATE|SQL keyword, not translated
@@ -57,6 +98,10 @@ src/Squill.Presentation/Editing/ChangeSetBuilder.cs|duplicate key in pending row
 src/Squill.Presentation/Editing/ChangeSetBuilder.cs|{c.Definition.Name} cannot be NULL|English fallback of a coded issue, rendered through issue.edit.columnNull
 src/Squill.Presentation/Editing/ChangeSetBuilder.cs|{d.Name} is required|English fallback of a coded issue, rendered through issue.edit.columnRequired
 src/Squill.Presentation/Explorer/DefinitionScript.cs|ON {SqlQuoting.Quote(trigger.Table, dialect)} FOR EACH ROW\n{trigger.Definition.Trim()}|SQL text, never translated
+src/Squill.Presentation/Home/HomeRecentCardViewModel.cs|SQL Server|product name, not translated
+src/Squill.Presentation/Import/ValueConverter.cs|character varying|SQL type name, not display text
+src/Squill.Presentation/Import/ValueConverter.cs|double precision|SQL type name, not display text
+src/Squill.Presentation/Import/ValueConverter.cs|with time zone|SQL type name, not display text
 src/Squill.Presentation/Localization/IssueText.cs|issue.|catalog key prefix, not text
 src/Squill.Presentation/Plans/PlanText.cs|Rows Removed by Filter|PostgreSQL property name matched as the engine prints it
 src/Squill.Presentation/Plans/PlanText.cs|Workers Launched|PostgreSQL property name matched as the engine prints it
