@@ -1,6 +1,6 @@
 # P19-09 - WinUI: look at M01, M09 and M10 against their mockups
 
-Status: todo
+Status: done
 Depends on: P19-07, P19-08
 
 ## Goal
@@ -17,9 +17,9 @@ Close the part of P18-31 that needs no server: nobody ever compared the WinUI ho
 - Avalonia (P19-11), M11 / M12 (P19-10), ticking owner boxes, redesigns.
 
 ## Tasks
-- [ ] Publish, prepare data, drive and capture each screen; read every PNG and composite.
-- [ ] Small fixes with tests where a pattern exists; list proposed cards.
-- [ ] Update `new-screens.md` (Result column, Note, "Not driven"), `visual-spec.md`.
+- [x] Publish, prepare data, drive and capture each screen; read every PNG and composite.
+- [x] Small fixes with tests where a pattern exists; list proposed cards.
+- [x] Update `new-screens.md` (Result column, Note, "Not driven"), `visual-spec.md`.
 
 ## Acceptance criteria
 - Common acceptance (recipe 4) if code changed (`Squill.Windows.slnx`, AOT publish, app starts); the report separates "compared (head, theme, language)" from "not driven"; processes closed.
@@ -30,3 +30,7 @@ Close the part of P18-31 that needs no server: nobody ever compared the WinUI ho
 
 ## Suggested commit message
 Compare the WinUI home, schema compare and import screens with their mockups
+
+## Done notes
+- Compared: M01, WinUI published AOT head, light and dark, French and English (1440 x 900, `Screen` capture, window on top). Differences recorded in `new-screens.md`, proposed as P19-17; no code changed.
+- Not driven: M09 and M10 (no UI automation of the native window in this session). They stay open for a session that can click the window.

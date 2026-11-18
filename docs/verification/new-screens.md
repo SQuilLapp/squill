@@ -40,16 +40,18 @@ Columns: WinUI / Avalonia = tick when it behaves as described in that head. Resu
 
 | # | Screen | Step | WinUI | Avalonia | Result |
 |---|--------|------|:-----:|:--------:|--------|
-| 1 | M01 | Start page lists recent connections with environment pill, shortcut keys, open-tab count; search box opens the palette; `Gérer les connexions`, `Nouvelle connexion`, `Ouvrir un fichier`, `Importer des connexions`, `Console SQL éphémère` work. | [ ] | [ ] | not driven |
-| 2 | M01 | Projects list, tip with `Astuce suivante` / `Masquer`, `Afficher l'accueil au démarrage` check persists. | [ ] | [ ] | not driven |
-| 3 | M09 | Pick source and target: groups, counts, include checkboxes, side-by-side DDL, generated script, `Exécuter le script`; after running, nothing left to compare. | [ ] | [ ] | not driven |
-| 4 | M10 | Wizard steps: source file, options, mapping (types, conflicts), error policy, run with progress and outcome. | [ ] | [ ] | not driven |
+| 1 | M01 | Start page lists recent connections with environment pill, shortcut keys, open-tab count; search box opens the palette; `Gérer les connexions`, `Nouvelle connexion`, `Ouvrir un fichier`, `Importer des connexions`, `Console SQL éphémère` work. | [ ] | [ ] | agent (WinUI): bug -> P19-17 (only `Nouvelle connexion` and the search box exist; the other four buttons are not drawn; no open-tab count); recent cards, environment pills and `Ctrl+1` ... `Ctrl+6` chips ok; opening the palette from the search box not driven |
+| 2 | M01 | Projects list, tip with `Astuce suivante` / `Masquer`, `Afficher l'accueil au démarrage` check persists. | [ ] | [ ] | agent (WinUI): tip card with `Astuce suivante` / `Masquer` and the startup check drawn and ok; persistence of the check not driven; projects list not built (visual-spec section 10) |
+| 3 | M09 | Pick source and target: groups, counts, include checkboxes, side-by-side DDL, generated script, `Exécuter le script`; after running, nothing left to compare. | [ ] | [ ] | agent: not driven (no UI automation of the native window in this session: connections cannot be opened and the compare tab cannot be reached by script) |
+| 4 | M10 | Wizard steps: source file, options, mapping (types, conflicts), error policy, run with progress and outcome. | [ ] | [ ] | agent: not driven (no UI automation of the native window and file picker in this session) |
 | 5 | M11 | Roles list and privilege matrix per object kind; toggle a cell, see the pending change and the generated statements; apply. | [ ] | [ ] | not driven |
 | 6 | M12 | Sessions table with state dots, sort and filter, blocking chains, detail pane; cancel and kill with confirmation. | [ ] | [ ] | not driven |
-| 7 | All | Compare each screen with `M01`, `M09`, `M10`, `M11`, `M12` in both themes; list every visible difference in the Note below. | [ ] | [ ] | not driven |
+| 7 | All | Compare each screen with `M01`, `M09`, `M10`, `M11`, `M12` in both themes; list every visible difference in the Note below. | [ ] | [ ] | agent (WinUI): M01 compared in light, dark, fr, en; M09 and M10 not driven (see rows 3 and 4) |
 
 ## Note
 
-Visible differences from the mockups (to be filled by the owner): none recorded, nothing was looked at in a window in this card.
+Visible differences from the mockups (to be completed by the owner): see below.
+
+P19-09 (agent, WinUI published AOT head, 1440 x 900, capture method Screen with the window on top, SQLite data of `-Scenario Full`): M01 compared with `M01-Accueil-clair-Windows.png` and `M01-Accueil-sombre-Windows.png` in light and dark, in French (both themes) and English (both themes). Matches: palette and both themes, 3 px environment border on the cards, environment pills, `Ctrl+N` / `Ctrl+1` ... `Ctrl+6` chips, `ASTUCE` card with `Astuce suivante` / `Masquer`, startup check, status bar text; English strings present and consistent. Differences (all proposed as card P19-17, none fixed here because each needs layout work and an AOT publish): no engine badge (`PG`, `MY`...) on the cards; no engine / version / open-tab count line; content spans the full window width where the mockup centers a column about 1160 wide; the start column only has `Nouvelle connexion` (no subtitle, no `Ouvrir un fichier`, `Importer des connexions`, `Console SQL éphémère`; the last two and the projects list are listed as not built in `visual-spec.md` section 10); the header has no `SQuilL` centered title and the menu has `Requête` and `Base de données` the mockup does not show; the header search box has no focus ring; no `Mise à jour` / `Pilotes à jour` status text. M09 and M10 were not driven: nothing in this session can click or type in a native window, so no comparison is claimed for them. Rows 5 and 6 belong to P19-10.
 
 Known limit (P18-33): a view whose definition hard-codes the database name (for example `squill.t`) still differs textually between two MySQL databases.
