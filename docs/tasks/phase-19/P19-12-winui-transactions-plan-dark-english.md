@@ -1,6 +1,6 @@
 # P19-12 - WinUI: transactions, production dialog and plan in dark theme and English
 
-Status: todo
+Status: done
 Depends on: P19-07, P19-08
 
 ## Goal
@@ -19,9 +19,9 @@ Depends on: P19-07, P19-08
 - Avalonia (P19-14), MySQL / SQL Server rows, ticking owner boxes.
 
 ## Tasks
-- [ ] Drive and capture the matrix; read every PNG.
-- [ ] Fixes and proposed cards; `Result` column and Notes of the two checklists; `visual-spec.md`.
-- [ ] Close the app and any container.
+- [x] Drive and capture the matrix; read every PNG.
+- [x] Fixes and proposed cards; `Result` column and Notes of the two checklists; `visual-spec.md`.
+- [x] Close the app and any container.
 
 ## Acceptance criteria
 - Common acceptance (recipe 4) if code changed (`Squill.Windows.slnx`, WinUI AOT publish, app starts); report lists compared (theme, language) and not driven.
@@ -31,3 +31,6 @@ Depends on: P19-07, P19-08
 
 ## Suggested commit message
 Compare the WinUI transaction, production and plan screens in dark theme and English
+
+## Done notes
+Driven on the published AOT WinUI head (SQLite profiles from `New-VisualProfile.ps1 -Scenario Full`, UI Automation plus SendKeys from a scratch script) at 1440 x 900 logical (2160 x 1350 px on this 150 % display; `Capture-Window.ps1` run from a non-DPI-aware shell reports scale 1 and gives a 960 px wide layout, so pass `-Width 2160 -Height 1350` here). Compared: transaction toolbar group and status text (dark fr, light en), production dialog (dark fr with M15 dark, light en). Not driven: PostgreSQL rows (`Failed` variant, planner figure, no server started), AltGr chords, close questions, narrow window, plan tab (`plan.md` language rows), MySQL / SQL Server. Differences are in P19-20 (light theme with a dark system theme leaves the workspace dark; dialog frame; keycaps). No code changed.

@@ -43,60 +43,60 @@ Columns: WinUI / Avalonia = tick when it behaves as described in that head. Resu
 
 | Step | WinUI | Avalonia | Result | Note |
 |---|---|---|---|---|
-| 1 Open the query tab: the toolbar shows `Auto-commit | Manuel` with `Auto-commit` selected, no pill, no `Valider` / `Annuler`; the status bar has no transaction text | [ ] | [ ] | | |
-| 2 Click `Manuel`: status text `Transaction manuelle`, still no pill (nothing open) | [ ] | [ ] | | |
-| 3 Run an insert: pill `1 instruction non validée`, `Valider` and `Annuler` appear (tooltips name `Ctrl+Alt+C` / `Ctrl+Alt+Z`), status text `Transaction ouverte depuis moins d'une minute · 1 instruction` | [ ] | [ ] | | |
-| 4 Click `Annuler`: pill and buttons disappear, status `Transaction manuelle`, `select * from tx_demo` shows no row, the history panel has a `ROLLBACK` line | [ ] | [ ] | | |
-| 5 Insert again, press `Ctrl+Alt+C`: committed, row visible, history has `COMMIT`. Insert again, press `Ctrl+Alt+Z`: rolled back. On an AZERTY / AltGr layout check the shortcut does not type a character in the editor (risk 10) | [ ] | [ ] | | |
-| 6 Run `select * from tx_demo` in `Manuel` with nothing open: no pill, no buttons, status stays `Transaction manuelle` | [ ] | [ ] | | |
-| 7 Run an insert, then `vacuum`: the result shows the refusal (`Cette instruction (VACUUM) ne peut pas s'exécuter dans une transaction`), the pill still says 1, `Annuler` | [ ] | [ ] | | |
-| 8 Run `create table tx_ddl (id integer primary key)` in `Manuel`, then `Annuler`: the table is gone from the explorer after a refresh | [ ] | [ ] | | |
-| 9 Switch to `Auto-commit`, type `begin`, run: pill `0 instruction non validée`, buttons appear. Insert, type `rollback`, run: all gone | [ ] | [ ] | | |
-| 10 Open a result of `select * from tx_demo` (editable), insert a row from the grid with the `Manuel` mode and an earlier insert open, commit the grid: the pill counts both (2), `Annuler` removes both | [ ] | [ ] | | |
-| 11 With a transaction open, close the query tab: the dialog `Fermer le dernier onglet de la connexion ?` lists the connection and the statement; `Retour` keeps the tab, `Annuler les modifications` rolls back and closes | [ ] | [ ] | | |
-| 12 With a transaction open, click `Auto-commit`: `Repasser en auto-commit ?` with `Valider` / `Annuler les modifications` / `Retour` | [ ] | [ ] | | |
-| 13 With a transaction open, `Déconnecter`: `Se déconnecter ?`; then close the window: `Quitter SQuilL ?`. `Retour` leaves the application running with the transaction open; `Valider` commits and exits | [ ] | [ ] | | |
-| 14 Open two query tabs on the connection, open a transaction in tab A: tab B shows the same pill and buttons; tab B's insert is rolled back by tab A's `Annuler` | [ ] | [ ] | | |
-| 15 The `Production` profile: `delete from tx_demo` (no `WHERE`) opens the production dialog (see "Production dialog" below), **without** a figure (SQLite gives no estimate) and the confirm button says `Exécuter`; the typed word is the file name | [ ] | [ ] | | |
-| 16 The `Staging` profile: the same delete never asks anything | [ ] | [ ] | | |
+| 1 Open the query tab: the toolbar shows `Auto-commit | Manuel` with `Auto-commit` selected, no pill, no `Valider` / `Annuler`; the status bar has no transaction text | [ ] | agent: ok | agent (WinUI, dark, fr): toolbar shows Auto-commit / Manuel, no pill. Unlike the step text, in Manuel with nothing open Valider and Annuler are already visible (see step 6) - not a defect of the code, the text of steps 1 and 6 is out of date. |
+| 2 Click `Manuel`: status text `Transaction manuelle`, still no pill (nothing open) | [ ] | [ ] | agent: ok | agent (WinUI, dark, fr): status text Transaction manuelle, no pill. |
+| 3 Run an insert: pill `1 instruction non validée`, `Valider` and `Annuler` appear (tooltips name `Ctrl+Alt+C` / `Ctrl+Alt+Z`), status text `Transaction ouverte depuis moins d'une minute · 1 instruction` | [ ] | [ ] | agent: ok | agent (WinUI, dark fr and light en): pill 1 instruction non validee / 1 uncommitted statement, Valider and Annuler / Commit and Roll back, status Transaction ouverte depuis ... · 1 instruction. Tooltips not read. Buttons show no Ctrl+Alt+C keycap, M04 does. |
+| 4 Click `Annuler`: pill and buttons disappear, status `Transaction manuelle`, `select * from tx_demo` shows no row, the history panel has a `ROLLBACK` line | [ ] | [ ] | agent: ok | agent (WinUI, dark, fr): Annuler cleared the pill (second Annuler click after an insert); history ROLLBACK line and the empty select not read. |
+| 5 Insert again, press `Ctrl+Alt+C`: committed, row visible, history has `COMMIT`. Insert again, press `Ctrl+Alt+Z`: rolled back. On an AZERTY / AltGr layout check the shortcut does not type a character in the editor (risk 10) | [ ] | [ ] | agent: not driven (no keyboard chords or native close flow in this session) |  |
+| 6 Run `select * from tx_demo` in `Manuel` with nothing open: no pill, no buttons, status stays `Transaction manuelle` | [ ] | [ ] | agent: ok | agent (WinUI, dark, fr): Valider and Annuler are visible (disabled) in Manuel with nothing open; the step text says no buttons. |
+| 7 Run an insert, then `vacuum`: the result shows the refusal (`Cette instruction (VACUUM) ne peut pas s'exécuter dans une transaction`), the pill still says 1, `Annuler` | [ ] | [ ] | agent: not driven (no keyboard chords or native close flow in this session) |  |
+| 8 Run `create table tx_ddl (id integer primary key)` in `Manuel`, then `Annuler`: the table is gone from the explorer after a refresh | [ ] | [ ] | agent: not driven (no keyboard chords or native close flow in this session) |  |
+| 9 Switch to `Auto-commit`, type `begin`, run: pill `0 instruction non validée`, buttons appear. Insert, type `rollback`, run: all gone | [ ] | [ ] | agent: not driven (no keyboard chords or native close flow in this session) |  |
+| 10 Open a result of `select * from tx_demo` (editable), insert a row from the grid with the `Manuel` mode and an earlier insert open, commit the grid: the pill counts both (2), `Annuler` removes both | [ ] | [ ] | agent: not driven (no keyboard chords or native close flow in this session) |  |
+| 11 With a transaction open, close the query tab: the dialog `Fermer le dernier onglet de la connexion ?` lists the connection and the statement; `Retour` keeps the tab, `Annuler les modifications` rolls back and closes | [ ] | [ ] | agent: not driven (no keyboard chords or native close flow in this session) |  |
+| 12 With a transaction open, click `Auto-commit`: `Repasser en auto-commit ?` with `Valider` / `Annuler les modifications` / `Retour` | [ ] | [ ] | agent: not driven (no keyboard chords or native close flow in this session) |  |
+| 13 With a transaction open, `Déconnecter`: `Se déconnecter ?`; then close the window: `Quitter SQuilL ?`. `Retour` leaves the application running with the transaction open; `Valider` commits and exits | [ ] | [ ] | agent: not driven (no keyboard chords or native close flow in this session) |  |
+| 14 Open two query tabs on the connection, open a transaction in tab A: tab B shows the same pill and buttons; tab B's insert is rolled back by tab A's `Annuler` | [ ] | [ ] | agent: not driven (no keyboard chords or native close flow in this session) |  |
+| 15 The `Production` profile: `delete from tx_demo` (no `WHERE`) opens the production dialog (see "Production dialog" below), **without** a figure (SQLite gives no estimate) and the confirm button says `Exécuter`; the typed word is the file name | [ ] | [ ] | agent: ok | agent (WinUI, dark fr, light en; pg-prod-eu on SQLite): dialog opens, no figure, confirm button Executer / Run, typed word pg-prod-eu.db, Entree = Annuler shown. |
+| 16 The `Staging` profile: the same delete never asks anything | [ ] | [ ] | agent: not driven (no keyboard chords or native close flow in this session) |  |
 
 ### PostgreSQL
 
 | Step | WinUI | Avalonia | Result | Note |
 |---|---|---|---|---|
-| 1 Steps 1 to 6 of SQLite (toggle, insert, pill and status text, `Annuler`, `Valider` with `Ctrl+Alt+C`, `SELECT` leaves nothing open) | [ ] | [ ] | | |
-| 2 In `Manuel`, run the script `insert into tx_demo (id, name) values (1, 'a'); insert into tx_demo (id, name) values (1, 'dup'); insert into tx_demo (id, name) values (3, 'c')`: the second fails, the pill shows the `Failed` variant (`Transaction en échec : annulez-la` in the status bar, red pill), the third did not run, `Valider` is disabled | [ ] | [ ] | | |
-| 3 In that state run `select 1`: refused with `La transaction est en échec : annulez-la avant de continuer.`; the plan buttons are refused too. `Annuler` returns to `Transaction manuelle` and the table is empty | [ ] | [ ] | | |
-| 4 Insert, run `vacuum`: refused with the `tx.cannotRun` message, the transaction is not `Failed` | [ ] | [ ] | | |
-| 5 Insert, `Analyser` a select: the plan tab opens, the pill still says 1 and `Annuler` still works | [ ] | [ ] | | |
-| 6 Run `create table tx_ddl (id int)` in `Manuel`, `Annuler`: the table is gone (DDL is transactional) | [ ] | [ ] | | |
-| 7 Steps 9 to 14 of SQLite (typed `begin`, grid commit, close tab, switch mode, disconnect and exit, two tabs) | [ ] | [ ] | | |
-| 8 Production profile, `delete from tx_demo`: the dialog shows the figure (`Elle touchera environ N lignes (estimation du planificateur)`), the confirm button reads `Supprimer N lignes`; see "Production dialog" | [ ] | [ ] | | |
-| 9 In another client (`psql`) `select count(*) from tx_demo` while a transaction is open: the uncommitted row is not visible; after `Valider` it is | [ ] | [ ] | | |
+| 1 Steps 1 to 6 of SQLite (toggle, insert, pill and status text, `Annuler`, `Valider` with `Ctrl+Alt+C`, `SELECT` leaves nothing open) | [ ] | [ ] | agent: not driven (no PostgreSQL server started: the card limits the container to rows that need it) |  |
+| 2 In `Manuel`, run the script `insert into tx_demo (id, name) values (1, 'a'); insert into tx_demo (id, name) values (1, 'dup'); insert into tx_demo (id, name) values (3, 'c')`: the second fails, the pill shows the `Failed` variant (`Transaction en échec : annulez-la` in the status bar, red pill), the third did not run, `Valider` is disabled | [ ] | [ ] | agent: not driven (no PostgreSQL server started: the card limits the container to rows that need it) |  |
+| 3 In that state run `select 1`: refused with `La transaction est en échec : annulez-la avant de continuer.`; the plan buttons are refused too. `Annuler` returns to `Transaction manuelle` and the table is empty | [ ] | [ ] | agent: not driven (no PostgreSQL server started: the card limits the container to rows that need it) |  |
+| 4 Insert, run `vacuum`: refused with the `tx.cannotRun` message, the transaction is not `Failed` | [ ] | [ ] | agent: not driven (no PostgreSQL server started: the card limits the container to rows that need it) |  |
+| 5 Insert, `Analyser` a select: the plan tab opens, the pill still says 1 and `Annuler` still works | [ ] | [ ] | agent: not driven (no PostgreSQL server started: the card limits the container to rows that need it) |  |
+| 6 Run `create table tx_ddl (id int)` in `Manuel`, `Annuler`: the table is gone (DDL is transactional) | [ ] | [ ] | agent: not driven (no PostgreSQL server started: the card limits the container to rows that need it) |  |
+| 7 Steps 9 to 14 of SQLite (typed `begin`, grid commit, close tab, switch mode, disconnect and exit, two tabs) | [ ] | [ ] | agent: not driven (no PostgreSQL server started: the card limits the container to rows that need it) |  |
+| 8 Production profile, `delete from tx_demo`: the dialog shows the figure (`Elle touchera environ N lignes (estimation du planificateur)`), the confirm button reads `Supprimer N lignes`; see "Production dialog" | [ ] | [ ] | agent: not driven (no PostgreSQL server started: the card limits the container to rows that need it) |  |
+| 9 In another client (`psql`) `select count(*) from tx_demo` while a transaction is open: the uncommitted row is not visible; after `Valider` it is | [ ] | [ ] | agent: not driven (no PostgreSQL server started: the card limits the container to rows that need it) |  |
 
 ### MySQL
 
 | Step | WinUI | Avalonia | Result | Note |
 |---|---|---|---|---|
-| 1 Steps 1 to 6 of SQLite | [ ] | [ ] | | |
-| 2 Insert, then `create table tx_ddl (id int primary key)`: the dialog `Valider la transaction en cours ?` (`Cette modification de schéma valide implicitement la transaction ouverte sur ce serveur. Valider et appliquer ?`) appears **before** anything is sent | [ ] | [ ] | | |
-| 3 Decline: the status bar says the run was cancelled, the pill still says 1, the table does not exist. Run it again and accept: the table exists, the earlier insert is committed (check from another client), the pill and buttons are gone, status `Transaction manuelle` | [ ] | [ ] | | |
-| 4 Production profile, `drop table tx_ddl`: the production dialog has **no** transaction checkbox (DDL cannot be rolled back); the typed word is the database name | [ ] | [ ] | | |
-| 5 Insert, `Analyser` a select: the plan opens, the transaction is still open | [ ] | [ ] | | |
-| 6 Steps 9 to 14 of SQLite (the typed statement is `begin`) | [ ] | [ ] | | |
-| 7 Production profile, `delete from tx_demo`: the figure is present (`environ N lignes`) | [ ] | [ ] | | |
+| 1 Steps 1 to 6 of SQLite | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
+| 2 Insert, then `create table tx_ddl (id int primary key)`: the dialog `Valider la transaction en cours ?` (`Cette modification de schéma valide implicitement la transaction ouverte sur ce serveur. Valider et appliquer ?`) appears **before** anything is sent | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
+| 3 Decline: the status bar says the run was cancelled, the pill still says 1, the table does not exist. Run it again and accept: the table exists, the earlier insert is committed (check from another client), the pill and buttons are gone, status `Transaction manuelle` | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
+| 4 Production profile, `drop table tx_ddl`: the production dialog has **no** transaction checkbox (DDL cannot be rolled back); the typed word is the database name | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
+| 5 Insert, `Analyser` a select: the plan opens, the transaction is still open | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
+| 6 Steps 9 to 14 of SQLite (the typed statement is `begin`) | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
+| 7 Production profile, `delete from tx_demo`: the figure is present (`environ N lignes`) | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
 
 ### SQL Server
 
 | Step | WinUI | Avalonia | Result | Note |
 |---|---|---|---|---|
-| 1 Steps 1 to 6 of SQLite | [ ] | [ ] | | |
-| 2 Insert, then `create database tx_nope`: refused with the `tx.cannotRun` message, no database created | [ ] | [ ] | | |
-| 3 In `Manuel`, run `insert ...; insert <duplicate id>; insert <new id>` : the second fails, the transaction stays open (not `Failed`), the third did not run (the script stops); the pill counts only the successful statements; a further insert works | [ ] | [ ] | | |
-| 4 `create table tx_ddl (id int primary key)` in `Manuel` then `Annuler`: the table is gone | [ ] | [ ] | | |
-| 5 Insert, `Analyser` a select: the plan opens and the transaction (and its pill) is intact; `Annuler` still removes the insert | [ ] | [ ] | | |
-| 6 Typed statement `begin transaction` in `Auto-commit` mode opens a transaction; typed `rollback` closes it; steps 10 to 14 of SQLite | [ ] | [ ] | | |
-| 7 Production profile, `delete from tx_demo`: the figure is present | [ ] | [ ] | | |
+| 1 Steps 1 to 6 of SQLite | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
+| 2 Insert, then `create database tx_nope`: refused with the `tx.cannotRun` message, no database created | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
+| 3 In `Manuel`, run `insert ...; insert <duplicate id>; insert <new id>` : the second fails, the transaction stays open (not `Failed`), the third did not run (the script stops); the pill counts only the successful statements; a further insert works | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
+| 4 `create table tx_ddl (id int primary key)` in `Manuel` then `Annuler`: the table is gone | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
+| 5 Insert, `Analyser` a select: the plan opens and the transaction (and its pill) is intact; `Annuler` still removes the insert | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
+| 6 Typed statement `begin transaction` in `Auto-commit` mode opens a transaction; typed `rollback` closes it; steps 10 to 14 of SQLite | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
+| 7 Production profile, `delete from tx_demo`: the figure is present | [ ] | [ ] | agent: not driven (out of scope of P19-12) |  |
 
 ### Production dialog (run on PostgreSQL, then smoke on the others; compare with M15 light and dark)
 
@@ -104,29 +104,29 @@ Use the `Production` profile: header chip, tab marker and chrome are red. `delet
 
 | Step | WinUI | Avalonia | Result | Note |
 |---|---|---|---|---|
-| 1 Header: red band `PRODUCTION · <connection> / <database>` with a warning icon; title `Supprimer toutes les lignes de tx_demo ?` | [ ] | [ ] | | |
-| 2 Message: the fact `n'a pas de clause WHERE` is bold, the figure (not SQLite) is in the danger color and worded as an estimate; in `Manuel` mode the sentence `La transaction manuelle est active : vous pourrez encore annuler avant de valider.` is present | [ ] | [ ] | | |
-| 3 The statement sits in a mono box with a red left border; a script of 7 statements lists five then `+ 2 autres` | [ ] | [ ] | | |
-| 4 The typed field has the database name as placeholder (`Saisissez <nom> pour confirmer`); the red confirm button (`Supprimer N lignes`, or `Exécuter` without a figure) is **disabled** until the typed text matches, ignoring case and surrounding spaces; `Annuler` is always enabled | [ ] | [ ] | | |
-| 5 Press `Entrée` in the dialog: it cancels (nothing is sent; with the confirm button enabled too: `Entrée` never confirms). The hint `Entrée = Annuler` is shown | [ ] | [ ] | | |
-| 6 Checkbox `Exécuter dans une transaction et ne pas valider automatiquement`: checked by default in `Auto-commit`; in `Manuel` it is checked and **disabled**. Confirm with it checked in `Auto-commit`: the toolbar switches to `Manuel` and the pill appears | [ ] | [ ] | | |
-| 7 Confirm with the box unchecked in `Auto-commit`: the delete is committed immediately, no pill | [ ] | [ ] | | |
-| 8 `Valider` on the `Production` connection asks again (title `Valider la transaction en production ?`, journal listed, no typed field) | [ ] | [ ] | | |
-| 9 An `update tx_demo set name = 'z' where id = 1` on Production asks without the typed field (confirm button enabled); a `select` never asks; `Expliquer` never asks; `Analyser` keeps its own plain confirmation | [ ] | [ ] | | |
-| 10 Grid commit and designer apply on Production ask (`Écrire N modifications en production ?`, `Appliquer N changements de schéma en production ?`); this is a behavior change of this phase | [ ] | [ ] | | |
-| 11 The `Staging` profile never asks | [ ] | [ ] | | |
-| 12 `SQUILL_LANGUAGE=en`: every text above is English; dark theme: the dialog colors match M15 dark | [ ] | [ ] | | |
+| 1 Header: red band `PRODUCTION · <connection> / <database>` with a warning icon; title `Supprimer toutes les lignes de tx_demo ?` | [ ] | [ ] | agent: ok | agent (WinUI, SQLite profile, dark fr and light en): red band, mono statement box with red left border, typed field with placeholder, confirm button disabled, Entree = Annuler, checkbox checked by default. Compared with M15 dark: see P19-20 (band shape, bold and highlight). |
+| 2 Message: the fact `n'a pas de clause WHERE` is bold, the figure (not SQLite) is in the danger color and worded as an estimate; in `Manuel` mode the sentence `La transaction manuelle est active : vous pourrez encore annuler avant de valider.` is present | [ ] | [ ] | agent: bug -> P19-20 | agent (WinUI): the fact n'a pas de clause WHERE is not bold, no planner figure on SQLite (expected); manual-mode sentence not driven. |
+| 3 The statement sits in a mono box with a red left border; a script of 7 statements lists five then `+ 2 autres` | [ ] | [ ] | agent: ok | agent (WinUI, SQLite profile, dark fr and light en): red band, mono statement box with red left border, typed field with placeholder, confirm button disabled, Entree = Annuler, checkbox checked by default. Compared with M15 dark: see P19-20 (band shape, bold and highlight). |
+| 4 The typed field has the database name as placeholder (`Saisissez <nom> pour confirmer`); the red confirm button (`Supprimer N lignes`, or `Exécuter` without a figure) is **disabled** until the typed text matches, ignoring case and surrounding spaces; `Annuler` is always enabled | [ ] | [ ] | agent: ok | agent (WinUI, SQLite profile, dark fr and light en): red band, mono statement box with red left border, typed field with placeholder, confirm button disabled, Entree = Annuler, checkbox checked by default. Compared with M15 dark: see P19-20 (band shape, bold and highlight). |
+| 5 Press `Entrée` in the dialog: it cancels (nothing is sent; with the confirm button enabled too: `Entrée` never confirms). The hint `Entrée = Annuler` is shown | [ ] | [ ] | agent: ok | agent (WinUI, SQLite profile, dark fr and light en): red band, mono statement box with red left border, typed field with placeholder, confirm button disabled, Entree = Annuler, checkbox checked by default. Compared with M15 dark: see P19-20 (band shape, bold and highlight). |
+| 6 Checkbox `Exécuter dans une transaction et ne pas valider automatiquement`: checked by default in `Auto-commit`; in `Manuel` it is checked and **disabled**. Confirm with it checked in `Auto-commit`: the toolbar switches to `Manuel` and the pill appears | [ ] | [ ] | agent: ok | agent (WinUI, SQLite profile, dark fr and light en): red band, mono statement box with red left border, typed field with placeholder, confirm button disabled, Entree = Annuler, checkbox checked by default. Compared with M15 dark: see P19-20 (band shape, bold and highlight). |
+| 7 Confirm with the box unchecked in `Auto-commit`: the delete is committed immediately, no pill | [ ] | [ ] | agent: not driven (dialog only opened and cancelled) |  |
+| 8 `Valider` on the `Production` connection asks again (title `Valider la transaction en production ?`, journal listed, no typed field) | [ ] | [ ] | agent: not driven (dialog only opened and cancelled) |  |
+| 9 An `update tx_demo set name = 'z' where id = 1` on Production asks without the typed field (confirm button enabled); a `select` never asks; `Expliquer` never asks; `Analyser` keeps its own plain confirmation | [ ] | [ ] | agent: not driven (dialog only opened and cancelled) |  |
+| 10 Grid commit and designer apply on Production ask (`Écrire N modifications en production ?`, `Appliquer N changements de schéma en production ?`); this is a behavior change of this phase | [ ] | [ ] | agent: not driven (dialog only opened and cancelled) |  |
+| 11 The `Staging` profile never asks | [ ] | [ ] | agent: not driven (dialog only opened and cancelled) |  |
+| 12 `SQUILL_LANGUAGE=en`: every text above is English; dark theme: the dialog colors match M15 dark | [ ] | [ ] | agent: bug -> P19-20 | agent (WinUI): English text read in light; dark fr colors compared with M15 dark: band is a flat block instead of a rounded header with a border. |
 
 ### Window and presentation (once, WinUI first, Avalonia smoke)
 
 | Step | WinUI | Avalonia | Result | Note |
 |---|---|---|---|---|
-| 1 Compare the toolbar group with M04 (`Auto-commit | Manuel`, pill, `Valider Ctrl+Alt+C`, `Annuler Ctrl+Alt+Z`) and the status bar with M03 / M04 (`Transaction ouverte depuis 4 min · 2 instructions`) | [ ] | [ ] | | |
-| 2 Narrow the window to about 800 px: the toolbar group stays usable (nothing cut off, nothing overlapping the run button) | [ ] | [ ] | | |
-| 3 Leave a transaction open for a minute: the duration in the status bar moves on from `moins d'une minute` to `1 min` without any action | [ ] | [ ] | | |
-| 4 Dark theme: pill, buttons and the `Failed` variant (PostgreSQL) keep their contrast | [ ] | [ ] | | |
-| 5 `SQUILL_LANGUAGE=en`: toggle, pill (`1 uncommitted statement`), status text and the three close questions are English | [ ] | [ ] | | |
-| 6 Kill the connection server-side while a transaction is open (`select pg_terminate_backend(...)` from another client): `Valider` shows the error; the app does not crash and does not reconnect by itself (known limit) | [ ] | [ ] | | |
+| 1 Compare the toolbar group with M04 (`Auto-commit | Manuel`, pill, `Valider Ctrl+Alt+C`, `Annuler Ctrl+Alt+Z`) and the status bar with M03 / M04 (`Transaction ouverte depuis 4 min · 2 instructions`) | [ ] | agent: ok | agent (WinUI, dark fr, 1440 x 900 logical = 2160 x 1350 px): toolbar group and status text match M04 in structure; Valider and Annuler carry no Ctrl+Alt+C / Ctrl+Alt+Z keycaps (tooltips only, as step 3 of SQLite says). |
+| 2 Narrow the window to about 800 px: the toolbar group stays usable (nothing cut off, nothing overlapping the run button) | [ ] | [ ] | agent: not driven (no resize or wait or server in this session) |  |
+| 3 Leave a transaction open for a minute: the duration in the status bar moves on from `moins d'une minute` to `1 min` without any action | [ ] | [ ] | agent: not driven (no resize or wait or server in this session) |  |
+| 4 Dark theme: pill, buttons and the `Failed` variant (PostgreSQL) keep their contrast | [ ] | [ ] | agent: bug -> P19-20 | agent (WinUI, dark fr): pill, buttons keep contrast. Light theme with a dark system theme: toolbar, editor and result text stay dark, see P19-20. Failed variant not driven (no server). |
+| 5 `SQUILL_LANGUAGE=en`: toggle, pill (`1 uncommitted statement`), status text and the three close questions are English | [ ] | [ ] | agent: ok | agent (WinUI, light en): toggle Autocommit / Manual, pill 1 uncommitted statement, status text Transaction open for less than a minute · 1 statement, production dialog English. The three close questions not driven. |
+| 6 Kill the connection server-side while a transaction is open (`select pg_terminate_backend(...)` from another client): `Valider` shows the error; the app does not crash and does not reconnect by itself (known limit) | [ ] | [ ] | agent: not driven (no resize or wait or server in this session) |  |
 
 ## Known limits (so nothing here surprises you)
 

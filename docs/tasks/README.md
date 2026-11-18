@@ -384,8 +384,8 @@ Depends on: <card ids, ranges allowed>
 | [P19-08](phase-19/P19-08-verification-scenario-script.md) | One script that prepares the data of the verification checklists | none | done |
 | [P19-09](phase-19/P19-09-winui-new-screens-sqlite.md) | WinUI: M01, M09 and M10 against their mockups | P19-07, P19-08 | done |
 | [P19-10](phase-19/P19-10-winui-sessions-privileges-postgres.md) | WinUI: M11 and M12 on a PostgreSQL container | P19-07, P19-08 | done |
-| [P19-11](phase-19/P19-11-avalonia-new-screens.md) | Avalonia: M01, M09, M10, M11 and M12 | P19-09, P19-10 | todo |
-| [P19-12](phase-19/P19-12-winui-transactions-plan-dark-english.md) | WinUI: transactions, production dialog and plan, dark and English | P19-07, P19-08 | todo |
+| [P19-11](phase-19/P19-11-avalonia-new-screens.md) | Avalonia: M01, M09, M10, M11 and M12 | P19-09, P19-10 | done |
+| [P19-12](phase-19/P19-12-winui-transactions-plan-dark-english.md) | WinUI: transactions, production dialog and plan, dark and English | P19-07, P19-08 | done |
 | [P19-13](phase-19/P19-13-winui-completion-grid-palette-designer-er.md) | WinUI: completion, grid filter, palette, designer, ER, control states | P19-07, P19-08 | todo |
 | [P19-14](phase-19/P19-14-avalonia-transactions-plan-dark-english.md) | Avalonia: transactions, production dialog and plan | P19-12 | todo |
 | [P19-15](phase-19/P19-15-avalonia-completion-grid-palette-designer-er.md) | Avalonia: completion, grid filter, palette, designer, ER | P19-13 | todo |
@@ -393,6 +393,7 @@ Depends on: <card ids, ranges allowed>
 | [P19-17](phase-19/P19-17-winui-home-mockup-gaps.md) | WinUI: close the home page gaps found against M01 | P19-09 | todo |
 | [P19-18](phase-19/P19-18-winui-sessions-privileges-gaps.md) | WinUI: close the sessions and privileges gaps found against M11 and M12 | P19-10 | todo |
 | [P19-19](phase-19/P19-19-avalonia-home-mockup-gaps.md) | Avalonia: close the home page gaps found against M01 | P19-11 | todo |
+| [P19-20](phase-19/P19-20-winui-light-theme-and-production-dialog.md) | WinUI: light theme with a dark system theme, production dialog frame | P19-12 | todo |
 
 ### Phase 9 - Visual conformance
 
@@ -482,7 +483,7 @@ Goal: build the five mockups the app does not have (`visual-spec.md` section 10)
 
 Goal: fix what phase 18 and earlier phases recorded as broken or silently limited, and look at every screen that was only tested headless or in one theme, before any new feature. The owner's own list of issues was not available: the work comes from the repository (`docs/verification/`, `visual-spec.md` section 12, `shortcut:` comments, card done notes). Decisions (final, details in [debug-polish-recipe.md](phase-19/debug-polish-recipe.md) and in ADR 0016 written by P19-16): fix cards start with a failing test; agent verification cards never tick the owner's checklist boxes (they write `agent: ok / bug / not driven` in the `Result` column); a difference one small edit fixes is fixed in the verification card, a bigger one becomes a card `P19-17` onwards; no feature is built.
 
-- Status: P19-01 ... P19-11 done, P19-12 ... P19-19 todo.
+- Status: P19-01 ... P19-12 done, P19-13 ... P19-20 todo.
 - Branch: implement phase 19 on the branch `phase-19-debug-polish`; do not create another branch.
 - Order: P19-01 ... P19-08 are independent (P19-04 before P19-05; P19-07 and P19-08 before every verification card). Then WinUI before Avalonia: P19-09, P19-10, P19-12, P19-13, then P19-11 (after P19-09 and P19-10), P19-14 (after P19-12), P19-15 (after P19-13). Last P19-16 (docs).
 - Riskiest cards: P19-01 (every completion insertion goes through the quoting method), P19-02 (the inventory may find no production producer: stop rule), P19-07 (`PrintWindow` may return black for WinUI; the covered-window check is the supported fix), P19-13 (largest matrix: record `not driven (time)` rather than stretch a claim). Docker-gated drives need Podman ([verification-recipe.md](phase-11/verification-recipe.md)). Bugs found by the verification cards too big for the card get `P19-17` onwards (added to this index).

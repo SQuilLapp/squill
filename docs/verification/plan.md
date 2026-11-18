@@ -87,6 +87,6 @@ Columns: WinUI / Avalonia = tick when it behaves as described in that head. Resu
 
 | Step | WinUI | Avalonia | Result | Note |
 |---|---|---|---|---|
-| 1 Repeat the PostgreSQL steps 1, 4 and 12 with `SQUILL_LANGUAGE=en`: every label of the plan tab is English (no French left, no missing key shown as `plan.*`) | [ ] | [ ] | | |
-| 2 Compare the plan tab (`Graphique` view, Light) with `M06-Plan-clair-Windows.png` at 1440 x 900: toolbar order, card size, colors, table columns, details panel width, legend | [ ] | [ ] | | |
-| 3 Same in Dark with `M06-Plan-sombre-Windows.png` | [ ] | [ ] | | |
+| 1 Repeat the PostgreSQL steps 1, 4 and 12 with `SQUILL_LANGUAGE=en`: every label of the plan tab is English (no French left, no missing key shown as `plan.*`) | [ ] | [ ] | agent: not driven (session budget: the plan tab was not opened) | |
+| 2 Compare the plan tab (`Graphique` view, Light) with `M06-Plan-clair-Windows.png` at 1440 x 900: toolbar order, card size, colors, table columns, details panel width, legend | [ ] | [ ] | agent: not driven (session budget: the plan tab was not opened) | |
+| 3 Same in Dark with `M06-Plan-sombre-Windows.png` | [ ] | [ ] | agent: not driven (session budget: the plan tab was not opened) | |
