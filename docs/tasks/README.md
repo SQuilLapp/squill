@@ -391,7 +391,7 @@ Depends on: <card ids, ranges allowed>
 | [P19-15](phase-19/P19-15-avalonia-completion-grid-palette-designer-er.md) | Avalonia: completion, grid filter, palette, designer, ER | P19-13 | partial (dark, fr; see card) |
 | [P19-16](phase-19/P19-16-docs-and-adr.md) | Docs, ADR 0016 and changelog for phase 19 | P19-01 ... P19-15 | todo |
 | [P19-17](phase-19/P19-17-winui-home-mockup-gaps.md) | WinUI: close the home page gaps found against M01 | P19-09 | done |
-| [P19-18](phase-19/P19-18-winui-sessions-privileges-gaps.md) | WinUI: close the sessions and privileges gaps found against M11 and M12 | P19-10 | todo |
+| [P19-18](phase-19/P19-18-winui-sessions-privileges-gaps.md) | WinUI: close the sessions and privileges gaps found against M11 and M12 | P19-10 | done |
 | [P19-19](phase-19/P19-19-avalonia-home-mockup-gaps.md) | Avalonia: close the home page gaps found against M01 | P19-11 | todo |
 | [P19-20](phase-19/P19-20-winui-light-theme-and-production-dialog.md) | WinUI: light theme with a dark system theme, production dialog frame | P19-12 | todo |
 

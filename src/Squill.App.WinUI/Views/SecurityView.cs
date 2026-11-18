@@ -22,8 +22,8 @@ namespace Squill.App.WinUI.Views;
 /// <summary>The security tab (mockup M11), built in code from <see cref="SecurityViewModel"/>: the role list, the role header, the privilege matrix with its legend, and the generated SQL with its Copy / Cancel / Apply footer.</summary>
 public sealed partial class SecurityView : UserControl
 {
-    private const double NameWidth = 280;
-    private const double CellWidth = 92;
+    private const double NameWidth = 200;
+    private const double CellWidth = 84;
     private const double RowHeight = 28;
 
     // shortcut: only the first SecurityViewModel.MaxShownRows are built as elements (no virtualization), a notice under the matrix says so; upgrade to a Win2D canvas if a database routinely lists more.
@@ -39,6 +39,7 @@ public sealed partial class SecurityView : UserControl
     private readonly CheckBox _showInherited = new() { MinWidth = 0 };
     private readonly StackPanel _legend = new() { Orientation = Orientation.Horizontal, Spacing = 14, VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _message = new() { TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24, 8, 24, 8) };
+    private readonly TextBlock _hint = new() { TextWrapping = TextWrapping.Wrap, FontSize = 12, Margin = new Thickness(0, 4, 0, 8), MaxWidth = NameWidth + CellWidth * Kinds.Length };
     private readonly TextBlock _rowsCut = new() { Margin = new Thickness(12, 8, 12, 8), Visibility = Visibility.Collapsed };
     private readonly Grid _matrixHeader = new() { Height = RowHeight + 4 };
     private readonly Grid _matrixBody = new() { Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent) };
@@ -157,7 +158,7 @@ public sealed partial class SecurityView : UserControl
         var main = new Grid();
         main.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(260) });
         main.ColumnDefinitions.Add(new ColumnDefinition());
-        main.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(360) });
+        main.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(320) });
         var roles = BuildRoles();
         var center = BuildCenter();
         var sql = BuildSql();
@@ -193,19 +194,23 @@ public sealed partial class SecurityView : UserControl
     {
         var title = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { _roleName, _badges } };
         var header = new StackPanel { Spacing = 4, Padding = new Thickness(24, 16, 24, 8), Children = { title, _roleSubtitle } };
-        var tools = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Padding = new Thickness(24, 4, 24, 8), Children = { _schemas, _showInherited, _legend } };
-        _matrix.Child = new StackPanel { Children = { _matrixHeader, _matrixBody, _rowsCut }, MinWidth = NameWidth + CellWidth * Kinds.Length };
+        var tools = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Padding = new Thickness(24, 4, 24, 8), Children = { _schemas, _showInherited } };
+        var legend = new Border { Padding = new Thickness(24, 0, 24, 8), Child = _legend };
+        _matrix.Child = new StackPanel { Children = { _matrixHeader, _matrixBody, _rowsCut, _hint }, MinWidth = NameWidth + CellWidth * Kinds.Length };
         var scroll = new ScrollViewer { Content = _matrix, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Padding = new Thickness(24, 0, 24, 16) };
         var grid = new Grid();
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         grid.RowDefinitions.Add(new RowDefinition());
         Grid.SetRow(tools, 1);
-        Grid.SetRow(_message, 2);
-        Grid.SetRow(scroll, 3);
+        Grid.SetRow(legend, 2);
+        Grid.SetRow(_message, 3);
+        Grid.SetRow(scroll, 4);
         grid.Children.Add(header);
         grid.Children.Add(tools);
+        grid.Children.Add(legend);
         grid.Children.Add(_message);
         grid.Children.Add(scroll);
         _matrixHeader.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(NameWidth) });
@@ -250,6 +255,7 @@ public sealed partial class SecurityView : UserControl
         _roleFilter.PlaceholderText = UiText.Get("security.filterPlaceholder");
         AutomationProperties.SetName(_roleFilter, UiText.Get("security.filterPlaceholder"));
         _showInherited.Content = UiText.Get("security.showInherited");
+        _hint.Text = UiText.Get("security.hint");
         _sqlTitle.Text = UiText.Get("security.sql");
         _copy.Content = UiText.Get("security.copy");
         _discard.Content = UiText.Get("security.discard");
@@ -375,6 +381,7 @@ public sealed partial class SecurityView : UserControl
     {
         _rowsCut.Text = vm.RowsCutText;
         _rowsCut.Foreground = Brush("SquillFg3Brush");
+        _hint.Foreground = Brush("SquillFg3Brush");
         _rowsCut.Visibility = vm.HiddenRowCount > 0 ? Visibility.Visible : Visibility.Collapsed;
         _matrixHeader.Children.Clear();
         _matrixBody.Children.Clear();

@@ -21,7 +21,7 @@ namespace Squill.App.WinUI.Views;
 public sealed partial class SessionsMonitorView : UserControl
 {
     // Column widths of the session table; the last one (query) takes the rest.
-    private static readonly double[] ColumnWidths = [72, 120, 160, 130, 180, 100, 150];
+    private static readonly double[] ColumnWidths = [56, 90, 110, 100, 140, 70, 70];
 
     private static readonly SessionSortColumn[] Columns =
     [

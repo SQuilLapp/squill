@@ -105,6 +105,7 @@ internal sealed class WinUiDialogService : IDialogService
             PrimaryButtonText = primary,
             CloseButtonText = close ?? "",
             DefaultButton = ContentDialogButton.Primary,
+            RequestedTheme = ((FrameworkElement)_window.Content).ActualTheme, // the popup layer does not inherit the app theme
         };
         return await dialog.ShowAsync();
     }

@@ -113,7 +113,7 @@ public sealed partial class SecurityViewModel : ViewModelBase, IDisposable
     {
         ArgumentNullException.ThrowIfNull(role);
         if (role.IsGroup)
-            return UiText.Format("security.members", role.Members.Count);
+            return UiText.Format(role.Members.Count == 1 ? "security.member" : "security.members", role.Members.Count);
         return string.Join(" ", Badges(role).Where(b => b != "INHERIT" && b != "NOLOGIN"));
     }
 
@@ -140,7 +140,7 @@ public sealed partial class SecurityViewModel : ViewModelBase, IDisposable
             if (r.MemberOf.Count > 0)
                 parts.Add(UiText.Format("security.memberOf", string.Join(", ", r.MemberOf)));
             if (r.Members.Count > 0)
-                parts.Add(UiText.Format("security.membersList", r.Members.Count, string.Join(", ", r.Members)));
+                parts.Add(UiText.Format(r.Members.Count == 1 ? "security.memberList" : "security.membersList", r.Members.Count, string.Join(", ", r.Members)));
             return string.Join(" · ", parts);
         }
     }

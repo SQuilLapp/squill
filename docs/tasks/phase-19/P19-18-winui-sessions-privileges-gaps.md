@@ -1,6 +1,6 @@
 # P19-18 - WinUI: close the sessions and privileges gaps found against M11 and M12
 
-Status: todo
+Status: done
 Depends on: P19-10
 
 ## Goal
@@ -17,7 +17,7 @@ P19-10 compared the WinUI sessions (M12) and privileges (M11) screens on Postgre
 - Tabs `General` / `Appartenances` / `Privileges par defaut`, `Dupliquer`, `Supprimer le role...`, `Effet sur les membres` (not built), Avalonia (P19-11).
 
 ## Tasks
-- [ ] Tests first where a pattern exists (catalog plural, matrix columns), then the fixes.
+- [x] Tests first where a pattern exists (catalog plural, matrix columns), then the fixes.
 - [ ] Capture and compare again (light, dark, fr, en); update `visual-spec.md` sections 17 and 18.
 
 ## Acceptance criteria
@@ -25,3 +25,10 @@ P19-10 compared the WinUI sessions (M12) and privileges (M11) screens on Postgre
 
 ## Suggested commit message
 Bring the WinUI sessions and privileges screens closer to their mockups
+
+## Done notes
+- Matrix: the reader and the view already build all 7 `PrivilegeKind` columns; the columns past `INSERT` were clipped by the horizontal scroll (name 280 + 7 x 92 = 924 px against about 770 px of centre pane). Name column 200, privilege columns 84, SQL pane 320: the 7 columns fit at 1440 px. Legend moved to its own row (no longer cut off); hint line `security.hint` added under the matrix (fr, en).
+- Sessions table: fixed column widths cut from 912 to 636 px so `Attente` and `Requete` are reachable without scrolling.
+- Plural: `security.member` and `security.memberList` (fr, en) used when a role has one member (test in `SecurityViewModelTests`).
+- `ConfirmAsync` / `PromptAsync` dialogs now take the app's actual theme (`ContentDialog.RequestedTheme`), so Dev confirmations no longer show the system dark dialog on a light theme.
+- Not done: the new capture and comparison (light, dark, fr, en) and the `visual-spec.md` sections 17 and 18 update. Podman was not running in this session (no PostgreSQL container), so the screens were not driven; widths are computed, not seen. Build `Squill.Windows.slnx` 0 warnings, tests 4284 passed / 0 failed, AOT publish only the known third-party IL2104/IL3053, the app starts (responding after 8 s) and was closed.

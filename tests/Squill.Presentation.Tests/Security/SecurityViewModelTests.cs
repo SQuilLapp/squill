@@ -110,6 +110,7 @@ public sealed class SecurityViewModelTests : IDisposable
         using var _ = UiText.Override(UiLanguage.English);
         Assert.Equal("2 members", SecurityViewModel.RoleSubtitle(Analysts));
         Assert.Equal("LOGIN SUPERUSER", SecurityViewModel.RoleSubtitle(Root));
+        Assert.Equal("1 member", SecurityViewModel.RoleSubtitle(new RoleInfo("solo", false, false, true, [], ["alice"])));
     }
 
     [Fact]
