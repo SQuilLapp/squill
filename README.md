@@ -74,6 +74,10 @@ Results of a plain `SELECT` over one table can be edited in the grid: change cel
 
 See [ADR 0005](docs/adr/0005-grid-editing.md) for the design and what is not covered.
 
+## Home, compare, sessions, privileges and import
+
+A home page with the recent connections, a structure compare of two databases of the same dialect with an editable migration script, a sessions and locks monitor (PostgreSQL, MySQL, SQL Server), a roles and privileges matrix (PostgreSQL) and a CSV import wizard into an existing table. Every write goes through the statement runner and the production confirmation. Decisions, limits and what is not built: [ADR 0015](docs/adr/0015-remaining-mockups.md); owner checklist: [docs/verification/new-screens.md](docs/verification/new-screens.md).
+
 ## Build and test
 
 The version is written once, in [eng/Version.props](eng/Version.props) (`SquillVersion`); the release tag is `v` + that value.
@@ -162,7 +166,7 @@ Dependency graph: `Core` <- `Data` <- `Data.<Driver>`; `Core` <- `Sql`; `Core` <
 
 - [Architecture note and risks](docs/architecture.md)
 - [Testing](docs/testing.md), [column types per engine](docs/column-types.md), [verification reports](docs/verification/sqlite.md)
-- ADRs: [0001 target framework](docs/adr/0001-target-framework.md), [0002 editor and terminal components](docs/adr/0002-editor-and-terminal-components.md), [0003 SQL parser](docs/adr/0003-sql-parser.md), [0004 schema designer](docs/adr/0004-schema-designer.md), [0005 grid editing](docs/adr/0005-grid-editing.md), [0006 visual conformance](docs/adr/0006-visual-conformance.md), [0007 localization](docs/adr/0007-localization.md), [0008 engine parity](docs/adr/0008-engine-parity.md), [0009 release and auto-update](docs/adr/0009-release-and-auto-update.md), [0010 execution plan](docs/adr/0010-execution-plan.md), [0011 SQL completion](docs/adr/0011-sql-completion.md), [0012 transactions and production confirmation](docs/adr/0012-transactions-and-production-confirmation.md), [0014 grid filter and command palette](docs/adr/0014-grid-filter-and-command-palette.md)
+- ADRs: [0001 target framework](docs/adr/0001-target-framework.md), [0002 editor and terminal components](docs/adr/0002-editor-and-terminal-components.md), [0003 SQL parser](docs/adr/0003-sql-parser.md), [0004 schema designer](docs/adr/0004-schema-designer.md), [0005 grid editing](docs/adr/0005-grid-editing.md), [0006 visual conformance](docs/adr/0006-visual-conformance.md), [0007 localization](docs/adr/0007-localization.md), [0008 engine parity](docs/adr/0008-engine-parity.md), [0009 release and auto-update](docs/adr/0009-release-and-auto-update.md), [0010 execution plan](docs/adr/0010-execution-plan.md), [0011 SQL completion](docs/adr/0011-sql-completion.md), [0012 transactions and production confirmation](docs/adr/0012-transactions-and-production-confirmation.md), [0014 grid filter and command palette](docs/adr/0014-grid-filter-and-command-palette.md), [0015 remaining mockups](docs/adr/0015-remaining-mockups.md)
 - Proofs of concept: [AOT drivers](docs/poc/aot-drivers.md), [grid](docs/poc/grid.md), [editor](docs/poc/editor.md)
 - [Task cards](docs/tasks/README.md)
 

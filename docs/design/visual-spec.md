@@ -85,9 +85,18 @@ M14: window title `Paramètres — SQuilL` with a back arrow. Left nav 260 wide:
 
 Built in phase 17 (`CommandPalette` in both heads, [ADR 0014](../adr/0014-grid-filter-and-command-palette.md)). Numbers read from the WinUI head: window dimmed, card at most 880 wide, radius 12, placed 15 % of the window height from the top, list at most 55 % of the window height. Search field text 15 with an `Échap` chip. Mode pills 12 px text, radius 12, padding 10 x 2, 1 px border, in the order `Tout`, `> Actions`, `# Objets`, `: Ligne`, `! Historique`. Section captions 11 semibold. Rows 28 high, 6 px side margin, radius 6, title 13, muted detail 12, right side the connection name with an 8 px environment square (radius 2) or a shortcut chip; matched letters in `accent`. Footer 11: `naviguer`, `Entrée ouvrir`, `Ctrl+Entrée nouvel onglet`, `{n} résultats · {ms} ms`. Not drawn: `@ Symboles` and the `FICHIERS` section (no feature behind them).
 
-## 10. What the app does not have (not drawn in phase 9)
+## 10. What the app still does not have
 
-M01, M09, M10, M11 and M12 were built in phase 18 (not compared with the PNGs, see `docs/verification/new-screens.md`); the row panel of M05, tags/SSL/proxy/driver tabs of M02, impact estimate of M07, shortcuts/drivers/accent/material/density of M14. Each is a feature, not a style, and needs its own phase.
+M01, M09, M10, M11 and M12 were built in phase 18 ([ADR 0015](../adr/0015-remaining-mockups.md), sections 15 to 19); none was compared with its PNG (see `docs/verification/new-screens.md`). Not built, because no feature stands behind them:
+
+- M01: projects, importing other tools' connections, the ephemeral DuckDB console, `.duckdb` / `.parquet`, the driver count.
+- M09: the data tab, cross-engine compare, "ignore whitespace and column order".
+- M10: the database to database transfer card, JSON / Parquet / Excel sources, value mapping, conflict handling, pause.
+- M11: the general, memberships and default privileges tabs, duplicate and delete role, effect on members; any engine but PostgreSQL.
+- M12: Oracle; the transactions per second tile where the engine counter is not cheap.
+- M14 and others: the row panel of M05, tags/SSL/proxy/driver tabs of M02, impact estimate of M07, shortcuts/drivers/accent/material/density of M14, the type dropdown of the query parameters panel.
+
+Each is a feature, not a style, and needs its own phase.
 
 ## 11. Verification procedure (every head card)
 
@@ -132,3 +141,25 @@ Drawn: in the query toolbar the segmented `Auto-commit` / `Manuel` toggle, the w
 Not drawn: the schema picker `public v` of the toolbar, the pinned-tab icon, the `Lignes (est.)` / `Taille` / `Dernier VACUUM` rows of the properties panel, the `console · mysql-staging` tab kind. No syntax highlighting in the statement box (the heads have no reusable read-only highlighter: plain mono). Deviations: the WinUI `ContentDialog` keeps the red band inset by 24 px instead of flush; the Avalonia confirm button is a plain `Button` with token colors.
 
 What was compared and not: see the status row in section 12 and [verification/transactions.md](../verification/transactions.md); nothing in this section was compared with the PNGs side by side by an agent session.
+
+## 15. Screen M01 - Home (`M01-Accueil-*`)
+
+Phase 18 (P18-03, P18-04). Drawn in the main area while no tab is open and no connection is active; rail, explorer and properties panel hidden, title bar and status bar kept. Header with the brand glyph, `SQuilL` wordmark, `Version x.y.z` and a search box on the right that opens the palette (`Ctrl+K` chip). Left column `CONNEXIONS RÉCENTES` with `Gérer les connexions` and a two-column grid of cards (3 px top border in the environment color, engine badge, name, environment pill, `Ctrl+1` ... `Ctrl+6` chip, mono subtitle, last opened text); right column `DÉMARRER` tiles and the `ASTUCE` card (`Astuce suivante`, `Masquer`), then the checkbox `Afficher l'accueil au démarrage`. Status bar: `Aucune connexion active`. Not drawn: see section 10. Numbers: not measured against the PNG; the head cards took them from the mockup by cropping and no capture was compared.
+
+## 16. Screen M09 - Schema compare (`M09-Comparaison-*`)
+
+Phase 18 (P18-08 to P18-10), a workspace tab. Header band with `SOURCE` and `CIBLE` chips (engine badge, connection, `database . schema`, environment pill, stripe in the environment color), swap button, `Comparer à nouveau`. Left panel 270 wide: count chips, filter box, `Tout inclure`, grouped objects (`F7` / `Maj+F7` next difference). Center: two DDL panes with line numbers, `+` / `-` marks, `cell-added` / `cell-deleted` tints and hatched filler, scrolling together. Bottom `SCRIPT DE MIGRATION`, editable, with `Copier`, `Enregistrer .sql`, `Ouvrir dans l'éditeur` and the execute button (danger variant when the target is Production, always through the confirmation). Status bar: `STAGING -> PRODUCTION` blocks and the counts. Not drawn: the data tab and the whitespace option.
+
+## 17. Screen M12 - Sessions and locks (`M12-Sessions-*`)
+
+Phase 18 (P18-13 to P18-15), a workspace tab. Header (pulse glyph, title, engine badge, `connection / database`, environment pill, refresh text, `Pause P`, filter box) with a red top line on Production; four tiles with a sparkline; filter tabs; the sessions table (`pid`, `Utilisateur`, `Application`, `Client`, `État` dot, `Durée` with sort arrow, `Attente`, `Requête` truncated); the detail pane; the `Qui bloque qui` panel with collapsible chains. State dots use `success`, `warning`, `fg-3`; durations `warning` and `danger`. Keys: `P`, `Ctrl+F`, `Entrée`, `Suppr` (terminate, with confirmation). Polling runs only while the tab is active.
+
+## 18. Screen M11 - Roles and privileges (`M11-Droits-*`)
+
+Phase 18 (P18-19 to P18-21), PostgreSQL only. Left role list, header with badges, the matrix of tables and views with 7 privilege columns and 28 high rows (granted = filled accent, inherited = filled grey, pending grant = accent outline, pending revoke = danger outline with a minus), legend, schema multi-select, right `SQL GÉNÉRÉ` panel, footer `Copier`, `Annuler`, `Appliquer Ctrl+S`. Keys: arrows, `Espace`, `Maj+Espace`. The WinUI matrix is drawn, so its screen reader text is limited. Not drawn: the other tabs of the mockup.
+
+## 19. Screen M10 - Import wizard (`M10-Transfert-*`)
+
+Phase 18 (P18-25 to P18-27), a window opened through the dialog service. Left step rail 262 wide (`Importer un fichier`, `CSV -> table <engine>`), content with `Étape n sur 5`, footer with the summary, `Annuler`, `Retour`, and the primary `Suivant : <step>`. Steps: source, target, mapping (rows with a type combo, warning rows tinted `warning-soft`), options (error policy), run with a progress bar and counts; the run starts only from the explicit button. Not drawn: the transfer card, value mapping, conflicts.
+
+What was compared and not for sections 15 to 19: nothing was compared with the PNGs; see [verification/new-screens.md](../verification/new-screens.md).

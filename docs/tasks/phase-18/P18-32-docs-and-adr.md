@@ -1,6 +1,6 @@
 # P18-32 - Documentation: ADR 0015, changelog and README
 
-Status: todo
+Status: done
 Depends on: P18-31, P18-28, P18-29, P18-30
 
 ## Goal
@@ -13,7 +13,7 @@ Record the phase: decisions, limits, what stays unbuilt.
 - `docs/tasks/README.md`: phase 18 status line set to done, index statuses.
 
 ## Tasks
-- [ ] ADR, changelog, README, architecture, visual spec, mockups README, tasks README.
+- [x] ADR, changelog, README, architecture, visual spec, mockups README, tasks README.
 
 ## Acceptance criteria
 - Build and tests green (docs only, but run them); the release notes extraction test still passes; links resolve.
