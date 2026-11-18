@@ -1,6 +1,6 @@
 # P18-18 - Sql: GRANT and REVOKE script
 
-Status: todo
+Status: done
 Depends on: P18-16
 
 ## Goal
@@ -15,9 +15,9 @@ The `SQL GÉNÉRÉ` panel of M11: the statements for a `PrivilegeChangeSet`. Rec
 - Execution, `WITH GRANT OPTION`, `ALTER DEFAULT PRIVILEGES`, other dialects.
 
 ## Tasks
-- [ ] Builder.
-- [ ] Tests in `tests/Squill.Sql.Tests/Security/`: the M11 example (one grant, one revoke) golden text, merged kinds, quoting of a mixed-case role and a schema with a dash, ordering, empty set, determinism.
-- [ ] Docker-gated proof in the PostgreSQL test project: apply a built script, re-read privileges with P18-17, the state matches.
+- [x] Builder.
+- [x] Tests in `tests/Squill.Sql.Tests/Security/`: the M11 example (one grant, one revoke) golden text, merged kinds, quoting of a mixed-case role and a schema with a dash, ordering, empty set, determinism.
+- [x] Docker-gated proof in the PostgreSQL test project: apply a built script, re-read privileges with P18-17, the state matches.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched.

@@ -123,4 +123,29 @@ public sealed class SecurityReaderTests(PostgresFixture server) : IClassFixture<
         Assert.Equal(2000, big.Count);
         Assert.True(watch.Elapsed < TimeSpan.FromSeconds(5), $"Took {watch.Elapsed}.");
     }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task BuiltScript_Applied_PrivilegesMatchTheChanges()
+    {
+        var (connection, reader) = await OpenAsync();
+        await using var _ = connection;
+        var before = (await reader.ReadPrivilegesAsync("reader", ["sec_a"], CancellationToken.None)).ToDictionary(o => o.Name);
+        var set = new PrivilegeChangeSet("reader");
+        set.Toggle(before["t2"].Key, PrivilegeKind.Update, before["t2"].StateOf(PrivilegeKind.Update));
+        set.Toggle(before["t2"].Key, PrivilegeKind.Select, before["t2"].StateOf(PrivilegeKind.Select));
+
+        var script = Squill.Sql.Security.PostgresPrivilegeScript.Build("reader", set, "test");
+        foreach (var statement in script.Statements)
+        {
+            await using var run = await connection.ExecuteAsync(statement, [], CancellationToken.None);
+            await run.ReadAllAsync(10, CancellationToken.None);
+        }
+
+        var t2 = (await reader.ReadPrivilegesAsync("reader", ["sec_a"], CancellationToken.None)).Single(o => o.Name == "t2");
+        Assert.Equal(PrivilegeState.Granted, t2.StateOf(PrivilegeKind.Update));
+        Assert.Equal(PrivilegeState.Granted, t2.StateOf(PrivilegeKind.Select));
+
+        await using var undo = await connection.ExecuteAsync("revoke select, update on sec_a.t2 from reader", [], CancellationToken.None);
+        await undo.ReadAllAsync(10, CancellationToken.None);
+    }
 }
