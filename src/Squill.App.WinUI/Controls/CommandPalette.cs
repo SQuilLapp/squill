@@ -162,7 +162,7 @@ public sealed partial class CommandPalette : Grid
 
     private StackPanel BuildFooter()
     {
-        var keys = new TextBlock { FontSize = 11, VerticalAlignment = VerticalAlignment.Center };
+        var keys = new TextBlock { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0), TextTrimming = TextTrimming.CharacterEllipsis };
         keys.Text = $"↑ ↓ {UiText.Get("palette.footer.navigate")}    {UiText.Get("palette.footer.open")}    {UiText.Get("palette.footer.newTab")}";
         keys.Tag = Role.Footer;
         var grid = new Grid { Padding = new Thickness(16, 8, 16, 8), ColumnDefinitions = { new() { Width = new GridLength(1, GridUnitType.Star) }, new() { Width = GridLength.Auto } } };

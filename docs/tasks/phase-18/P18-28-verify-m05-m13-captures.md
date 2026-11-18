@@ -1,6 +1,6 @@
 # P18-28 - Verification: M05 and M13 captures and the phase 17 checklist
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -16,8 +16,8 @@ Close what P17-17 left open: nobody ever looked at the phase 17 grid filter and 
 - Ticking the owner's boxes, redesigning anything.
 
 ## Tasks
-- [ ] Captures (kept out of the repository except the ones the checklist links, small PNGs under `docs/verification/captures/` only if the repo already does that; otherwise paths in the report).
-- [ ] Small fixes, checklist and spec rows updated.
+- [x] Captures (kept out of the repository except the ones the checklist links, small PNGs under `docs/verification/captures/` only if the repo already does that; otherwise paths in the report).
+- [x] Small fixes, checklist and spec rows updated.
 
 ## Acceptance criteria
 - Common acceptance (recipe 7) if code changed; every process started is closed; the report lists what was compared in which theme and head, and what was not.

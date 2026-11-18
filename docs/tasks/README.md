@@ -367,7 +367,7 @@ Depends on: <card ids, ranges allowed>
 | [P18-25](phase-18/P18-25-presentation-import-wizard.md) | Presentation: the import wizard view-model | P18-22 ... P18-24, P18-02 | done |
 | [P18-26](phase-18/P18-26-winui-import-wizard.md) | WinUI head: the import wizard window | P18-25, P9-18 | done |
 | [P18-27](phase-18/P18-27-avalonia-import-wizard.md) | Avalonia head: the import wizard window | P18-26 | done |
-| [P18-28](phase-18/P18-28-verify-m05-m13-captures.md) | Verification: M05 and M13 captures and the phase 17 checklist | none | todo |
+| [P18-28](phase-18/P18-28-verify-m05-m13-captures.md) | Verification: M05 and M13 captures and the phase 17 checklist | none | done |
 | [P18-29](phase-18/P18-29-winui-explorer-metrics.md) | WinUI head: explorer metrics and environment pills | none | todo |
 | [P18-30](phase-18/P18-30-inline-query-parameters-panel.md) | Query parameters panel under the editor (both heads) | none | todo |
 | [P18-31](phase-18/P18-31-verify-new-screens.md) | Verification: the five new screens against their mockups | P18-04, P18-10, P18-15, P18-21, P18-27 | todo |
