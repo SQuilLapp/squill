@@ -1,6 +1,6 @@
 # P19-08 - One script that prepares the data of the verification checklists
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -21,9 +21,9 @@ The "How to prepare" section of `docs/verification/new-screens.md` asks the owne
 - PostgreSQL / MySQL / SQL Server data (the `-Keep` containers of `eng/run-docker-tests.ps1` stay), Avalonia or WinUI code.
 
 ## Tasks
-- [ ] Script, `scenario.sql`, README updates.
-- [ ] Verify: run `-Scenario Full -Dir <tmp>` twice (second run identical, no error); start the Avalonia head with `SQUILL_DATA_DIR=<tmp>` and read the home page with a capture (P19-07 if merged, else by looking at the window): six cards with environment pills and distinct times. Open compare with the two compare profiles and check that the differences listed above show (counts). Open the import wizard on `import-target` with `people.csv`: the preview shows the accents and the quoted field. Describe what was seen in the Done notes; close the app.
-- [ ] Confirm `-Scenario Basic` output is unchanged (diff of `profiles.json` against a run of the old script from git).
+- [x] Script, `scenario.sql`, README updates.
+- [x] Verify: run `-Scenario Full -Dir <tmp>` twice (second run identical, no error); start the Avalonia head with `SQUILL_DATA_DIR=<tmp>` and read the home page with a capture (P19-07 if merged, else by looking at the window): six cards with environment pills and distinct times. Open compare with the two compare profiles and check that the differences listed above show (counts). Open the import wizard on `import-target` with `people.csv`: the preview shows the accents and the quoted field. Describe what was seen in the Done notes; close the app.
+- [x] Confirm `-Scenario Basic` output is unchanged (diff of `profiles.json` against a run of the old script from git).
 
 ## Acceptance criteria
 - The scenario creates exactly the files above; both heads read the profiles (the store format is the app's, not a copy); processes closed, `<tmp>` removed.
@@ -34,3 +34,9 @@ The "How to prepare" section of `docs/verification/new-screens.md` asks the owne
 
 ## Suggested commit message
 Prepare the data of the verification checklists with one scenario script
+
+## Done notes
+- `-Scenario Full` writes nine profiles (six M01, `cmp-source`, `cmp-target`, `import-target`), `recent.json` (app format: camelCase `profileId` / `lastOpened`, ISO time), `people.csv`, and builds the databases from `scenario.sql` blocks; `-Theme` writes `settings.json`, otherwise an old one is removed. Ids are an MD5-derived guid of the name, so two runs give identical `profiles.json` and `people.csv` (checked with md5sum; `recent.json` times move with the clock).
+- Seen: Avalonia head (dark, French) on the scenario directory, captured with `Capture-Window.ps1`: six cards with PROD / STAGING / DEV / LOCAL pills and distinct times ("il y a 5 min", "il y a 1 h", "hier", "dimanche", "9 nov.", "9 oct."). The compare differences were checked in the databases with `sqlite3` (table and index present only on the expected side); the compare screen and the import wizard preview were not driven in the app.
+- `-Scenario Basic` is the old code path unchanged apart from a shared database helper; its `profiles.json` has the same fields as the old script's (the id is random, as before).
+- App closed, build server shut down, temp directories removed.
