@@ -26,7 +26,7 @@ Not recorded in this card: the per-screen limits are in the phase 18 cards (`doc
 ## Bugs found
 
 - **MySQL: comparing two databases lists every common table twice (fixed by P18-33).** The MySQL reader sets the schema of each table to its database name, and `SchemaComparer.Key` includes the schema, so `squill.cmp_a` (source) and `squill_cmp_target.cmp_a` (target) never match: the table shows as one Added and one Removed instead of one Modified, and the script would drop and recreate it. PostgreSQL and SQL Server compare within a schema name that is equal on both sides and pass. Fixed by `P18-33`: in the comparer, treat a schema equal to its snapshot's `DefaultSchema` as the same schema on both sides, and make the script qualify names with the target's schema (or none); add a MySQL case to `SchemaComparerTests`.
-- **Avalonia: `StatusBar.RefreshEnvironment` is sometimes called from a non-UI thread** (`StatusBar.axaml.cs:170`, unhandled `InvalidOperationException` in `LayoutOverlapTests`, about one run in two). Proposed card `P18-34`: marshal `Refresh` through the dispatcher when `Dispatcher.UIThread.CheckAccess()` is false.
+- **Avalonia: `StatusBar.RefreshEnvironment` is sometimes called from a non-UI thread (fixed by P18-34)** (`StatusBar.axaml.cs:170`, unhandled `InvalidOperationException` in `LayoutOverlapTests`, about one run in two). Proposed card `P18-34`: marshal `Refresh` through the dispatcher when `Dispatcher.UIThread.CheckAccess()` is false.
 
 ## How to prepare
 

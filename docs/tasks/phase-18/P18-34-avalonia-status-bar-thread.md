@@ -1,6 +1,6 @@
 # P18-34 - Avalonia status bar: refresh only on the UI thread
 
-Status: todo
+Status: done
 Depends on: P18-15, P18-31
 
 ## Goal
@@ -13,10 +13,10 @@ Depends on: P18-15, P18-31
 - Other Avalonia views with the same pattern are out of scope; list any you notice.
 
 ## Tasks
-- [ ] Guard `Refresh` and `OnCaretChanged` as above.
-- [ ] Test in `tests/Squill.App.Avalonia.Tests` (`[Collection("Headless")]`, next to the existing status bar tests or in a new `StatusBarThreadTests`): build the `StatusBar` with a workspace, raise the `PropertyChanged` it listens to from `Task.Run`, flush the dispatcher (`Dispatcher.UIThread.RunJobs()`), assert no exception and that the environment block reflects the new value. Run it once without the guard to prove it fails, then restore the guard.
-- [ ] Stability proof: `rtk bypass dotnet test tests/Squill.App.Avalonia.Tests -c Release --filter "FullyQualifiedName~LayoutOverlapTests"` five times in a row, all green.
-- [ ] Mark the item fixed in `docs/verification/new-screens.md` (Bugs found).
+- [x] Guard `Refresh` and `OnCaretChanged` as above.
+- [x] Test in `tests/Squill.App.Avalonia.Tests` (`[Collection("Headless")]`, next to the existing status bar tests or in a new `StatusBarThreadTests`): build the `StatusBar` with a workspace, raise the `PropertyChanged` it listens to from `Task.Run`, flush the dispatcher (`Dispatcher.UIThread.RunJobs()`), assert no exception and that the environment block reflects the new value. Run it once without the guard to prove it fails, then restore the guard.
+- [x] Stability proof: `rtk bypass dotnet test tests/Squill.App.Avalonia.Tests -c Release --filter "FullyQualifiedName~LayoutOverlapTests"` five times in a row, all green.
+- [x] Mark the item fixed in `docs/verification/new-screens.md` (Bugs found).
 
 ## Acceptance criteria
 - Common acceptance (recipe 7) with the Avalonia AOT publish (`rtk dotnet publish src/Squill.App.Avalonia -c Release -r win-x64`, zero IL2xxx/IL3xxx warnings, the app starts); everything started is closed.
@@ -28,3 +28,8 @@ Depends on: P18-15, P18-31
 
 ## Suggested commit message
 Refresh the Avalonia status bar on the UI thread only
+
+## Done notes
+- Raiser: `WorkspaceViewModel.ShowTab` / `OnActiveSessionChanged` raise `PropertyChanged(ActiveEnvironment)` on whatever thread calls them (stack from the unguarded test: `ShowTab` -> `OnWorkspaceChanged` -> `Refresh` -> `RefreshEnvironment`). The head-side guard is kept; Presentation is unchanged. Follow-up (not done): the other Avalonia views that subscribe to workspace/view-model events and touch controls directly were not audited.
+- `StatusBarThreadTests` fails without the guard (InvalidOperationException at `RefreshEnvironment`) and passes with it. Note: `Headless.Session.Dispatch` swallows exceptions thrown inside an async body, so the test records the verdict inside and asserts outside.
+- `LayoutOverlapTests` + the new test: 5 consecutive green runs.

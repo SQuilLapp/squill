@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Squill.Core;
 using Squill.Core.Transactions;
 using Squill.Presentation.Sessions;
@@ -145,10 +146,24 @@ public sealed partial class StatusBar : UserControl
 
     private void OnTabChanged(object? sender, PropertyChangedEventArgs e) => Refresh();
 
-    private void OnCaretChanged(object? sender, EventArgs e) => RefreshPosition();
+    private void OnCaretChanged(object? sender, EventArgs e)
+    {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(RefreshPosition);
+            return;
+        }
+        RefreshPosition();
+    }
 
+    // Some view-model events are raised on worker threads (a connection or monitor read that finishes there); the controls are UI-thread only.
     private void Refresh()
     {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(Refresh);
+            return;
+        }
         RefreshEnvironment();
         var profile = _workspace?.ActiveSession?.Profile;
         ConnectionText.Text = profile is null ? UiText.Get("home.noConnection") : ConnectionLabel(profile);
