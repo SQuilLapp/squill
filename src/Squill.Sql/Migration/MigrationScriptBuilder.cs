@@ -41,6 +41,8 @@ public static class MigrationScriptBuilder
         ArgumentNullException.ThrowIfNull(options);
         if (dialect is not (DatabaseDialect.PostgreSql or DatabaseDialect.MySql or DatabaseDialect.SqlServer or DatabaseDialect.Sqlite))
             throw new NotSupportedException($"Migration scripts are not supported for {dialect}.");
+        // The comparison was made on aligned snapshots (null schema = default schema), so the lookups must use the same ones.
+        (source, target) = SchemaComparer.AlignDefaultSchemas(source, target);
         return new Run(dialect, source, target, comparison, included, options).Build();
     }
 

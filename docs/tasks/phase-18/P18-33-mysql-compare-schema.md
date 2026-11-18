@@ -1,6 +1,6 @@
 # P18-33 - Schema compare between two MySQL databases
 
-Status: todo
+Status: done
 Depends on: P18-05, P18-06, P18-08, P18-31
 
 ## Goal
@@ -14,12 +14,12 @@ On MySQL the schema of a table is its database name (`MySqlSchemaReader.cs:104`:
 - Out of scope: comparing across dialects, view bodies that hard-code the database name (a view whose definition mentions `squill.` still differs textually: record it as a known limit in the Done notes and in `docs/verification/new-screens.md`), the Oracle reader.
 
 ## Tasks
-- [ ] `SchemaComparer` canonical schema as above; results stay in a deterministic order (the `Compare` sort uses `Schema`; null sorts first).
-- [ ] `MigrationScriptBuilder` lookups and qualification as above.
-- [ ] Tests in `tests/Squill.Core.Tests/Schema/SchemaComparerTests.cs`: two snapshots with `DefaultSchema` `a` and `b` holding the same table, extra column on the source, give one Modified (not Added + Removed); a table only in the source is one Added with a null schema; a foreign key that references the table by each side's own database name compares equal; a routine with the same signature compares equal; identical defaults (`public` / `public`) behave as before (existing tests unchanged and green); a non-default second schema keeps its name.
-- [ ] Tests in `tests/Squill.Sql.Tests/Migration/MigrationScriptBuilderTests.cs` (MySQL dialect): the script for that Modified table is an `ALTER TABLE` with an unqualified name; no statement contains either database name; a target-only table becomes an unqualified `DROP TABLE`.
-- [ ] Docker proof: `rtk pwsh eng/run-docker-tests.ps1 -Engine mysql` (Podman, see `docs/tasks/phase-11/verification-recipe.md`; if the VM reports `io_setup() failed with EAGAIN`, raise `fs.aio-max-nr` to 1048576 inside it, as noted in `docs/verification/new-screens.md`). `SchemaCompareFlowTests.CompareAndRunTheScript_LeavesNothingToCompare` must pass. Also run the same script for `postgres`, `sqlserver` and the SQLite compare flow test to prove nothing changed.
-- [ ] Update `docs/verification/new-screens.md`: MySQL line of "Automated" (158 passed), the "Bugs found" entry marked fixed, the M09 row (drop "bug -> P18-33").
+- [x] `SchemaComparer` canonical schema as above; results stay in a deterministic order (the `Compare` sort uses `Schema`; null sorts first).
+- [x] `MigrationScriptBuilder` lookups and qualification as above.
+- [x] Tests in `tests/Squill.Core.Tests/Schema/SchemaComparerTests.cs`: two snapshots with `DefaultSchema` `a` and `b` holding the same table, extra column on the source, give one Modified (not Added + Removed); a table only in the source is one Added with a null schema; a foreign key that references the table by each side's own database name compares equal; a routine with the same signature compares equal; identical defaults (`public` / `public`) behave as before (existing tests unchanged and green); a non-default second schema keeps its name.
+- [x] Tests in `tests/Squill.Sql.Tests/Migration/MigrationScriptBuilderTests.cs` (MySQL dialect): the script for that Modified table is an `ALTER TABLE` with an unqualified name; no statement contains either database name; a target-only table becomes an unqualified `DROP TABLE`.
+- [x] Docker proof: `rtk pwsh eng/run-docker-tests.ps1 -Engine mysql` (Podman, see `docs/tasks/phase-11/verification-recipe.md`; if the VM reports `io_setup() failed with EAGAIN`, raise `fs.aio-max-nr` to 1048576 inside it, as noted in `docs/verification/new-screens.md`). `SchemaCompareFlowTests.CompareAndRunTheScript_LeavesNothingToCompare` must pass. Also run the same script for `postgres`, `sqlserver` and the SQLite compare flow test to prove nothing changed.
+- [x] Update `docs/verification/new-screens.md`: MySQL line of "Automated" (158 passed), the "Bugs found" entry marked fixed, the M09 row (drop "bug -> P18-33").
 
 ## Acceptance criteria
 - Common acceptance (recipe 7, `phase-18/mockups-recipe.md`); the report separates "automated, ran" from "not driven". Every container and process closed (`podman ps -a` empty, `dotnet build-server shutdown`).
@@ -32,3 +32,7 @@ On MySQL the schema of a table is its database name (`MySqlSchemaReader.cs:104`:
 
 ## Suggested commit message
 Compare MySQL databases by their default schema instead of the database name
+
+## Done notes
+- `SchemaComparer.AlignDefaultSchemas` (public, used by `Compare` and `MigrationScriptBuilder.Build`) rewrites each snapshot's own default schema to null on tables, routines, triggers and foreign-key references when the two defaults differ; the builder then needs no other change (null schema is unqualified).
+- Known limit: a view whose definition mentions the database name still differs textually.

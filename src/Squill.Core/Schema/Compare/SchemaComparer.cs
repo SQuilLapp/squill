@@ -18,6 +18,7 @@ public static class SchemaComparer
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(target);
 
+        (source, target) = AlignDefaultSchemas(source, target);
         var result = new List<ObjectDifference>();
         CompareRelations(source, target, result);
         CompareRoutines(source, target, result);
@@ -29,6 +30,39 @@ public static class SchemaComparer
             return c;
         });
         return new SchemaComparison(result);
+    }
+
+    /// <summary>
+    /// Makes two snapshots comparable when their default schemas differ (two MySQL databases: the schema is the database name). Each
+    /// snapshot's own default schema becomes <see langword="null"/> on tables, routines, triggers and foreign-key references, so one key
+    /// identifies an object on both sides and a script never names either database. Snapshots with equal defaults are returned as they are.
+    /// </summary>
+    /// <param name="source">The desired state.</param>
+    /// <param name="target">The state a script would change.</param>
+    /// <returns>The two snapshots to compare, in the same order.</returns>
+    public static (SchemaSnapshot Source, SchemaSnapshot Target) AlignDefaultSchemas(SchemaSnapshot source, SchemaSnapshot target)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(target);
+        if (source.DefaultSchema is null || target.DefaultSchema is null
+            || string.Equals(source.DefaultSchema, target.DefaultSchema, StringComparison.OrdinalIgnoreCase))
+            return (source, target);
+        return (Canonical(source), Canonical(target));
+    }
+
+    private static SchemaSnapshot Canonical(SchemaSnapshot s)
+    {
+        string? Own(string? schema) => string.Equals(schema, s.DefaultSchema, StringComparison.OrdinalIgnoreCase) ? null : schema;
+        return s with
+        {
+            Tables = [.. s.Tables.Select(t => t with
+            {
+                Schema = Own(t.Schema),
+                ForeignKeys = [.. t.ForeignKeys.Select(f => f with { ReferencedSchema = Own(f.ReferencedSchema) })],
+            })],
+            Routines = [.. s.Routines.Select(r => r with { Schema = Own(r.Schema) ?? "" })],
+            Triggers = [.. s.Triggers.Select(t => t with { Schema = Own(t.Schema) ?? "" })],
+        };
     }
 
     private static void CompareRelations(SchemaSnapshot source, SchemaSnapshot target, List<ObjectDifference> result)

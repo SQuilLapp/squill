@@ -237,4 +237,16 @@ public sealed class MigrationScriptBuilderTests
         var source = Snap("public", [Table("b", [Col("id", "integer")]), Table("a", [Col("id", "integer")])]);
         Assert.Equal(Run(DatabaseDialect.PostgreSql, source, Snap("public", [])).Text, Run(DatabaseDialect.PostgreSql, source, Snap("public", [])).Text);
     }
+
+    [Fact]
+    public void MySql_TwoDatabases_ScriptIsUnqualifiedAndNamesNeitherDatabase()
+    {
+        var source = Snap("src_db", [Table("t", [Col("id", "int", false, true), Col("x", "int")], schema: "src_db")]);
+        var target = Snap("dst_db", [Table("t", [Col("id", "int", false, true)], schema: "dst_db"), Table("old", [Col("id", "int")], schema: "dst_db")]);
+        var text = Run(DatabaseDialect.MySql, source, target, include: _ => true).Text;
+        Assert.Contains("ALTER TABLE `t`", text, StringComparison.Ordinal);
+        Assert.Contains("DROP TABLE `old`", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("src_db", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("dst_db", text, StringComparison.Ordinal);
+    }
 }

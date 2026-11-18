@@ -172,4 +172,51 @@ public sealed class SchemaComparerTests
         Assert.Equal(5000, c.Count(DifferenceKind.Modified));
         Assert.True(sw.ElapsedMilliseconds < 1000, $"took {sw.ElapsedMilliseconds} ms");
     }
+
+    // ---- two databases of one engine (MySQL): the schema is the database name ----
+
+    private static TableInfo In(string db, string name, IReadOnlyList<ColumnDefinition>? cols = null, IReadOnlyList<ForeignKeyInfo>? fks = null) =>
+        new(db, name, TableKind.Table, cols ?? [Col("id", pk: true)], [], fks ?? []);
+
+    [Fact]
+    public void Compare_DifferentDefaultSchemas_SameTableWithExtraColumn_IsOneModified()
+    {
+        var s = new SchemaSnapshot("a", [In("a", "t", [Col("id", pk: true), Col("x")])]);
+        var t = new SchemaSnapshot("b", [In("b", "t")]);
+        var d = Single(Cmp(s, t));
+        Assert.Equal((DifferenceKind.Modified, (string?)null, "t"), (d.Kind, d.Schema, d.Name));
+    }
+
+    [Fact]
+    public void Compare_DifferentDefaultSchemas_TableOnlyInSource_AddedWithNullSchema()
+    {
+        var d = Single(Cmp(new SchemaSnapshot("a", [In("a", "t")]), new SchemaSnapshot("b", [])));
+        Assert.Equal((DifferenceKind.Added, (string?)null), (d.Kind, d.Schema));
+    }
+
+    [Fact]
+    public void Compare_DifferentDefaultSchemas_ForeignKeyToOwnDatabase_Equal()
+    {
+        static IReadOnlyList<ForeignKeyInfo> Fk(string db) => [new("fk", ["pid"], db, "p", ["id"])];
+        var s = new SchemaSnapshot("a", [In("a", "p"), In("a", "c", [Col("id", pk: true), Col("pid")], Fk("a"))]);
+        var t = new SchemaSnapshot("b", [In("b", "p"), In("b", "c", [Col("id", pk: true), Col("pid")], Fk("b"))]);
+        Assert.Empty(Cmp(s, t).Differences);
+    }
+
+    [Fact]
+    public void Compare_DifferentDefaultSchemas_RoutineWithSameSignature_Equal()
+    {
+        static SchemaSnapshot Snapshot(string db) => new(db, [])
+        {
+            Routines = [new RoutineInfo(db, "f", RoutineKind.Function, "f(IN a int)", "int", "RETURN a")],
+        };
+        Assert.Empty(Cmp(Snapshot("a"), Snapshot("b")).Differences);
+    }
+
+    [Fact]
+    public void Compare_DifferentDefaultSchemas_NonDefaultSchemaKeepsItsName()
+    {
+        var d = Single(Cmp(new SchemaSnapshot("a", [In("other", "t")]), new SchemaSnapshot("b", [])));
+        Assert.Equal("other", d.Schema);
+    }
 }

@@ -11,7 +11,7 @@ Status: **automated done (one failure found), agent window pass not done, manual
 |---|---|
 | PostgreSQL | 141 passed, 0 failed, 0 skipped (includes the sessions, privileges, import and compare flows) |
 | SQL Server | 164 passed, 0 failed, 0 skipped |
-| MySQL | 157 passed, **1 failed**: `SchemaCompareFlowTests.CompareAndRunTheScript_LeavesNothingToCompare` (see Bugs found). A first run failed 62 tests only because the Podman VM had `fs.aio-max-nr` exhausted (`io_setup() failed with EAGAIN`, the MySQL container exits at start); raising it to 1048576 inside the VM fixed that. |
+| MySQL | 158 passed (P18-33 fixed `SchemaCompareFlowTests.CompareAndRunTheScript_LeavesNothingToCompare`, see Bugs found). A first run failed 62 tests only because the Podman VM had `fs.aio-max-nr` exhausted (`io_setup() failed with EAGAIN`, the MySQL container exits at start); raising it to 1048576 inside the VM fixed that. |
 
 - SQLite scenarios (compare, import) run in the default run above and pass.
 
@@ -25,7 +25,7 @@ Not recorded in this card: the per-screen limits are in the phase 18 cards (`doc
 
 ## Bugs found
 
-- **MySQL: comparing two databases lists every common table twice.** The MySQL reader sets the schema of each table to its database name, and `SchemaComparer.Key` includes the schema, so `squill.cmp_a` (source) and `squill_cmp_target.cmp_a` (target) never match: the table shows as one Added and one Removed instead of one Modified, and the script would drop and recreate it. PostgreSQL and SQL Server compare within a schema name that is equal on both sides and pass. Proposed card `P18-33`: in the comparer, treat a schema equal to its snapshot's `DefaultSchema` as the same schema on both sides, and make the script qualify names with the target's schema (or none); add a MySQL case to `SchemaComparerTests`.
+- **MySQL: comparing two databases lists every common table twice (fixed by P18-33).** The MySQL reader sets the schema of each table to its database name, and `SchemaComparer.Key` includes the schema, so `squill.cmp_a` (source) and `squill_cmp_target.cmp_a` (target) never match: the table shows as one Added and one Removed instead of one Modified, and the script would drop and recreate it. PostgreSQL and SQL Server compare within a schema name that is equal on both sides and pass. Fixed by `P18-33`: in the comparer, treat a schema equal to its snapshot's `DefaultSchema` as the same schema on both sides, and make the script qualify names with the target's schema (or none); add a MySQL case to `SchemaComparerTests`.
 - **Avalonia: `StatusBar.RefreshEnvironment` is sometimes called from a non-UI thread** (`StatusBar.axaml.cs:170`, unhandled `InvalidOperationException` in `LayoutOverlapTests`, about one run in two). Proposed card `P18-34`: marshal `Refresh` through the dispatcher when `Dispatcher.UIThread.CheckAccess()` is false.
 
 ## How to prepare
@@ -42,7 +42,7 @@ Columns: WinUI / Avalonia = tick when it behaves as described in that head. Resu
 |---|--------|------|:-----:|:--------:|--------|
 | 1 | M01 | Start page lists recent connections with environment pill, shortcut keys, open-tab count; search box opens the palette; `Gérer les connexions`, `Nouvelle connexion`, `Ouvrir un fichier`, `Importer des connexions`, `Console SQL éphémère` work. | [ ] | [ ] | not driven |
 | 2 | M01 | Projects list, tip with `Astuce suivante` / `Masquer`, `Afficher l'accueil au démarrage` check persists. | [ ] | [ ] | not driven |
-| 3 | M09 | Pick source and target: groups, counts, include checkboxes, side-by-side DDL, generated script, `Exécuter le script`; after running, nothing left to compare. | [ ] | [ ] | not driven (MySQL: bug -> P18-33) |
+| 3 | M09 | Pick source and target: groups, counts, include checkboxes, side-by-side DDL, generated script, `Exécuter le script`; after running, nothing left to compare. | [ ] | [ ] | not driven |
 | 4 | M10 | Wizard steps: source file, options, mapping (types, conflicts), error policy, run with progress and outcome. | [ ] | [ ] | not driven |
 | 5 | M11 | Roles list and privilege matrix per object kind; toggle a cell, see the pending change and the generated statements; apply. | [ ] | [ ] | not driven |
 | 6 | M12 | Sessions table with state dots, sort and filter, blocking chains, detail pane; cancel and kill with confirmation. | [ ] | [ ] | not driven |
@@ -51,3 +51,5 @@ Columns: WinUI / Avalonia = tick when it behaves as described in that head. Resu
 ## Note
 
 Visible differences from the mockups (to be filled by the owner): none recorded, nothing was looked at in a window in this card.
+
+Known limit (P18-33): a view whose definition hard-codes the database name (for example `squill.t`) still differs textually between two MySQL databases.
