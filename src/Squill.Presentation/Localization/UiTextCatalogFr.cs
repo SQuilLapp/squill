@@ -1008,5 +1008,10 @@ internal static class UiTextCatalogFr
         ("import.issue.unsupportedType", "Le texte ne peut pas être converti vers le type {0}"),
         ("import.issue.duplicateTarget", "La colonne {0} est associée plusieurs fois"),
         ("import.issue.requiredUnmapped", "La colonne {0} est obligatoire mais aucune colonne CSV ne l'alimente"),
+        ("import.issue.generatedMapped", "La colonne {0} est générée par la base et ne peut pas être importée"),
+        ("import.error.noColumns", "Aucune colonne CSV n'est associée à une colonne de la table"),
+        ("import.confirm.title", "Importer dans {0} en production ?"),
+        ("import.confirm.message", "Les lignes de {0} seront insérées dans {1}."),
+        ("import.confirm.button", "Importer"),
     ];
 }

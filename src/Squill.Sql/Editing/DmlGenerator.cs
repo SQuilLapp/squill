@@ -113,9 +113,12 @@ public static class DmlGenerator
         return new DmlStatement(sql, ps);
     }
 
-    // Suffix appended to a bound parameter so the engine converts the text to the column type. A text parameter against a PostgreSQL char(n) column
-    // would compare as text, which drops the padding of the stored value and never matches it.
-    private static string? ParameterCast(DatabaseDialect dialect, string? dataType)
+    /// <summary>Gets the suffix appended to a bound parameter so the engine converts the text to the column type.</summary>
+    /// <param name="dialect">The target engine.</param>
+    /// <param name="dataType">The declared column type, or <see langword="null"/>.</param>
+    /// <returns>The cast such as <c>::jsonb</c>, or <see langword="null"/> when none is needed.</returns>
+    /// <remarks>A text parameter against a PostgreSQL <c>char(n)</c> column would compare as text, which drops the padding of the stored value and never matches it.</remarks>
+    public static string? ParameterCast(DatabaseDialect dialect, string? dataType)
     {
         if (dialect != DatabaseDialect.PostgreSql || dataType is not { } t)
             return null;

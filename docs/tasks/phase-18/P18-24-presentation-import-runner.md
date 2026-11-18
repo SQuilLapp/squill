@@ -1,6 +1,6 @@
 # P18-24 - Presentation: the import runner (risky)
 
-Status: todo
+Status: done
 Depends on: P18-23
 
 ## Goal
@@ -20,12 +20,15 @@ Insert the converted rows into the target table in batches, with progress, cance
 - UI, upsert / conflict handling, creating the table, pause, several tables.
 
 ## Tasks
-- [ ] Runner, options, rejects writer, parameter clamping, savepoint integration, production confirmation call.
-- [ ] Tests with a fake session in `tests/Squill.Presentation.Tests/Import/`: batching and clamping, reject path, stop on error, cancel, progress throttling, savepoint use inside a user transaction, production refusal runs nothing.
-- [ ] Engine scenario in `tests/Shared` (SQLite always; PostgreSQL / MySQL / SQL Server Docker-gated): a 5,000-row CSV with 20 bad rows (bad number, too long text, NOT NULL violation), `Reject` gives 4,980 inserted and a rejects file with 20 lines; `Stop` stops at the first; `SingleTransaction` with a bad row leaves the table untouched; French decimals and dates land correctly; accents survive; 100,000 rows import in a bounded time (state the figure).
+- [x] Runner, options, rejects writer, parameter clamping, savepoint integration, production confirmation call.
+- [x] Tests with a fake session in `tests/Squill.Presentation.Tests/Import/`: batching and clamping, reject path, stop on error, cancel, progress throttling, savepoint use inside a user transaction, production refusal runs nothing.
+- [x] Engine scenario in `tests/Shared` (SQLite always; PostgreSQL / MySQL / SQL Server Docker-gated): a 5,000-row CSV with 20 bad rows (bad number, too long text, NOT NULL violation), `Reject` gives 4,980 inserted and a rejects file with 20 lines; `Stop` stops at the first; `SingleTransaction` with a bad row leaves the table untouched; French decimals and dates land correctly; accents survive; 100,000 rows import in a bounded time (state the figure).
 
 ## Acceptance criteria
 - Common acceptance (recipe 7), no head touched; Docker-gated runs reported per engine.
 
 ## Suggested commit message
 Add the CSV import runner
+
+## Result
+SQLite engine scenario: 100,000 rows import in about 4.4 s (batches of 1,000, one transaction per batch). PostgreSQL / MySQL / SQL Server runs are Docker-gated (`SQUILL_DOCKER_TESTS=1`) and were not run here. Deviations: `SingleTransaction` stops at the first bad row (conversion or database) and does not bisect to name the database-rejected row in the rejects file; `ImportValidator.Validate` takes an optional dialect to refuse generated columns, and the runner refuses them too (`Failed`).
