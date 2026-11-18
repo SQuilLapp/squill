@@ -1,6 +1,6 @@
 # P19-17 - WinUI home page: close the gaps found against M01
 
-Status: todo
+Status: done
 Depends on: P19-09
 
 ## Goal
@@ -17,12 +17,18 @@ P19-09 compared the WinUI home page with `M01-Accueil-*` (see the Note of `docs/
 - Avalonia (P19-11 compares it), any new feature.
 
 ## Tasks
-- [ ] Presentation: open-tab count and last-opened text on `HomeViewModel` cards, with tests.
-- [ ] WinUI: badge, second line, centered column, subtitle, focus ring; catalog keys fr/en.
-- [ ] Capture and compare again (light, dark, fr, en); update `visual-spec.md` section 15 and the M01 row of section 12.
+- [x] Presentation: open-tab count and last-opened text on `HomeViewModel` cards, with tests.
+- [x] WinUI: badge, second line, centered column, subtitle, focus ring; catalog keys fr/en.
+- [x] Capture and compare again (light, dark, fr, en); update `visual-spec.md` section 15 and the M01 row of section 12.
 
 ## Acceptance criteria
 - Recipe 4 of `debug-polish-recipe.md` (`Squill.Windows.slnx`, AOT publish, app starts); the new capture read against the PNG.
 
 ## Suggested commit message
 Bring the WinUI home page closer to its mockup
+
+## Done notes
+- The card already drew the engine badge (the engine glyph of the profile, as in the explorer); what was missing was the second line and the tab count, now `HomeRecentCardViewModel.Details` / `OpenTabsText`, refreshed from the live sessions by `HomeViewModel.RefreshLive`. The version comes from the open connection's `ServerVersion` (first word) and is left out when not connected.
+- Plural keys `home.tabs.one` / `home.tabs.other` (French rule: 0 and 1 are singular, but 0 shows `-`).
+- WinUI: column of at most 1160 px, centered; `Nouvelle connexion` subtitle (`PostgreSQL, MySQL, SQL Server, SQLite...`); focus ring on the header search box.
+- Captured (published AOT head, 1440 x 900, SQLite `-Scenario Full`): French light and English dark read, second line and `-` tab count present, subtitle present, no new IL warning. The open-tab count with a live connection and the version text were covered by unit tests only, not driven in the window.

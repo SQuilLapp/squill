@@ -98,6 +98,7 @@ src/Squill.Presentation/Editing/ChangeSetBuilder.cs|duplicate key in pending row
 src/Squill.Presentation/Editing/ChangeSetBuilder.cs|{c.Definition.Name} cannot be NULL|English fallback of a coded issue, rendered through issue.edit.columnNull
 src/Squill.Presentation/Editing/ChangeSetBuilder.cs|{d.Name} is required|English fallback of a coded issue, rendered through issue.edit.columnRequired
 src/Squill.Presentation/Explorer/DefinitionScript.cs|ON {SqlQuoting.Quote(trigger.Table, dialect)} FOR EACH ROW\n{trigger.Definition.Trim()}|SQL text, never translated
+src/Squill.Presentation/Home/HomeRecentCardViewModel.cs|SQL Server|product name, not translated
 src/Squill.Presentation/Import/ValueConverter.cs|character varying|SQL type name, not display text
 src/Squill.Presentation/Import/ValueConverter.cs|double precision|SQL type name, not display text
 src/Squill.Presentation/Import/ValueConverter.cs|with time zone|SQL type name, not display text

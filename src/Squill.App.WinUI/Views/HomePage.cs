@@ -63,7 +63,7 @@ public sealed partial class HomePage : UserControl
     {
         if (_home is not { } home)
             return;
-        var page = new Grid { MaxWidth = 1000, Margin = new Thickness(40, 40, 40, 32), HorizontalAlignment = HorizontalAlignment.Stretch, RowSpacing = 28 };
+        var page = new Grid { MaxWidth = 1160, Margin = new Thickness(40, 40, 40, 32), HorizontalAlignment = HorizontalAlignment.Center, RowSpacing = 28 };
         page.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         page.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         page.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -139,6 +139,8 @@ public sealed partial class HomePage : UserControl
             BorderBrush = Brush("SquillBorderBrush"),
         };
         button.Click += (_, _) => home.SearchCommand.Execute(null);
+        button.GotFocus += (_, _) => button.BorderBrush = Brush("SquillFocusBrush");
+        button.LostFocus += (_, _) => button.BorderBrush = Brush("SquillBorderBrush");
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, UiText.Get("search.placeholder"));
         return button;
     }
@@ -211,7 +213,22 @@ public sealed partial class HomePage : UserControl
             Foreground = Brush("SquillFg2Brush"),
             TextTrimming = TextTrimming.CharacterEllipsis,
         });
-        body.Children.Add(new TextBlock { Text = card.LastOpened, Foreground = Brush("SquillFg3Brush"), FontSize = Size("SquillFontSizeBodySm") });
+        var details = new TextBlock { Text = card.Details, Foreground = Brush("SquillFg3Brush"), FontSize = Size("SquillFontSizeBodySm"), TextTrimming = TextTrimming.CharacterEllipsis };
+        var tabs = new TextBlock { Text = card.OpenTabsText, Foreground = Brush("SquillFg3Brush"), FontSize = Size("SquillFontSizeBodySm"), HorizontalAlignment = HorizontalAlignment.Right };
+        var bottom = new Grid { ColumnSpacing = 8 };
+        bottom.ColumnDefinitions.Add(new ColumnDefinition());
+        bottom.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        Grid.SetColumn(tabs, 1);
+        bottom.Children.Add(details);
+        bottom.Children.Add(tabs);
+        card.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(HomeRecentCardViewModel.Details))
+                details.Text = card.Details;
+            else if (e.PropertyName == nameof(HomeRecentCardViewModel.OpenTabsText))
+                tabs.Text = card.OpenTabsText;
+        };
+        body.Children.Add(bottom);
         var stack = new Grid();
         stack.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         stack.RowDefinitions.Add(new RowDefinition());
@@ -272,7 +289,9 @@ public sealed partial class HomePage : UserControl
         row.ColumnDefinitions.Add(new ColumnDefinition());
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         row.Children.Add(tile);
-        var text = new TextBlock { Text = UiText.Get("home.newConnection"), FontWeight = FontWeights.SemiBold, Foreground = Brush("SquillFgBrush"), VerticalAlignment = VerticalAlignment.Center };
+        var text = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        text.Children.Add(new TextBlock { Text = UiText.Get("home.newConnection"), FontWeight = FontWeights.SemiBold, Foreground = Brush("SquillFgBrush") });
+        text.Children.Add(new TextBlock { Text = UiText.Get("home.newConnection.subtitle"), Foreground = Brush("SquillFg2Brush"), FontSize = Size("SquillFontSizeBodySm"), TextWrapping = TextWrapping.Wrap });
         Grid.SetColumn(text, 1);
         row.Children.Add(text);
         var chip = new ContentControl { Content = "Ctrl+N", Style = StyleOf("KeyboardChipStyle"), VerticalAlignment = VerticalAlignment.Center };

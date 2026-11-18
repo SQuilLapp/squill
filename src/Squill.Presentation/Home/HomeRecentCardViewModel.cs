@@ -7,6 +7,9 @@ namespace Squill.Presentation.Home;
 /// <summary>One recent connection of the home page.</summary>
 public sealed class HomeRecentCardViewModel : ViewModelBase
 {
+    private int _tabs;
+    private string? _version;
+
     internal HomeRecentCardViewModel(ConnectionProfile profile, string lastOpened, string shortcut, Func<Task> open)
     {
         Profile = profile;
@@ -17,6 +20,14 @@ public sealed class HomeRecentCardViewModel : ViewModelBase
             DatabaseDialect.MySql => "My",
             DatabaseDialect.SqlServer => "MS",
             DatabaseDialect.Sqlite => "SL",
+            _ => "",
+        };
+        EngineName = profile.Dialect switch
+        {
+            DatabaseDialect.PostgreSql => "PostgreSQL",
+            DatabaseDialect.MySql => "MySQL",
+            DatabaseDialect.SqlServer => "SQL Server",
+            DatabaseDialect.Sqlite => "SQLite",
             _ => "",
         };
         Environment = profile.Environment;
@@ -53,6 +64,26 @@ public sealed class HomeRecentCardViewModel : ViewModelBase
 
     /// <summary>Gets when the connection was last opened, as relative text.</summary>
     public string LastOpened { get; }
+
+    /// <summary>Gets the engine name, <c>PostgreSQL</c>, <c>MySQL</c>, <c>SQL Server</c> or <c>SQLite</c>.</summary>
+    public string EngineName { get; } = "";
+
+    /// <summary>Gets the engine name followed by the live server version when the connection is open, then <c>·</c> and <see cref="LastOpened"/>.</summary>
+    public string Details => $"{(_version is { Length: > 0 } v ? EngineName + " " + v : EngineName)} · {LastOpened}";
+
+    /// <summary>Gets the open-tab count as text (<c>3 onglets</c>, <c>1 onglet</c>), <c>-</c> when no tab is open.</summary>
+    public string OpenTabsText => _tabs == 0 ? "-" : UiText.FormatPlural("home.tabs", _tabs);
+
+    /// <summary>Updates the live values shown on the card.</summary>
+    /// <param name="tabs">Number of query tabs open on this connection.</param>
+    /// <param name="version">Server version of the open connection, or <see langword="null"/> when it is not connected.</param>
+    public void ApplyLive(int tabs, string? version)
+    {
+        _tabs = tabs;
+        _version = version?.Split(' ')[0];
+        OnPropertyChanged(nameof(Details));
+        OnPropertyChanged(nameof(OpenTabsText));
+    }
 
     /// <summary>Gets the shortcut that opens the card, <c>Ctrl+1</c> to <c>Ctrl+6</c>.</summary>
     public string Shortcut { get; }

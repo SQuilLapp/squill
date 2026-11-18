@@ -12,6 +12,7 @@ public sealed partial class CatalogTests
     // Keys whose English text is legitimately identical to the French one.
     private static readonly HashSet<string> SameInBothLanguages =
     [
+        "home.newConnection.subtitle", // list of engine names
         "home.env.prod", // environment pill, same short form in both languages
         "import.step.source", // step name, same word in both languages
         "import.step.options", // step name

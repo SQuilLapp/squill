@@ -31,7 +31,7 @@ public class HomePageTests
     {
         var code = File.ReadAllText("Xaml/HomePage.cs");
 
-        foreach (var part in new[] { "card.Name", "card.Subtitle", "card.LastOpened", "card.Shortcut", "card.EnvironmentText", "card.EngineLetters", "home.TipSegments", "home.ShowAtStartup" })
+        foreach (var part in new[] { "card.Name", "card.Subtitle", "card.Details", "card.OpenTabsText", "card.Shortcut", "card.EnvironmentText", "card.EngineLetters", "home.TipSegments", "home.ShowAtStartup" })
             Assert.Contains(part, code);
     }
 }

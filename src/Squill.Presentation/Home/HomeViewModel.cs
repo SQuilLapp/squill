@@ -21,11 +21,12 @@ public sealed partial class HomeViewModel : ViewModelBase
     private readonly Func<ConnectionProfile, Task> _connect;
     private readonly Action _openPalette;
     private readonly TimeProvider _time;
+    private readonly Func<Guid, (int Tabs, string? Version)> _live;
     private bool _loading;
 
     internal HomeViewModel(
         ConnectionListViewModel connections, IRecentConnectionsStore recent, ISettingsStore settings,
-        Func<ConnectionProfile, Task> connect, Action openPalette, TimeProvider time)
+        Func<ConnectionProfile, Task> connect, Action openPalette, TimeProvider time, Func<Guid, (int Tabs, string? Version)> live)
     {
         _connections = connections;
         _recent = recent;
@@ -33,6 +34,7 @@ public sealed partial class HomeViewModel : ViewModelBase
         _connect = connect;
         _openPalette = openPalette;
         _time = time;
+        _live = live;
     }
 
     /// <summary>Raised when the user asks to manage the connections (the "Gérer les connexions" link); the head shows its connection list.</summary>
@@ -110,6 +112,17 @@ public sealed partial class HomeViewModel : ViewModelBase
         RecentCards.Clear();
         foreach (var card in cards)
             RecentCards.Add(card);
+        RefreshLive();
+    }
+
+    /// <summary>Updates the open-tab count and server version of every card from the live sessions.</summary>
+    public void RefreshLive()
+    {
+        foreach (var card in RecentCards)
+        {
+            var (tabs, version) = _live(card.Profile.Id);
+            card.ApplyLive(tabs, version);
+        }
     }
 
     /// <summary>Records that a connection was opened now and refreshes the cards.</summary>

@@ -108,7 +108,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             PaletteActionRegistry.ForWorkspace(this), objects.Search, historySearch.Search, historySearch.ReloadAsync, line.Search,
             () => AllSessions().Any(), dispatcher, dialogs);
         Explorer = new ExplorerTreeViewModel(connectionList, manager.Sessions, tableFilters);
-        Home = new HomeViewModel(connectionList, recent ?? new NoRecentConnections(), settings, p => ConnectCommand.ExecuteAsync(p), Palette.Open, time ?? TimeProvider.System);
+        Home = new HomeViewModel(connectionList, recent ?? new NoRecentConnections(), settings, p => ConnectCommand.ExecuteAsync(p), Palette.Open, time ?? TimeProvider.System,
+            id => (Tabs.Count(t => t.Session.Root.Profile.Id == id), AllSessions().FirstOrDefault(x => x.Profile.Id == id)?.Connection.ServerVersion));
         manager.Sessions.CollectionChanged += (_, e) =>
         {
             if (e.NewItems is not null)
@@ -117,6 +118,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         };
         foreach (var collection in new INotifyCollectionChanged[] { manager.Sessions, Tabs, Terminals, Designers, Diagrams, Plans, Compares, Monitors, SecurityTabs })
             collection.CollectionChanged += (_, _) => UpdateHomeVisibility();
+        foreach (var collection in new INotifyCollectionChanged[] { manager.Sessions, Tabs })
+            collection.CollectionChanged += (_, _) => Home.RefreshLive();
         manager.Sessions.CollectionChanged += (_, _) => RaiseSchemaCompareAvailability();
         manager.Sessions.CollectionChanged += (_, _) => RaiseMonitorAvailability();
         manager.Sessions.CollectionChanged += (_, _) => RaiseSecurityAvailability();

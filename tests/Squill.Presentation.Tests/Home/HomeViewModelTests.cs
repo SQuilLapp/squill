@@ -147,6 +147,44 @@ public sealed class HomeViewModelTests : IDisposable
         Assert.Equal(expected, RelativeTimeFormatter.Format(Now.AddSeconds(secondsFromNow), Now));
     }
 
+    [Theory]
+    [InlineData(UiLanguage.French, 0, "-")]
+    [InlineData(UiLanguage.French, 1, "1 onglet")]
+    [InlineData(UiLanguage.French, 3, "3 onglets")]
+    [InlineData(UiLanguage.English, 1, "1 tab")]
+    [InlineData(UiLanguage.English, 3, "3 tabs")]
+    public async Task Card_OpenTabsText_FollowsTheCount(UiLanguage language, int tabs, string expected)
+    {
+        using var _ = UiText.Override(language);
+        var p = Profile("x");
+        _profiles.Add(p);
+        _recent.Items.Add(new RecentConnection(p.Id, Now));
+        await LoadAsync();
+
+        var card = _workspace.Home.RecentCards.Single();
+        card.ApplyLive(tabs, null);
+
+        Assert.Equal(expected, card.OpenTabsText);
+    }
+
+    [Fact]
+    public async Task Card_Details_ShowsTheVersionOnlyWhenConnected()
+    {
+        using var _ = UiText.Override(UiLanguage.English);
+        var p = Profile("x");
+        _profiles.Add(p);
+        _recent.Items.Add(new RecentConnection(p.Id, Now.AddMinutes(-12)));
+        await LoadAsync();
+        var card = _workspace.Home.RecentCards.Single();
+        Assert.Equal("PostgreSQL · 12 min ago", card.Details);
+
+        card.ApplyLive(0, "16.4 (Debian 16.4-1)");
+        Assert.Equal("PostgreSQL 16.4 · 12 min ago", card.Details);
+
+        await _workspace.ConnectCommand.ExecuteAsync(p);
+        Assert.Contains("PostgreSQL 1 · ", _workspace.Home.RecentCards.Single().Details);
+    }
+
     [Fact]
     public async Task NextTip_WrapsAndPersists()
     {
