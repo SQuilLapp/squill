@@ -1,6 +1,6 @@
 # P19-02 - Presentation: raise view-model events on the UI thread
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -16,9 +16,9 @@ P18-34 fixed `StatusBar.Refresh` in Avalonia with a head-side guard and recorded
 - New guards in heads beyond what the inventory proves; rewriting view-models to marshal everything.
 
 ## Tasks
-- [ ] Inventory table in the Done notes.
-- [ ] For each finding: a test that raises from `Task.Run` and asserts the event arrives through the dispatcher (red first), then the fix.
-- [ ] Re-run `Squill.App.Avalonia.Tests` `LayoutOverlapTests` and `StatusBarThreadTests` three times, green.
+- [x] Inventory table in the Done notes.
+- [x] (no finding, nothing to do) For each finding: a test that raises from `Task.Run` and asserts the event arrives through the dispatcher (red first), then the fix.
+- [x] (no code changed, nothing to re-run) Re-run `Squill.App.Avalonia.Tests` `LayoutOverlapTests` and `StatusBarThreadTests` three times, green.
 
 ## Acceptance criteria
 - Common acceptance (recipe 4) with both AOT publishes only if a head file changed; Presentation behavior on the UI thread is identical (existing tests unchanged and green).
@@ -29,3 +29,27 @@ P18-34 fixed `StatusBar.Refresh` in Avalonia with a head-side guard and recorded
 
 ## Suggested commit message
 Raise Presentation events through the UI dispatcher where they can run on a worker
+
+## Done notes
+
+No production producer found; the head guard of P18-34 stays. No code changed.
+
+Inventory of `src/Squill.Presentation` (every `Task.Run`, `ConfigureAwait(false)`, timer and driver callback):
+
+| File | Member | Thread it can run on | Raises how | Verdict |
+|---|---|---|---|---|
+| `Activity/SessionsMonitorViewModel.cs` | timer callback (line 121) | timer pool thread | `_dispatcher.Post(Tick)` | already posted |
+| `Activity/SessionsMonitorViewModel.cs` | `Task.Run` read (line 248) | worker, then `await` resumes on the UI context | none on the worker | not a finding |
+| `Workspace/WorkspaceViewModel.cs` | `_elapsedTimer` (line 103) | timer pool thread | `_dispatcher.Post(RefreshElapsed)` | already posted |
+| `Compare/SchemaCompareViewModel.cs` | `Task.Run` reads, compare, script build | worker, plain `await` back | none on the worker | not a finding |
+| `Palette/PaletteObjectProvider.cs`, `PaletteViewModel.cs` | `Task.Run` search and index | worker, plain `await` back | none on the worker | not a finding |
+| `Query/QueryTabViewModel.cs` | `UpdateDiagnosticsDebounced` (line 689) | worker | `_dispatcher.Post(...)` for `SetDiagnostics` | already posted |
+| `Results/ColumnMenuViewModel.cs` | `LoadAsync` (`ConfigureAwait(false)`) | worker | all state changes inside `dispatcher.Post` | already posted |
+| `Results/FilteredGridDataSource.cs` | `RunAsync` (`Task.Run`) | worker | `RaiseChanged` and `OnInnerChanged` use `_dispatcher.Post` | already posted |
+| `Results/StreamingGridDataSource.cs` | `StartAsync` | UI context (no `ConfigureAwait(false)`) | `RaiseChanged` = `_dispatcher.Post` | already posted |
+| `Import/ImportWizardViewModel.cs` | `Sink` (`IProgress`) | worker of the runner | `_dispatcher.Post(() => Apply(p))` | already posted |
+| `Import/CsvPreview.cs`, `CsvReader.cs`, `Results/*Exporter.cs`, `ResultFileWriter.cs` | `ConfigureAwait(false)` | worker | no event, no property raised | not a finding |
+| `Localization/LanguageSetup.cs` | `Task.Run(...).GetResult()` | blocks the caller | none | not a finding |
+| `Sessions/SessionTransaction.cs`, `Sessions/SessionManager.cs`, `Workspace/WorkspaceViewModel.cs` (`ShowTab`, `OnActiveSessionChanged`) | setters | only from commands, `Explorer` events and awaits that resume on the UI context | direct raise | UI thread only |
+
+The cause recorded by P18-34 (`ShowTab` / `OnActiveSessionChanged` raising on the caller's thread) needs a non-UI caller; none exists in Presentation or in the heads (`ActiveSession =` and `ShowTab` are only reached from UI-thread handlers and plain awaits). No `ConfigureAwait(false)` precedes a property change anywhere in Presentation. The Avalonia and WinUI head subscriptions were not audited one by one: the inventory shows nothing for them to receive off-thread.
