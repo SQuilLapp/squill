@@ -17,6 +17,8 @@ src/Squill.App.Avalonia/Views/FilterBar.axaml|Ctrl+F|keyboard accelerator text, 
 src/Squill.App.Avalonia/Views/HomePage.axaml|Ctrl+K|keyboard shortcut, not translated
 src/Squill.App.Avalonia/Views/HomePage.axaml|Ctrl+N|keyboard shortcut, not translated
 src/Squill.App.Avalonia/Views/HomePage.axaml|SQuilL|product name, not translated
+src/Squill.App.Avalonia/Views/ImportWizardWindow.cs|Europe/Paris|IANA time zone placeholder
+src/Squill.App.Avalonia/Views/ImportWizardWindow.cs|yyyy-MM-dd|date format pattern placeholder
 src/Squill.App.Avalonia/Views/ProductionConfirmWindow.cs|SquillFg3Brush|resource key
 src/Squill.App.Avalonia/Views/ProductionConfirmWindow.cs|SquillFgBrush|resource key
 src/Squill.App.Avalonia/Views/QueryTabView.axaml|CSV|file format name

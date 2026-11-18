@@ -54,6 +54,28 @@ internal sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
+    public async ValueTask<string?> PickOpenFileAsync(string title, IReadOnlyList<string> extensions)
+    {
+        var storage = Owner?.StorageProvider;
+        if (storage is null)
+            return null;
+        var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = title,
+            AllowMultiple = false,
+            FileTypeFilter = [new FilePickerFileType(title) { Patterns = [.. extensions.Select(e => $"*.{e}")] }],
+        });
+        return files.Count > 0 ? files[0].TryGetLocalPath() : null;
+    }
+
+    /// <inheritdoc />
+    public async ValueTask ShowImportWizardAsync(Squill.Presentation.Import.ImportWizardViewModel wizard)
+    {
+        if (Owner is { } owner)
+            await Views.ImportWizardWindow.ShowAsync(owner, wizard);
+    }
+
+    /// <inheritdoc />
     public async ValueTask ShowErrorAsync(string title, string message) =>
         await ShowAsync(title, message, null, (UiText.Get("dialog.ok"), true));
 
