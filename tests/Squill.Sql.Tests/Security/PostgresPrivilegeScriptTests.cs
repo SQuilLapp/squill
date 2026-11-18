@@ -34,6 +34,15 @@ public sealed class PostgresPrivilegeScriptTests
     }
 
     [Fact]
+    public void Build_KeywordRoleAndTable_AreQuoted()
+    {
+        var set = Set("user", ("public", "order", PrivilegeKind.Select, false));
+        var script = PostgresPrivilegeScript.Build("user", set, "prod");
+
+        Assert.Contains("GRANT SELECT ON public.\"order\" TO \"user\";", script.Statements);
+    }
+
+    [Fact]
     public void Build_KindsOfOneObject_AreMerged()
     {
         var set = Set("r", ("public", "t", PrivilegeKind.Insert, false), ("public", "t", PrivilegeKind.Select, false));

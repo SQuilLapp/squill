@@ -26,7 +26,6 @@ public static class PostgresPrivilegeScript
             return new PrivilegeScript(string.Empty, []);
         }
 
-        // shortcut: reserved words (a role named "user") are not quoted; upgrade with a PostgreSQL keyword list.
         var quotedRole = IdentifierQuoting.Quote(role, DatabaseDialect.PostgreSql);
         var statements = new List<string>();
         foreach (var kind in new[] { PrivilegeChangeKind.Grant, PrivilegeChangeKind.Revoke })
