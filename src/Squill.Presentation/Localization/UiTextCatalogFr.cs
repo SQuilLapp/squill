@@ -73,6 +73,8 @@ internal static class UiTextCatalogFr
         ("explorer.disconnect", "Déconnecter"),
         ("explorer.designTable", "Concevoir la table..."),
         ("explorer.dropTable", "Supprimer la table..."),
+        ("explorer.dropTables.one", "Supprimer {0} tables"),
+        ("explorer.dropTables.other", "Supprimer {0} tables"),
         ("tab.query", "Requête {0}"),
         ("tab.queryOn", "Requête {0} ({1} / {2})"),
         ("tab.untitled", "Requête"),

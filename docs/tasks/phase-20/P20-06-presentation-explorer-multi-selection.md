@@ -1,6 +1,6 @@
 # P20-06 - Presentation: the explorer selection of several tables and the drop command
 
-Status: todo
+Status: done
 Depends on: P20-05
 
 ## Goal
@@ -20,8 +20,8 @@ The explorer view-model knows one selected node (`SelectedNode`) and raises `Dro
 - The controls (P20-07, P20-08), the drop itself (P20-05).
 
 ## Tasks
-- [ ] Tests first, `tests/Squill.Presentation.Tests/Explorer/ExplorerMultiSelectionTests.cs` (fixtures of `ExplorerTreeViewModelTests.cs`): two tables of one session -> `DropSelectedTablesCommand.CanExecute` true and execute raises one `DropTablesRequested` with both tables in tree order; table + view -> false; tables of two sessions -> false; empty -> false; `DropCommand` on a node inside a 3-table selection raises `DropTablesRequested` (3 tables), on a node outside the selection raises `DropTableRequested` (1); `DropMenuText` singular / plural fr and en; `SetSelectedNodes` with a table removed from the tree after `Reload` does not keep the stale node (filter by presence in `Roots`). Run, see them fail.
-- [ ] Implement; add the workspace wiring and a workspace test: `DropTablesRequested` ends in `DropTablesCommand` (use the fakes of `WorkspaceDropTablesTests`).
+- [x] Tests first, `tests/Squill.Presentation.Tests/Explorer/ExplorerMultiSelectionTests.cs` (fixtures of `ExplorerTreeViewModelTests.cs`): two tables of one session -> `DropSelectedTablesCommand.CanExecute` true and execute raises one `DropTablesRequested` with both tables in tree order; table + view -> false; tables of two sessions -> false; empty -> false; `DropCommand` on a node inside a 3-table selection raises `DropTablesRequested` (3 tables), on a node outside the selection raises `DropTableRequested` (1); `DropMenuText` singular / plural fr and en; `SetSelectedNodes` with a table removed from the tree after `Reload` does not keep the stale node (filter by presence in `Roots`). Run, see them fail.
+- [x] Implement; add the workspace wiring and a workspace test: `DropTablesRequested` ends in `DropTablesCommand` (use the fakes of `WorkspaceDropTablesTests`).
 
 ## Acceptance criteria
 - Recipe 2 common acceptance; `ExplorerTreeViewModelTests` unchanged and green.
@@ -31,3 +31,8 @@ The explorer view-model knows one selected node (`SelectedNode`) and raises `Dro
 
 ## Suggested commit message
 Select several tables in the explorer view-model and ask the workspace to drop them
+
+## Done notes
+- `SelectedNodes`, `SelectedTables`, `SetSelectedNodes`, `DropSelectedTablesCommand`, `DropMenuText`, `CanDropMenu`, `DropTablesRequested` and the workspace wiring added; 10 tests in `ExplorerMultiSelectionTests` plus one in `WorkspaceDropTablesTests`.
+- `SelectedTables` is computed in `SetSelectedNodes`; heads must call it again after a reload.
+- Full run green (4216 passed, 330 skipped), no flaky test seen.

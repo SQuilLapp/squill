@@ -136,6 +136,11 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             ActiveSession = r.Session;
             _ = DropTableCommand.ExecuteAsync(r.Table);
         };
+        Explorer.DropTablesRequested += (_, r) =>
+        {
+            ActiveSession = r.Session;
+            _ = DropTablesCommand.ExecuteAsync(r.Tables);
+        };
         Explorer.ScriptRequested += (_, r) => AddTab(r.Session, r.Text);
         Explorer.ConnectRequested += (_, profile) => _ = ConnectCommand.ExecuteAsync(profile);
         Explorer.PropertyChanged += (_, e) =>

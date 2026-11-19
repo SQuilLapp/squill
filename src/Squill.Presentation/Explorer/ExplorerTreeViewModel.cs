@@ -17,6 +17,11 @@ namespace Squill.Presentation.Explorer;
 /// <param name="Table">The table or view.</param>
 public sealed record TableRequest(ConnectionSession Session, TableInfo Table);
 
+/// <summary>Several tables picked in the explorer, all of one session.</summary>
+/// <param name="Session">The session of the tables' connection.</param>
+/// <param name="Tables">The tables, in tree order.</param>
+public sealed record TablesRequest(ConnectionSession Session, IReadOnlyList<TableInfo> Tables);
+
 /// <summary>A script the explorer asks to open in a new query tab, with the session it belongs to.</summary>
 /// <param name="Session">The session of the node's connection.</param>
 /// <param name="Text">The SQL text; it is only opened, never run.</param>
@@ -62,6 +67,9 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     /// <summary>Raised when the user asks to drop a table.</summary>
     public event EventHandler<TableRequest>? DropTableRequested;
 
+    /// <summary>Raised when the user asks to drop the selected tables.</summary>
+    public event EventHandler<TablesRequest>? DropTablesRequested;
+
     /// <summary>Raised when the user opens the definition of an object or scripts a table as <c>CREATE TABLE</c>.</summary>
     public event EventHandler<ScriptRequest>? ScriptRequested;
 
@@ -81,6 +89,60 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     /// <summary>Gets or sets the selected node; selecting a node of a connection also selects that connection in the list.</summary>
     [ObservableProperty]
     public partial ExplorerNode? SelectedNode { get; set; }
+
+    /// <summary>Gets the nodes the head reports as selected, without the ones no longer in the tree; <see cref="SelectedNode"/> is unaffected.</summary>
+    public IReadOnlyList<ExplorerNode> SelectedNodes { get; private set; } = [];
+
+    /// <summary>Gets the selected table nodes, in tree order.</summary>
+    public IReadOnlyList<ExplorerNode> SelectedTables { get; private set; } = [];
+
+    /// <summary>Gets how many tables are selected.</summary>
+    public int SelectedTableCount => SelectedTables.Count;
+
+    /// <summary>Replaces the selection; the heads call it on every selection change of their tree control.</summary>
+    /// <param name="nodes">The selected nodes; the ones no longer in the tree are ignored.</param>
+    public void SetSelectedNodes(IEnumerable<ExplorerNode> nodes)
+    {
+        ArgumentNullException.ThrowIfNull(nodes);
+        var given = nodes.ToList();
+        var picked = given.ToHashSet();
+        var inTree = Walk(Roots).Where(picked.Contains).ToList();
+        SelectedNodes = [.. given.Where(inTree.Contains)];
+        SelectedTables = [.. inTree.Where(n => n is { Kind: ExplorerNodeKind.Table, Table: not null })];
+        OnPropertyChanged(nameof(SelectedNodes));
+        OnPropertyChanged(nameof(SelectedTables));
+        OnPropertyChanged(nameof(SelectedTableCount));
+        DropSelectedTablesCommand.NotifyCanExecuteChanged();
+    }
+
+    private static IEnumerable<ExplorerNode> Walk(IEnumerable<ExplorerNode> nodes) =>
+        nodes.SelectMany(n => Walk(n.Children).Prepend(n));
+
+    private bool CanDropSelectedTables() =>
+        SelectedTables.Count >= 1 && SelectedTables.Count == SelectedNodes.Count
+        && SelectedTables[0].Session is { } first && SelectedTables.All(n => n.Session == first);
+
+    [RelayCommand(CanExecute = nameof(CanDropSelectedTables))]
+    private void DropSelectedTables()
+    {
+        if (SelectedTables[0].Session is { } session)
+            DropTablesRequested?.Invoke(this, new TablesRequest(session, [.. SelectedTables.Select(n => n.Table!)]));
+    }
+
+    /// <summary>Gets the text of the drop entry of the context menu of <paramref name="node"/>.</summary>
+    /// <param name="node">The node the menu opened on.</param>
+    /// <returns>The singular text, or the plural one with the count when the node is part of a selection of several tables.</returns>
+    public string DropMenuText(ExplorerNode? node) =>
+        InTableSelection(node) ? UiText.FormatPlural("explorer.dropTables", SelectedTables.Count) : UiText.Get("explorer.dropTable");
+
+    /// <summary>Tells whether the drop entry of the context menu of <paramref name="node"/> can be used.</summary>
+    /// <param name="node">The node the menu opened on.</param>
+    /// <returns><see langword="false"/> when the selection that contains the node mixes kinds or sessions.</returns>
+    public bool CanDropMenu(ExplorerNode? node) =>
+        node is { Kind: ExplorerNodeKind.Table, Table: not null }
+        && (!SelectedNodes.Contains(node) || SelectedNodes.Count == 1 || CanDropSelectedTables());
+
+    private bool InTableSelection(ExplorerNode? node) => node is not null && SelectedTables.Count > 1 && SelectedTables.Contains(node);
 
     partial void OnFilterTextChanged(string value) => ApplyFilter();
 
@@ -224,7 +286,12 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     [RelayCommand]
     private void Drop(ExplorerNode? node)
     {
-        if (node is { Kind: ExplorerNodeKind.Table, Table: { } table, Session: { } session })
+        if (InTableSelection(node))
+        {
+            if (CanDropSelectedTables())
+                DropSelectedTables();
+        }
+        else if (node is { Kind: ExplorerNodeKind.Table, Table: { } table, Session: { } session })
             DropTableRequested?.Invoke(this, new TableRequest(session, table));
     }
 

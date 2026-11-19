@@ -71,6 +71,30 @@ public sealed class WorkspaceDropTablesTests : IDisposable
     }
 
     [Fact]
+    public async Task The_explorer_request_to_drop_the_selected_tables_runs_the_drop_flow()
+    {
+        var (workspace, provider) = await StartAsync(DatabaseDialect.PostgreSql, ConnectionEnvironment.None, T("a"), T("b"));
+        var nodes = new List<Squill.Presentation.Explorer.ExplorerNode>();
+        void Collect(IEnumerable<Squill.Presentation.Explorer.ExplorerNode> level)
+        {
+            foreach (var n in level)
+            {
+                nodes.Add(n);
+                Collect(n.Children);
+            }
+        }
+        Collect(workspace.Explorer.Roots);
+        workspace.Explorer.SetSelectedNodes(nodes.Where(n => n.Kind == Squill.Presentation.Explorer.ExplorerNodeKind.Table));
+
+        workspace.Explorer.DropSelectedTablesCommand.Execute(null);
+        await Task.Delay(200, TestContext.Current.CancellationToken);
+
+        Assert.Equal("Drop tables", Assert.Single(_dialogs.Confirms).Title);
+        Assert.Equal(2, provider.Executed.Count(s => s.StartsWith("DROP", StringComparison.OrdinalIgnoreCase)));
+        workspace.Dispose();
+    }
+
+    [Fact]
     public async Task Production_requires_typing_the_database_name()
     {
         var (workspace, _) = await StartAsync(DatabaseDialect.PostgreSql, ConnectionEnvironment.Production, T("a"), T("b"));
