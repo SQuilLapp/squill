@@ -8,6 +8,12 @@
 
 _Nothing yet._
 
+## [0.4.1] - 2026-11-19
+
+### Added
+
+- Settings > Updates: a new choice, At start and every hour, checks for a new version at start (without delaying it) and then every hour while SQuilL stays open. The daily and weekly choices now also check while the app stays open.
+
 ## [0.4.0] - 2026-11-18
 
 ### Added
