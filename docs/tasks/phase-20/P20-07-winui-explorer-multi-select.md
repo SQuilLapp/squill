@@ -18,7 +18,7 @@ The WinUI explorer tree (`src/Squill.App.WinUI/Views/SidebarView.xaml`, line 40:
 
 ## Tasks
 - [ ] Spike, decision in the Done notes (continue or stop).
-- [ ] Tests first in `tests/Squill.App.WinUI.Tests/ExplorerMultiSelectTests.cs` in the style of `ExplorerAndTabsTests.Explorer_tree_rows_are_24_high` (text checks of `Xaml/SidebarView.xaml`: `SelectionMode="Multiple"`, a `KeyDown` handler) plus a test of any pure helper split out of the handler (selection to node list); see them fail, then implement.
+- [ ] Tests first in `tests/Squill.App.WinUI.Tests/ExplorerMultiSelectTests.cs` in the style of `ExplorerAndTabsTests.Explorer_tree_rows_are_28_high` (text checks of `Xaml/SidebarView.xaml`: `SelectionMode="Multiple"`, a `KeyDown` handler) plus a test of any pure helper split out of the handler (selection to node list); see them fail, then implement.
 - [ ] Publish the AOT head, drive: select two tables with Ctrl+click, right click inside the selection (menu says `Supprimer 2 tables`), `Delete` key, cancel at the confirmation; read a capture of the selected tree and of the menu (light and dark).
 
 ## Acceptance criteria

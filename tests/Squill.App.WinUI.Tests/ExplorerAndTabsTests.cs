@@ -18,11 +18,12 @@ public class ExplorerAndTabsTests
         Assert.Equal(suffix, TabInfo.StyleSuffix(environment));
 
     [Fact]
-    public void Explorer_tree_rows_are_24_high()
+    public void Explorer_tree_rows_are_28_high()
     {
+        // 28, not the 24 of the mockup: PR 43 raised it because 24 clipped the row text.
         var text = File.ReadAllText(Path.Combine("Xaml", "SidebarView.xaml"));
-        Assert.Contains("<Setter Property=\"Height\" Value=\"24\" />", text);
-        Assert.DoesNotContain("<Setter Property=\"Height\" Value=\"28\" />", text);
+        Assert.Contains("<Setter Property=\"Height\" Value=\"28\" />", text);
+        Assert.DoesNotContain("<Setter Property=\"Height\" Value=\"24\" />", text);
     }
 
     [Theory]
