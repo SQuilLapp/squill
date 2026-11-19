@@ -394,6 +394,27 @@ Depends on: <card ids, ranges allowed>
 | [P19-18](phase-19/P19-18-winui-sessions-privileges-gaps.md) | WinUI: close the sessions and privileges gaps found against M11 and M12 | P19-10 | done |
 | [P19-19](phase-19/P19-19-avalonia-home-mockup-gaps.md) | Avalonia: close the home page gaps found against M01 | P19-11 | done |
 | [P19-20](phase-19/P19-20-winui-light-theme-and-production-dialog.md) | WinUI: light theme with a dark system theme, production dialog frame | P19-12 | partial |
+| [P20-01](phase-20/P20-01-window-driver-tool.md) | A reusable tool to drive the app windows (UI Automation and keys) | none | todo |
+| [P20-02](phase-20/P20-02-winui-theme-brush-lookups.md) | WinUI: remaining brush lookups follow the chosen theme, with a guard test | none | todo |
+| [P20-03](phase-20/P20-03-postgres-verification-scenario.md) | A PostgreSQL container with the data of the verification passes | none | todo |
+| [P20-04](phase-20/P20-04-sql-table-drop-plan.md) | Sql: order of a multi-table drop and the tables that block it | none | todo |
+| [P20-05](phase-20/P20-05-presentation-drop-tables-flow.md) | Presentation: one drop flow for one or many tables (runner, transaction, production confirmation) | P20-04 | todo |
+| [P20-06](phase-20/P20-06-presentation-explorer-multi-selection.md) | Presentation: explorer selection of several tables and the drop command | P20-05 | todo |
+| [P20-07](phase-20/P20-07-winui-explorer-multi-select.md) | WinUI: select several tables in the explorer and drop them | P20-06 | todo |
+| [P20-08](phase-20/P20-08-avalonia-explorer-multi-select.md) | Avalonia: select several tables in the explorer and drop them | P20-06, P20-07 | todo |
+| [P20-09](phase-20/P20-09-multi-drop-engine-proofs.md) | Multi-table drop proved on SQLite, PostgreSQL, MySQL and SQL Server | P20-04 | todo |
+| [P20-10](phase-20/P20-10-winui-compare-import-home-drive.md) | WinUI: drive schema compare (M09), import wizard (M10), home persistence | P20-01 | todo |
+| [P20-11](phase-20/P20-11-winui-grid-filter-palette-drive.md) | WinUI: finish the grid filter and palette checklists (dark, English, keys) | P20-01, P20-02 | todo |
+| [P20-12](phase-20/P20-12-winui-completion-popup-drive.md) | WinUI: drive the completion popup, investigate the stuck single-entry popup | P20-01 | todo |
+| [P20-13](phase-20/P20-13-winui-designer-er-states-drive.md) | WinUI: drive the designer (M07), the ER diagram (M08) and control states | P20-01 | todo |
+| [P20-14](phase-20/P20-14-winui-postgres-screens-drive.md) | WinUI: see the PostgreSQL fixes, drive privileges, sessions, plan rows | P20-01, P20-03 | todo |
+| [P20-15](phase-20/P20-15-winui-light-theme-production-dialog-drive.md) | WinUI: light theme over a dark system, production dialog, transaction leftovers | P20-01, P20-02 | todo |
+| [P20-16](phase-20/P20-16-avalonia-compare-import-drive.md) | Avalonia: drive schema compare (M09) and the import wizard (M10) | P20-10 | todo |
+| [P20-17](phase-20/P20-17-avalonia-postgres-screens-drive.md) | Avalonia: drive privileges (M11), sessions (M12), PostgreSQL plan rows | P20-14 | todo |
+| [P20-18](phase-20/P20-18-avalonia-grid-filter-palette-completion-drive.md) | Avalonia: finish grid filter, palette and completion passes | P20-11, P20-12 | todo |
+| [P20-19](phase-20/P20-19-avalonia-designer-er-states-drive.md) | Avalonia: drive the designer (M07), the ER diagram (M08) and pointer states | P20-13 | todo |
+| [P20-20](phase-20/P20-20-avalonia-transactions-home-drive.md) | Avalonia: transactions, production dialog, plan tab and home page leftovers | P20-15 | todo |
+| [P20-21](phase-20/P20-21-docs-adr-and-multi-delete-checklist.md) | Docs, ADR 0017, changelog and the multi-delete checklist for the owner | P20-01 ... P20-20 | todo |
 
 ### Phase 9 - Visual conformance
 
@@ -487,3 +508,26 @@ Goal: fix what phase 18 and earlier phases recorded as broken or silently limite
 - Branch: implement phase 19 on the branch `phase-19-debug-polish`; do not create another branch.
 - Order: P19-01 ... P19-08 are independent (P19-04 before P19-05; P19-07 and P19-08 before every verification card). Then WinUI before Avalonia: P19-09, P19-10, P19-12, P19-13, then P19-11 (after P19-09 and P19-10), P19-14 (after P19-12), P19-15 (after P19-13). Last P19-16 (docs).
 - Riskiest cards: P19-01 (every completion insertion goes through the quoting method), P19-02 (the inventory may find no production producer: stop rule), P19-07 (`PrintWindow` may return black for WinUI; the covered-window check is the supported fix), P19-13 (largest matrix: record `not driven (time)` rather than stretch a claim). Docker-gated drives need Podman ([verification-recipe.md](phase-11/verification-recipe.md)). Bugs found by the verification cards too big for the card get `P19-17` onwards (added to this index).
+
+### Phase 20 - Verification left open by phase 19, and multi-table delete
+
+Goal: look at what phase 19 could not (the windows were never clicked: M09, M10, M09 ... M12 on Avalonia, the dark / English grid filter and palette, the completion popup, the designer, the ER diagram, pointer states, the light theme over a dark system, the PostgreSQL screens), fix what the repository itself records as unproven (the P19-18 and P19-20 fixes never seen, P19-20 without a test, a completion popup left open), and build one small feature from `docs/ideas.md`: select several tables in the explorer and drop them in one action. Decisions (final, details in [verification-recipe.md](phase-20/verification-recipe.md) and in ADR 0017 written by P20-21): one reusable window driver (`tools/visual/Drive-Window.ps1`) instead of throw-away scripts; verification cards never tick the owner's boxes; the multi-table drop is tables only, of one connection, never `CASCADE`, ordered by foreign keys, refused when a table outside the selection references one, atomic where the engine allows it, and the single drop moves to the same flow (today it skips the production confirmation and the session transaction). The owner's checklists in `docs/verification/` stay the owner's; `docs/verification/multi-delete.md` is prepared by P20-21. Not built: dropping views, `CASCADE`, selection across connections, undo.
+
+- Status: P20-01 ... P20-21 todo.
+- Branch: implement phase 20 on the branch `phase-20-verification-and-multi-delete`; do not create another branch.
+- Order: P20-01 first (every drive card uses it); P20-02 and P20-03 are independent. Feature: P20-04, P20-05, P20-06, then WinUI P20-07 before Avalonia P20-08; P20-09 needs only P20-04. Drives, WinUI before Avalonia: P20-10, P20-11, P20-12, P20-13, P20-14 (needs P20-03), P20-15 (needs P20-02), then P20-16 (after P20-10), P20-17 (after P20-14), P20-18 (after P20-11 and P20-12), P20-19 (after P20-13), P20-20 (after P20-15). Last P20-21 (docs).
+- Riskiest cards: P20-05 (every write must go through the confirmation and the session transaction; MySQL and Oracle are not atomic), P20-07 (WinUI `TreeView` multi-select with a custom item template: spike and stop rule, fallback is a picker dialog), P20-01 (keys must never reach another program: foreground check), P20-11 and P20-18 (largest matrices: record `not driven (time)` rather than stretch a claim). Docker-gated cards need Podman ([verification-recipe.md](phase-11/verification-recipe.md)). Bugs found by the verification cards too big for the card get `P20-22` onwards (added to this index).
+- Known gap not fixed here: `DdlGenerators.UsesTransactionalDdl` treats Oracle as transactional DDL (only MySQL is not); P20-05 reports what the Oracle bridge does.
+
+#### Cross-engine schema compare: what it would need (not planned; listed so the owner can scope a later phase)
+
+Today compare is structure only and between two databases of the same dialect ([ADR 0015](../adr/0015-remaining-mockups.md): `SchemaComparer`, `MigrationScriptBuilder`). Comparing SQLite with PostgreSQL, for example, would need at least:
+
+1. A neutral type model and a mapping between the dialects' column types (`docs/column-types.md`, `DataTypeCatalog`): length, precision, signedness, auto-increment, boolean, date-time with and without zone, JSON, UUID, enums; lossy mappings flagged with a warning and a choice when a type has several targets.
+2. Identifier rules per dialect: case folding, quoting, length limits, reserved words (P19-01 covers quoting), schemas versus databases (MySQL puts the database name in `TableInfo.Schema`, SQLite has no schema), and what "the same table" means across engines.
+3. Normalization of defaults, check constraints, generated columns, index kinds and options, collations, unique constraints versus unique indexes, so equal things compare equal.
+4. A comparer over the neutral model with an "equivalent under mapping" verdict instead of strict equality, and an explanation of each difference.
+5. A migration script builder per target dialect (today the builder and the DDL generators emit from a same-dialect `TableDesign`): features the target lacks (no `ALTER COLUMN` on SQLite means a table rebuild, no enums on SQL Server, transactional DDL differences) and an order that respects foreign keys.
+6. The UI: a dialect pair picker, a mapping review step (accept or override each type mapping), with the production confirmation and the transaction rules unchanged.
+7. Tests: a round trip per ordered dialect pair on real engines (Docker-gated for three of them) with a golden set of tricky tables; about twelve pairs, so a first phase should take one pair (SQLite to PostgreSQL is the likeliest) and only tables, columns, primary and foreign keys, and indexes.
+8. Decisions to take first: one-way (source to target script) or two-way, whether lossy type changes need a blocking confirmation, and which pair comes first.
