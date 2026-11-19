@@ -1,6 +1,6 @@
 # P20-04 - Sql: the order of a multi-table drop and the tables that block it
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -21,8 +21,8 @@ Dropping several tables needs two answers computed from the schema the app alrea
 - Views, routines, triggers that depend on a table (the engine reports them; P20-05 shows the engine message), executing anything.
 
 ## Tasks
-- [ ] Tests first, `tests/Squill.Sql.Tests/TableDropPlanTests.cs`, names `Method_Scenario_Expected`: no foreign keys keeps the selection order; `commandes` -> `clients` selected as `[clients, commandes]` gives `[commandes, clients]`; a chain of three; a diamond is stable; a cycle sets `HasCycle` and keeps selection order; a foreign key to a table outside the selection gives one blocker; a self reference is ignored; null `ReferencedSchema` resolves to the owner's schema (MySQL shape); case-insensitive match; a view in the selection throws; duplicates removed. Run them: they fail (type missing).
-- [ ] Implement until green.
+- [x] Tests first, `tests/Squill.Sql.Tests/TableDropPlanTests.cs`, names `Method_Scenario_Expected`: no foreign keys keeps the selection order; `commandes` -> `clients` selected as `[clients, commandes]` gives `[commandes, clients]`; a chain of three; a diamond is stable; a cycle sets `HasCycle` and keeps selection order; a foreign key to a table outside the selection gives one blocker; a self reference is ignored; null `ReferencedSchema` resolves to the owner's schema (MySQL shape); case-insensitive match; a view in the selection throws; duplicates removed. Run them: they fail (type missing).
+- [x] Implement until green.
 
 ## Acceptance criteria
 - `rtk dotnet build Squill.slnx -c Release -warnaserror` 0 warnings, `rtk bypass dotnet test --solution Squill.slnx -c Release` green, XML doc grep check.
