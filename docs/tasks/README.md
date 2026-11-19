@@ -394,7 +394,7 @@ Depends on: <card ids, ranges allowed>
 | [P19-18](phase-19/P19-18-winui-sessions-privileges-gaps.md) | WinUI: close the sessions and privileges gaps found against M11 and M12 | P19-10 | done |
 | [P19-19](phase-19/P19-19-avalonia-home-mockup-gaps.md) | Avalonia: close the home page gaps found against M01 | P19-11 | done |
 | [P19-20](phase-19/P19-20-winui-light-theme-and-production-dialog.md) | WinUI: light theme with a dark system theme, production dialog frame | P19-12 | partial |
-| [P20-01](phase-20/P20-01-window-driver-tool.md) | A reusable tool to drive the app windows (UI Automation and keys) | none | todo |
+| [P20-01](phase-20/P20-01-window-driver-tool.md) | A reusable tool to drive the app windows (UI Automation and keys) | none | done |
 | [P20-02](phase-20/P20-02-winui-theme-brush-lookups.md) | WinUI: remaining brush lookups follow the chosen theme, with a guard test | none | todo |
 | [P20-03](phase-20/P20-03-postgres-verification-scenario.md) | A PostgreSQL container with the data of the verification passes | none | todo |
 | [P20-04](phase-20/P20-04-sql-table-drop-plan.md) | Sql: order of a multi-table drop and the tables that block it | none | todo |

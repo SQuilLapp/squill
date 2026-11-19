@@ -1,6 +1,6 @@
 # P20-01 - A reusable tool to drive the app windows (UI Automation and keys)
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -24,9 +24,9 @@ Every phase 19 verification card that stayed partial says the same thing: the na
 - Linux / macOS.
 
 ## Tasks
-- [ ] Script with the actions above, `SelfTest`, README section "Drive-Window" in `tools/visual/README.md` (usage, exit codes, the foreground rule, how to find names with `Dump`).
-- [ ] `Dump` both published heads (`Squill.App.WinUI`, `Squill.App.Avalonia`, SQLite `-Scenario Full`) and write the list of names a later card needs into the README ("Names to click"): connection list, `Exécuter`, `Expliquer`, tabs, palette, explorer.
-- [ ] Prove it on both heads: open `pg-prod-eu` (double click in the explorer), run `select * from clients` (`Key Ctrl+Enter`), open the palette (`Key Ctrl+K`, `Wait` for its input), `Key Esc`; capture with `Capture-Window.ps1` and read the PNG.
+- [x] Script with the actions above, `SelfTest`, README section "Drive-Window" in `tools/visual/README.md` (usage, exit codes, the foreground rule, how to find names with `Dump`).
+- [x] `Dump` both published heads (`Squill.App.WinUI`, `Squill.App.Avalonia`, SQLite `-Scenario Full`) and write the list of names a later card needs into the README ("Names to click"): connection list, `Exécuter`, `Expliquer`, tabs, palette, explorer.
+- [x] Prove it on both heads: open `pg-prod-eu` (double click in the explorer), run `select * from clients` (`Key Ctrl+Enter`), open the palette (`Key Ctrl+K`, `Wait` for its input), `Key Esc`; capture with `Capture-Window.ps1` and read the PNG.
 
 ## Acceptance criteria
 - `SelfTest` prints `selftest ok`; both heads were driven as above (Done notes say which actions used `Invoke` and which needed `Mouse`); if a head cannot be driven for the palette, say exactly why (this is what P19-13 hit) and keep the exit code 2 behavior.
@@ -39,3 +39,8 @@ Every phase 19 verification card that stayed partial says the same thing: the na
 
 ## Suggested commit message
 Add a UI Automation and keyboard driver for the visual verification passes
+
+## Done notes
+- `tools/visual/Drive-Window.ps1` with Dump, Click, Key, Type, Wait, Hover, Focus-Dialog, SelfTest; README section "Drive-Window" with exit codes, the foreground rule and "Names to click". `SelfTest` prints `selftest ok`. It uses its own WinForms window: Notepad was tried first and rejected because Windows restores the user's earlier tabs into it and the typed text went into one of them (that Notepad process was killed without saving; an unsaved edit may be offered back in Notepad's restored tabs).
+- Both heads driven (SQLite Full, French, 150 % display): open `pg-prod-eu` (Invoke), run `select * from clients` with `Ctrl+Enter` (12 rows), `Ctrl+K` (palette input found), `Esc`; both captures were read. Only the editor focus click needed `Mouse`. The palette is driveable on both heads (no P19-13 problem seen here).
+- Not done: no `AutomationProperties.Name` added: about 14 controls per head are unnamed (more than the 12 allowed), listed in the README. The covered-window refusal (exit 2) is implemented but was not exercised by covering a window. Heads unchanged, so no slnx / AOT run was needed.
