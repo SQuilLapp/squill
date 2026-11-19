@@ -9,6 +9,7 @@
 ### Fixed
 
 - Home page: an Oracle connection card now has its engine badge and name, and a click on any card says "Connecting..." until the connection is open instead of looking unresponsive.
+- WinUI explorer: names are no longer cut at the bottom, so leading underscores (`__EFMigrationsHistory`) and the tails of g, y and p show again.
 
 ## [0.4.1] - 2026-11-19
 
