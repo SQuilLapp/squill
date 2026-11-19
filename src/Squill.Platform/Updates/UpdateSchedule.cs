@@ -5,6 +5,7 @@ namespace Squill.Platform.Updates;
 /// <summary>Decides whether an automatic update check is due.</summary>
 public static class UpdateSchedule
 {
+    private static readonly TimeSpan HourlyInterval = TimeSpan.FromMinutes(55);
     private static readonly TimeSpan DailyInterval = TimeSpan.FromHours(20);
     private static readonly TimeSpan WeeklyInterval = TimeSpan.FromDays(6.5);
 
@@ -19,6 +20,7 @@ public static class UpdateSchedule
     public static bool IsDue(UpdateCheckFrequency frequency, DateTimeOffset? lastCheckUtc, DateTimeOffset nowUtc) => frequency switch
     {
         UpdateCheckFrequency.Startup => true,
+        UpdateCheckFrequency.Hourly => Elapsed(lastCheckUtc, nowUtc, HourlyInterval),
         UpdateCheckFrequency.Daily => Elapsed(lastCheckUtc, nowUtc, DailyInterval),
         UpdateCheckFrequency.Weekly => Elapsed(lastCheckUtc, nowUtc, WeeklyInterval),
         _ => false,

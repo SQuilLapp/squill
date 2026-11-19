@@ -73,6 +73,7 @@ public sealed partial class SettingsViewModel(ISettingsStore store, string? curr
     [
         new(UpdateCheckFrequency.Never, UiText.Get("settings.update.frequency.never")),
         new(UpdateCheckFrequency.Startup, UiText.Get("settings.update.frequency.startup")),
+        new(UpdateCheckFrequency.Hourly, UiText.Get("settings.update.frequency.hourly")),
         new(UpdateCheckFrequency.Daily, UiText.Get("settings.update.frequency.daily")),
         new(UpdateCheckFrequency.Weekly, UiText.Get("settings.update.frequency.weekly")),
     ];

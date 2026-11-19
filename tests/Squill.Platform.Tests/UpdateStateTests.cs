@@ -61,6 +61,9 @@ public sealed class UpdateStateTests : IDisposable
     [InlineData(UpdateCheckFrequency.Never, -1000, false)]
     [InlineData(UpdateCheckFrequency.Startup, null, true)]
     [InlineData(UpdateCheckFrequency.Startup, -1, true)]
+    [InlineData(UpdateCheckFrequency.Hourly, null, true)]
+    [InlineData(UpdateCheckFrequency.Hourly, -54, false)]
+    [InlineData(UpdateCheckFrequency.Hourly, -55, true)]
     [InlineData(UpdateCheckFrequency.Daily, null, true)]
     [InlineData(UpdateCheckFrequency.Daily, -1199, false)] // 19h59
     [InlineData(UpdateCheckFrequency.Daily, -1200, true)] // 20h

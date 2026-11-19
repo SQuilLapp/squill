@@ -14,6 +14,7 @@ public sealed partial class UpdateViewModel : ViewModelBase, IDisposable
     private readonly IUiDispatcher _dispatcher;
     private readonly ISettingsStore _settings;
     private readonly CancellationTokenSource _cts = new();
+    private Task? _recheck;
     private bool _disposed;
     private string? _laterVersion;
     private IReadOnlyList<NotesBlock> _notes = [];
@@ -148,6 +149,7 @@ public sealed partial class UpdateViewModel : ViewModelBase, IDisposable
     /// <returns>A task that completes when the startup check is over or was not needed.</returns>
     public async Task StartAsync()
     {
+        _recheck ??= RecheckAsync();
         try
         {
             var settings = await _settings.LoadAsync(_cts.Token);
@@ -164,6 +166,37 @@ public sealed partial class UpdateViewModel : ViewModelBase, IDisposable
         catch (OperationCanceledException)
         {
             // Disposed while starting.
+        }
+    }
+
+    /// <summary>Gets how long the application waits between two looks at whether a scheduled check is due while it stays open.</summary>
+    internal TimeSpan RecheckInterval { get; init; } = TimeSpan.FromHours(1);
+
+    // Started once by StartAsync and never awaited by it, so the first paint and the startup check do not wait for it.
+    private async Task RecheckAsync()
+    {
+        using var timer = new PeriodicTimer(RecheckInterval);
+        try
+        {
+            while (await timer.WaitForNextTickAsync(_cts.Token))
+            {
+                try
+                {
+                    var frequency = (await _settings.LoadAsync(_cts.Token)).UpdateFrequency;
+                    if (frequency is UpdateCheckFrequency.Hourly or UpdateCheckFrequency.Daily or UpdateCheckFrequency.Weekly)
+                    {
+                        await _service.CheckIfDueAsync(_cts.Token);
+                    }
+                }
+                catch (Exception) when (!_cts.IsCancellationRequested)
+                {
+                    // A broken settings file or feed must not stop the later ticks.
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Disposed.
         }
     }
 

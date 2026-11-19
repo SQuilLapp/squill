@@ -17,4 +17,7 @@ public enum UpdateCheckFrequency
 
     /// <summary>Check at most once a week.</summary>
     Weekly,
+
+    /// <summary>Check at every start, then at most once an hour while the application stays open.</summary>
+    Hourly,
 }

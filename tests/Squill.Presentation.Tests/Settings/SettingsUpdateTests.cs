@@ -21,10 +21,10 @@ public sealed class SettingsUpdateTests
         var vm = new SettingsViewModel(_store);
 
         Assert.Equal(
-            [UpdateCheckFrequency.Never, UpdateCheckFrequency.Startup, UpdateCheckFrequency.Daily, UpdateCheckFrequency.Weekly],
+            [UpdateCheckFrequency.Never, UpdateCheckFrequency.Startup, UpdateCheckFrequency.Hourly, UpdateCheckFrequency.Daily, UpdateCheckFrequency.Weekly],
             vm.FrequencyOptions.Select(o => o.Value));
         Assert.Equal(never, vm.FrequencyOptions[0].Label);
-        Assert.Equal(weekly, vm.FrequencyOptions[3].Label);
+        Assert.Equal(weekly, vm.FrequencyOptions[4].Label);
         Assert.Equal([UpdateChannel.Stable, UpdateChannel.Beta], vm.ChannelOptions.Select(o => o.Value));
         Assert.Equal(stable, vm.ChannelOptions[0].Label);
         Assert.Contains("Beta", vm.ChannelOptions[1].Label, StringComparison.Ordinal);

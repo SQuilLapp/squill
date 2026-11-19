@@ -22,7 +22,7 @@ internal sealed class UpdateAskWindow : Window
         panel.Children.Add(new TextBlock { Text = UiText.Get("update.ask.body"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 8) });
         foreach (var (frequency, key) in new[]
         {
-            (UpdateCheckFrequency.Daily, "update.ask.daily"), (UpdateCheckFrequency.Weekly, "update.ask.weekly"),
+            (UpdateCheckFrequency.Hourly, "update.ask.hourly"), (UpdateCheckFrequency.Daily, "update.ask.daily"), (UpdateCheckFrequency.Weekly, "update.ask.weekly"),
             (UpdateCheckFrequency.Startup, "update.ask.startup"), (UpdateCheckFrequency.Never, "update.ask.never"),
         })
         {

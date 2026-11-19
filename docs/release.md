@@ -11,7 +11,7 @@ How users install, update and uninstall SQuilL on Windows, and how a maintainer 
 
 ## Updating
 
-- **Settings > Updates**: *Check for updates* (Never, At every start, Every day, Every week) and *Update channel* (Stable, Beta). The first run asks once; until you answer, nothing is checked and no network call is made.
+- **Settings > Updates**: *Check for updates* (Never, At every start, At start and every hour, Every day, Every week; the hourly, daily and weekly choices also check while the app stays open) and *Update channel* (Stable, Beta). The first run asks once; until you answer, nothing is checked and no network call is made.
 - *Help > About > Check now* is always available and is the only other trigger.
 - When a newer version exists a banner appears: *Details* shows the notes and the download size, *Download* fetches it in the background with a progress bar (only the changes when a delta package exists), then *Restart to update* applies it. Nothing is applied without that click, and a downloaded update that was not applied stays pending. *Skip this version* hides one version; *Later* hides the banner until the next check.
 - Channels: **Stable** follows stable releases. **Beta** follows beta and stable releases, so a beta user also gets the next stable. Switching back to Stable never goes back to an older version: you get the next stable release.
