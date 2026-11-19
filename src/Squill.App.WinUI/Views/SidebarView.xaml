@@ -37,9 +37,9 @@
       </Grid>
       <Grid Grid.Row="1" RowDefinitions="Auto,*">
         <TextBox x:Name="Filter" MinHeight="27" Height="27" Padding="10,3,6,3" Margin="10,0,10,6" TextChanged="OnFilterChanged" />
-        <TreeView x:Name="Tree" Grid.Row="1" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" Padding="4,0" DoubleTapped="OnTreeDoubleTapped" KeyDown="OnTreeKeyDown" SelectionChanged="OnTreeSelectionChanged">
+        <TreeView x:Name="Tree" Grid.Row="1" SelectionMode="Multiple" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" Padding="4,0" DoubleTapped="OnTreeDoubleTapped" KeyDown="OnTreeKeyDown" SelectionChanged="OnTreeSelectionChanged">
           <TreeView.ItemContainerStyle>
-            <Style TargetType="TreeViewItem">
+            <Style TargetType="TreeViewItem" BasedOn="{StaticResource ExplorerTreeViewItemStyle}">
               <Setter Property="MinHeight" Value="24" />
               <Setter Property="Height" Value="28" />
               <Setter Property="Padding" Value="0" />

@@ -1,6 +1,6 @@
 # P20-07 - WinUI: select several tables in the explorer and drop them
 
-Status: todo
+Status: done
 Depends on: P20-06
 
 ## Goal
@@ -17,9 +17,9 @@ The WinUI explorer tree (`src/Squill.App.WinUI/Views/SidebarView.xaml`, line 40:
 - The Avalonia tree (P20-08), changing the view-model.
 
 ## Tasks
-- [ ] Spike, decision in the Done notes (continue or stop).
-- [ ] Tests first in `tests/Squill.App.WinUI.Tests/ExplorerMultiSelectTests.cs` in the style of `ExplorerAndTabsTests.Explorer_tree_rows_are_28_high` (text checks of `Xaml/SidebarView.xaml`: `SelectionMode="Multiple"`, a `KeyDown` handler) plus a test of any pure helper split out of the handler (selection to node list); see them fail, then implement.
-- [ ] Publish the AOT head, drive: select two tables with Ctrl+click, right click inside the selection (menu says `Supprimer 2 tables`), `Delete` key, cancel at the confirmation; read a capture of the selected tree and of the menu (light and dark).
+- [x] Spike, decision in the Done notes (continue or stop).
+- [x] Tests first in `tests/Squill.App.WinUI.Tests/ExplorerMultiSelectTests.cs` in the style of `ExplorerAndTabsTests.Explorer_tree_rows_are_28_high` (text checks of `Xaml/SidebarView.xaml`: `SelectionMode="Multiple"`, a `KeyDown` handler) plus a test of any pure helper split out of the handler (selection to node list); see them fail, then implement.
+- [ ] (not driven by the agent, see Done notes) Publish the AOT head, drive: select two tables with Ctrl+click, right click inside the selection (menu says `Supprimer 2 tables`), `Delete` key, cancel at the confirmation; read a capture of the selected tree and of the menu (light and dark).
 
 ## Acceptance criteria
 - Recipe 2 common acceptance with `Squill.Windows.slnx` and the WinUI AOT publish (`eng/check-aot-warnings.ps1`); the app starts; the capture was read; processes closed.
@@ -30,3 +30,11 @@ The WinUI explorer tree (`src/Squill.App.WinUI/Views/SidebarView.xaml`, line 40:
 
 ## Suggested commit message
 Select and drop several tables in the WinUI explorer
+
+## Done notes
+- Spike: plain `SelectionMode="Multiple"` fails (a checkbox on every row and a 24 px indent, see the stop rule). Continued instead with a copy of the default `TreeViewItem` template (`ExplorerTreeViewItemStyle` in `Styles/Controls.xaml`, from WinAppSDK 2.6.4 `generic.xaml`): no checkbox, same layout as single selection, selection fill kept through `MultiSelectGrid`, outer padding 0 so hover and selection have the same height. Re-copy it when the Windows App SDK is upgraded.
+- WinUI selects a row on press and drops it on release, and also selects the children of a selected parent. The mouse selection is therefore rebuilt in `SidebarView.xaml.cs` from the left button release (`OnTreePointerReleased`: click = that row, Ctrl = toggle, Shift = range from an anchor); `_model` is what the view-model gets (`SetSelectedNodes`). Keyboard selection stays native and is copied (without descendants) on navigation keys only.
+- `Delete` on the tree runs `DropSelectedTablesCommand`; the context menu keeps a right-click inside the selection and uses `DropMenuText` / `CanDropMenu`; Design and Script CREATE TABLE are disabled for several tables.
+- Verified by the owner in the published AOT head (dark theme): no checkbox, click, Ctrl+click and Shift+click selection, `Supprimer 3 tables`, the "tables still referenced" refusal dialog. The agent could not drive Ctrl+click (the driver has no modifier click). Not driven: the `Delete` key, the confirmation dialog (cancel), the light theme, a capture of the menu in light. Left unticked on purpose.
+- Build `Squill.Windows.slnx` 0 warnings; full run 4216 passed, 330 skipped, 0 failed (two earlier full runs failed once each on the Avalonia headless `WindowChromeTests.StatusBar_EnvironmentBlock_ShowsEnvironmentBrush`, unrelated, passes alone); AOT check OK.
+- For P20-08: Avalonia `TreeView` multi-select is native, but check that selecting a parent does not add its children to the selection fed to `SetSelectedNodes`.

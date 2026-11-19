@@ -400,7 +400,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-04](phase-20/P20-04-sql-table-drop-plan.md) | Sql: order of a multi-table drop and the tables that block it | none | done |
 | [P20-05](phase-20/P20-05-presentation-drop-tables-flow.md) | Presentation: one drop flow for one or many tables (runner, transaction, production confirmation) | P20-04 | done |
 | [P20-06](phase-20/P20-06-presentation-explorer-multi-selection.md) | Presentation: explorer selection of several tables and the drop command | P20-05 | done |
-| [P20-07](phase-20/P20-07-winui-explorer-multi-select.md) | WinUI: select several tables in the explorer and drop them | P20-06 | todo |
+| [P20-07](phase-20/P20-07-winui-explorer-multi-select.md) | WinUI: select several tables in the explorer and drop them | P20-06 | done |
 | [P20-08](phase-20/P20-08-avalonia-explorer-multi-select.md) | Avalonia: select several tables in the explorer and drop them | P20-06, P20-07 | todo |
 | [P20-09](phase-20/P20-09-multi-drop-engine-proofs.md) | Multi-table drop proved on SQLite, PostgreSQL, MySQL and SQL Server | P20-04 | todo |
 | [P20-10](phase-20/P20-10-winui-compare-import-home-drive.md) | WinUI: drive schema compare (M09), import wizard (M10), home persistence | P20-01 | todo |
