@@ -799,6 +799,7 @@ internal static class UiTextCatalogEn
         ("home.noConnection", "No active connection"),
         ("home.newConnection", "New connection"),
         ("home.newConnection.subtitle", "PostgreSQL, MySQL, SQL Server, SQLite..."),
+        ("home.connecting", "Connecting..."),
         ("home.tabs.one", "{0} tab"),
         ("home.tabs.other", "{0} tabs"),
         ("home.manageConnections", "Manage connections"),

@@ -6,7 +6,9 @@
 
 ## [Unreleased]
 
-_Nothing yet._
+### Fixed
+
+- Home page: an Oracle connection card now has its engine badge and name, and a click on any card says "Connecting..." until the connection is open instead of looking unresponsive.
 
 ## [0.4.1] - 2026-11-19
 
