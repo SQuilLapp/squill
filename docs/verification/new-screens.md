@@ -31,7 +31,7 @@ Not recorded in this card: the per-screen limits are in the phase 18 cards (`doc
 ## How to prepare
 
 - SQLite: `pwsh tools/visual/New-VisualProfile.ps1 -Dir <dir> -Scenario Full [-Theme Light|Dark]`, `SQUILL_DATA_DIR=<dir>`. It creates six profiles with a recent list (M01), `cmp-source` / `cmp-target` with one table only on each side, one extra column, one index and one view that differ (M09), and `people.csv` (40 rows, 3 that fail conversion) with the empty table of profile `import-target` (M10).
-- PostgreSQL: `rtk pwsh eng/run-docker-tests.ps1 -Engine postgres -Keep` prints host, port, user and password. For M12 open a transaction with an update in one tab and a second update on the same row in another; for M11 use the roles the P18-17 scenario creates. Press Enter in that terminal at the end, then `podman ps -a` must show nothing from this run.
+- PostgreSQL: `rtk pwsh tools/visual/New-PostgresScenario.ps1 -Action Start -Dir <dir>` starts the container with the data of the passes (privilege matrix with 450 tables and 7 columns, roles, plan tables) and adds the profile `pg-visual` (type the printed password); `rtk pwsh tools/visual/New-PostgresSessions.ps1 -Count 450 -Block` adds 450 sessions and a blocking chain for M12 (`-Stop` ends them). Finish with `New-PostgresScenario.ps1 -Action Stop`.
 - Start the WinUI head with `SQUILL_LANGUAGE=fr`, then `en`, then the Avalonia head. Each screen once in the light theme and once in the dark theme. `SQUILL_NO_UPDATE_CHECK=1`.
 
 ## Checklists

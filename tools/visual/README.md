@@ -9,6 +9,8 @@ PowerShell 7 scripts to run SQuilL on French sample data, capture the window at 
 | `scenario.sql` | extra SQL of `-Scenario Full`, one block per database (`-- @db <name>` lines) |
 | `Capture-Window.ps1 -Process <name> -Out <png> [-Width 1440 -Height 900] [-Method Screen\|PrintWindow]` | resizes the client area to Width x Height logical px (DPI aware), captures it; see "Capture-Window" below |
 | `Compare-Mockup.ps1 -Mockup <png> -Capture <png> -Out <png>` | writes mockup \| capture \| absolute difference, each 1440 px wide |
+| `New-PostgresScenario.ps1 -Action Start\|Stop\|Status [-Port 55432] [-Name squill-visual-pg] [-Dir <dir>]` | `Start` runs `postgres:17-alpine` under Podman (starts the machine if needed, `max_connections=600`), loads `postgres-scenario.sql` (schemas `ventes` and `archive`, 450 `bulk_*` tables, roles `app_read`, `app_write`, `report`, `user`, `equipe`, `membre_unique`, mixed grants) and prints host, port, user, password; `-Dir` adds the profile `pg-visual` (Staging, no stored password: type the printed one) to `<dir>/profiles.json`. Re-runnable (recreates the container). `Stop` removes it. Exit 3: Podman missing |
+| `New-PostgresSessions.ps1 [-Count 450] [-Block] [-Stop]` | opens `Count` idle sessions (`application_name = squill-visual`) and with `-Block` a holder and a waiter on `ventes.clients` id 10482 (blocking chain of depth 2) through `podman exec`; `-Stop` terminates them |
 
 ## Run
 

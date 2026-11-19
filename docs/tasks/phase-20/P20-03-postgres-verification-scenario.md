@@ -1,6 +1,6 @@
 # P20-03 - One script that starts PostgreSQL with the data of the PostgreSQL verification passes
 
-Status: todo
+Status: partial
 Depends on: none
 
 ## Goal
@@ -16,8 +16,8 @@ P19-10 had to start Podman and run a container by hand (`eng/run-docker-tests.ps
 - MySQL / SQL Server scenarios (the Docker-gated suites cover them), changing the app.
 
 ## Tasks
-- [ ] Scripts and SQL, README and "How to prepare" lines.
-- [ ] Run `Start` twice (second run recreates), `psql` through `podman exec` counts: 450 `bulk_*` tables, the 4 roles, the view; `New-PostgresSessions.ps1 -Count 450 -Block` then `select count(*) from pg_stat_activity` >= 450 and a `pg_locks` wait exists; `-Stop`, `Stop`, `podman ps -a` empty.
+- [x] Scripts and SQL, README and "How to prepare" lines.
+- [x] Run `Start` twice (second run recreates), `psql` through `podman exec` counts: 450 `bulk_*` tables, the 4 roles, the view; `New-PostgresSessions.ps1 -Count 450 -Block` then `select count(*) from pg_stat_activity` >= 450 and a `pg_locks` wait exists; `-Stop`, `Stop`, `podman ps -a` empty.
 - [ ] Connect the Avalonia or WinUI head to it once (profile `pg-visual`): the explorer lists `ventes` and `archive`.
 
 ## Acceptance criteria
@@ -29,3 +29,10 @@ P19-10 had to start Podman and run a container by hand (`eng/run-docker-tests.ps
 
 ## Suggested commit message
 Prepare a PostgreSQL container with the data of the verification passes
+
+## Done notes
+
+- Commands: start `pwsh tools/visual/New-PostgresScenario.ps1 -Action Start [-Dir <dir>]`; fill `pwsh tools/visual/New-PostgresSessions.ps1 -Count 450 -Block`; stop `... New-PostgresSessions.ps1 -Stop` then `... New-PostgresScenario.ps1 -Action Stop`.
+- Verified: `Start` twice (second recreated the container; the Podman machine was stopped and the script started it); `psql` counted 450 `bulk_*` tables, the 6 roles (`app_read`, `app_write`, `report`, `user`, `equipe`, `membre_unique`) and the view; with `-Count 450 -Block`, `pg_stat_activity` held 458 rows, 452 named `squill-visual*`, the waiter on `Lock` and one ungranted lock in `pg_locks`; `-Stop` left 0 such sessions; `Stop` removed the container. The shared Podman machine also hosts other containers (grafana, npgsql ...), so `podman ps -a` is not empty, only this container is gone.
+- Deviations: `New-PostgresSessions.ps1` has no `-Port` (it talks to the container's own `psql`, which does not need it). The image is `postgres:17-alpine`, as in `eng/run-docker-tests.ps1`. The profile does not store a password.
+- Third task not done: the Avalonia head (`SQUILL_DATA_DIR` with `pg-visual`) reached the container (the error was `No password has been provided`), but the explorer was not seen because the profile has no stored password and the edit dialog was not driven: `not driven (password dialog)`; box left unticked. P20-14 / P20-17 must enter the password in the connection edit dialog.
