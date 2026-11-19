@@ -24,7 +24,7 @@ public sealed partial class HistoryView : UserControl
     /// <param name="succeeded">Whether the statement succeeded.</param>
     /// <returns>The success or danger brush.</returns>
     public static Microsoft.UI.Xaml.Media.Brush StatusBrush(bool succeeded) =>
-        (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources[succeeded ? "SquillSuccessBrush" : "SquillDangerBrush"];
+        Tokens.Brush(succeeded ? "SquillSuccessBrush" : "SquillDangerBrush");
 
     /// <summary>Connects the view to the history it shows.</summary>
     /// <param name="history">The history view-model.</param>

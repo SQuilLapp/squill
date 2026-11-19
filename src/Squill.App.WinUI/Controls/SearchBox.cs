@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Squill.App.WinUI.Views;
 
 namespace Squill.App.WinUI.Controls;
 
@@ -10,6 +11,7 @@ public sealed partial class SearchBox : UserControl
     private readonly TextBox _text;
     private readonly ContentControl _chip;
     private readonly Border _frame;
+    private readonly FontIcon _glyph;
 
     /// <summary>Creates the search box.</summary>
     public SearchBox()
@@ -22,7 +24,7 @@ public sealed partial class SearchBox : UserControl
         _text.Resources["TextControlBorderThemeThicknessFocused"] = new Thickness(0);
         _chip = new ContentControl { Style = (Style)resources["KeyboardChipStyle"], Visibility = Visibility.Collapsed, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 0, 0) };
         var glyph = new FontIcon { Glyph = "", FontSize = 12, Margin = new Thickness(0, 0, 8, 0) };
-        glyph.Foreground = (Brush)resources["SquillFg3Brush"];
+        _glyph = glyph;
         var grid = new Grid { ColumnDefinitions = { new() { Width = GridLength.Auto }, new() { Width = new GridLength(1, GridUnitType.Star) }, new() { Width = GridLength.Auto } } };
         grid.Children.Add(glyph);
         Grid.SetColumn(_text, 1);
@@ -67,9 +69,9 @@ public sealed partial class SearchBox : UserControl
 
     private void SyncBrushes(bool focused)
     {
-        var resources = Application.Current.Resources;
-        _frame.Background = (Brush)resources["SquillBgRaisedBrush"];
-        _frame.BorderBrush = (Brush)resources[focused ? "SquillFocusBrush" : "SquillBorderBrush"];
+        _glyph.Foreground = Tokens.Brush(this, "SquillFg3Brush");
+        _frame.Background = Tokens.Brush(this, "SquillBgRaisedBrush");
+        _frame.BorderBrush = Tokens.Brush(this, focused ? "SquillFocusBrush" : "SquillBorderBrush");
         _frame.BorderThickness = new Thickness(focused ? 2 : 1);
     }
 }

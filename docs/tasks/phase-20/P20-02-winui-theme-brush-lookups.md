@@ -1,6 +1,6 @@
 # P20-02 - WinUI: the remaining brush lookups follow the chosen theme, with a guard test
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -22,8 +22,8 @@ The search box (grid filter, palette), the palette icons and the cell editor fra
 - Capturing the result (P20-15).
 
 ## Tasks
-- [ ] Write `ThemeLookupScanTests`; run it; it fails on the sites above (paste the failing lines in the Done notes).
-- [ ] Fix the sites; the scan passes.
+- [x] Write `ThemeLookupScanTests`; run it; it fails on the sites above (paste the failing lines in the Done notes).
+- [x] Fix the sites; the scan passes.
 - [ ] Publish the WinUI AOT head, start it with a Light `settings.json` while Windows is dark, open the grid filter bar and `Ctrl+K`: the search box frame, icons and cell editor frame are light-themed (read a capture; if it cannot be driven, say so, P20-15 repeats it).
 
 ## Acceptance criteria
@@ -34,3 +34,15 @@ The search box (grid filter, palette), the palette icons and the cell editor fra
 
 ## Suggested commit message
 Read the remaining WinUI token brushes through the chosen theme and guard them with a test
+
+## Done notes
+
+- Test `Token_brushes_are_read_through_Tokens` (regex `Resources[...Brush"|Color"...]`, case-insensitive, no allow-listed keys: `Tokens.cs` only) failed on exactly these lines before the fix:
+  - `Controls/CommandPalette.cs:280` `SquillEnv{Suffix}Brush`; `:320` `SquillFg3Brush`
+  - `Controls/DataGridView.cs:188` `SquillDangerBrush` / `SquillAccentBrush`
+  - `Controls/SearchBox.cs:25, 71, 72` `SquillFg3Brush`, `SquillBgRaisedBrush`, `SquillFocusBrush` / `SquillBorderBrush`
+  - `Views/HistoryView.xaml.cs:27` `SquillSuccessBrush` / `SquillDangerBrush` (not in the card list; found by the scan)
+- Every key has a `Light` variant in `Styles/SquillTokens.xaml`, including the `SquillEnv*` colors, so nothing was left alone. Element-owned sites use `Tokens.Brush(this, key)`; `CommandPalette` icon creation and `HistoryView.StatusBrush` are static and use `Tokens.Brush(key)` (the palette icons are repainted by `PaintStatic` on a theme change). `SearchBox` keeps its glyph in a field and repaints it in `SyncBrushes`, which already runs on `ActualThemeChanged`.
+- `Tokens_variant_follows_active_theme` skipped: splitting `VariantOf` costs more than the assertion is worth.
+- Light-theme drive of the filter bar, `Ctrl+K` and the cell editor frame: not driven (left to P20-15). The AOT publish of the WinUI head passed `eng/check-aot-warnings.ps1 -Head WinUI` (baseline only).
+- `ExplorerAndTabsTests.Explorer_tree_rows_are_24_high` fails with and without this change (pre-existing, unrelated: expects `<Setter Property="Height" Value="24" />` in `SidebarView`); everything else is green.
