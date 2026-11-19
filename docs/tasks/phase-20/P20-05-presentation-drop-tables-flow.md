@@ -1,6 +1,6 @@
 # P20-05 - Presentation: one drop flow for one or many tables, through the runner, the transaction and the production confirmation
 
-Status: todo
+Status: done
 Depends on: P20-04
 
 ## Goal
@@ -23,8 +23,8 @@ Depends on: P20-04
 - Selection (P20-06), views, `CASCADE`, closing table tabs of dropped tables (the designer tabs are closed today; keep that, do not add more).
 
 ## Tasks
-- [ ] Tests first, `tests/Squill.Presentation.Tests/Workspace/WorkspaceDropTablesTests.cs` using the fixtures of `WorkspaceDesignerTests.cs` (read it: fake provider with `Executed`, `ExecuteFailure`, `FakeDialogService`); run them, see them fail: (a) **Production profile, one table: `ConfirmProductionAsync` is asked with the `DROP TABLE` text and, declined, nothing runs** (fails today: the existing single drop never asks); (b) Production typing required; (c) three tables with `commandes` -> `clients` run in dependency order; (d) a blocker outside the selection: error, `Executed` empty; (e) declined plain confirmation: nothing runs; (f) PostgreSQL dialect, third statement fails: `BEGIN` ... `ROLLBACK`, error shown, schema not reloaded as changed; (g) MySQL dialect, second statement fails: first ran, `workspace.dropPartial` shown, no `BEGIN`; MySQL with an open transaction asks the implicit-commit question; (h) open user transaction (Manual mode) on PostgreSQL: a `SAVEPOINT` instead of `BEGIN`, journal holds the statements, no `COMMIT`; (i) the existing single-drop tests unchanged and green.
-- [ ] Implement the flow and the catalog entries.
+- [x] Tests first, `tests/Squill.Presentation.Tests/Workspace/WorkspaceDropTablesTests.cs` using the fixtures of `WorkspaceDesignerTests.cs` (read it: fake provider with `Executed`, `ExecuteFailure`, `FakeDialogService`); run them, see them fail: (a) **Production profile, one table: `ConfirmProductionAsync` is asked with the `DROP TABLE` text and, declined, nothing runs** (fails today: the existing single drop never asks); (b) Production typing required; (c) three tables with `commandes` -> `clients` run in dependency order; (d) a blocker outside the selection: error, `Executed` empty; (e) declined plain confirmation: nothing runs; (f) PostgreSQL dialect, third statement fails: `BEGIN` ... `ROLLBACK`, error shown, schema not reloaded as changed; (g) MySQL dialect, second statement fails: first ran, `workspace.dropPartial` shown, no `BEGIN`; MySQL with an open transaction asks the implicit-commit question; (h) open user transaction (Manual mode) on PostgreSQL: a `SAVEPOINT` instead of `BEGIN`, journal holds the statements, no `COMMIT`; (i) the existing single-drop tests unchanged and green.
+- [x] Implement the flow and the catalog entries.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance; the single-drop tests of `WorkspaceDesignerTests` pass unchanged.
@@ -36,3 +36,9 @@ Depends on: P20-04
 
 ## Suggested commit message
 Drop one or several tables through the runner, the session transaction and the production confirmation
+
+## Done notes
+- `DropTablesCommand` added; `DropTableCommand` calls the same flow. Tests in `WorkspaceDropTablesTests` (10), single-drop tests unchanged.
+- Catalog: the two `workspace.dropTablesLabel.*` keys read the same in both languages and are on the parity allow list.
+- A rolled-back drop still reloads the schema (harmless) and closes no designer. Oracle not driven: the flow treats it as transactional like the designer does.
+- Full test run: one Avalonia timing test (`StatusBar_TransactionSegment_FollowsTheSessionTransaction`) failed once and passed alone.
