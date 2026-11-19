@@ -84,10 +84,18 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
             TextChanged?.Invoke(this, EventArgs.Empty);
         };
         _editor.ScrollChanged += (_, _) => OnViewportChanged();
-        _editor.ActualThemeChanged += (_, _) => PlaceErrorIcons();
+        _editor.Loaded += (_, _) => ApplyTheme();
+        _editor.ActualThemeChanged += (_, _) =>
+        {
+            ApplyTheme();
+            PlaceErrorIcons();
+        };
         _editor.LayoutChanged += (_, _) => OnViewportChanged();
         _editor.SelectionChanged += (_, _) => CaretChanged?.Invoke(this, EventArgs.Empty);
     }
+
+    // The editor draws dark unless told otherwise; the effective theme of the element is the one the user chose (or the system one).
+    private void ApplyTheme() => _editor.Theme = _editor.ActualTheme == ElementTheme.Light ? EditorTheme.Light : EditorTheme.Dark;
 
     /// <summary>Gets the element to place in a view.</summary>
     public FrameworkElement Control => _host;

@@ -20,6 +20,7 @@ public sealed class HomeRecentCardViewModel : ViewModelBase
             DatabaseDialect.MySql => "My",
             DatabaseDialect.SqlServer => "MS",
             DatabaseDialect.Sqlite => "SL",
+            DatabaseDialect.Oracle => "OR",
             _ => "",
         };
         EngineName = profile.Dialect switch
@@ -28,6 +29,7 @@ public sealed class HomeRecentCardViewModel : ViewModelBase
             DatabaseDialect.MySql => "MySQL",
             DatabaseDialect.SqlServer => "SQL Server",
             DatabaseDialect.Sqlite => "SQLite",
+            DatabaseDialect.Oracle => "Oracle",
             _ => "",
         };
         Environment = profile.Environment;
@@ -35,6 +37,14 @@ public sealed class HomeRecentCardViewModel : ViewModelBase
         LastOpened = lastOpened;
         Shortcut = shortcut;
         OpenCommand = new AsyncRelayCommand(open);
+        OpenCommand.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(IAsyncRelayCommand.IsRunning))
+            {
+                OnPropertyChanged(nameof(IsConnecting));
+                OnPropertyChanged(nameof(Details));
+            }
+        };
     }
 
     /// <summary>Gets the connection this card opens.</summary>
@@ -69,7 +79,10 @@ public sealed class HomeRecentCardViewModel : ViewModelBase
     public string EngineName { get; } = "";
 
     /// <summary>Gets the engine name followed by the live server version when the connection is open, then <c>·</c> and <see cref="LastOpened"/>.</summary>
-    public string Details => $"{(_version is { Length: > 0 } v ? EngineName + " " + v : EngineName)} · {LastOpened}";
+    public string Details => IsConnecting ? UiText.Get("home.connecting") : $"{(_version is { Length: > 0 } v ? EngineName + " " + v : EngineName)} · {LastOpened}";
+
+    /// <summary>Gets a value indicating whether the card was clicked and the connection is still opening (a slow engine such as Oracle shows no other sign).</summary>
+    public bool IsConnecting => OpenCommand.IsRunning;
 
     /// <summary>Gets the open-tab count as text (<c>3 onglets</c>, <c>1 onglet</c>), <c>-</c> when no tab is open.</summary>
     public string OpenTabsText => _tabs == 0 ? "-" : UiText.FormatPlural("home.tabs", _tabs);
