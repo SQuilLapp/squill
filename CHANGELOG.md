@@ -6,7 +6,9 @@
 
 ## [Unreleased]
 
-_Nothing yet._
+### Fixed
+
+- Updates: the choice At start and every hour now checks at every start, not only when the last check is more than 55 minutes old, so a release published a few minutes after the previous check is offered at the next launch.
 
 ## [0.5.1] - 2026-11-20
 

@@ -68,8 +68,9 @@ public sealed class UpdateService
 
     /// <summary>Checks only when the user's frequency says a check is due, the application is installed and nothing is running.</summary>
     /// <param name="ct">Cancellation token.</param>
+    /// <param name="atStart">True for the check made when the application starts: the hourly choice (start and every hour) then checks even if the last check is recent.</param>
     /// <returns>A task that completes when the check is over or was not needed.</returns>
-    public async ValueTask CheckIfDueAsync(CancellationToken ct)
+    public async ValueTask CheckIfDueAsync(CancellationToken ct, bool atStart = false)
     {
         if (!_engine.IsInstalled || Read(() => _status is UpdateStatus.Checking or UpdateStatus.Downloading))
         {
@@ -88,7 +89,7 @@ public sealed class UpdateService
             Apply(() => _lastCheckUtc ??= stored);
         }
 
-        if (UpdateSchedule.IsDue(frequency, state.LastCheckUtc, _time.GetUtcNow()))
+        if ((atStart && frequency == UpdateCheckFrequency.Hourly) || UpdateSchedule.IsDue(frequency, state.LastCheckUtc, _time.GetUtcNow()))
         {
             await CheckAsync(manual: false, ct);
         }

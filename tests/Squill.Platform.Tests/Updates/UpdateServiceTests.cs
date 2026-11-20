@@ -62,6 +62,19 @@ public sealed class UpdateServiceTests
     }
 
     [Fact]
+    public async Task CheckIfDue_Hourly_AtStartChecksEvenWhenTheLastCheckIsRecent()
+    {
+        Frequency(UpdateCheckFrequency.Hourly);
+        var service = NewService();
+
+        await service.CheckIfDueAsync(_ct, atStart: true);
+        await service.CheckIfDueAsync(_ct, atStart: true);
+        await service.CheckIfDueAsync(_ct);
+
+        Assert.Equal(2, _engine.CheckCalls);
+    }
+
+    [Fact]
     public async Task CheckIfDue_Startup_ChecksEveryTime()
     {
         Frequency(UpdateCheckFrequency.Startup);
