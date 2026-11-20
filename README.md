@@ -55,6 +55,12 @@ The query toolbar has an `Auto-commit | Manuel` toggle. In `Manuel` the first st
 
 Oracle keeps auto-commit. See [ADR 0012](docs/adr/0012-transactions-and-production-confirmation.md) for the design and known limits; the windows still need the owner's checks of [docs/verification/transactions.md](docs/verification/transactions.md).
 
+## Dropping several tables, and what phase 20 did not verify
+
+In the explorer, select several tables (Ctrl+click, Shift+click) and use `Supprimer N tables` or `Delete`: the confirmation lists them, referencing tables go first, a table outside the selection that references one blocks the drop (there is no `CASCADE`), and PostgreSQL, SQL Server and SQLite drop all or none (MySQL stops at the first failure). Dropping a single table now follows the same path, including the Production confirmation. Checklist for the owner: [docs/verification/multi-delete.md](docs/verification/multi-delete.md).
+
+Phase 20 drove the windows with `tools/visual/Drive-Window.ps1`, but most passes are partial: English and the light theme are mostly not driven, the WinUI import wizard was seen only on its first step, the Avalonia multi-select was never driven in the published app, and nothing ran on Linux or macOS. The WinUI and Avalonia AOT publishes show only the four known third-party warnings. The full list is in [the task index](docs/tasks/README.md) ("Left open by phase 20") and [ADR 0017](docs/adr/0017-verification-and-multi-delete.md).
+
 ## Schema designer and ER diagram
 
 Open a table in the designer to create or alter columns, indexes and foreign keys: the generated DDL is previewed before it runs. The ER diagram shows the tables of a schema with their foreign keys, can be exported to SVG, and remembers box positions per connection. Both work on SQLite, PostgreSQL, MySQL / MariaDB and SQL Server.

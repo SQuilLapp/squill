@@ -1,6 +1,6 @@
 # P20-21 - Docs: ADR 0017, changelog, the multi-delete checklist for the owner, index
 
-Status: todo
+Status: done
 Depends on: P20-01 ... P20-20
 
 ## Goal
@@ -17,7 +17,7 @@ Record what phase 20 changed and what is still open, and give the owner the chec
 - Any code.
 
 ## Tasks
-- [ ] ADR, checklist, changelog, ideas, README statuses, spec rows; link check by opening each new target path.
+- [x] ADR, checklist, changelog, ideas, README statuses, spec rows; link check by opening each new target path.
 
 ## Acceptance criteria
 - Docs only: `rtk git status` shows only documentation files and `CHANGELOG.md`; the index has one row per card file in `docs/tasks/phase-20/`; statuses match the files.
