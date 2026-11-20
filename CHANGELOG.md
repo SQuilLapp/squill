@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.5.1] - 2026-11-20
+
 ### Fixed
 
 - WinUI explorer: clicking a database, schema or folder node highlights only that row instead of every expanded row below it.
