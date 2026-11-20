@@ -1,6 +1,6 @@
 # P20-09 - Multi-table drop proved on the real engines
 
-Status: todo
+Status: done
 Depends on: P20-04
 
 ## Goal
@@ -19,8 +19,8 @@ The unit tests of P20-05 use a fake provider. Prove on SQLite (default run) and,
 - The view-model flow (P20-05), Oracle (no scenario: record that it was not proved).
 
 ## Tasks
-- [ ] Scenario and four test files; SQLite tests fail first only if `TableDropPlan` is missing, so write them after P20-04 and run them to see them pass; for the MySQL atomicity test state the expected outcome before running.
-- [ ] Docker runs for the three engines, counts recorded; containers removed (`podman ps -a` empty).
+- [x] Scenario and four test files; SQLite tests fail first only if `TableDropPlan` is missing, so write them after P20-04 and run them to see them pass; for the MySQL atomicity test state the expected outcome before running.
+- [x] Docker runs for the three engines, counts recorded; containers removed (`podman ps -a` empty).
 
 ## Acceptance criteria
 - Default run green; Docker-gated run green per engine; `docs/testing.md` lists the new scenario if it lists the others (check the file).
@@ -31,3 +31,10 @@ The unit tests of P20-05 use a fake provider. Prove on SQLite (default run) and,
 
 ## Suggested commit message
 Prove the multi-table drop order and atomicity on SQLite, PostgreSQL, MySQL and SQL Server
+
+## Done notes
+- `tests/Shared/DropTablesScenario.cs` (linked in the four driver test projects) and `DropTablesTests.cs` in `Squill.Data.Sqlite/Postgres/MySql/SqlServer.Tests`, four tests each. `docs/testing.md` lists no scenarios, so it is unchanged.
+- Wrong-order test inserts one row per table first: SQLite (foreign keys are on with Microsoft.Data.Sqlite) only refuses the parent drop when child rows would be orphaned. The plan lookup matches tables by their unique name, because SQLite reports schema `main` and MySQL the database name where the scenario passes `null`.
+- MySQL atomicity outcome stated before running (both drops stay dropped, implicit commit) and observed.
+- Runs: SQLite 4/4 (default run), PostgreSQL 4/4, MySQL 4/4, SQL Server 4/4 via `eng/run-docker-tests.ps1 -Engine <e>` filtered on `*DropTablesTests`. Full suite: 4569 total, 0 failed, 342 skipped (Docker-gated). Oracle: not proved (out of scope).
+- Podman machine was stopped and was started for the runs; the test containers are removed. `podman ps -a` still lists seven old unrelated exited containers (grafana, loki, tempo, prometheus, otel, pyroscope, npgsql) that this session did not create.
