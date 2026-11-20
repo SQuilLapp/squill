@@ -168,9 +168,15 @@ public sealed partial class SidebarView : UserControl
     private void SetSelection(List<ExplorerNode> nodes)
     {
         _model = nodes;
+        // Multiple mode also selects the descendants of a selected parent (and drops the parent when one is deselected), so a lone node
+        // uses Single mode, which selects only that row; Multiple stays for several nodes.
         Tree.SelectedItems.Clear();
-        foreach (var n in nodes)
-            Tree.SelectedItems.Add(n);
+        Tree.SelectionMode = nodes.Count == 1 ? TreeViewSelectionMode.Single : TreeViewSelectionMode.Multiple;
+        if (nodes.Count == 1)
+            Tree.SelectedItem = nodes[0];
+        else
+            foreach (var n in nodes)
+                Tree.SelectedItems.Add(n);
         SyncSelection();
     }
 
