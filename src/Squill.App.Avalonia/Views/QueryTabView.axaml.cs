@@ -167,11 +167,12 @@ public sealed partial class QueryTabView : UserControl
         var full = tx.State == TransactionState.Failed ? UiText.Get("tx.status.failed") : UiText.FormatPlural("tx.pill", tx.PendingCount);
         var count = tx.PendingCount.ToString(CultureInfo.CurrentCulture);
         var right = FormatButton.Bounds.Width + HistoryButton.Bounds.Width + 12;
-        for (var level = 0; level <= 3; level++)
+        for (var level = 0; level <= 4; level++)
         {
             TxCommitChip.IsVisible = TxRollbackChip.IsVisible = level < 1;
             TxPillText.Text = level >= 2 ? count : full;
             TxCommitIcon.IsVisible = TxRollbackIcon.IsVisible = level < 3;
+            RunChip.IsVisible = ScriptChip.IsVisible = AnalyzeChip.IsVisible = level < 4;
             ToolbarLeft.Measure(Size.Infinity);
             if (ToolbarLeft.DesiredSize.Width <= available - right)
                 break;

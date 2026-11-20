@@ -413,7 +413,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-17](phase-20/P20-17-avalonia-postgres-screens-drive.md) | Avalonia: drive privileges (M11), sessions (M12), PostgreSQL plan rows | P20-14 | partial |
 | [P20-18](phase-20/P20-18-avalonia-grid-filter-palette-completion-drive.md) | Avalonia: finish grid filter, palette and completion passes | P20-11, P20-12 | partial |
 | [P20-19](phase-20/P20-19-avalonia-designer-er-states-drive.md) | Avalonia: drive the designer (M07), the ER diagram (M08) and pointer states | P20-13 | todo |
-| [P20-20](phase-20/P20-20-avalonia-transactions-home-drive.md) | Avalonia: transactions, production dialog, plan tab and home page leftovers | P20-15 | todo |
+| [P20-20](phase-20/P20-20-avalonia-transactions-home-drive.md) | Avalonia: transactions, production dialog, plan tab and home page leftovers | P20-15 | partial |
 | [P20-22](phase-20/P20-22-winui-designer-cell-text-dim-when-edited.md) | WinUI: designer name cell text is dim once edited (dark) | P20-13 | todo |
 | [P20-23](phase-20/P20-23-designer-sqlite-fresh-open-reports-changes.md) | Designer: an untouched SQLite table already reports changes (rebuild script, enabled `Appliquer`) | P20-19 | todo |
 | [P20-21](phase-20/P20-21-docs-adr-and-multi-delete-checklist.md) | Docs, ADR 0017, changelog and the multi-delete checklist for the owner | P20-01 ... P20-20 | todo |
