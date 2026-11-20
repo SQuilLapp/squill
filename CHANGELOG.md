@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.5.0] - 2026-11-20
+
 ### Added
 
 - Explorer: select several tables (Ctrl+click, Shift+click) and drop them in one action from the context menu or with `Delete`. The confirmation lists the tables, referencing tables are dropped first, a table outside the selection that still references one blocks the drop, and PostgreSQL, SQL Server and SQLite drop them all or none (MySQL stops at the first failure and says what was dropped).
