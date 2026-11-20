@@ -96,6 +96,24 @@ public sealed class SchemaCompareUiTests
     }
 
     [Fact]
+    public async Task StatusBarEnvironment_FollowsTheTargetAfterTheEndpointsChange()
+    {
+        await WithCompareAsync(ConnectionEnvironment.Production, async (window, _, compare) =>
+        {
+            var workspace = (Squill.Presentation.Workspace.WorkspaceViewModel)window.DataContext!;
+            var label = window.FindControl<StatusBar>("Status")!.FindControl<TextBlock>("EnvironmentLabel")!;
+            compare.Source = compare.Sources.First(e => e.Session.Profile.Name == "prod");
+            compare.Target = compare.Targets.First(e => e.Session.Profile.Name == "dev");
+
+            compare.SwapCommand.Execute(null);
+            await compare.CompareCommand.ExecuteAsync(null);
+
+            Assert.Equal(ConnectionEnvironment.Production, workspace.ActiveEnvironment);
+            Assert.Equal(UiText.Get("status.production"), label.Text);
+        });
+    }
+
+    [Fact]
     public async Task Panes_ShowTheSameRowCountOnBothSides_ForTheSelectedItem()
     {
         await WithCompareAsync(ConnectionEnvironment.Staging, (_, view, compare) =>

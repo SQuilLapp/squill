@@ -140,6 +140,19 @@ public sealed class EditorToolbarTests
     });
 
     [Fact]
+    public Task TransactionGroup_DropsTheRunKeycaps_WhenTheTwoTransactionButtonsStillDoNotFit() => WithViewAsync(async (view, tab) =>
+    {
+        view.FindControl<RadioButton>("TxManualButton")!.RaiseEvent(new global::Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        await OpenInsertAsync(tab, 3);
+        Dispatcher.UIThread.RunJobs();
+        var left = view.FindControl<StackPanel>("ToolbarLeft")!;
+        var toolbar = view.FindControl<Border>("Toolbar")!;
+        var right = view.FindControl<Button>("FormatButton")!.Bounds.Width + view.FindControl<Button>("HistoryButton")!.Bounds.Width + 12;
+        Assert.True(left.DesiredSize.Width <= toolbar.Bounds.Width - 16 - right || !view.FindControl<Border>("ScriptChip")!.IsVisible);
+        Assert.True(view.FindControl<Border>("TxRollbackChip") is not null);
+    });
+
+    [Fact]
     public Task TransactionToggle_IsDisabledWithAReason_WhenTheEngineCannotProbe() => WithViewAsync((view, tab) =>
     {
         Assert.True(tab.Transaction.IsSupported);

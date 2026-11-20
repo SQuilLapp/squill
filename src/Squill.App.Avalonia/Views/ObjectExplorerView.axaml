@@ -12,7 +12,7 @@
     <TextBox Name="FilterBox" Classes="search" Text="{Binding FilterText, Mode=TwoWay}" PlaceholderText="{loc:Text explorer.filter}"
              Margin="10,0,10,6" MinHeight="27" Height="27" />
     <TreeView Grid.Row="1" Name="Tree" ItemsSource="{Binding Roots}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="Transparent" Padding="4,0"
-              SelectedItem="{Binding SelectedNode, Mode=TwoWay}" DoubleTapped="OnTreeDoubleTapped" KeyDown="OnTreeKeyDown">
+              SelectionMode="Multiple" SelectedItem="{Binding SelectedNode, Mode=TwoWay}" SelectionChanged="OnTreeSelectionChanged" DoubleTapped="OnTreeDoubleTapped" KeyDown="OnTreeKeyDown">
       <TreeView.Styles>
         <Style Selector="TreeViewItem" x:DataType="ex:ExplorerNode">
           <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />

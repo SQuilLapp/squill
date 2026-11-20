@@ -12,6 +12,7 @@ using Squill.Platform.Settings;
 using Squill.Platform.Storage;
 using Squill.Presentation;
 using Squill.Presentation.Query;
+using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 using Xunit;
 
@@ -131,6 +132,17 @@ public sealed class EditBarUiTests
         Assert.True(f.Find<Border>("EditBar").IsVisible);
         Assert.Equal("1 modification en attente", f.Find<TextBlock>("EditStatus").Text);
         Assert.Equal("1 mise à jour", f.Find<TextBlock>("EditDetail").Text);
+    });
+
+    [Fact]
+    public Task ActiveFilter_MarksTheGridReadOnlyAndKeepsTheExportCountOfLoadedRows() => RunAsync(async () =>
+    {
+        await using var f = await Fixture.CreateAsync();
+        await f.RunAsync("SELECT * FROM t");
+        f.Tab.SelectedResult!.View!.AddFilter(new GridFilter(1, GridFilterOperator.Equals, "zzz", null));
+
+        Assert.StartsWith("Lecture seule · ", f.Find<TextBlock>("MarkerText").Text);
+        Assert.Equal("EXPORTER 2 LIGNES", f.Find<TextBlock>("ExportTitle").Text!.ToUpperInvariant());
     });
 
     [Fact]

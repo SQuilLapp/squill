@@ -98,6 +98,16 @@ public sealed class SecurityViewUiTests
     }
 
     [Fact]
+    public async Task The_view_paints_an_opaque_background_so_the_query_view_underneath_cannot_show_through()
+    {
+        await WithViewAsync((_, view, _, _) =>
+        {
+            Assert.NotNull(view.Background);
+            return Task.CompletedTask;
+        });
+    }
+
+    [Fact]
     public async Task Clicking_a_cell_toggles_it_through_the_view_model()
     {
         await WithViewAsync((_, _, matrix, vm) =>

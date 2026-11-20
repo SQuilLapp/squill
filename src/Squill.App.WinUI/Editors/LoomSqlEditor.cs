@@ -200,6 +200,9 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
     /// <inheritdoc />
     public void FocusEditor() => _editor.Focus(FocusState.Programmatic);
 
+    /// <summary>Closes the completion popup; a run leaves it open otherwise, because the editor keeps the focus and never raises its hide.</summary>
+    public void HideSuggest() => _editor.Commands.Execute("hideSuggestWidget");
+
     /// <summary>Scrolls so that a line is at the top of the viewport.</summary>
     /// <param name="line">The 1-based line number.</param>
     public void ScrollToLine(int line) => _editor.ScrollTop = Math.Max(line - 1, 0) * _editor.LineHeight;

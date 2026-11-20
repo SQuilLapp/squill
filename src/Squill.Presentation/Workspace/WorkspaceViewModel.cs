@@ -136,6 +136,11 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             ActiveSession = r.Session;
             _ = DropTableCommand.ExecuteAsync(r.Table);
         };
+        Explorer.DropTablesRequested += (_, r) =>
+        {
+            ActiveSession = r.Session;
+            _ = DropTablesCommand.ExecuteAsync(r.Tables);
+        };
         Explorer.ScriptRequested += (_, r) => AddTab(r.Session, r.Text);
         Explorer.ConnectRequested += (_, profile) => _ = ConnectCommand.ExecuteAsync(profile);
         Explorer.PropertyChanged += (_, e) =>
@@ -503,7 +508,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     }
 
     /// <summary>Gets the environment of the tab on screen, else of <see cref="ActiveSession"/>, or <see cref="ConnectionEnvironment.None"/> when not connected.</summary>
-    public ConnectionEnvironment ActiveEnvironment => (_shownSession ?? ActiveSession)?.Profile.Environment ?? ConnectionEnvironment.None;
+    public ConnectionEnvironment ActiveEnvironment => _shownCompare is { Environment: not ConnectionEnvironment.None } compare ? compare.Environment : (_shownSession ?? ActiveSession)?.Profile.Environment ?? ConnectionEnvironment.None;
 
     /// <summary>
     /// Records which tab is on screen, so the environment colour and the status bar follow the tab and not the explorer selection;
@@ -526,6 +531,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         foreach (var monitor in Monitors)
             monitor.SetActive(ReferenceEquals(monitor, tab)); // a monitor only polls while its tab is on screen
         _shownSession = session;
+        _shownCompare = tab as SchemaCompareViewModel; // the target of a compare changes while its tab stays on screen
         if (session is not null && !ReferenceEquals(ActiveSession, session))
             ActiveSession = session; // raises ActiveEnvironment
         else
@@ -564,6 +570,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     }
 
     private ConnectionSession? _shownSession;
+
+    private SchemaCompareViewModel? _shownCompare;
 
     private bool HasSession() => ActiveSession is not null;
 
@@ -783,38 +791,112 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     }
 
     [RelayCommand]
-    private async Task DropTableAsync(TableInfo? table)
+    private Task DropTableAsync(TableInfo? table) => table is null ? Task.CompletedTask : DropTablesCoreAsync([table]);
+
+    [RelayCommand]
+    private Task DropTablesAsync(IReadOnlyList<TableInfo>? tables) => tables is null ? Task.CompletedTask : DropTablesCoreAsync(tables);
+
+    private static string QualifiedName(TableInfo t) => t.Schema is { Length: > 0 } s ? $"{s}.{t.Name}" : t.Name;
+
+    private static string Listed(List<string> lines, int max) =>
+        string.Join("\n", lines.Count <= max ? lines : lines.Take(max).Append(UiText.Format("prod.more", lines.Count - max)));
+
+    private async Task DropTablesCoreAsync(IReadOnlyList<TableInfo> selected)
     {
-        if (table is null || ActiveSession is not { } session)
+        if (ActiveSession is not { } session)
             return;
-        var name = table.Schema is { Length: > 0 } s ? $"{s}.{table.Name}" : table.Name;
-        if (!await _dialogs.ConfirmAsync(UiText.Get("workspace.dropTable"), UiText.Format("workspace.dropTableConfirm", name)))
+        var tables = selected.Where(t => t.Kind == TableKind.Table).ToList();
+        if (tables.Count == 0)
             return;
-        try
+        var plan = TableDropPlan.Build(tables, session.Schema);
+        if (plan.Blockers.Count > 0)
         {
-            foreach (var sql in DdlGenerators.For(session.Profile.Dialect).DropTable(table.Schema, table.Name))
+            var lines = plan.Blockers.Select(b => $"{QualifiedName(b.Referencing)} -> {QualifiedName(b.Referenced)}").ToList();
+            await _dialogs.ShowErrorAsync(UiText.Get("workspace.dropBlocked"), UiText.Format("workspace.dropBlockedMessage", Listed(lines, 10)));
+            return;
+        }
+
+        var dialect = session.Profile.Dialect;
+        var generator = DdlGenerators.For(dialect);
+        var drops = plan.Order.Select(t => (Table: t, Statements: generator.DropTable(t.Schema, t.Name).ToList())).ToList();
+        var statements = drops.SelectMany(d => d.Statements).ToList();
+        var production = ProductionGuard.Evaluate(session.Profile, statements).Required;
+        if (!production)
+        {
+            var confirmed = tables.Count == 1
+                ? await _dialogs.ConfirmAsync(UiText.Get("workspace.dropTable"), UiText.Format("workspace.dropTableConfirm", QualifiedName(tables[0])))
+                : await _dialogs.ConfirmAsync(UiText.Get("workspace.dropTables"),
+                    UiText.Format("workspace.dropTablesConfirm", plan.Order.Count, Listed([.. plan.Order.Select(QualifiedName)], 15))
+                    + "\n" + UiText.Get("workspace.dropViewsNote")
+                    + (DdlGenerators.UsesTransactionalDdl(dialect) ? "" : "\n" + UiText.Get("workspace.dropNotAtomicNote")));
+            if (!confirmed)
+                return;
+        }
+
+        var tx = session.Transaction;
+        var transactional = DdlGenerators.UsesTransactionalDdl(dialect);
+        if (!transactional && tx.State == TransactionState.Open
+            && !await _dialogs.ConfirmAsync(UiText.Get("tx.implicitCommit.title"), UiText.Get("tx.implicitCommit.message")))
+            return;
+
+        var label = tables.Count == 1 ? tables[0].Name : UiText.FormatPlural("workspace.dropTablesLabel", plan.Order.Count);
+        if (!await ProductionRequestBuilder.ConfirmWriteAsync(_dialogs, session.Profile, ConfirmationKind.SchemaChange, statements, plan.Order.Count, label, tx.Mode))
+            return;
+
+        var dropped = new List<TableInfo>();
+        var ran = false;
+        string? failure = null;
+        using (tx.BeginOperation())
+        {
+            StatementScope? scope = null;
+            var failing = plan.Order[0];
+            try
             {
-                var reader = await session.Connection.ExecuteAsync(sql, [], CancellationToken.None);
-                try
+                if (transactional)
+                    scope = await SqlRunner.BeginScopeAsync(session.Connection, dialect, tx, UiText.Get("workspace.dropTables"), CancellationToken.None);
+                foreach (var (table, sqls) in drops)
                 {
-                    while (await reader.ReadBatchAsync(100, CancellationToken.None) is not null)
+                    failing = table;
+                    foreach (var sql in sqls)
                     {
+                        ran = true;
+                        var rows = await SqlRunner.ExecuteAsync(session.Connection, sql, [], CancellationToken.None);
+                        scope?.Observe(sql, rows);
                     }
+                    dropped.Add(table);
                 }
-                finally
-                {
-                    await reader.DisposeAsync();
-                }
+                if (scope is not null)
+                    await scope.CompleteAsync(CancellationToken.None);
             }
-            await session.RefreshSchemaAsync(CancellationToken.None);
-            Explorer.Reload(session);
+            catch (Exception ex)
+            {
+                if (scope is not null)
+                {
+                    await scope.FailAsync();
+                    dropped.Clear(); // rolled back: nothing is gone
+                }
+                failure = !transactional && dropped.Count > 0
+                    ? UiText.Format("workspace.dropPartial", dropped.Count, plan.Order.Count, QualifiedName(failing), ex.Message)
+                    : ex.Message;
+            }
         }
-        catch (Exception ex)
+
+        if (ran)
         {
-            await _dialogs.ShowErrorAsync(UiText.Get("workspace.dropFailed"), ex.Message);
-            return;
+            try
+            {
+                await session.RefreshSchemaAsync(CancellationToken.None);
+                Explorer.Reload(session);
+            }
+            catch (Exception ex)
+            {
+                failure ??= ex.Message;
+            }
         }
-        foreach (var designer in Designers.Where(d => d.Session == session && d.Original is { } o && Matches(o, table)).ToList())
+
+        if (failure is not null)
+            await _dialogs.ShowErrorAsync(UiText.Get("workspace.dropFailed"), failure);
+        foreach (var designer in Designers.Where(d => d.Session == session && d.Original is { } o && dropped.Any(t => Matches(o, t))).ToList())
             RemoveDesigner(designer);
     }
 

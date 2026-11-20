@@ -200,6 +200,7 @@ public sealed class SecurityView : UserControl
 
     private void Paint()
     {
+        Background = Brush("SquillBgBaseBrush"); // opaque: the query view sits underneath this tab and showed through
         foreach (var panel in _panels)
         {
             panel.Background = Brush("SquillBgSurfaceBrush");

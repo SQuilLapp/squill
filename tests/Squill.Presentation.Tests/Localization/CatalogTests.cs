@@ -12,6 +12,8 @@ public sealed partial class CatalogTests
     // Keys whose English text is legitimately identical to the French one.
     private static readonly HashSet<string> SameInBothLanguages =
     [
+        "workspace.dropTablesLabel.one", // "{0} table" reads the same in both languages
+        "workspace.dropTablesLabel.other", // "{0} tables" reads the same in both languages
         "home.newConnection.subtitle", // list of engine names
         "home.env.prod", // environment pill, same short form in both languages
         "import.step.source", // step name, same word in both languages

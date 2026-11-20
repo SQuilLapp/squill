@@ -22,8 +22,8 @@ namespace Squill.App.WinUI.Views;
 /// <summary>The security tab (mockup M11), built in code from <see cref="SecurityViewModel"/>: the role list, the role header, the privilege matrix with its legend, and the generated SQL with its Copy / Cancel / Apply footer.</summary>
 public sealed partial class SecurityView : UserControl
 {
-    private const double NameWidth = 200;
-    private const double CellWidth = 84;
+    private const double NameWidth = 140;
+    private const double CellWidth = 66;
     private const double RowHeight = 28;
 
     // shortcut: only the first SecurityViewModel.MaxShownRows are built as elements (no virtualization), a notice under the matrix says so; upgrade to a Win2D canvas if a database routinely lists more.
@@ -156,9 +156,9 @@ public sealed partial class SecurityView : UserControl
     private Grid BuildLayout()
     {
         var main = new Grid();
-        main.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(260) });
+        main.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(170) });
         main.ColumnDefinitions.Add(new ColumnDefinition());
-        main.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(320) });
+        main.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(300) });
         var roles = BuildRoles();
         var center = BuildCenter();
         var sql = BuildSql();
@@ -197,7 +197,7 @@ public sealed partial class SecurityView : UserControl
         var tools = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Padding = new Thickness(24, 4, 24, 8), Children = { _schemas, _showInherited } };
         var legend = new Border { Padding = new Thickness(24, 0, 24, 8), Child = _legend };
         _matrix.Child = new StackPanel { Children = { _matrixHeader, _matrixBody, _rowsCut, _hint }, MinWidth = NameWidth + CellWidth * Kinds.Length };
-        var scroll = new ScrollViewer { Content = _matrix, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Padding = new Thickness(24, 0, 24, 16) };
+        var scroll = new ScrollViewer { Content = _matrix, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Padding = new Thickness(16, 0, 16, 16) };
         var grid = new Grid();
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -232,7 +232,7 @@ public sealed partial class SecurityView : UserControl
         Grid.SetColumn(_changesPill, 1);
         head.Children.Add(_sqlTitle);
         head.Children.Add(_changesPill);
-        var footer = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Padding = new Thickness(16, 10, 16, 14), HorizontalAlignment = HorizontalAlignment.Right, Children = { _copy, _discard, _apply } };
+        var footer = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Padding = new Thickness(8, 10, 8, 14), HorizontalAlignment = HorizontalAlignment.Right, Children = { _copy, _discard, _apply } };
         var body = new ScrollViewer { Content = _sql, Padding = new Thickness(16, 0, 16, 0), VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         var grid = new Grid();
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -417,7 +417,7 @@ public sealed partial class SecurityView : UserControl
 
     private TextBlock HeaderText(string text, int column, TextAlignment alignment)
     {
-        var block = new TextBlock { Text = text, FontSize = 11, FontWeight = FontWeights.Bold, Foreground = Brush("SquillFg2Brush"), VerticalAlignment = VerticalAlignment.Center, HorizontalTextAlignment = alignment };
+        var block = new TextBlock { Text = text, FontSize = 10, FontWeight = FontWeights.Bold, Foreground = Brush("SquillFg2Brush"), VerticalAlignment = VerticalAlignment.Center, HorizontalTextAlignment = alignment };
         Grid.SetColumn(block, column);
         return block;
     }

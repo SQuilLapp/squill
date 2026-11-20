@@ -30,8 +30,18 @@ public sealed partial class ObjectExplorerView : UserControl
     private static bool HasDefinition(ExplorerNodeKind kind) =>
         kind is ExplorerNodeKind.View or ExplorerNodeKind.MaterializedView or ExplorerNodeKind.Function or ExplorerNodeKind.Procedure or ExplorerNodeKind.Trigger;
 
+    private void OnTreeSelectionChanged(object? sender, SelectionChangedEventArgs e) =>
+        Explorer?.SetSelectedNodes(Tree.SelectedItems?.OfType<ExplorerNode>() ?? []);
+
     private void OnTreeKeyDown(object? sender, KeyEventArgs e)
     {
+        if (e.Key == Key.Delete && Explorer is { } explorer && explorer.DropSelectedTablesCommand.CanExecute(null))
+        {
+            explorer.DropSelectedTablesCommand.Execute(null);
+            e.Handled = true;
+            return;
+        }
+
         if (e.Key != Key.Enter || Tree.SelectedItem is not ExplorerNode { Kind: ExplorerNodeKind.Connection } node)
             return;
         Explorer?.ActivateCommand.Execute(node);
@@ -47,7 +57,8 @@ public sealed partial class ObjectExplorerView : UserControl
         // The menu inherits the node as its data context; a right click does not select it, so do that first.
         if (sender is not ContextMenu { DataContext: ExplorerNode node } menu)
             return;
-        Tree.SelectedItem = node;
+        if (Tree.SelectedItems?.Contains(node) != true)
+            Tree.SelectedItem = node;
         var connection = node.Kind == ExplorerNodeKind.Connection;
         var table = node.Kind == ExplorerNodeKind.Table;
         var listed = node.Kind is ExplorerNodeKind.Table or ExplorerNodeKind.View or ExplorerNodeKind.MaterializedView && node.Table is not null;
@@ -88,6 +99,15 @@ public sealed partial class ObjectExplorerView : UserControl
                 item.IsEnabled = Workspace?.OpenSchemaCompareCommand.CanExecute(node.Profile?.Id) ?? false;
                 ToolTip.SetTip(item, item.IsEnabled ? null : Workspace?.SchemaCompareDisabledReason);
             }
+
+            if (item.Name == "DropItem")
+            {
+                item.Header = Explorer?.DropMenuText(node);
+                item.IsEnabled = Explorer?.CanDropMenu(node) ?? true;
+            }
+
+            if (item.Name is "DesignItem" or "ScriptItem")
+                item.IsEnabled = Explorer?.SelectedTableCount is not > 1 || !Explorer.SelectedTables.Contains(node);
 
             shown += item.IsVisible ? 1 : 0;
         }

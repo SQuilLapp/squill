@@ -184,6 +184,9 @@ public sealed class AvaloniaSqlEditor : ISqlEditor
     /// <inheritdoc />
     public void FocusEditor() => _editor.Focus();
 
+    /// <summary>Closes the completion popup; a run leaves it open otherwise, because the editor keeps the focus and never raises its hide.</summary>
+    public void HideSuggest() => _editor.Commands.Execute("hideSuggestWidget");
+
     /// <summary>Requests completion at the caret through the same adapter the suggest widget uses.</summary>
     /// <returns>The number of items returned.</returns>
     public async Task<int> RequestCompletionAsync()

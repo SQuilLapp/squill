@@ -9,6 +9,8 @@ PowerShell 7 scripts to run SQuilL on French sample data, capture the window at 
 | `scenario.sql` | extra SQL of `-Scenario Full`, one block per database (`-- @db <name>` lines) |
 | `Capture-Window.ps1 -Process <name> -Out <png> [-Width 1440 -Height 900] [-Method Screen\|PrintWindow]` | resizes the client area to Width x Height logical px (DPI aware), captures it; see "Capture-Window" below |
 | `Compare-Mockup.ps1 -Mockup <png> -Capture <png> -Out <png>` | writes mockup \| capture \| absolute difference, each 1440 px wide |
+| `New-PostgresScenario.ps1 -Action Start\|Stop\|Status [-Port 55432] [-Name squill-visual-pg] [-Dir <dir>]` | `Start` runs `postgres:17-alpine` under Podman (starts the machine if needed, `max_connections=600`), loads `postgres-scenario.sql` (schemas `ventes` and `archive`, 450 `bulk_*` tables, roles `app_read`, `app_write`, `report`, `user`, `equipe`, `membre_unique`, mixed grants) and prints host, port, user, password; `-Dir` adds the profile `pg-visual` (Staging, no stored password: type the printed one) to `<dir>/profiles.json`. Re-runnable (recreates the container). `Stop` removes it. Exit 3: Podman missing |
+| `New-PostgresSessions.ps1 [-Count 450] [-Block] [-Stop]` | opens `Count` idle sessions (`application_name = squill-visual`) and with `-Block` a holder and a waiter on `ventes.clients` id 10482 (blocking chain of depth 2) through `podman exec`; `-Stop` terminates them |
 
 ## Run
 
@@ -59,3 +61,38 @@ Write `<dir>/settings.json` before starting the app (`theme` is `System`, `Light
 ## Stop
 
 Close the app window, or `Stop-Process -Name Squill.App.Avalonia` / `Squill.App.WinUI`, then `dotnet build-server shutdown`. Remove `$d` and unset `SQUILL_DATA_DIR` when done.
+
+## Drive-Window
+
+`pwsh tools/visual/Drive-Window.ps1 -Action <action> -Process <name> [...]` drives the window of a running head with UI Automation, the mouse and the keyboard (Windows only, PowerShell 7, no package). `-Process` is `Squill.App.Avalonia` or `Squill.App.WinUI`; the target is the main window, or the dialog chosen by `Focus-Dialog` while it stays open.
+
+| Action | Use |
+|--------|-----|
+| `Dump [-Depth n] [-Filter text]` | prints the UI Automation tree (`ControlType`, `Name`, `Id`, `Class`, `[x,y,w,h]` screen px) |
+| `Click -Name text [-ControlType Button] [-Index n] [-Mode Invoke\|Mouse\|DoubleClick\|RightClick]` | exact `Name` first, then contains; `Invoke` (default) uses the Invoke / SelectionItem / ExpandCollapse / Toggle pattern and falls back to a real mouse click; the other modes always use the mouse. `-X -Y` (client logical px) replaces `-Name` for canvases |
+| `Key -Keys "Ctrl+K Esc"` | chords separated by spaces, sent with `SendInput`; keys: modifiers `Ctrl Shift Alt Win`, `Enter Esc Tab Space Up Down Left Right Home End PageUp PageDown Delete Backspace F1-F12`, letters, digits |
+| `Type -Text text` | `SendInput` with `KEYEVENTF_UNICODE` (accents, `;`, quotes) |
+| `Wait -Name text [-TimeoutSeconds 10] [-Gone]` | polls until the element exists (or is gone); a name that also exists elsewhere (the title-bar search box has the palette input's name) never goes |
+| `Hover -Name text` or `-X -Y` | moves the pointer without clicking |
+| `Focus-Dialog` | brings a secondary window of the process to the front and makes it the target of the next actions (its tree is not in the main window tree); it is remembered in `$env:TEMP/squill-drive-target.txt` until that window closes |
+| `SelfTest` | opens a throwaway WinForms window, types into it, asserts the text, closes it: prints `selftest ok` |
+
+Exit codes: 0 ok, 1 window missing, 2 cannot get focus, 4 element missing (the nearest names are printed), 5 timeout, 6 bad arguments or self-test failure.
+
+**Foreground rule**: `Key`, `Type`, `Hover` and mouse clicks first check that the foreground window belongs to the target process and try to bring it to the front (`AttachThreadInput` + `SetForegroundWindow`); when that fails the script exits 2 and sends nothing, so keys never reach another program. `Invoke` clicks do not need the focus. Use `Dump` (add `-Filter`) to find names; empty names are listed below.
+
+### Names to click (Dump of both heads, SQLite `-Scenario Full`, French)
+
+| Need | Avalonia | WinUI |
+|------|----------|-------|
+| Open a connection (home) | `Click -Name pg-prod-eu -ControlType Button` (Invoke) | same (Invoke) |
+| Menus | `Fichier`, `Édition`, `Affichage`, `Requête`, `Base de données`, `Outils`, `Aide` (MenuItem) | same (MenuBarItem) |
+| Editor | `Code editor` (Edit, `Click -Mode Mouse`, then `Key Ctrl+A`, `Type`) | same |
+| Run / explain | `Exécuter` (Id `RunButton`), `Expliquer`, `Analyser`, `Arrêter`, `Script`; or `Key Ctrl+Enter` | `Expliquer`, `Arrêter`, `Auto-commit`, `Manuel` named; `Exécuter`, `Script`, `Analyser` have an empty name: use `Key Ctrl+Enter` / `Ctrl+Maj+Entrée` or `Dump` coordinates |
+| Palette | `Key Ctrl+K`, then the Edit named `Rechercher objets, fichiers, actions...` (second one in the tree); `Key Esc` | same |
+| Explorer filter | Edit Id `FilterBox` | Edit `Filtrer les objets` |
+| Explorer rows | `TreeViewItem`, empty names: use `Dump` coordinates and `Click -X -Y`/`-Mode Mouse` | `ListViewItem` named `Squill.Presentation.Explorer.ExplorerNode`: same |
+| Left rail, sidebar buttons, tab header, format/history/export | Ids `RailExplorer`, `RailHistory`, `RailSnippets`, `RailDiagram`, `RailSettings`, `NewConnectionButton`, `RefreshButton`, `CollapseButton`, `TabStrip`, `FormatButton`, `HistoryButton`, `ExportButton` (empty names; `Dump` shows Ids, the script clicks by `Name` only: use their coordinates) | empty names and mostly empty Ids (Ids `Rail*`, `NewConnectionButton`, `RefreshButton`, `CollapseButton`): coordinates |
+| Result search | Edit `Rechercher` | Edit `Rechercher` |
+
+Driven on both heads: open `pg-prod-eu` (Invoke on the home card), `Click -Name "Code editor" -Mode Mouse`, `Key Ctrl+A`, `Type "select * from clients"`, `Key Ctrl+Enter` (12 rows), `Key Ctrl+K` (palette open, input present), `Key Esc`. Only the editor click needed `Mouse`; `Invoke` worked for the cards. Gap: about 14 controls per head have empty accessibility names (rail 5, sidebar 3, explorer rows, tab header, WinUI `Exécuter`/`Script`/`Analyser`, format/history/export): more than the 12 the card allows, so no head was changed; adding `AutomationProperties.Name` (also needed by the Narrator checklist rows) is left to a card.

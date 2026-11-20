@@ -277,7 +277,7 @@ public sealed partial class CommandPalette : Grid
                     Height = 8,
                     CornerRadius = new CornerRadius(2),
                     VerticalAlignment = VerticalAlignment.Center,
-                    Background = (Brush)Application.Current.Resources[$"SquillEnv{env.Suffix}Brush"],
+                    Background = Tokens.Brush(this, $"SquillEnv{env.Suffix}Brush"),
                 });
             }
 
@@ -317,7 +317,7 @@ public sealed partial class CommandPalette : Grid
             "check" => "SquillIconCheck",
             _ => "SquillIconAction",
         };
-        var icon = Icons.Create(resource, 14, (Brush)Application.Current.Resources["SquillFg3Brush"]);
+        var icon = Icons.Create(resource, 14, Tokens.Brush("SquillFg3Brush"));
         icon.Margin = new Thickness(0, 0, 10, 0);
         icon.VerticalAlignment = VerticalAlignment.Center;
         icon.Tag = Role.Icon;

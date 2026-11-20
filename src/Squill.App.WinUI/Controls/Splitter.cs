@@ -23,7 +23,12 @@ public sealed partial class Splitter : UserControl
     public Splitter(bool vertical)
     {
         _vertical = vertical;
-        Content = new Border { Background = Views.Tokens.Brush("SquillBorderBrush") };
+        var bar = new Border();
+        Content = bar;
+        // The element's own theme: at construction the main window theme may not be applied yet.
+        void Paint() => bar.Background = Views.Tokens.Brush(this, "SquillBorderBrush");
+        Loaded += (_, _) => Paint();
+        ActualThemeChanged += (_, _) => Paint();
         if (vertical)
             Width = Thickness;
         else

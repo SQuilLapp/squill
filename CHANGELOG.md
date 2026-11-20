@@ -6,8 +6,17 @@
 
 ## [Unreleased]
 
+### Added
+
+- Explorer: select several tables (Ctrl+click, Shift+click) and drop them in one action from the context menu or with `Delete`. The confirmation lists the tables, referencing tables are dropped first, a table outside the selection that still references one blocks the drop, and PostgreSQL, SQL Server and SQLite drop them all or none (MySQL stops at the first failure and says what was dropped).
+
 ### Fixed
 
+- Dropping a table on a Production connection now asks the production confirmation and runs inside the open manual transaction (it used to run without either); MySQL asks about the implicit commit first.
+- WinUI: the light theme now also applies to the command palette, the grid filter bar, the search boxes, the history status colors, the plan details panel and the splitters, even when Windows is dark.
+- WinUI: the schema compare script pane redraws when its text changes; the privilege matrix shows its seven columns at 1440 px; the read-only marker under a filter, the export menu count and the CSV separator label are correct.
+- WinUI and Avalonia: a completion popup with a single entry no longer stays open after `Ctrl+Enter` runs the query.
+- Avalonia: the compare status bar shows the target environment after the sides are swapped; the privileges and sessions tabs no longer show the query view through them; `Annuler` stays visible in the toolbar with a transaction open at 1440 px.
 - Home page: an Oracle connection card now has its engine badge and name, and a click on any card says "Connecting..." until the connection is open instead of looking unresponsive.
 - WinUI explorer: names are no longer cut at the bottom, so leading underscores (`__EFMigrationsHistory`) and the tails of g, y and p show again.
 - WinUI: the SQL editor now follows the light theme instead of staying dark.

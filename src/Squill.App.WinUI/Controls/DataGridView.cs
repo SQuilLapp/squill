@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
+using Squill.App.WinUI.Views;
 using Squill.Presentation;
 using Squill.Presentation.Editing;
 using Squill.Presentation.Results;
@@ -185,7 +186,7 @@ public sealed partial class DataGridView : Grid
             _picker.Visibility = CellEditorKinds.HasPicker(c.EditorKind) ? Visibility.Visible : Visibility.Collapsed;
 
             var danger = c.Error is not null;
-            _editorFrame.BorderBrush = (Brush)Application.Current.Resources[danger ? "SquillDangerBrush" : "SquillAccentBrush"];
+            _editorFrame.BorderBrush = Tokens.Brush(this, danger ? "SquillDangerBrush" : "SquillAccentBrush");
             _editorFrame.BorderThickness = new Thickness(danger ? 2 : 1);
             ToolTipService.SetToolTip(_editor, c.Error);
             if (_canvas.CellRect(c.EditRow, c.EditColumn) is { } r)
