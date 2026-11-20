@@ -508,7 +508,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     }
 
     /// <summary>Gets the environment of the tab on screen, else of <see cref="ActiveSession"/>, or <see cref="ConnectionEnvironment.None"/> when not connected.</summary>
-    public ConnectionEnvironment ActiveEnvironment => (_shownSession ?? ActiveSession)?.Profile.Environment ?? ConnectionEnvironment.None;
+    public ConnectionEnvironment ActiveEnvironment => _shownCompare is { Environment: not ConnectionEnvironment.None } compare ? compare.Environment : (_shownSession ?? ActiveSession)?.Profile.Environment ?? ConnectionEnvironment.None;
 
     /// <summary>
     /// Records which tab is on screen, so the environment colour and the status bar follow the tab and not the explorer selection;
@@ -531,6 +531,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         foreach (var monitor in Monitors)
             monitor.SetActive(ReferenceEquals(monitor, tab)); // a monitor only polls while its tab is on screen
         _shownSession = session;
+        _shownCompare = tab as SchemaCompareViewModel; // the target of a compare changes while its tab stays on screen
         if (session is not null && !ReferenceEquals(ActiveSession, session))
             ActiveSession = session; // raises ActiveEnvironment
         else
@@ -569,6 +570,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     }
 
     private ConnectionSession? _shownSession;
+
+    private SchemaCompareViewModel? _shownCompare;
 
     private bool HasSession() => ActiveSession is not null;
 

@@ -409,7 +409,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-13](phase-20/P20-13-winui-designer-er-states-drive.md) | WinUI: drive the designer (M07), the ER diagram (M08) and control states | P20-01 | partial |
 | [P20-14](phase-20/P20-14-winui-postgres-screens-drive.md) | WinUI: see the PostgreSQL fixes, drive privileges, sessions, plan rows | P20-01, P20-03 | partial |
 | [P20-15](phase-20/P20-15-winui-light-theme-production-dialog-drive.md) | WinUI: light theme over a dark system, production dialog, transaction leftovers | P20-01, P20-02 | partial |
-| [P20-16](phase-20/P20-16-avalonia-compare-import-drive.md) | Avalonia: drive schema compare (M09) and the import wizard (M10) | P20-10 | todo |
+| [P20-16](phase-20/P20-16-avalonia-compare-import-drive.md) | Avalonia: drive schema compare (M09) and the import wizard (M10) | P20-10 | partial |
 | [P20-17](phase-20/P20-17-avalonia-postgres-screens-drive.md) | Avalonia: drive privileges (M11), sessions (M12), PostgreSQL plan rows | P20-14 | todo |
 | [P20-18](phase-20/P20-18-avalonia-grid-filter-palette-completion-drive.md) | Avalonia: finish grid filter, palette and completion passes | P20-11, P20-12 | todo |
 | [P20-19](phase-20/P20-19-avalonia-designer-er-states-drive.md) | Avalonia: drive the designer (M07), the ER diagram (M08) and pointer states | P20-13 | todo |

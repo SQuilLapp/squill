@@ -168,3 +168,5 @@ Phase 18 (P18-25 to P18-27), a window opened through the dialog service. Left st
 What was compared and not for sections 15 to 19: nothing was compared with the PNGs; see [verification/new-screens.md](../verification/new-screens.md).
 
 P20-10 (WinUI published AOT head, SQLite `-Scenario Full`, 1440 x 900 logical at scale 1.5): M09 driven and read in French light and dark against `M09-Comparaison-clair/sombre-Windows` (not English); M10 only the empty first step (the native file picker could not be driven); M01 home persistence of the startup check driven (see new-screens.md).
+
+P20-16 (Avalonia published AOT head, French): M09 compared in light and dark (status bar environment block fixed), M10 driven through all five steps in dark (see the card's Done notes).
