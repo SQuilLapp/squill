@@ -156,7 +156,7 @@ public sealed partial class UpdateViewModel : ViewModelBase, IDisposable
             ShouldAskFrequency = _service.IsInstalled && settings.UpdateFrequency == UpdateCheckFrequency.NotAsked;
             if (!ShouldAskFrequency)
             {
-                await _service.CheckIfDueAsync(_cts.Token);
+                await _service.CheckIfDueAsync(_cts.Token, atStart: true);
             }
         }
         catch (Exception) when (!_cts.IsCancellationRequested)
