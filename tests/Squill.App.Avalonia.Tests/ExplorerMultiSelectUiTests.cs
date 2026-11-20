@@ -5,6 +5,7 @@ using Squill.Core;
 using Squill.Data;
 using Squill.Data.Sqlite;
 using Squill.Platform;
+using Squill.Platform.Secrets;
 using Squill.Presentation;
 using Squill.Presentation.Explorer;
 using Squill.Presentation.Localization;
@@ -49,7 +50,7 @@ public sealed class ExplorerMultiSelectUiTests
             {
                 var providers = new ProviderRegistry();
                 providers.Register(new SqliteDatabaseProvider());
-                var services = AppComposition.Create(new TestPlatform(providers), new AppPaths(dir));
+                var services = AppComposition.Create(new TestPlatform(providers), new AppPaths(dir), secretStore: new InMemorySecretStore());
                 var window = new MainWindow { DataContext = services.Workspace };
                 window.Attach(services, dir);
                 var view = window.FindControl<SidebarView>("Sidebar")!.FindControl<ObjectExplorerView>("ObjectExplorer")!;

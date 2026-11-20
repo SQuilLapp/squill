@@ -65,9 +65,9 @@ if ($Dir) {
     $null = New-Item -ItemType Directory -Force $Dir
     $file = Join-Path $Dir 'profiles.json'
     $id = [guid]::new([Security.Cryptography.MD5]::HashData([Text.Encoding]::UTF8.GetBytes('squill-visual-pg-visual'))).ToString()
-    $profile = [ordered]@{ id = $id; name = 'pg-visual'; dialect = 'PostgreSql'; host = '127.0.0.1'; port = $Port; database = 'postgres'
+    $entry = [ordered]@{ id = $id; name = 'pg-visual'; dialect = 'PostgreSql'; host = '127.0.0.1'; port = $Port; database = 'postgres'
         userName = 'postgres'; filePath = $null; ssh = $null; environment = 'Staging' }
     $all = @(if (Test-Path $file) { Get-Content -Raw $file | ConvertFrom-Json -AsHashtable | Where-Object { $_.name -ne 'pg-visual' } })
-    ConvertTo-Json -InputObject @($all + $profile) -Depth 4 | Set-Content $file -Encoding utf8
+    ConvertTo-Json -InputObject @($all + $entry) -Depth 4 | Set-Content $file -Encoding utf8
     Write-Host "Profile pg-visual written to $file (the password is not stored: type $password at the first connection)."
 }

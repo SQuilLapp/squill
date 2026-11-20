@@ -14,27 +14,27 @@ public sealed class DropTablesTests
     public async Task DropOrder_ChainOfForeignKeys_DropsAllTables()
     {
         await using var connection = await OpenAsync();
-        await DropTablesScenario.OrderDropsReferencingTablesFirstAsync(connection, DatabaseDialect.Sqlite, null);
+        Assert.Null(await Record.ExceptionAsync(() => DropTablesScenario.OrderDropsReferencingTablesFirstAsync(connection, DatabaseDialect.Sqlite, null)));
     }
 
     [Fact]
     public async Task DropParentFirst_ReferencedByChild_IsRefusedAndKeepsTables()
     {
         await using var connection = await OpenAsync();
-        await DropTablesScenario.WrongOrderIsRefusedAsync(connection, DatabaseDialect.Sqlite, null);
+        Assert.Null(await Record.ExceptionAsync(() => DropTablesScenario.WrongOrderIsRefusedAsync(connection, DatabaseDialect.Sqlite, null)));
     }
 
     [Fact]
     public async Task Plan_UnselectedChild_ReportsOneBlocker()
     {
         await using var connection = await OpenAsync();
-        await DropTablesScenario.UnselectedReferencingTableBlocksAsync(connection, DatabaseDialect.Sqlite, null);
+        Assert.Null(await Record.ExceptionAsync(() => DropTablesScenario.UnselectedReferencingTableBlocksAsync(connection, DatabaseDialect.Sqlite, null)));
     }
 
     [Fact]
     public async Task FailedDropInTransaction_AfterTwoDrops_RollsBack()
     {
         await using var connection = await OpenAsync();
-        await DropTablesScenario.FailureInTransactionRollsBackOrIsPartialAsync(connection, DatabaseDialect.Sqlite, null);
+        Assert.Null(await Record.ExceptionAsync(() => DropTablesScenario.FailureInTransactionRollsBackOrIsPartialAsync(connection, DatabaseDialect.Sqlite, null)));
     }
 }
