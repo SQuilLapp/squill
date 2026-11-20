@@ -184,6 +184,8 @@ public sealed partial class QueryTabView : UserControl
             ShowResult();
         else if (e.PropertyName == nameof(QueryTabViewModel.IsParametersPanelOpen) && _tab?.IsParametersPanelOpen == true)
             Dispatcher.UIThread.Post(FocusFirstEmptyParameter, DispatcherPriority.Loaded);
+        else if (e.PropertyName == nameof(QueryTabViewModel.IsRunning) && _tab?.IsRunning == true)
+            (_tab.Editor as AvaloniaSqlEditor)?.HideSuggest();
         else if (e.PropertyName is nameof(QueryTabViewModel.CanExplain) or nameof(QueryTabViewModel.CanAnalyze) or nameof(QueryTabViewModel.ExplainDisabledReason) or nameof(QueryTabViewModel.AnalyzeDisabledReason))
             ShowPlanButtons();
     }
@@ -241,7 +243,7 @@ public sealed partial class QueryTabView : UserControl
             return;
         var loaded = DisplayFormat.Count(grid.RowCount);
         FooterText.Text = _result?.View?.FooterText ?? UiText.Format("results.footer", loaded, grid.IsTruncated ? loaded + "+" : loaded);
-        ExportTitle.Text = UiText.Format("results.exportRows", loaded);
+        ExportTitle.Text = UiText.Format("results.exportRows", DisplayFormat.Count((_result?.Editor?.Grid ?? (IGridDataSource?)_result?.Grid)?.RowCount ?? grid.RowCount)); // export writes every loaded row, filtered or not
     }
 
     private void ShowFilterBar()
@@ -271,6 +273,8 @@ public sealed partial class QueryTabView : UserControl
     {
         if (e.PropertyName == nameof(ResultViewState.FooterText))
             RefreshFooter();
+        else if (e.PropertyName == nameof(ResultViewState.IsActive))
+            ShowEditBar();
         else if (e.PropertyName == nameof(ResultViewState.Sort))
             ShowHeaderMarks();
     }
@@ -303,14 +307,15 @@ public sealed partial class QueryTabView : UserControl
         }
 
         _editor = _result?.Editor;
-        var reason = _editor is null && _result?.ReadOnlyReason != "loading" ? _result?.ReadOnlyReason : null;
+        var filtered = _editor?.Grid.IsViewActive == true; // a filter, search or sort makes the grid read-only (ADR 0014)
+        var reason = (_editor is null || filtered) && _result?.ReadOnlyReason != "loading" ? _result?.ReadOnlyReason : null;
         RowTools.IsVisible = _editor is not null;
         Marker.IsVisible = _editor is not null || reason is not null;
-        MarkerText.Text = _editor is not null
+        MarkerText.Text = _editor is not null && !filtered
             ? UiText.Format("results.editable", string.Join(", ", _editor.Target.KeyColumns))
             : reason is null ? null : UiText.Format("results.readOnly", reason);
-        MarkerIcon.Bind(global::Avalonia.Controls.Shapes.Path.DataProperty, this.GetResourceObservable(_editor is not null ? "SquillIconPencil" : "SquillIconLock"));
-        var brush = this.GetResourceObservable(_editor is not null ? "SquillSuccessBrush" : "SquillFg3Brush");
+        MarkerIcon.Bind(global::Avalonia.Controls.Shapes.Path.DataProperty, this.GetResourceObservable(_editor is not null && !filtered ? "SquillIconPencil" : "SquillIconLock"));
+        var brush = this.GetResourceObservable(_editor is not null && !filtered ? "SquillSuccessBrush" : "SquillFg3Brush");
         MarkerIcon.Bind(Shape.StrokeProperty, brush);
         MarkerText.Bind(TextBlock.ForegroundProperty, brush);
         PreviewSql.Command = _editor?.PreviewScriptCommand;

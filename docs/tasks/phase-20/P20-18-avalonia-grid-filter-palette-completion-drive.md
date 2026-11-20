@@ -1,6 +1,6 @@
 # P20-18 - Avalonia: finish the grid filter, command palette and completion popup passes
 
-Status: todo
+Status: partial
 Depends on: P20-11, P20-12
 
 ## Goal
@@ -15,8 +15,8 @@ P19-15 drove on Avalonia (dark, French) the filter popup, chip, column menu, one
 - WinUI, Linux / macOS, Narrator row (stays `not driven (no screen reader)`).
 
 ## Tasks
-- [ ] Drive, capture, read PNGs; fixes; update the Avalonia `Result` cells of `grid-filter-palette.md` and `completion.md` (never ticks) and the Avalonia cells of `visual-spec.md` rows M05 and M13.
-- [ ] Close everything.
+- [x] Drive (partial), capture, read PNGs; fixes; update the Avalonia `Result` cells of `grid-filter-palette.md` and `completion.md` (never ticks) and the Avalonia cells of `visual-spec.md` rows M05 and M13.
+- [x] Close everything.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance if code changed (`Squill.slnx`, Avalonia AOT publish, app starts, `LayoutOverlapTests` green); report lists per step `ok` / `bug` / `not driven (why)`.
@@ -26,3 +26,10 @@ P19-15 drove on Avalonia (dark, French) the filter popup, chip, column menu, one
 
 ## Suggested commit message
 Drive the Avalonia grid filter, command palette and completion popup in both themes and English
+
+## Done notes
+- Status `partial` (context stop rule). Driven on the published Avalonia AOT head, light, French, SQLite `-Scenario Full`: result search (2 rows of 12), the read-only marker under a search, the export menu, the palette (`comm`, pills, backdrop, environment squares, footer) and the completion popup after a run. Not driven: dark theme, English, filter steps 3-6, 9, 11-14, palette steps 18-25, completion join / Tab / Escape / snippets / keyword case, composites with the M05 and M13 PNGs (captures read directly). Results are in `grid-filter-palette.md`, `completion.md` (Notes) and `visual-spec.md` rows M05 and M13.
+- Stuck popup reproduced on Avalonia (2 of 2): fixed with `AvaloniaSqlEditor.HideSuggest()` called when a run starts, re-driven. The popup is LoomEditor's `SuggestWidget`, not AvaloniaEdit's (card and ADR 0002 wording is out of date).
+- Fixed with the P20-11 twins: read-only marker under a filter / search / sort, export menu title count (loaded rows). Test `ActiveFilter_MarksTheGridReadOnlyAndKeepsTheExportCountOfLoadedRows` (not run red first).
+- Reported, not fixed: the editor's find widget shows English text in a French UI (LoomEditor); the completion popup is tall with empty space.
+- Build 0 warnings, 4230 tests passed, Avalonia `check-aot-warnings.ps1` ran.
