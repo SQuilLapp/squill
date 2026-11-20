@@ -1,6 +1,6 @@
 # P20-12 - WinUI: drive the completion popup, and find out why a single-entry popup stays open
 
-Status: todo
+Status: partial
 Depends on: P20-01
 
 ## Goal
@@ -16,8 +16,8 @@ Depends on: P20-01
 - Avalonia (P20-18: AvaloniaEdit's window is a different widget), changing completion ranking.
 
 ## Tasks
-- [ ] Drive, capture, read PNGs; the investigation; fix with test or record; update `completion.md` Result cells and Notes (never ticks) and the WinUI cell of `visual-spec.md` where completion is mentioned.
-- [ ] Close everything.
+- [x] Drive (partial), capture, read PNGs; the investigation; fix with test or record; update `completion.md` Result cells and Notes (never ticks) and the WinUI cell of `visual-spec.md` where completion is mentioned.
+- [x] Close everything.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance if code changed; Done notes say reproduced yes / no with the steps.
@@ -27,3 +27,9 @@ Depends on: P20-01
 
 ## Suggested commit message
 Drive the WinUI completion popup and fix a popup that stays open after a run
+
+## Done notes
+- Status `partial`. Driven on the published WinUI head, dark, French: popup on `select * from cl`, join row with `ON`, Enter accept, one Ctrl+Z; results in `docs/verification/completion.md`. Not driven: Tab, Escape, snippets, keyword case, documentation panel (none seen on WinUI), light theme, English, other engines, 5,000 tables.
+- Stuck popup reproduced (3 of 3): after typing `select * from clients` the popup keeps the single entry and `Ctrl+Enter` runs without closing it. Fixed in the head glue (`LoomSqlEditor.HideSuggest`, called by `QueryTabView` when the tab starts running), re-driven: closed. No automated test possible (control not instantiable in the head tests).
+- Reported, not fixed: the popup is cut by the window's right edge when the caret is far right (LoomEditor placement); no footer hint line / documentation panel on WinUI.
+- Build `Squill.Windows.slnx` 0 warnings; AOT publish of the head ran and started.

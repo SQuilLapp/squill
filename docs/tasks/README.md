@@ -405,7 +405,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-09](phase-20/P20-09-multi-drop-engine-proofs.md) | Multi-table drop proved on SQLite, PostgreSQL, MySQL and SQL Server | P20-04 | done |
 | [P20-10](phase-20/P20-10-winui-compare-import-home-drive.md) | WinUI: drive schema compare (M09), import wizard (M10), home persistence | P20-01 | partial |
 | [P20-11](phase-20/P20-11-winui-grid-filter-palette-drive.md) | WinUI: finish the grid filter and palette checklists (dark, English, keys) | P20-01, P20-02 | partial |
-| [P20-12](phase-20/P20-12-winui-completion-popup-drive.md) | WinUI: drive the completion popup, investigate the stuck single-entry popup | P20-01 | todo |
+| [P20-12](phase-20/P20-12-winui-completion-popup-drive.md) | WinUI: drive the completion popup, investigate the stuck single-entry popup | P20-01 | partial |
 | [P20-13](phase-20/P20-13-winui-designer-er-states-drive.md) | WinUI: drive the designer (M07), the ER diagram (M08) and control states | P20-01 | todo |
 | [P20-14](phase-20/P20-14-winui-postgres-screens-drive.md) | WinUI: see the PostgreSQL fixes, drive privileges, sessions, plan rows | P20-01, P20-03 | todo |
 | [P20-15](phase-20/P20-15-winui-light-theme-production-dialog-drive.md) | WinUI: light theme over a dark system, production dialog, transaction leftovers | P20-01, P20-02 | todo |

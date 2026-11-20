@@ -1,6 +1,6 @@
 # Completion verification (P14-18)
 
-Status: **automated done, agent pass partial (P19-15 Avalonia: popup after `select * from cl`; WinUI popup, designer and ER not driven), manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
+Status: **automated done, agent pass partial (P19-15 Avalonia: popup after `select * from cl`; P20-12 WinUI: dark, French, popup, join row, Enter, Ctrl+Z, stuck popup fixed; designer and ER not driven), manual pending.** The owner ticks the boxes below; the `Result` column stays blank until then.
 
 ## Automated (done)
 
@@ -30,29 +30,30 @@ Columns: WinUI / Avalonia = tick when it behaves as described in that head. Resu
 
 | Step | WinUI | Avalonia | Result | Note |
 |---|---|---|---|---|
-| Type `select * from customers c join ` (the space last): the popup opens by itself, the first row is `orders o`, its detail reads `ON c.id = o.customer_id` | [ ] | [ ] | | |
-| Enter on that row inserts table, alias and condition at once, the caret is after the condition | [ ] | [ ] | | |
-| One Ctrl+Z reverts the whole insertion | [ ] | [ ] | | |
-| The space typed to open the popup does not accept an item (P14-10 risk): type `join` then space with the list open on a keyword | [ ] | [ ] | | |
-| `left join `, `right join `, `full join ` give the same condition text (SQLite: `right` / `full` only from 3.39; MySQL has no `full join` in the list) | [ ] | [ ] | | |
-| `cross join ` and `natural join ` give no `ON` row | [ ] | [ ] | | |
-| A table with two keys to the same table (`create table trip (id integer primary key, a integer references customers(id), b integer references customers(id))`, then `from trip t join `) gives two `customers` rows with different conditions | [ ] | [ ] | | |
-| Self join: a table whose key references itself gives two rows, each with an alias | [ ] | [ ] | | |
-| A table without any key (`no_pk`) gets its plain row only | [ ] | [ ] | | |
-| Typing `ord` after `join ` filters the join rows by table name (`orders o` stays) | [ ] | [ ] | | |
+| Type `select * from customers c join ` (the space last): the popup opens by itself, the first row is `orders o`, its detail reads `ON c.id = o.customer_id` | [ ] | [ ] | agent: ok (WinUI P20-12, dark fr, `commandes c join `: opens by itself, first row `clients cl`) | |
+| Enter on that row inserts table, alias and condition at once, the caret is after the condition | [ ] | [ ] | agent: ok (WinUI P20-12: `clients cl ON c.client_id = cl.id`, caret after it) | |
+| One Ctrl+Z reverts the whole insertion | [ ] | [ ] | agent: ok (WinUI P20-12: back to `... join `) | |
+| The space typed to open the popup does not accept an item (P14-10 risk): type `join` then space with the list open on a keyword | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| `left join `, `right join `, `full join ` give the same condition text (SQLite: `right` / `full` only from 3.39; MySQL has no `full join` in the list) | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| `cross join ` and `natural join ` give no `ON` row | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| A table with two keys to the same table (`create table trip (id integer primary key, a integer references customers(id), b integer references customers(id))`, then `from trip t join `) gives two `customers` rows with different conditions | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| Self join: a table whose key references itself gives two rows, each with an alias | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| A table without any key (`no_pk`) gets its plain row only | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| Typing `ord` after `join ` filters the join rows by table name (`orders o` stays) | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
 | Caret before an existing `ON` (`select * from customers c join | on c.id = o.customer_id`): no condition is inserted | [ ] | [ ] | | |
-| Typing `on ` by hand after `join orders o` proposes the same conditions | [ ] | [ ] | | |
-| Server engine: a table in a non-default schema (`sample.orders`) is inserted qualified | [ ] | [ ] | | |
-| A column name shared by two tables (`id` in `customers c join orders o`) is inserted qualified (`c.id`) | [ ] | [ ] | | |
-| Documentation panel on a table, a column, a join row and a function (`count`) shows text | [ ] | [ ] | | |
-| Keyword case: setting Upper, Lower, Preserve (change it in the settings, wait about five seconds, open a new popup) | [ ] | [ ] | | |
-| `sel` then Tab (or Enter) expands the snippet, Tab moves between the stops, Escape leaves the snippet; `ins`, `upd`, `del`, `cte`, `crt` expand | [ ] | [ ] | | |
-| No snippet is offered after `select 1 from ` | [ ] | [ ] | | |
-| Light and dark theme: popup and documentation panel readable | [ ] | [ ] | | |
-| A connection with about 5,000 tables (`ErStressScenario` can create one): the popup after `join ` opens without a visible stall | [ ] | [ ] | | |
-| `SQUILL_LANGUAGE=fr`: the popup works the same (SQL keywords and details are not translated, by design) | [ ] | [ ] | | |
+| Typing `on ` by hand after `join orders o` proposes the same conditions | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| Server engine: a table in a non-default schema (`sample.orders`) is inserted qualified | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| A column name shared by two tables (`id` in `customers c join orders o`) is inserted qualified (`c.id`) | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| Documentation panel on a table, a column, a join row and a function (`count`) shows text | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| Keyword case: setting Upper, Lower, Preserve (change it in the settings, wait about five seconds, open a new popup) | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| `sel` then Tab (or Enter) expands the snippet, Tab moves between the stops, Escape leaves the snippet; `ins`, `upd`, `del`, `cte`, `crt` expand | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| No snippet is offered after `select 1 from ` | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| Light and dark theme: popup and documentation panel readable | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| A connection with about 5,000 tables (`ErStressScenario` can create one): the popup after `join ` opens without a visible stall | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
+| `SQUILL_LANGUAGE=fr`: the popup works the same (SQL keywords and details are not translated, by design) | [ ] | [ ] | agent: not driven (WinUI P20-12, time) | |
 
 ## Notes
 
 - P19-15 (agent): Avalonia published AOT head, dark, French, SQLite. Typing `select * from cl` opens the popup by itself with `clients` (selected) and `v_ca_par_client`, a `St` kind tag, and a documentation panel (`table`, `clients - table, 5 columns`). Seen: the popup is about 520 px tall with the documentation text at the bottom and empty space between the two rows and the text, unlike a compact list. The `join` / `ON`, Enter, Tab, Ctrl+Z, snippet and keyword-case rows were not driven (time): all other Avalonia rows are `agent: not driven`. WinUI popup comparison not possible (P19-13 did not drive it); P19-13 saw a single-entry popup stay open after `Ctrl+Enter`, not seen on Avalonia (popup closed by Escape only here).
-
+- P20-12 (agent): WinUI published AOT head, dark, French, SQLite `-Scenario Full`. `select * from cl` opens the popup by itself (`clients`, `v_ca_par_client`, kind tag `St`, selected row highlighted); no documentation panel and no footer hint line appeared on WinUI (Avalonia showed a panel in P19-15; the spec M04 text mentions a footer with keyboard chips): not investigated further. A join popup is wider than the room to the right of the caret and is cut by the window edge (about 640 px, no right border): LoomEditor's popup placement, to report to its owner.
+- Stuck popup, **reproduced yes**, 3 of 3 times: type `select * from clients` (the popup stays open on the single exact entry `clients`), `Ctrl+Enter`: the query runs (12 rows) and the popup stays over the editor until `Escape`. Cause: the run keeps the editor focus and LoomEditor's suggest widget is only hidden by its own keys or a focus change. Fix in the head glue: `QueryTabView` calls `LoomSqlEditor.HideSuggest()` (command `hideSuggestWidget`) when `IsRunning` turns true, so every way to run (keys, buttons, palette) closes it; re-driven after republishing: the popup is gone after `Ctrl+Enter`. No automated test: the popup lives in the WinUI control, which the head test project cannot instantiate headless. Not driven: `Tab`, `Escape`, snippets, keyword case, light theme, English, the other rows.

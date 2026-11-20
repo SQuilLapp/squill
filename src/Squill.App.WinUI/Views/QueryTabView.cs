@@ -630,7 +630,11 @@ public sealed partial class QueryTabView : UserControl
         if (e.PropertyName == nameof(QueryTabViewModel.SelectedResult))
             ShowResult();
         else if (e.PropertyName == nameof(QueryTabViewModel.IsRunning))
+        {
             ShowRunning();
+            if (_tab?.IsRunning == true)
+                (_tab.Editor as LoomSqlEditor)?.HideSuggest();
+        }
         else if (e.PropertyName is nameof(QueryTabViewModel.CanExplain) or nameof(QueryTabViewModel.CanAnalyze) or nameof(QueryTabViewModel.ExplainDisabledReason) or nameof(QueryTabViewModel.AnalyzeDisabledReason))
             ShowPlanButtons();
     }
