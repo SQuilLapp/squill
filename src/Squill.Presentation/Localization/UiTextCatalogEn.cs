@@ -169,7 +169,7 @@ internal static class UiTextCatalogEn
         ("results.addRow", "Add row"),
         ("results.deleteRows", "Delete selected rows"),
         ("results.revertRows", "Revert changes of selected rows"),
-        ("results.exportCsvDetail", ".csv · separator ;"),
+        ("results.exportCsvDetail", ".csv · separator ,"),
         ("results.exportJsonDetail", ".json"),
         ("status.production", "PRODUCTION"),
         ("status.staging", "STAGING"),

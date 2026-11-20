@@ -675,7 +675,7 @@ public sealed partial class QueryTabView : UserControl
         if (grid is null)
             return;
         _footerText.Text = _result?.View?.FooterText ?? EditBarFormat.Footer(grid.RowCount, grid.IsTruncated);
-        _exportTitle.Text = UiText.Format("results.exportRows", EditBarFormat.Rows(grid.RowCount));
+        _exportTitle.Text = UiText.Format("results.exportRows", EditBarFormat.Rows((_result?.Editor?.Grid ?? (IGridDataSource?)_result?.Grid)?.RowCount ?? grid.RowCount)); // export writes every loaded row, filtered or not
     }
 
     private void ShowFilterBar()
@@ -738,7 +738,8 @@ public sealed partial class QueryTabView : UserControl
 
         _editor = _result?.Editor;
         _rowTools.Visibility = _editor is null ? Visibility.Collapsed : Visibility.Visible;
-        _markerLook = EditBarFormat.Marker(_editor?.Target.KeyColumns, _editor is null ? _result?.ReadOnlyReason : null);
+        var filtered = _editor?.Grid.IsViewActive == true; // a filter, search or sort makes the grid read-only (ADR 0014)
+        _markerLook = EditBarFormat.Marker(filtered ? null : _editor?.Target.KeyColumns, _editor is null || filtered ? _result?.ReadOnlyReason : null);
         ShowMarker();
         _previewSql.Command = _editor?.PreviewScriptCommand;
         _commit.Command = _editor?.CommitCommand;

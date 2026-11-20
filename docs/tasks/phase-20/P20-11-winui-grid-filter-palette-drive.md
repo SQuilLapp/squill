@@ -1,6 +1,6 @@
 # P20-11 - WinUI: finish the grid filter and command palette checklists (dark, English, keys)
 
-Status: todo
+Status: partial
 Depends on: P20-01, P20-02
 
 ## Goal
@@ -26,3 +26,9 @@ P19-13 compared only one filter chip and footer in dark French. `docs/verificati
 
 ## Suggested commit message
 Drive the WinUI grid filter and command palette checklists in both themes and English
+
+## Done notes
+- Status `partial` (context stop rule). Driven on the published WinUI head, dark, French; results per step in `docs/verification/grid-filter-palette.md`: steps 4, 5, 7, 9, 10, 13 ok; 3, 6, 15, 16, 18 partial; 8 fixed; 14 and 27 in the Note; 11, 12, 19-25 `not driven (time)`, 26 no screen reader. Not driven at all: English, light theme.
+- Fixes (small, no new test pattern existed for them; verified in the republished window): the read-only marker under a filter (`QueryTabView.ShowEditBar`), the export menu title count (loaded rows, not filtered), the CSV separator label (`,`, as the exporter writes). Avalonia has the same marker and title count code: left to P20-18.
+- Tooling: the native save dialog (`PickerHost`) is not reachable by `Drive-Window.ps1` (`Focus-Dialog` finds no secondary window and the foreground rule refuses keys); it was driven with a one-off mouse click and `SendKeys` after checking the foreground process. A card could add a `-Process PickerHost` mode.
+- Build 0 warnings (both solutions), tests green (4227 passed, 342 skipped), `check-aot-warnings.ps1` OK.
