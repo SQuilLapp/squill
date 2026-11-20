@@ -359,6 +359,7 @@ public sealed class SessionsMonitorView : UserControl
 
     private void Paint()
     {
+        Background = Brush("SquillBgBaseBrush"); // opaque: the query view sits underneath this tab and showed through
         _header.Background = Brush("SquillBgSurfaceBrush");
         _header.BorderBrush = Brush("SquillBorderBrush");
         foreach (var panel in _panels)
