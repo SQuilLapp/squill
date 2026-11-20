@@ -1,6 +1,6 @@
 # P20-10 - WinUI: drive schema compare (M09), the import wizard (M10) and the home page persistence
 
-Status: todo
+Status: partial
 Depends on: P20-01
 
 ## Goal
@@ -17,8 +17,8 @@ M09 and M10 were never driven in either head (`docs/verification/new-screens.md`
 - Avalonia (P20-16), PostgreSQL / MySQL / SQL Server compare (their Docker-gated flows ran in P18-31).
 
 ## Tasks
-- [ ] Drive, capture, read PNGs and composites; fixes; update the `Result` cells of rows 2, 3, 4, 7 and the Note of `docs/verification/new-screens.md` (never the ticks), the WinUI cells of `visual-spec.md` sections 15, 16 and 19 (M01, M09, M10).
-- [ ] Close everything.
+- [x] Drive, capture, read PNGs and composites; fixes; update the `Result` cells of rows 2, 3, 4, 7 and the Note of `docs/verification/new-screens.md` (never the ticks), the WinUI cells of `visual-spec.md` sections 15, 16 and 19 (M01, M09, M10).
+- [x] Close everything.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance if code changed; the report lists compared / not driven per screen, theme and language.
@@ -29,3 +29,6 @@ M09 and M10 were never driven in either head (`docs/verification/new-screens.md`
 
 ## Suggested commit message
 Drive and compare the WinUI schema compare and import wizard screens
+
+## Done notes
+- M09 driven and read in French light and dark (not English); fixed `DdlPane` not redrawing when its lines changed at offset 0 (no test: canvas control, no existing pattern). M10: the native file picker did not accept typed text (driver `Type`, mouse click, `SendKeys`), so only step 1 was read; steps 2 to 5 are `not driven (file picker)`, hence status partial. Home persistence of the startup check driven (unticked, restarted, no home page); re-ticking not done through the UI. Differences from M09 are listed in the Note of `docs/verification/new-screens.md`; none big enough for a P20-22 card. English theme passes and the 37 / 3 import outcome remain for a later pass.

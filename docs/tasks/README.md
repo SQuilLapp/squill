@@ -403,7 +403,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-07](phase-20/P20-07-winui-explorer-multi-select.md) | WinUI: select several tables in the explorer and drop them | P20-06 | done |
 | [P20-08](phase-20/P20-08-avalonia-explorer-multi-select.md) | Avalonia: select several tables in the explorer and drop them | P20-06, P20-07 | done |
 | [P20-09](phase-20/P20-09-multi-drop-engine-proofs.md) | Multi-table drop proved on SQLite, PostgreSQL, MySQL and SQL Server | P20-04 | done |
-| [P20-10](phase-20/P20-10-winui-compare-import-home-drive.md) | WinUI: drive schema compare (M09), import wizard (M10), home persistence | P20-01 | todo |
+| [P20-10](phase-20/P20-10-winui-compare-import-home-drive.md) | WinUI: drive schema compare (M09), import wizard (M10), home persistence | P20-01 | partial |
 | [P20-11](phase-20/P20-11-winui-grid-filter-palette-drive.md) | WinUI: finish the grid filter and palette checklists (dark, English, keys) | P20-01, P20-02 | todo |
 | [P20-12](phase-20/P20-12-winui-completion-popup-drive.md) | WinUI: drive the completion popup, investigate the stuck single-entry popup | P20-01 | todo |
 | [P20-13](phase-20/P20-13-winui-designer-er-states-drive.md) | WinUI: drive the designer (M07), the ER diagram (M08) and control states | P20-01 | todo |

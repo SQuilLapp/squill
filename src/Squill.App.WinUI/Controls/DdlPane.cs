@@ -62,6 +62,7 @@ public sealed partial class DdlPane : Grid
             _highlight = -1;
             SetOffset(0, fromBar: false);
             SyncBar();
+            _canvas.Invalidate(); // SetOffset returns early when already at the top
         }
     }
 
