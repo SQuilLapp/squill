@@ -1,6 +1,6 @@
 # P20-14 - WinUI: see the PostgreSQL fixes and drive the PostgreSQL-only screens
 
-Status: todo
+Status: partial
 Depends on: P20-01, P20-03
 
 ## Goal
@@ -28,3 +28,11 @@ P19-18 fixed the sessions table widths, the 7 privilege columns, the legend, the
 
 ## Suggested commit message
 Drive the WinUI PostgreSQL screens, privileges and sessions, against their mockups
+
+## Done notes
+- Status `partial`. Driven on the published WinUI AOT head (dark, French, 1440 x 900 logical, `-Width 2160 -Height 1350`), PostgreSQL 17 container of P20-03 (started and removed; `podman ps -a` lists only the owner's old containers), 453 sessions with a blocking chain.
+- **Found and fixed (M11):** at 1440 px the privilege matrix showed only `SELECT`, `INSERT`, `UPDATE` and part of `DELETE`; `TRUNCATE`, `REFERENCES`, `TRIGGER` were off screen behind a horizontal scrollbar and the hint line was cut (P19-18's widths were never seen). Fix in `SecurityView.cs`: role list 170, SQL panel 300, matrix name column 140 and cells 66 (headers 10 px), padding 16, footer padding 8. Re-captured: all 7 columns, legend, wrapped hint and `Copier` / `Annuler` / `Appliquer` visible. Side effect: long object names are ellipsised (`ventes.lignes_c...`); a wider name column would need a smaller SQL panel. No code test added (view layout, covered by the capture).
+- **Seen fine:** `1 membre` singular, role `user` quoted in `GRANT`/`REVOKE`, pending states and `2 changements` counter, `Appliquer` on Staging; sessions screen: `Attente` and `Requête` reachable, state dots, blocking chain `BLOQUE 1`, tabs with counts. Sessions text is truncated (`postgr...`, `Time...`) at this width: noted, not changed.
+- **Not driven (time):** light theme, English, Production dialogs (Apply, `Terminer la session`), `Annuler la requête`, session sort / filter / the cut notice beyond 400 rows, schema `archive` (450 tables) cut notice of M11, plan rows (`Expliquer` / `Analyser`, misestimate pill, cancel of `pg_sleep`), the `Failed` transaction variant, `visual-spec.md` sections 17 and 18 cells, comparison with `M11-*` / `M12-*` PNGs (read against `new-screens.md` descriptions only). The unticked task above stays open: a follow-up card should drive these.
+- Driver notes: `Drive-Window.ps1 -X -Y` maps 1:1 to the capture pixels on the 150 % display (no 1.5 factor) and, in the connection dialog, uses the main window origin; type into dialog fields with `Tab` / `Shift+Tab` instead. Opening the connection edit dialog twice in a session, or right-clicking the explorer right after saving it, closed the app once each (native crash `0xc0000374`, heap corruption, no `crash.log` entry): not reproduced on purpose, **possible bug, needs a card**.
+- Designer bug of P20-13: already carded as [P20-22](P20-22-winui-designer-cell-text-dim-when-edited.md) (index row present, `todo`); it needs a style fix and a re-drive, not a one-line change, so it was not fixed here.
