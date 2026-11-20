@@ -406,7 +406,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-10](phase-20/P20-10-winui-compare-import-home-drive.md) | WinUI: drive schema compare (M09), import wizard (M10), home persistence | P20-01 | partial |
 | [P20-11](phase-20/P20-11-winui-grid-filter-palette-drive.md) | WinUI: finish the grid filter and palette checklists (dark, English, keys) | P20-01, P20-02 | partial |
 | [P20-12](phase-20/P20-12-winui-completion-popup-drive.md) | WinUI: drive the completion popup, investigate the stuck single-entry popup | P20-01 | partial |
-| [P20-13](phase-20/P20-13-winui-designer-er-states-drive.md) | WinUI: drive the designer (M07), the ER diagram (M08) and control states | P20-01 | todo |
+| [P20-13](phase-20/P20-13-winui-designer-er-states-drive.md) | WinUI: drive the designer (M07), the ER diagram (M08) and control states | P20-01 | partial |
 | [P20-14](phase-20/P20-14-winui-postgres-screens-drive.md) | WinUI: see the PostgreSQL fixes, drive privileges, sessions, plan rows | P20-01, P20-03 | todo |
 | [P20-15](phase-20/P20-15-winui-light-theme-production-dialog-drive.md) | WinUI: light theme over a dark system, production dialog, transaction leftovers | P20-01, P20-02 | todo |
 | [P20-16](phase-20/P20-16-avalonia-compare-import-drive.md) | Avalonia: drive schema compare (M09) and the import wizard (M10) | P20-10 | todo |
@@ -414,6 +414,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-18](phase-20/P20-18-avalonia-grid-filter-palette-completion-drive.md) | Avalonia: finish grid filter, palette and completion passes | P20-11, P20-12 | todo |
 | [P20-19](phase-20/P20-19-avalonia-designer-er-states-drive.md) | Avalonia: drive the designer (M07), the ER diagram (M08) and pointer states | P20-13 | todo |
 | [P20-20](phase-20/P20-20-avalonia-transactions-home-drive.md) | Avalonia: transactions, production dialog, plan tab and home page leftovers | P20-15 | todo |
+| [P20-22](phase-20/P20-22-winui-designer-cell-text-dim-when-edited.md) | WinUI: designer name cell text is dim once edited (dark) | P20-13 | todo |
 | [P20-21](phase-20/P20-21-docs-adr-and-multi-delete-checklist.md) | Docs, ADR 0017, changelog and the multi-delete checklist for the owner | P20-01 ... P20-20 | todo |
 
 ### Phase 9 - Visual conformance

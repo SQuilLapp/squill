@@ -1,6 +1,6 @@
 # P20-13 - WinUI: drive the table designer (M07), the ER diagram (M08) and the shared control states
 
-Status: todo
+Status: partial
 Depends on: P20-01
 
 ## Goal
@@ -29,3 +29,11 @@ Depends on: P20-01
 
 ## Suggested commit message
 Drive the WinUI designer, ER diagram and control states against their mockups
+
+## Done notes
+- Status `partial`. Driven on the published WinUI AOT head (HEAD `a9d179e` code), SQLite `-Scenario Full`, **dark, French only**, at 1440 x 900 logical px (`Capture-Window.ps1 -Width 2160 -Height 1350` on the 150 % display; the window opens 960 logical px wide, so the first captures at 1440 x 900 physical px were discarded).
+- **M07 designer (dark, French), compared with `M07-Table-sombre-Windows.png`:** opened through the explorer context menu (`Concevoir la table...`), `Ajouter une colonne` (the Mouse-mode click added **two** columns: `new_column`, `new_column_2`; driver quirk, Invoke then mouse fallback), renamed two names, edited text. Seen: green `NOUVELLE` row tint and tag, blue `MODIFIEE` tag on the selected edited row, draft chip `N modifications en brouillon` (2, then 3) next to `Annuler les modifications` / `Appliquer Ctrl+S`, DDL preview updating, selected-column panel, `Avertissement` badges for the existing-NULL and view warnings. Layout matches the mockup except the known `not built` items (Commentaire column, impact box, Contraintes / Declencheurs / DDL tabs) and the title row (`main` + `clients` + `LOCAL` chip, no mono title / subtitle line).
+- **Bug found (not fixed, proposed as P20-22):** in a name cell of the designer grid, text that was edited is nearly invisible (darker than the row background) while the cell has focus, and an edited cell keeps the dim text after focus left (rows `emailabc`, `emailx`); untouched rows and the explorer filter box are fine. See [P20-22](P20-22-winui-designer-cell-text-dim-when-edited.md).
+- Not driven: duplicate-name and missing-type issue badges (the key typing landed in the wrong cell after the dim-text problem; no clean issue state was reached), `Appliquer` on `local-sqlite`, light theme, English, M08 ER diagram (the rail button click opened the history panel instead; the ER canvas, `Exporter` item, hops tooltip were not reached), pressed state (cannot hold the button), menu-item pointer-over (a synthetic `Hover` over a context-menu item showed no highlight: unconfirmed, not a verdict).
+- Seen and fine: the explorer context menu popup (`Concevoir la table...`, `Generer CREATE TABLE`, `Supprimer la table...`, `Masquer la table`) renders with rounded raised surface; focus ring on `Ajouter une colonne` after a click.
+- No code changed; nothing left running (app stopped, `dotnet build-server shutdown`, scratch dir and publish folder removed).
