@@ -64,6 +64,19 @@ public sealed class ExplorerMultiSelectionTests
     }
 
     [Fact]
+    public void A_filter_that_hides_selected_tables_removes_them_from_the_drop()
+    {
+        Connect("p", Table("alpha"), Table("beta"));
+        _tree.SetSelectedNodes([Find("alpha", ExplorerNodeKind.Table), Find("beta", ExplorerNodeKind.Table)]);
+
+        _tree.FilterText = "alpha";
+        _tree.DropSelectedTablesCommand.Execute(null);
+
+        var request = Assert.Single(_tablesRequests);
+        Assert.Equal(["alpha"], request.Tables.Select(t => t.Name));
+    }
+
+    [Fact]
     public void A_table_and_a_view_disable_the_command()
     {
         Connect("p", Table("a"), Table("v", TableKind.View));

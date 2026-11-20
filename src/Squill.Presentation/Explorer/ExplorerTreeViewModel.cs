@@ -106,7 +106,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
         ArgumentNullException.ThrowIfNull(nodes);
         var given = nodes.ToList();
         var picked = given.ToHashSet();
-        var inTree = Walk(Roots).Where(picked.Contains).ToList();
+        var inTree = Walk(Roots).Where(n => n.IsVisible && picked.Contains(n)).ToList(); // a node hidden by the filter is no longer selected
         SelectedNodes = [.. given.Where(inTree.Contains)];
         SelectedTables = [.. inTree.Where(n => n is { Kind: ExplorerNodeKind.Table, Table: not null })];
         OnPropertyChanged(nameof(SelectedNodes));
@@ -573,6 +573,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
         var filter = FilterText.Trim();
         foreach (var root in Roots)
             Apply(root, filter);
+        SetSelectedNodes(SelectedNodes); // drop the selected nodes the filter just hid
     }
 
     private static bool Apply(ExplorerNode node, string filter)

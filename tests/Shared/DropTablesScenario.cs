@@ -25,15 +25,9 @@ internal static class DropTablesScenario
 
     private static async Task<bool> ExistsAsync(IDatabaseConnection connection, string? schema, string name)
     {
-        try
-        {
-            await RunAsync(connection, $"SELECT COUNT(*) FROM {Qualify(schema, name)}");
-            return true;
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            return false;
-        }
+        // Reads the catalog, so a broken connection throws instead of reading as "the table is gone".
+        var snapshot = await connection.ReadSchemaAsync(CancellationToken.None);
+        return snapshot.Tables.Any(t => t.Name == name && (schema is null || string.Equals(t.Schema, schema, StringComparison.OrdinalIgnoreCase)));
     }
 
     private static string Unique() => "p20_" + Guid.NewGuid().ToString("N")[..8];
@@ -124,8 +118,7 @@ internal static class DropTablesScenario
                 // Microsoft.Data.Sqlite turns foreign keys on when it opens the connection; without them SQLite drops the parent silently.
                 await using var reader = await connection.ExecuteAsync("PRAGMA foreign_keys", [], CancellationToken.None);
                 var rows = await reader.ReadAllAsync(1, CancellationToken.None);
-                if (Convert.ToInt64(rows.Single()[0], CultureInfo.InvariantCulture) == 0)
-                    return;
+                Assert.NotEqual(0L, Convert.ToInt64(rows.Single()[0], CultureInfo.InvariantCulture));
             }
 
             await CreateAsync(connection, dialect, schema, a, null);
