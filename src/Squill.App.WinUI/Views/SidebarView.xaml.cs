@@ -121,6 +121,7 @@ public sealed partial class SidebarView : UserControl
         SelectedNodeChanged?.Invoke(this, node);
     }
 
+    // shortcut: the mouse selection is rebuilt by hand because WinUI's Multiple mode also selects children with a parent; replace with the native selection if WinUI stops doing that.
     // In Multiple mode WinUI selects a clicked row on press and drops it on release, so the mouse selection is rebuilt from the
     // button release: plain click = that row alone, Ctrl = toggle it, Shift = range from the anchor. _model is the selection the
     // user built; the keyboard stays native and is copied into it.

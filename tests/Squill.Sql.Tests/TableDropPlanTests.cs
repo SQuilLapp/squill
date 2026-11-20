@@ -22,7 +22,6 @@ public sealed class TableDropPlanTests
         var plan = TableDropPlan.Build([c, a, b], Snap(a, b, c));
         Assert.Equal(["c", "a", "b"], Names(plan.Order));
         Assert.Empty(plan.Blockers);
-        Assert.False(plan.HasCycle);
     }
 
     [Fact]
@@ -53,7 +52,6 @@ public sealed class TableDropPlanTests
         var d = T("d", "public", TableKind.Table, Fk("public", "b"), Fk("public", "c"));
         var plan = TableDropPlan.Build([a, b, c, d], Snap(a, b, c, d));
         Assert.Equal(["d", "b", "c", "a"], Names(plan.Order));
-        Assert.False(plan.HasCycle);
     }
 
     [Fact]
@@ -62,7 +60,6 @@ public sealed class TableDropPlanTests
         var a = T("a", "public", TableKind.Table, Fk("public", "b"));
         var b = T("b", "public", TableKind.Table, Fk("public", "a"));
         var plan = TableDropPlan.Build([a, b], Snap(a, b));
-        Assert.True(plan.HasCycle);
         Assert.Equal(["a", "b"], Names(plan.Order));
     }
 
@@ -84,7 +81,6 @@ public sealed class TableDropPlanTests
         var emp = T("emp", "public", TableKind.Table, Fk("public", "emp"));
         var plan = TableDropPlan.Build([emp], Snap(emp));
         Assert.Empty(plan.Blockers);
-        Assert.False(plan.HasCycle);
         Assert.Equal(["emp"], Names(plan.Order));
     }
 

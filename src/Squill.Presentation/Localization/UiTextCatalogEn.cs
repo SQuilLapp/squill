@@ -97,6 +97,8 @@ internal static class UiTextCatalogEn
         ("workspace.dropBlocked", "Tables still in use"),
         ("workspace.dropBlockedMessage", "Other tables reference the selection, so nothing was dropped:\n{0}"),
         ("workspace.dropPartial", "{0} of {1} tables were dropped before '{2}' failed: {3}"),
+        ("workspace.dropViewsNote", "Views that use these tables are not checked and may be left broken."),
+        ("workspace.dropNotAtomicNote", "MySQL cannot undo a partial drop: tables already dropped stay dropped if one fails."),
         ("workspace.terminal", "Terminal"),
         ("workspace.terminalUnsupported", "This build has no terminal support."),
         ("workspace.terminalNotStarted", "The terminal could not be started."),

@@ -9,9 +9,8 @@ public sealed record DropBlocker(TableInfo Referencing, TableInfo Referenced);
 
 /// <summary>The order in which a set of tables must be dropped and the tables that would block the drop.</summary>
 /// <param name="Order">Tables to drop, each one before the tables it references.</param>
-/// <param name="Blockers">Foreign keys from unselected tables to selected ones; <c>CASCADE</c> is never used.</param>
-/// <param name="HasCycle">True when selected tables reference each other in a loop; the loop members are appended in selection order.</param>
-public sealed record TableDropPlan(IReadOnlyList<TableInfo> Order, IReadOnlyList<DropBlocker> Blockers, bool HasCycle)
+/// <param name="Blockers">Foreign keys from unselected tables to selected ones; <c>CASCADE</c> is never used. Tables that reference each other in a loop are appended in selection order and the engine refuses the drop.</param>
+public sealed record TableDropPlan(IReadOnlyList<TableInfo> Order, IReadOnlyList<DropBlocker> Blockers)
 {
     /// <summary>Computes the drop order and the blockers of a selection.</summary>
     /// <param name="selected">The tables to drop; duplicates are removed, the first one wins.</param>
@@ -57,7 +56,6 @@ public sealed record TableDropPlan(IReadOnlyList<TableInfo> Order, IReadOnlyList
             order.Add(tables[next]);
         }
 
-        var hasCycle = order.Count < tables.Count;
         for (var i = 0; i < tables.Count; i++)
             if (!done[i])
                 order.Add(tables[i]);
@@ -73,7 +71,7 @@ public sealed record TableDropPlan(IReadOnlyList<TableInfo> Order, IReadOnlyList
                     blockers.Add(new DropBlocker(other, tables[j]));
         }
 
-        return new TableDropPlan(order, blockers, hasCycle);
+        return new TableDropPlan(order, blockers);
     }
 
     // shortcut: a PostgreSQL schema holding two tables that differ only by case collapses to one key, upgrade when such a schema must be supported.

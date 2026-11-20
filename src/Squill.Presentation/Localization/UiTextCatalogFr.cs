@@ -97,6 +97,8 @@ internal static class UiTextCatalogFr
         ("workspace.dropBlocked", "Tables encore utilisées"),
         ("workspace.dropBlockedMessage", "D'autres tables référencent la sélection, rien n'a été supprimé :\n{0}"),
         ("workspace.dropPartial", "{0} tables sur {1} supprimées avant l'échec de « {2} » : {3}"),
+        ("workspace.dropViewsNote", "Les vues qui utilisent ces tables ne sont pas vérifiées et peuvent devenir invalides."),
+        ("workspace.dropNotAtomicNote", "MySQL ne peut pas annuler une suppression partielle : les tables déjà supprimées le restent si l'une échoue."),
         ("workspace.terminal", "Terminal"),
         ("workspace.terminalUnsupported", "Cette version ne prend pas en charge le terminal."),
         ("workspace.terminalNotStarted", "Le terminal n'a pas pu être démarré."),

@@ -10,7 +10,9 @@ public partial class ThemeLookupScanTests
     // none of them is a token; Tokens.cs itself implements the lookup.
     private static readonly string[] AllowedFiles = ["Tokens.cs"];
 
-    [GeneratedRegex("""Resources\[[^\]]*(Brush|Color)"[^\]]*\]""", RegexOptions.IgnoreCase)]
+    // Also catches TryGetValue and ThemeDictionaries lookups with a literal brush or colour key. A key held in a variable is not seen:
+    // shortcut: text scan, upgrade to a Roslyn analyzer if variable keys start to carry token brushes.
+    [GeneratedRegex("""Resources(\[|\.TryGetValue\(|\.ThemeDictionaries\[)[^\]\)]*(Brush|Color)"[^\]\)]*[\]\)]""", RegexOptions.IgnoreCase)]
     private static partial Regex Lookup();
 
     [Fact]

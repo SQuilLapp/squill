@@ -826,7 +826,9 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
             var confirmed = tables.Count == 1
                 ? await _dialogs.ConfirmAsync(UiText.Get("workspace.dropTable"), UiText.Format("workspace.dropTableConfirm", QualifiedName(tables[0])))
                 : await _dialogs.ConfirmAsync(UiText.Get("workspace.dropTables"),
-                    UiText.Format("workspace.dropTablesConfirm", plan.Order.Count, Listed([.. plan.Order.Select(QualifiedName)], 15)));
+                    UiText.Format("workspace.dropTablesConfirm", plan.Order.Count, Listed([.. plan.Order.Select(QualifiedName)], 15))
+                    + "\n" + UiText.Get("workspace.dropViewsNote")
+                    + (DdlGenerators.UsesTransactionalDdl(dialect) ? "" : "\n" + UiText.Get("workspace.dropNotAtomicNote")));
             if (!confirmed)
                 return;
         }
