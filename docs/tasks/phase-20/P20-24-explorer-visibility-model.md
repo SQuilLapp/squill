@@ -1,6 +1,6 @@
 # P20-24 - Platform and Presentation: what the explorer shows, per level, with wildcard patterns
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -36,11 +36,11 @@ Today (read before starting):
 - The explorer tree, the badges (P20-25), the popup view-model (P20-26), the heads (P20-27, P20-28). PostgreSQL system schemas (`pg_catalog`, `information_schema`) are not read by `PostgresSchemaReader` (`where n.nspname not in ('pg_catalog', 'information_schema', 'pg_toast')`), so they cannot be offered: no "system" marker anywhere.
 
 ## Tasks
-- [ ] Tests first:
+- [x] Tests first:
   - `tests/Squill.Platform.Tests/JsonTableFilterStoreTests.cs`: round trip of a `TableFilter` with all four parts; an old file (only `{"Hidden":{...}}`, write the JSON text by hand) loads with empty `Schemas` / `TablePatterns` and `Databases` `null`; lookups in every loaded dictionary ignore case.
   - `tests/Squill.Presentation.Tests/Explorer/WildcardPatternTests.cs`: `sodda_*` matches `sodda_web` and `SODDA_WORKER`, not `gate`; `*` matches empty and anything; `a?c` matches `abc` not `ac` / `abbc`; `public.tmp_*` matches `public.tmp_x` not `ventes.tmp_x`; literal dot and brackets; trailing `*` after a literal; `**`.
   - `tests/Squill.Presentation.Tests/Explorer/NameVisibilityTests.cs`: opt-out by default (a new name is visible); `Hide` then `Show` round trip; first `AddPattern` hides the non-matching names; `Show` of a non-matching name in pattern mode adds an exact pattern and `Hide` removes it again; `HideAll` / `AllVisible`; `ShowAll` without prefix resets to `ShowsEverything`; `ShowAll` with prefix `public.` removes only `public.` patterns and adds `public.*` when `ventes.*` remains; `AddPattern` refuses blank and duplicates; `ToSaved` is `null` when everything is shown and sorted otherwise; case-insensitive names.
-- [ ] Run, see them fail; implement.
+- [x] Run, see them fail; implement.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance of [verification-recipe.md](verification-recipe.md) (`Squill.slnx`; no head code changed, so no AOT publish). `ExplorerTreeViewModelTests` and `JsonTableFilterStoreTests` unchanged and green (the old shape still works).

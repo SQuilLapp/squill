@@ -31,7 +31,12 @@ public sealed class JsonTableFilterStore : ITableFilterStore, IDisposable
             var filter = await JsonSerializer.DeserializeAsync(stream, StorageJsonContext.Default.TableFilter, ct);
             return filter is null
                 ? null
-                : new TableFilter(new Dictionary<string, IReadOnlyList<string>>(filter.Hidden, StringComparer.OrdinalIgnoreCase));
+                : new TableFilter(new Dictionary<string, IReadOnlyList<string>>(filter.Hidden ?? new Dictionary<string, IReadOnlyList<string>>(), StringComparer.OrdinalIgnoreCase))
+                {
+                    Databases = filter.Databases,
+                    Schemas = new Dictionary<string, NameFilter>(filter.Schemas ?? new Dictionary<string, NameFilter>(), StringComparer.OrdinalIgnoreCase),
+                    TablePatterns = new Dictionary<string, IReadOnlyList<string>>(filter.TablePatterns ?? new Dictionary<string, IReadOnlyList<string>>(), StringComparer.OrdinalIgnoreCase),
+                };
         }
         catch (Exception e) when (e is JsonException or IOException or ArgumentException or NotSupportedException)
         {
