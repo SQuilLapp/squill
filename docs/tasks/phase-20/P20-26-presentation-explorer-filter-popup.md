@@ -1,6 +1,6 @@
 # P20-26 - Presentation: the explorer filter popup view-model
 
-Status: todo
+Status: done
 Depends on: P20-25
 
 ## Goal
@@ -42,14 +42,14 @@ Visual reference (owner screenshot 3, dark):
 - Drawing the popup and the badge click (P20-27, P20-28). Removing `ChooseTablesCommand`, `ITableVisibilityPicker` and the old dialog keys (P20-28). Opening a database from the popup. System schemas.
 
 ## Tasks
-- [ ] Tests first, `tests/Squill.Presentation.Tests/Explorer/ExplorerFilterViewModelTests.cs` (fixtures of `ExplorerVisibilityTests` from P20-25):
+- [x] Tests first, `tests/Squill.Presentation.Tests/Explorer/ExplorerFilterViewModelTests.cs` (fixtures of `ExplorerVisibilityTests` from P20-25):
   - `CreateFilter`: connection -> first rows `All databases`, `Default database` (note `(d)`), then the sorted databases with `(Default database)` on `d`; database with schemas -> `All schemas`; schema -> `All tables` and table names without prefix; column node and disconnected connection -> `null`.
   - toggling an item hides the node in `Roots` and saves; `Rows` is the same instance list (no rebuild) and the All row becomes unchecked; All toggles hide then show everything; Default mirrors the default item both ways.
   - expanding an opened database adds its schema rows at depth 1; an unopened one has `CanExpand == false`; `ExpandAll` / `CollapseAll`.
   - pattern: `sodda_*` on the databases All row -> only matching databases shown, a Pattern row appears, `RemovePatternCommand` restores; blank and duplicate refused; a table pattern typed in schema `public` is stored as `public.<pattern>` and displayed without prefix.
   - search keeps a parent of a matching child, expanded.
   - fr and en texts of the All / Default rows and notes.
-- [ ] Run, see them fail; implement; catalog keys and parity.
+- [x] Run, see them fail; implement; catalog keys and parity.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance of [verification-recipe.md](verification-recipe.md) (`Squill.slnx`; heads untouched but `Squill.Windows.slnx` must still build).

@@ -508,7 +508,46 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
         database.FilterBadge = m > 0 ? Badge(n, m) : null;
     }
 
-    private static string KeyOf(TableInfo table) => string.IsNullOrEmpty(table.Schema) ? table.Name : $"{table.Schema}.{table.Name}";
+    internal static string KeyOf(TableInfo table) => string.IsNullOrEmpty(table.Schema) ? table.Name : $"{table.Schema}.{table.Name}";
+
+    /// <summary>Gets the names of the schemas of a snapshot, as the tree lists them (from its tables and routines); empty for an engine without schemas.</summary>
+    internal static List<string> SchemaNames(SchemaSnapshot snapshot) =>
+        [.. snapshot.Tables.Select(t => t.Schema ?? "").Concat(snapshot.Routines.Select(r => r.Schema)).Where(k => k.Length > 0).Distinct(StringComparer.Ordinal)];
+
+    private FilterLevel? FilterOf(ExplorerNode? node)
+    {
+        if (node?.Session is not { } session)
+            return null;
+        switch (node.Kind)
+        {
+            case ExplorerNodeKind.Connection:
+                return new(FilterMode.Databases, session, "");
+            case ExplorerNodeKind.Database:
+                return new(SchemaNames(session.Schema).Count > 0 ? FilterMode.Schemas : FilterMode.Tables, session, "");
+            case ExplorerNodeKind.Schema:
+                return new(FilterMode.Tables, session, node.Title);
+            case ExplorerNodeKind.Folder when node.Title == UiText.Get("explorer.tables"):
+                var parent = Walk(Roots).FirstOrDefault(n => n.Children.Contains(node));
+                return parent?.Kind switch
+                {
+                    ExplorerNodeKind.Schema => new(FilterMode.Tables, session, parent.Title),
+                    ExplorerNodeKind.Database => new(FilterMode.Tables, session, ""),
+                    _ => null,
+                };
+            default:
+                return null;
+        }
+    }
+
+    /// <summary>Tells whether the filter popup can be opened from a node.</summary>
+    /// <param name="node">A connection with a session, an opened database, a schema, or the Tables folder of one.</param>
+    /// <returns><see langword="true"/> when <see cref="CreateFilter"/> would return a popup.</returns>
+    public bool CanFilter(ExplorerNode? node) => FilterOf(node) is not null;
+
+    /// <summary>Creates the popup that edits what the explorer shows under a node.</summary>
+    /// <param name="node">A connection with a session (databases), an opened database (schemas, or tables without schemas), a schema or its Tables folder (tables).</param>
+    /// <returns>The popup, or <see langword="null"/> for any other node or a disconnected connection.</returns>
+    public ExplorerFilterViewModel? CreateFilter(ExplorerNode? node) => FilterOf(node) is { } level ? new ExplorerFilterViewModel(this, level) : null;
 
     private ConnectionVisibility VisibilityOf(Guid id)
     {
