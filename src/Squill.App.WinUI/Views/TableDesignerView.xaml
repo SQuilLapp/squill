@@ -20,6 +20,38 @@
       <Setter Property="Padding" Value="8,4,6,4" />
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Foreground" Value="{ThemeResource SquillFgBrush}" />
+      <!-- The stock template forces the light theme on the text element while focused (dark text on a dark box), so draw our own. -->
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="TextBox">
+            <Grid>
+              <Border x:Name="Box" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                      BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" />
+              <ScrollViewer x:Name="ContentElement" Padding="{TemplateBinding Padding}" Foreground="{TemplateBinding Foreground}"
+                            HorizontalScrollMode="Disabled" VerticalScrollMode="Disabled"
+                            HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"
+                            IsTabStop="False" ZoomMode="Disabled" AutomationProperties.AccessibilityView="Raw" />
+              <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="CommonStates">
+                  <VisualState x:Name="Normal" />
+                  <VisualState x:Name="PointerOver">
+                    <VisualState.Setters>
+                      <Setter Target="Box.Background" Value="{ThemeResource TextControlBackgroundPointerOver}" />
+                    </VisualState.Setters>
+                  </VisualState>
+                  <VisualState x:Name="Focused">
+                    <VisualState.Setters>
+                      <Setter Target="Box.Background" Value="{ThemeResource TextControlBackgroundFocused}" />
+                      <Setter Target="Box.BorderBrush" Value="{ThemeResource TextControlBorderBrushFocused}" />
+                    </VisualState.Setters>
+                  </VisualState>
+                </VisualStateGroup>
+              </VisualStateManager.VisualStateGroups>
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
     </Style>
     <Style x:Key="TypeInnerBoxStyle" TargetType="TextBox" BasedOn="{StaticResource CellBoxStyle}">
       <Setter Property="Foreground" Value="{ThemeResource SquillSynTypeBrush}" />
@@ -41,12 +73,6 @@
     </Style>
     <Style x:Key="LabelStyle" TargetType="TextBlock">
       <Setter Property="Foreground" Value="{ThemeResource SquillFg2Brush}" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-    </Style>
-    <Style x:Key="RowTagStyle" TargetType="TextBlock">
-      <Setter Property="FontSize" Value="10" />
-      <Setter Property="FontWeight" Value="Bold" />
-      <Setter Property="Margin" Value="0,0,8,0" />
       <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
     <Style x:Key="CountStyle" TargetType="TextBlock" BasedOn="{StaticResource MonoTextBlockStyle}">
@@ -150,13 +176,14 @@
                           <Border IsHitTestVisible="False" BorderBrush="{ThemeResource SquillBorderSubtleBrush}" BorderThickness="0,0,0,1" />
                           <Grid ColumnDefinitions="30,40,*,120,54,100,80">
                             <CheckBox Grid.Column="1" HorizontalAlignment="Center" MinWidth="0" Padding="0" IsChecked="{x:Bind IsPrimaryKey, Mode=TwoWay}" />
-                            <Grid Grid.Column="2" ColumnDefinitions="*,Auto">
-                              <TextBox Style="{StaticResource CellBoxStyle}" Text="{x:Bind Name, Mode=TwoWay}" />
-                              <TextBlock Grid.Column="1" Style="{StaticResource RowTagStyle}" Foreground="{ThemeResource SquillInfoBrush}"
-                                         loc:Loc.Key="designer.tagModified" Visibility="{x:Bind IsModified, Mode=OneWay}" />
-                              <TextBlock Grid.Column="1" Style="{StaticResource RowTagStyle}" Foreground="{ThemeResource SquillSuccessBrush}"
-                                         loc:Loc.Key="designer.tagNew" Visibility="{x:Bind IsNew, Mode=OneWay}" />
-                            </Grid>
+                            <!-- Row state is a dot with a tooltip: a text tag took the room of the narrow name cell and clipped the name. -->
+                            <Ellipse Width="8" Height="8" Fill="{ThemeResource SquillInfoBrush}" Visibility="{x:Bind IsModified, Mode=OneWay}">
+                              <ToolTipService.ToolTip><TextBlock loc:Loc.Key="designer.tagModified" /></ToolTipService.ToolTip>
+                            </Ellipse>
+                            <Ellipse Width="8" Height="8" Fill="{ThemeResource SquillSuccessBrush}" Visibility="{x:Bind IsNew, Mode=OneWay}">
+                              <ToolTipService.ToolTip><TextBlock loc:Loc.Key="designer.tagNew" /></ToolTipService.ToolTip>
+                            </Ellipse>
+                            <TextBox Grid.Column="2" Style="{StaticResource CellBoxStyle}" Text="{x:Bind Name, Mode=TwoWay}" />
                             <AutoSuggestBox Grid.Column="3" Style="{StaticResource TypeBoxStyle}" Text="{x:Bind DataType, Mode=TwoWay}"
                                             TextChanged="OnTypeTextChanged" GotFocus="OnTypeGotFocus" />
                             <CheckBox Grid.Column="4" HorizontalAlignment="Center" MinWidth="0" Padding="0" IsChecked="{x:Bind IsNullable, Mode=TwoWay}" />
