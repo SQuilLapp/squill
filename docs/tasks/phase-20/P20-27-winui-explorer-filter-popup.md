@@ -1,0 +1,42 @@
+# P20-27 - WinUI: `n of m` badges in the explorer and the filter popup
+
+Status: todo
+Depends on: P20-26
+
+## Goal
+Draw in the WinUI head what P20-25 and P20-26 compute: the `n of m` badge on connection, database and schema rows of the explorer, and the DataGrip-style filter popup that opens when the badge is clicked (or from the context menu), replacing the "Tables à afficher - <db>" `ContentDialog` (`src/Squill.App.WinUI/Services/WinUiTablePicker.cs`, owner screenshot 4: filter box, "Tout sélectionner" / "Tout désélectionner", flat `schema.table` check list, OK / Annuler).
+
+Files today: `src/Squill.App.WinUI/Views/SidebarView.xaml` (tree row template lines 48-91: `Grid ColumnDefinitions="Auto,*,Auto,Auto"`, column 2 environment pill, column 3 `Trailing` with `{x:Bind Trailing}` **one-time**, progress ring, connected dot), `SidebarView.xaml.cs` (`OnNodeContextRequested`, line 277: `explorer.chooseTables` on database and schema rows; `Tree.AddHandler(PointerReleasedEvent, ..., true)` rebuilds the selection on release, P20-07), `src/Squill.App.WinUI/MainWindow.xaml.cs` line 91 (`Explorer.Picker = new Services.WinUiTablePicker(...)`), and the code-built flyout precedent `src/Squill.App.WinUI/Views/ColumnMenu.cs` (plain check boxes in a `StackPanel`, no `ItemsSource`, P17-07).
+
+## Design decisions (final)
+- **Badge** (`SidebarView.xaml`): column 2 becomes a horizontal `StackPanel` holding the existing environment pill and a `Button` badge: `Content="{x:Bind FilterBadge, Mode=OneWay}"`, `Visibility="{x:Bind v:ExplorerGlyphs.Show(HasFilterBadge), Mode=OneWay}"`, `Click="OnBadgeClicked"`, `Margin="6,0,0,0"`, new style `ExplorerBadgeButtonStyle` in `Styles/Controls.xaml`: height 18, padding `5,0`, corner radius 3, 1 px border `SquillBorderBrush`, transparent fill, mono 11 px text `SquillFg3Brush`, hover fill `SquillBgHoverBrush` (all three exist in `Styles/SquillTokens.xaml` with `Default` and `Light` variants). DataGrip draws the badge right after the name (screenshot 1, `sodda_web  2 of 4`); SQuilL keeps the title column `*` so long names still trim, so the badge sits at the start of column 2, before the trailing text. The `Trailing` binding becomes `Mode=OneWay`. Badge tooltip: `explorer.chooseShown`.
+- **Click**: `OnBadgeClicked` reads the row's `ExplorerNode` (`DataContext`), calls `explorer.CreateFilter(node)` and, when not `null`, `ExplorerFilterMenu.Show(badge, vm)`. The click must not change the tree selection: check that `OnTreePointerReleased` (registered with `handledEventsToo: true`) ignores a release whose original source is inside the badge button, and fix it there if it does not.
+- **Context menu** (`OnNodeContextRequested`): one entry `explorer.chooseShown` on every node where `explorer.CanFilter(node)` (connected connection, opened database, schema, Tables folder), opening the same popup at the row; it **replaces** the `explorer.chooseTables` entry. `Show all tables` (database with `HiddenCount > 0`) and `Hide table` stay.
+- **Popup** `src/Squill.App.WinUI/Views/ExplorerFilterMenu.cs` (`internal sealed class`, one-line `<summary>`), built in code like `ColumnMenu.cs`:
+  - `Flyout`, placement `BottomEdgeAlignedLeft`, content width 440, list max height 420 in a `ScrollViewer`; flyout presenter padding 0; light dismiss and `Escape` close it (native).
+  - Top bar, right-aligned, three 28 x 28 icon buttons with tooltips: refresh (`explorer.refresh`, same `FontIcon` glyph as the refresh buttons already in `Views/`), expand all (`explorer.filter.expandAll`), collapse all (`explorer.filter.collapseAll`) as double chevrons; then a search `TextBox` (placeholder `explorer.filter`) two-way with `SearchText`.
+  - Rows: a `StackPanel` rebuilt from `vm.Rows` on `CollectionChanged`; each row a 26 px `Grid`: indent `Depth * 20`, chevron button (16 px, right / down glyph, only when `CanExpand`), `CheckBox` (not on `Pattern` rows; `IsChecked` from the row, `Click` -> `ToggleCommand`; never two-way), text (`FontWeight` SemiBold when `IsStrong`), note in `SquillFg3Brush`, then on `All` rows a small `HyperlinkButton` "add pattern" (`explorer.filter.addPattern`, `SquillFg3Brush`, 11 px) that becomes a `TextBox` (placeholder `explorer.filter.patternHint`, `Enter` commits, `Escape` cancels without closing the flyout) while `IsAddingPattern`; `Pattern` rows show the pattern text and an `x` button (tooltip `explorer.filter.removePattern`). A 1 px `SquillBorderBrush` line under the `All` row of depth 0 (screenshot 2). Each row listens to its own `PropertyChanged` (`IsChecked`, `IsExpanded`, `IsAddingPattern`) and updates its controls in place, so a toggle keeps focus and scroll position.
+  - Brushes through `Tokens.Brush(element, key)` (P20-02), never `Application.Current.Resources[...]`: `ThemeLookupScanTests` must stay green.
+- **Removed**: `Services/WinUiTablePicker.cs` and the `Explorer.Picker = ...` line of `MainWindow.xaml.cs` (the Presentation `Picker` property stays until P20-28).
+
+## Out of scope
+- The Avalonia head (P20-28), view-model changes (go back to P20-26 if one is needed), system schemas, opening a database from the popup.
+
+## Tasks
+- [ ] Tests first in `tests/Squill.App.WinUI.Tests/ExplorerFilterPopupTests.cs` (text checks in the style of `ExplorerMultiSelectTests`; link `Views\ExplorerFilterMenu.cs` as `Content` `Xaml\ExplorerFilterMenu.cs` in the csproj like `SchemaCompareView.cs`): the row template binds `FilterBadge, Mode=OneWay` and `Click="OnBadgeClicked"`; `Trailing` is bound `Mode=OneWay`; `ExplorerFilterMenu.cs` contains no `ItemsSource` and no `Application.Current.Resources`; `SidebarView.xaml.cs` no longer contains `explorer.chooseTables` and contains `explorer.chooseShown`; `MainWindow.xaml.cs` no longer contains `WinUiTablePicker`; `ExplorerBadgeButtonStyle` exists in `Styles/Controls.xaml`. See them fail, then implement.
+- [ ] Publish the AOT head and drive it (P20-01 `Drive-Window.ps1`, procedure of recipe 3 of [verification-recipe.md](verification-recipe.md)):
+  - PostgreSQL: `tools/visual/New-PostgresScenario.ps1 -Action Start -Dir <dir>` (profile `pg-visual`), then add a second database: `podman exec squill-visual-pg psql -U postgres -c "create database extra_db"`. Connect, read a capture of the badges on the connection and database rows; click the connection badge: popup with `All databases`, `Default database (...)`, the databases; expand the scenario database to its schemas (`ventes`, `archive`, `public`); uncheck `archive`: the schema leaves the explorer at once and the badge goes to `n-1 of n`; add the pattern `v*` on `All schemas`; close, restart the app: the filter is still applied.
+  - SQLite `-Scenario Full`: right click the database -> `Choisir ce qui est affiché...` -> tables popup; uncheck a table, search box, `All tables` off and on.
+  - Captures in dark and light, French and English (`SQUILL_LANGUAGE`): (1) explorer with badges, (2) connection popup with a database expanded, (3) a popup with a pattern row. Read every PNG; compare the layout with the owner screenshots 1 ... 3 (rows, indents, chevrons, notes, the line under `All`, toolbar position; SQuilL tokens, not DataGrip colors). Captures are not committed; report what differs in the Done notes.
+- [ ] Close the app and the container (`podman rm -f squill-visual-pg`, `podman ps -a` empty), `dotnet build-server shutdown`.
+
+## Acceptance criteria
+- Recipe 2 common acceptance with `Squill.Windows.slnx` and the WinUI AOT publish (`eng/check-aot-warnings.ps1`), the app starts, captures read (dark and light, fr and en), everything closed. Steps that cannot be driven are written `not driven (<why>)` in the Done notes, never claimed.
+
+## Risks
+- Under Native AOT, object collections as `ItemsSource` throw `ArgumentException 0x80070057`: that is why the rows are plain controls; do not switch to a `ListView` / `TreeView` with `ItemsSource`.
+- A `Button` inside a `TreeViewItem` with the custom `ExplorerTreeViewItemStyle` may still let the row select on press (P20-07 notes): verify a badge click leaves the selection as it was.
+- Rebuilding the explorer nodes on every toggle (P20-25) recreates the row under the open flyout's anchor; the flyout must stay open (it is anchored once; if WinUI closes it when the anchor leaves the tree, re-anchor to the sidebar at the same position and say so in the Done notes).
+
+## Suggested commit message
+Show n of m badges and the explorer filter popup in the WinUI head
