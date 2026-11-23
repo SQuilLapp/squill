@@ -16,16 +16,37 @@ namespace Squill.App.Avalonia.Views;
 /// <summary>The DataGrip-style popup that edits what the explorer shows; it only draws <see cref="ExplorerFilterViewModel"/>, built from plain controls in code.</summary>
 internal static class ExplorerFilterMenu
 {
-    private const double MenuWidth = 440;
-    private const double ListHeight = 420;
+    /// <summary>Gets or sets the size the user last dragged the popup to; kept in memory for the session, <see langword="null"/> until the first resize.</summary>
+    internal static ExplorerFilterPopupSize? Remembered { get; set; }
 
-    /// <summary>Opens the popup under a control.</summary>
+    /// <summary>Opens the popup under a control, inside the main window.</summary>
     /// <param name="anchor">The control the popup hangs from.</param>
     /// <param name="vm">The popup state.</param>
+    /// <param name="row">The row's bounds in <paramref name="anchor"/> coordinates when the anchor is the whole tree; <see langword="null"/> places the popup against the anchor itself.</param>
     /// <returns>The flyout, so a test can read its content.</returns>
-    public static Flyout Show(Control anchor, ExplorerFilterViewModel vm)
+    public static Flyout Show(Control anchor, ExplorerFilterViewModel vm, Rect? row = null)
     {
-        var flyout = new Flyout { Placement = PlacementMode.BottomEdgeAlignedLeft, Content = Build(anchor, vm) };
+        var target = row ?? new Rect(anchor.Bounds.Size);
+        var wanted = Remembered ?? ExplorerFilterPopupSize.Default;
+        var size = wanted;
+        var above = false;
+        if (TopLevel.GetTopLevel(anchor) is { } main && anchor.TranslatePoint(target.TopLeft, main) is { } topLeft)
+        {
+            var spaceBelow = main.ClientSize.Height - (topLeft.Y + target.Height) - ExplorerFilterPopupSize.WindowMargin;
+            var spaceAbove = topLeft.Y - ExplorerFilterPopupSize.WindowMargin;
+            above = ExplorerFilterPopupSize.OpensAbove(wanted.Height, spaceBelow, spaceAbove);
+            size = ExplorerFilterPopupSize.Fit(wanted, main.ClientSize.Width - topLeft.X - ExplorerFilterPopupSize.WindowMargin, above ? spaceAbove : spaceBelow);
+        }
+
+        var content = Build(anchor, vm, size);
+        var flyout = new Flyout { Placement = above ? PlacementMode.TopEdgeAlignedLeft : PlacementMode.BottomEdgeAlignedLeft, Content = content };
+        flyout.FlyoutPresenterClasses.Add("explorer-filter");
+        if (row is { } r)
+        {
+            flyout.HorizontalOffset = r.Left;
+            flyout.VerticalOffset = above ? r.Top : r.Bottom - anchor.Bounds.Height;
+        }
+
         flyout.Closed += (_, _) => flyout.Content = null;
         flyout.ShowAt(anchor);
         return flyout;
@@ -63,7 +84,7 @@ internal static class ExplorerFilterMenu
         return button;
     }
 
-    private static StackPanel Build(Control owner, ExplorerFilterViewModel vm)
+    private static Grid Build(Control owner, ExplorerFilterViewModel vm, ExplorerFilterPopupSize size)
     {
         var search = new TextBox { Name = "FilterSearch", PlaceholderText = UiText.Get("explorer.filter"), Text = vm.SearchText, Height = 28, MinHeight = 28 };
         AutomationProperties.SetName(search, UiText.Get("explorer.filter"));
@@ -73,7 +94,7 @@ internal static class ExplorerFilterMenu
             Orientation = Orientation.Horizontal,
             Spacing = 2,
             HorizontalAlignment = HorizontalAlignment.Right,
-            Margin = new Thickness(8, 6, 8, 0),
+            Margin = new Thickness(8, 0, 8, 0),
             Children =
             {
                 ToolButton(owner, "SquillIconRefresh", UiText.Get("explorer.refresh"), () => vm.RefreshCommand.Execute(null)),
@@ -83,7 +104,7 @@ internal static class ExplorerFilterMenu
         };
 
         var list = new StackPanel { Name = "FilterRows", Margin = new Thickness(0, 4) };
-        var scroller = new ScrollViewer { MaxHeight = ListHeight, Content = list, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        var scroller = new ScrollViewer { Content = list, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         vm.Rows.CollectionChanged += (_, e) =>
         {
             if (e.Action == NotifyCollectionChangedAction.Reset)
@@ -97,8 +118,19 @@ internal static class ExplorerFilterMenu
         foreach (var row in vm.Rows)
             AddRow(list, owner, row);
 
-        var searchBox = new Border { Padding = new Thickness(8, 0), Child = search };
-        return new StackPanel { Width = MenuWidth, Spacing = 6, Children = { bar, searchBox, scroller } };
+        var searchBox = new Border { Padding = new Thickness(8, 0), Margin = new Thickness(0, 6, 0, 0), Child = search };
+        scroller.Margin = new Thickness(0, 6, 0, 0);
+        var root = new Grid { Width = size.Width, Height = size.Height, RowDefinitions = new RowDefinitions("Auto,Auto,*,Auto") };
+        bar.Margin = new Thickness(8, 6, 8, 0);
+        Grid.SetRow(searchBox, 1);
+        Grid.SetRow(scroller, 2);
+        var grip = new ResizeGrip(root, owner, final => Remembered = final);
+        Grid.SetRow(grip, 3);
+        root.Children.Add(bar);
+        root.Children.Add(searchBox);
+        root.Children.Add(scroller);
+        root.Children.Add(grip);
+        return root;
     }
 
     // One grid per FilterRow; it listens to its own changes and updates its controls in place, so a toggle keeps focus and scroll.

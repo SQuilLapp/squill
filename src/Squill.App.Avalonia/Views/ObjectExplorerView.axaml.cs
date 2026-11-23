@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -135,8 +136,13 @@ public sealed partial class ObjectExplorerView : UserControl
     private void OnChooseShownClicked(object? sender, RoutedEventArgs e)
     {
         // Anchored to the tree: the explorer rebuilds the row nodes on every toggle.
-        if ((sender as Control)?.DataContext is ExplorerNode node)
-            ShowFilter(node, Tree);
+        if (sender is not MenuItem { DataContext: ExplorerNode node } item)
+            return;
+        // The row's bounds in tree coordinates, so the popup sits next to the row and not under the whole tree.
+        Rect? row = null;
+        if ((item.Parent as ContextMenu)?.PlacementTarget is { } target && target.TranslatePoint(default, Tree) is { } origin)
+            row = new Rect(origin, target.Bounds.Size);
+        ShowFilter(node, Tree, row);
     }
 
     private void OnBadgeClicked(object? sender, RoutedEventArgs e)
@@ -147,10 +153,10 @@ public sealed partial class ObjectExplorerView : UserControl
             ShowFilter(node, badge);
     }
 
-    private void ShowFilter(ExplorerNode node, Control anchor)
+    private void ShowFilter(ExplorerNode node, Control anchor, Rect? row = null)
     {
         if (Explorer?.CreateFilter(node) is { } vm)
-            ExplorerFilterMenu.Show(anchor, vm);
+            ExplorerFilterMenu.Show(anchor, vm, row);
     }
 
     private void OnShowAllClicked(object? sender, RoutedEventArgs e)

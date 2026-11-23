@@ -1,6 +1,6 @@
 # P20-30 - Avalonia: a resizable explorer filter popup, its size kept for the session
 
-Status: todo
+Status: done
 Depends on: P20-28, P20-29
 
 ## Goal
@@ -24,15 +24,15 @@ Files today: `src/Squill.App.Avalonia/Views/ExplorerFilterMenu.cs` (`Flyout` pla
 - WinUI (P20-29), saving the size in settings, edge grips, following a window resize while the popup is open, view-model changes.
 
 ## Tasks
-- [ ] Tests first, headless, in `tests/Squill.App.Avalonia.Tests/ExplorerFilterPopupUiTests.cs` (same fixture; each test sets `ExplorerFilterMenu.Remembered = null` first; the `Headless` collection already runs them one at a time):
+- [x] Tests first, headless, in `tests/Squill.App.Avalonia.Tests/ExplorerFilterPopupUiTests.cs` (same fixture; each test sets `ExplorerFilterMenu.Remembered = null` first; the `Headless` collection already runs them one at a time):
   - `Popup_opens_at_the_default_size_with_a_grip`: content `Width` 440 and `Height` 520 (or the fitted size if the test window is smaller: compare with `ExplorerFilterPopupSize.Fit`), a visible control named `ResizeGrip`.
   - `Resizing_grows_the_popup_and_the_list`: `ResizeBy(new Vector(100, 80))`, run the layout (`Dispatcher.UIThread.RunJobs()`): content 540 x 600 (or clamped), the `ScrollViewer` around `FilterRows` is 80 px taller than before.
   - `Resizing_stays_between_the_minimum_and_the_window`: `ResizeBy(-10000, -10000)` gives 320 x 220; `ResizeBy(10000, 10000)` gives a content no larger than the window client size.
   - `Reopening_reuses_the_last_size`: resize, release (or set the size through the release path), hide, `Show` again: same `Width` / `Height`.
   - See them fail, then implement. Existing popup tests stay green.
-- [ ] Implement the presenter class, the grip, the layout, the placement and the context-menu row bounds.
-- [ ] Publish the Avalonia AOT head and drive it with `Drive-Window.ps1` as in P20-29 (SQLite `-Scenario Full`): default size, drag the grip larger and smaller, reopen at the same size, open near the window bottom of a short window; dark and light, French and English. Avalonia popups were invisible to the capture tools in P20-19 and P20-28: if the flyout is missing from the capture, write `not driven (popup not captured)` in the Done notes and list what the owner should look at (grip visible on both themes, cursor shape, list growth, no clipping at the window bottom, context-menu popup next to the row); never claim it.
-- [ ] Close the app, `dotnet build-server shutdown`.
+- [x] Implement the presenter class, the grip, the layout, the placement and the context-menu row bounds.
+- [x] Publish the Avalonia AOT head and drive it with `Drive-Window.ps1` as in P20-29 (SQLite `-Scenario Full`): default size, drag the grip larger and smaller, reopen at the same size, open near the window bottom of a short window; dark and light, French and English. Avalonia popups were invisible to the capture tools in P20-19 and P20-28: if the flyout is missing from the capture, write `not driven (popup not captured)` in the Done notes and list what the owner should look at (grip visible on both themes, cursor shape, list growth, no clipping at the window bottom, context-menu popup next to the row); never claim it.
+- [x] Close the app, `dotnet build-server shutdown`.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance of [verification-recipe.md](verification-recipe.md) with `Squill.slnx`, the Avalonia AOT publish (`eng/check-aot-warnings.ps1`), the app starts; the four headless tests green; captures read or recorded as not driven; everything closed.
@@ -44,3 +44,9 @@ Files today: `src/Squill.App.Avalonia/Views/ExplorerFilterMenu.cs` (`Flyout` pla
 
 ## Suggested commit message
 Make the Avalonia explorer filter popup resizable and keep it inside the window
+
+## Done notes
+- Built as designed: `ResizeGrip` (Canvas, two lines, `BottomRightCorner` cursor, `ResizeBy` / `EndResize`), `ExplorerFilterMenu.Remembered`, four-row `Grid` layout (no `MaxHeight`), `FlyoutPresenter.explorer-filter` style, `Show(anchor, vm, row)` with `OpensAbove` / `Fit`, and `OnChooseShownClicked` passing the row bounds (`ContextMenu.PlacementTarget` translated into tree coordinates). `PopupFlyoutBase.HorizontalOffset` / `VerticalOffset` exist in Avalonia 12.1.6, so no `PlacementMode.Pointer` fallback.
+- Four headless tests added (176 Avalonia tests green, 4650 solution-wide with 342 skipped as before). `Squill.slnx` and `Squill.Windows.slnx` 0 warnings; Avalonia AOT check (`eng/check-aot-warnings.ps1 -Head Avalonia`) baseline only; the published exe starts and stays up.
+- Deviations: the drag works in screen pixels (pointer and limits) so it also holds when an above-placed popup's origin moves while it grows; the headless flyout never attaches its content, so the tests lay it out by hand and `ResizeGrip` falls back to the anchor's corner for the limit when the panel has no top level. The tests open the popup against a small top row rect, because anchored to the whole view there is no room below in the test window.
+- `not driven (popup not captured)`: the Avalonia popup was not driven on the published exe. For the owner to look at: grip visible on both themes, cursor shape, list growth, no clipping at the window bottom, popup next to the row from the context menu.

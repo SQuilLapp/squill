@@ -278,6 +278,14 @@
   <Style Selector="MenuFlyoutPresenter, FlyoutPresenter, ContextMenu">
     <Setter Property="CornerRadius" Value="{DynamicResource SquillRadiusLg}" />
   </Style>
+  <!-- The explorer filter popup sizes itself (and is resizable): lift the presenter limits. -->
+  <Style Selector="FlyoutPresenter.explorer-filter">
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="MaxWidth" Value="{x:Static x:Double.PositiveInfinity}" />
+    <Setter Property="MaxHeight" Value="{x:Static x:Double.PositiveInfinity}" />
+  </Style>
   <Style Selector="ContextMenu">
     <Setter Property="Background" Value="{DynamicResource SquillBgOverlayBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource SquillBorderBrush}" />

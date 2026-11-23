@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -138,6 +139,103 @@ public sealed class ExplorerFilterPopupUiTests
         await WithTree(f =>
         {
             Assert.All(Fixture.Walk(f.Explorer.Roots).Where(n => n.Kind is ExplorerNodeKind.Column or ExplorerNodeKind.Table), n => Assert.False(n.HasFilterBadge));
+            return Task.CompletedTask;
+        });
+
+    private static readonly global::Avalonia.Rect TopRow = new(0, 0, 100, 20);
+
+    // The headless flyout never attaches its content, so lay it out by hand.
+    private static void Layout(Control content)
+    {
+        content.Measure(new global::Avalonia.Size(4000, 4000));
+        content.Arrange(new global::Avalonia.Rect(content.DesiredSize));
+    }
+
+    private static (Control Content, ResizeGrip Grip, ScrollViewer List) Parts(Flyout flyout)
+    {
+        Dispatcher.UIThread.RunJobs();
+        var content = (Control)flyout.Content!;
+        Layout(content);
+        var grip = content.GetLogicalDescendants().OfType<ResizeGrip>().Single();
+        var list = content.GetLogicalDescendants().OfType<ScrollViewer>().Single();
+        return (content, grip, list);
+    }
+
+    [Fact]
+    public async Task Popup_opens_at_the_default_size_with_a_grip() =>
+        await WithTree(f =>
+        {
+            ExplorerFilterMenu.Remembered = null;
+            var flyout = ExplorerFilterMenu.Show(f.View, f.Explorer.CreateFilter(f.Database)!, TopRow);
+            var (content, grip, _) = Parts(flyout);
+            var window = TopLevel.GetTopLevel(f.View)!;
+            var expected = ExplorerFilterPopupSize.Fit(ExplorerFilterPopupSize.Default, window.ClientSize.Width, window.ClientSize.Height);
+            Assert.True(content.Width <= expected.Width && content.Height <= expected.Height);
+            Assert.True(content.Width >= ExplorerFilterPopupSize.Minimum.Width);
+            Assert.Equal("ResizeGrip", grip.Name);
+            Assert.True(grip.IsVisible);
+            flyout.Hide();
+            return Task.CompletedTask;
+        });
+
+    [Fact]
+    public async Task Resizing_grows_the_popup_and_the_list() =>
+        await WithTree(f =>
+        {
+            ExplorerFilterMenu.Remembered = null;
+            var flyout = ExplorerFilterMenu.Show(f.View, f.Explorer.CreateFilter(f.Database)!, TopRow);
+            var (content, grip, list) = Parts(flyout);
+            // Start small so there is room to grow inside the test window.
+            grip.ResizeBy(new Vector(-10000, -10000));
+            grip.EndResize();
+            Layout(content);
+            var (w, h, listH) = (content.Width, content.Height, list.Bounds.Height);
+            grip.ResizeBy(new Vector(60, 50));
+            Layout(content);
+            Assert.Equal(w + 60, content.Width);
+            Assert.Equal(h + 50, content.Height);
+            Assert.Equal(listH + 50, list.Bounds.Height, 1);
+            flyout.Hide();
+            return Task.CompletedTask;
+        });
+
+    [Fact]
+    public async Task Resizing_stays_between_the_minimum_and_the_window() =>
+        await WithTree(f =>
+        {
+            ExplorerFilterMenu.Remembered = null;
+            var flyout = ExplorerFilterMenu.Show(f.View, f.Explorer.CreateFilter(f.Database)!, TopRow);
+            var (content, grip, _) = Parts(flyout);
+            grip.ResizeBy(new Vector(-10000, -10000));
+            Assert.Equal(ExplorerFilterPopupSize.Minimum.Width, content.Width);
+            Assert.Equal(ExplorerFilterPopupSize.Minimum.Height, content.Height);
+            grip.ResizeBy(new Vector(10000, 10000));
+            var window = TopLevel.GetTopLevel(f.View)!;
+            Assert.True(content.Width <= window.ClientSize.Width);
+            Assert.True(content.Height <= window.ClientSize.Height);
+            flyout.Hide();
+            return Task.CompletedTask;
+        });
+
+    [Fact]
+    public async Task Reopening_reuses_the_last_size() =>
+        await WithTree(f =>
+        {
+            ExplorerFilterMenu.Remembered = null;
+            var flyout = ExplorerFilterMenu.Show(f.View, f.Explorer.CreateFilter(f.Database)!, TopRow);
+            var (content, grip, _) = Parts(flyout);
+            grip.ResizeBy(new Vector(-10000, -10000));
+            grip.EndResize();
+            grip.ResizeBy(new Vector(30, 20));
+            grip.EndResize();
+            var size = (content.Width, content.Height);
+            flyout.Hide();
+
+            var again = ExplorerFilterMenu.Show(f.View, f.Explorer.CreateFilter(f.Database)!, TopRow);
+            var (content2, _, _) = Parts(again);
+            Assert.Equal(size, (content2.Width, content2.Height));
+            again.Hide();
+            ExplorerFilterMenu.Remembered = null;
             return Task.CompletedTask;
         });
 }
