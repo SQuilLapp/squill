@@ -6,7 +6,9 @@
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+
+- Explorer filter popup, opened from an `n of m` badge on connection, database and schema rows or from the context menu: choose which databases, schemas and tables are shown, with wildcard patterns. It replaces the "Tables to show" dialog, is saved per connection, and filters saved by earlier versions are kept.
 
 ## [0.5.2] - 2026-11-20
 

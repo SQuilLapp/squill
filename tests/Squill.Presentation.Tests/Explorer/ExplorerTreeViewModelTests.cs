@@ -502,17 +502,6 @@ public sealed partial class ExplorerTreeViewModelTests
         }
     }
 
-    private sealed class FixedPicker(params string[] shown) : ITableVisibilityPicker
-    {
-        public IReadOnlyList<TableChoice>? Offered { get; private set; }
-
-        public ValueTask<IReadOnlyList<string>?> PickVisibleAsync(string title, IReadOnlyList<TableChoice> choices)
-        {
-            Offered = choices;
-            return ValueTask.FromResult<IReadOnlyList<string>?>(shown);
-        }
-    }
-
     private (ExplorerTreeViewModel Tree, ExplorerNode Database, MemoryFilters Filters, ConnectionProfile Profile) Filtered(MemoryFilters? filters = null)
     {
         filters ??= new MemoryFilters();
@@ -525,23 +514,6 @@ public sealed partial class ExplorerTreeViewModelTests
 
     private static IEnumerable<string> TableTitles(ExplorerNode database) =>
         Descendants(database).Where(n => n.Kind is ExplorerNodeKind.Table or ExplorerNodeKind.View).Select(n => n.Title);
-
-    [Fact]
-    public async Task ChooseTables_HidesTheUnchecked_ShowsACount_AndSavesPerDatabase()
-    {
-        var (tree, database, filters, profile) = Filtered();
-        var picker = new FixedPicker("public.users", "public.v");
-        tree.Picker = picker;
-
-        await tree.ChooseTablesCommand.ExecuteAsync(database);
-
-        Assert.Equal(["public.logs", "public.users", "public.v"], picker.Offered!.Select(c => c.Key));
-        Assert.Equal(["users", "v"], TableTitles(database));
-        Assert.Equal(1, database.HiddenCount);
-        Assert.Null(database.Trailing);
-        Assert.Equal(UiText.Format("explorer.filterBadge", "2", "3"), Descendants(database).Single(n => n.Kind == ExplorerNodeKind.Schema).FilterBadge);
-        Assert.Equal(["public.logs"], filters.Saved[profile.Id].Hidden["d"]);
-    }
 
     [Fact]
     public void HideTable_ThenShowAll_RoundTrips()
@@ -572,23 +544,6 @@ public sealed partial class ExplorerTreeViewModelTests
         await WaitAsync(() => database.HiddenCount == 1);
 
         Assert.Equal(["users"], TableTitles(database));
-    }
-
-    [Fact]
-    public async Task CancelledPicker_ChangesNothing()
-    {
-        var (tree, database, filters, _) = Filtered();
-        tree.Picker = new CancelPicker();
-
-        await tree.ChooseTablesCommand.ExecuteAsync(database);
-
-        Assert.Empty(filters.Saved);
-        Assert.Equal(3, TableTitles(database).Count());
-    }
-
-    private sealed class CancelPicker : ITableVisibilityPicker
-    {
-        public ValueTask<IReadOnlyList<string>?> PickVisibleAsync(string title, IReadOnlyList<TableChoice> choices) => ValueTask.FromResult<IReadOnlyList<string>?>(null);
     }
 
     private sealed class FakeStore : IProfileStore

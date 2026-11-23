@@ -74,7 +74,7 @@ See [ADR 0004](docs/adr/0004-schema-designer.md) for the design and what is not 
 
 Results of a plain `SELECT` over one table can be edited in the grid: change cells, add rows, delete rows, then commit or discard. The primary key must be selected; otherwise the result is read-only and the panel says why (join, view, `DISTINCT` / `GROUP BY` / `WITH`, no primary key, key column not selected). The generated `INSERT`, `UPDATE` and `DELETE` statements can be previewed before they run, and all changes are applied in one transaction (MySQL / MariaDB engines without transactions excepted).
 
-- The cell editor follows the column type, with true / false / NULL and date pickers and a `DEFAULT` choice; a long or JSON value opens a preview pane on the right. The explorer can show only some tables ("Choose tables", saved per connection and database through `ITableFilterStore`).
+- The cell editor follows the column type, with true / false / NULL and date pickers and a `DEFAULT` choice; a long or JSON value opens a preview pane on the right. The explorer shows only what you choose: a DataGrip-style popup, opened from the `n of m` badge on connection, database and schema rows, checks databases, schemas and tables and accepts wildcard patterns (saved per connection through `ITableFilterStore`).
 - Updates and deletes match the primary key only: if someone else changed other columns of the row meanwhile, your commit overwrites them (last write wins). A row deleted by someone else makes the commit fail and roll back.
 - The DML tests for PostgreSQL, MySQL / MariaDB and SQL Server need Docker and have never been run, and the edit flow was not driven by hand in either head.
 

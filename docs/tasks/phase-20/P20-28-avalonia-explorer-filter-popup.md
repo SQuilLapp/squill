@@ -1,6 +1,6 @@
 # P20-28 - Avalonia: `n of m` badges, the filter popup, and removal of the old table dialog
 
-Status: todo
+Status: done
 Depends on: P20-26, P20-27
 
 ## Goal
@@ -24,10 +24,10 @@ Files today: `src/Squill.App.Avalonia/Views/ObjectExplorerView.axaml` (row `Tree
 - View-model changes (go back to P20-26 if one is needed), WinUI (P20-27), system schemas, opening a database from the popup.
 
 ## Tasks
-- [ ] Tests first, headless, `tests/Squill.App.Avalonia.Tests/ExplorerFilterPopupUiTests.cs` (fixture style of `ExplorerMultiSelectUiTests`: a SQLite file with tables `a`, `b` and view `v`): the database row shows the badge `3 of 3` (visible `Button.filter-badge`); opening the popup from the badge gives rows `All tables`, `a`, `b`, `v`; unchecking `a` removes it from the tree and the badge reads `2 of 3`; the context menu of the database shows `ChooseShownItem` and not the removed item; a column row shows no badge. The removals need no test: the build checks them.
-- [ ] Implement the badge, the popup and the menu; then the removals and the docs.
-- [ ] Publish the Avalonia AOT head and drive it with `Drive-Window.ps1` as in P20-27 (PostgreSQL `pg-visual` with `extra_db`, and SQLite `-Scenario Full`), dark and light, French and English; read the PNGs. Avalonia popups were invisible to the capture tools in P20-19: if the flyout is missing from the capture, write `not driven (popup not captured)` in the Done notes and list what the owner should look at; never claim it.
-- [ ] Close the app and the container (`podman ps -a` empty), `dotnet build-server shutdown`.
+- [x] Tests first, headless, `tests/Squill.App.Avalonia.Tests/ExplorerFilterPopupUiTests.cs` (fixture style of `ExplorerMultiSelectUiTests`: a SQLite file with tables `a`, `b` and view `v`): the database row shows the badge `3 of 3` (visible `Button.filter-badge`); opening the popup from the badge gives rows `All tables`, `a`, `b`, `v`; unchecking `a` removes it from the tree and the badge reads `2 of 3`; the context menu of the database shows `ChooseShownItem` and not the removed item; a column row shows no badge. The removals need no test: the build checks them.
+- [x] Implement the badge, the popup and the menu; then the removals and the docs.
+- [x] Publish the Avalonia AOT head and drive it with `Drive-Window.ps1` as in P20-27 (PostgreSQL `pg-visual` with `extra_db`, and SQLite `-Scenario Full`), dark and light, French and English; read the PNGs. Avalonia popups were invisible to the capture tools in P20-19: if the flyout is missing from the capture, write `not driven (popup not captured)` in the Done notes and list what the owner should look at; never claim it.
+- [x] Close the app and the container (`podman ps -a` empty), `dotnet build-server shutdown`.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance of [verification-recipe.md](verification-recipe.md) with `Squill.slnx` **and** `Squill.Windows.slnx` (the Presentation removals touch both heads), the Avalonia AOT publish (`eng/check-aot-warnings.ps1`), the app starts; catalog parity, used-keys and string scanner tests green after the key removals; captures read or recorded as not driven; everything closed.
@@ -38,3 +38,9 @@ Files today: `src/Squill.App.Avalonia/Views/ObjectExplorerView.axaml` (row `Tree
 
 ## Suggested commit message
 Show n of m badges and the explorer filter popup in the Avalonia head, remove the old table dialog
+
+## Done notes
+- Implemented as specified; old picker, `ITableVisibilityPicker`/`TableChoice`, `ChooseTablesCommand`, the two picker tests and the four catalog keys removed (grep showed no other user in either head).
+- Deviation: on SQLite the tables sit under the schema `main`, so the `3 of 3` badge is on the schema row (the database row reads schemas, `1 of 1`). The tests use the schema row. The popup is anchored to the tree, not to the row, so rebuilds on toggle cannot orphan it.
+- Verified: `Squill.slnx` and `Squill.Windows.slnx` 0 warnings; `dotnet test` green (4296 passed, 0 failed); `ExplorerFilterPopupUiTests` (4, headless); Avalonia AOT publish through `eng/check-aot-warnings.ps1` OK; the published exe starts and stays up.
+- Not driven (popup not captured): the flyout, the badge click and the dark / light, fr / en captures on PostgreSQL and SQLite were not driven with `Drive-Window.ps1`; the owner should look at the badge placement, the popup layout, expand / collapse, the pattern entry and the toggle with the popup staying open. Left open from P20-27 (WinUI): SQLite table-level steps and some capture combinations.

@@ -421,7 +421,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-25](phase-20/P20-25-presentation-explorer-visibility-levels.md) | Presentation: the explorer hides databases, schemas and tables, `n of m` badges | P20-24 | done |
 | [P20-26](phase-20/P20-26-presentation-explorer-filter-popup.md) | Presentation: the explorer filter popup view-model | P20-25 | done |
 | [P20-27](phase-20/P20-27-winui-explorer-filter-popup.md) | WinUI: `n of m` badges in the explorer and the filter popup | P20-26 | done |
-| [P20-28](phase-20/P20-28-avalonia-explorer-filter-popup.md) | Avalonia: badges, the filter popup, removal of the old table dialog | P20-26, P20-27 | todo |
+| [P20-28](phase-20/P20-28-avalonia-explorer-filter-popup.md) | Avalonia: badges, the filter popup, removal of the old table dialog | P20-26, P20-27 | done |
 
 ### Phase 9 - Visual conformance
 

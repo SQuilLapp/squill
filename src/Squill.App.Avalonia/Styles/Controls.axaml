@@ -361,6 +361,25 @@
     <Setter Property="Foreground" Value="{DynamicResource SquillFg3Brush}" />
   </Style>
 
+  <!-- The "n of m" badge of an explorer row, opens the filter popup -->
+  <Style Selector="Button.filter-badge">
+    <Setter Property="Height" Value="18" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="Padding" Value="5,0" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SquillBorderBrush}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource SquillFg3Brush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource SquillFontMono}" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Button.filter-badge:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SquillBgHoverBrush}" />
+  </Style>
+
   <!-- Badge: Border.badge around a TextBlock; variants info success warning danger env-prod env-staging env-dev env-local -->
   <Style Selector="Border.badge">
     <Setter Property="Background" Value="{DynamicResource SquillBgActiveBrush}" />

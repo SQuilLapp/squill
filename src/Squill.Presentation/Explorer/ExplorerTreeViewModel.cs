@@ -91,9 +91,6 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     /// <summary>Raised when the user opens the definition of an object or scripts a table as <c>CREATE TABLE</c>.</summary>
     public event EventHandler<ScriptRequest>? ScriptRequested;
 
-    /// <summary>Gets or sets the dialog that chooses the tables to show; set by the head, without it <see cref="ChooseTablesCommand"/> does nothing.</summary>
-    public ITableVisibilityPicker? Picker { get; set; }
-
     /// <summary>Raised when the user activates a disconnected connection node.</summary>
     public event EventHandler<ConnectionProfile>? ConnectRequested;
 
@@ -210,27 +207,6 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
             await session.RefreshSchemaAsync(ct);
             Reload(session);
         }
-    }
-
-    [RelayCommand]
-    private async Task ChooseTablesAsync(ExplorerNode? node, CancellationToken ct)
-    {
-        if (node?.Session is not { } session || Picker is not { } picker)
-            return;
-        var level = TableLevel(session)!;
-        var choices = session.Schema.Tables
-            .OrderBy(t => t.Schema, StringComparer.OrdinalIgnoreCase).ThenBy(t => NameRank(t.Name)).ThenBy(t => t.Name, StringComparer.OrdinalIgnoreCase)
-            .Select(t => new TableChoice(KeyOf(t), t.Kind.IsViewLike(), level.IsVisible(KeyOf(t))))
-            .ToList();
-        var shown = await picker.PickVisibleAsync(session.Profile.Database is { Length: > 0 } name ? name : session.Profile.Name, choices);
-        if (shown is null)
-            return;
-        var visible = new HashSet<string>(shown, StringComparer.OrdinalIgnoreCase);
-        level.HideAll(choices.Select(c => c.Key).Where(k => !visible.Contains(k)));
-        foreach (var key in visible)
-            level.Show(key);
-        Reload(session);
-        SaveVisibility(session.Profile.Id);
     }
 
     [RelayCommand]
