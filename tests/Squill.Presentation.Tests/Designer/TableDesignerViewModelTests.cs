@@ -488,6 +488,27 @@ public sealed class TableDesignerViewModelTests
     }
 
     [Fact]
+    public void Untouched_SqliteTable_WithNullableKeyColumn_HasNoChangesScriptOrNullWarning()
+    {
+        // SQLite reports an INTEGER PRIMARY KEY column as nullable; the designer rows present it as not null.
+        var table = new TableInfo(
+            "main", "people", TableKind.Table,
+            [new ColumnDefinition("id", "INTEGER", true, true, null, true), new ColumnDefinition("name", "TEXT", true, false, null)],
+            [], [], null);
+        var f = new Fixture(DatabaseDialect.Sqlite, table);
+
+        Assert.False(f.Vm.HasChanges);
+        Assert.Equal("", f.Vm.Script);
+        Assert.Empty(f.Vm.Issues);
+        Assert.False(f.Vm.ApplyCommand.CanExecute(null));
+
+        f.Vm.Columns[1].Name = "label";
+        f.Vm.RevertCommand.Execute(null);
+        Assert.False(f.Vm.HasChanges);
+        Assert.False(f.Vm.ApplyCommand.CanExecute(null));
+    }
+
+    [Fact]
     public void Revert_RestoresOriginal()
     {
         var f = new Fixture(DatabaseDialect.PostgreSql, People);
