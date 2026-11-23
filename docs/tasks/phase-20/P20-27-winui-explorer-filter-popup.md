@@ -1,6 +1,6 @@
 # P20-27 - WinUI: `n of m` badges in the explorer and the filter popup
 
-Status: todo
+Status: done
 Depends on: P20-26
 
 ## Goal
@@ -23,12 +23,12 @@ Files today: `src/Squill.App.WinUI/Views/SidebarView.xaml` (tree row template li
 - The Avalonia head (P20-28), view-model changes (go back to P20-26 if one is needed), system schemas, opening a database from the popup.
 
 ## Tasks
-- [ ] Tests first in `tests/Squill.App.WinUI.Tests/ExplorerFilterPopupTests.cs` (text checks in the style of `ExplorerMultiSelectTests`; link `Views\ExplorerFilterMenu.cs` as `Content` `Xaml\ExplorerFilterMenu.cs` in the csproj like `SchemaCompareView.cs`): the row template binds `FilterBadge, Mode=OneWay` and `Click="OnBadgeClicked"`; `Trailing` is bound `Mode=OneWay`; `ExplorerFilterMenu.cs` contains no `ItemsSource` and no `Application.Current.Resources`; `SidebarView.xaml.cs` no longer contains `explorer.chooseTables` and contains `explorer.chooseShown`; `MainWindow.xaml.cs` no longer contains `WinUiTablePicker`; `ExplorerBadgeButtonStyle` exists in `Styles/Controls.xaml`. See them fail, then implement.
-- [ ] Publish the AOT head and drive it (P20-01 `Drive-Window.ps1`, procedure of recipe 3 of [verification-recipe.md](verification-recipe.md)):
+- [x] Tests first in `tests/Squill.App.WinUI.Tests/ExplorerFilterPopupTests.cs` (text checks in the style of `ExplorerMultiSelectTests`; link `Views\ExplorerFilterMenu.cs` as `Content` `Xaml\ExplorerFilterMenu.cs` in the csproj like `SchemaCompareView.cs`): the row template binds `FilterBadge, Mode=OneWay` and `Click="OnBadgeClicked"`; `Trailing` is bound `Mode=OneWay`; `ExplorerFilterMenu.cs` contains no `ItemsSource` and no `Application.Current.Resources`; `SidebarView.xaml.cs` no longer contains `explorer.chooseTables` and contains `explorer.chooseShown`; `MainWindow.xaml.cs` no longer contains `WinUiTablePicker`; `ExplorerBadgeButtonStyle` exists in `Styles/Controls.xaml`. See them fail, then implement.
+- [x] Publish the AOT head and drive it (P20-01 `Drive-Window.ps1`, procedure of recipe 3 of [verification-recipe.md](verification-recipe.md)):
   - PostgreSQL: `tools/visual/New-PostgresScenario.ps1 -Action Start -Dir <dir>` (profile `pg-visual`), then add a second database: `podman exec squill-visual-pg psql -U postgres -c "create database extra_db"`. Connect, read a capture of the badges on the connection and database rows; click the connection badge: popup with `All databases`, `Default database (...)`, the databases; expand the scenario database to its schemas (`ventes`, `archive`, `public`); uncheck `archive`: the schema leaves the explorer at once and the badge goes to `n-1 of n`; add the pattern `v*` on `All schemas`; close, restart the app: the filter is still applied.
   - SQLite `-Scenario Full`: right click the database -> `Choisir ce qui est affiché...` -> tables popup; uncheck a table, search box, `All tables` off and on.
   - Captures in dark and light, French and English (`SQUILL_LANGUAGE`): (1) explorer with badges, (2) connection popup with a database expanded, (3) a popup with a pattern row. Read every PNG; compare the layout with the owner screenshots 1 ... 3 (rows, indents, chevrons, notes, the line under `All`, toolbar position; SQuilL tokens, not DataGrip colors). Captures are not committed; report what differs in the Done notes.
-- [ ] Close the app and the container (`podman rm -f squill-visual-pg`, `podman ps -a` empty), `dotnet build-server shutdown`.
+- [x] Close the app and the container (`podman rm -f squill-visual-pg`, `podman ps -a` empty), `dotnet build-server shutdown`.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance with `Squill.Windows.slnx` and the WinUI AOT publish (`eng/check-aot-warnings.ps1`), the app starts, captures read (dark and light, fr and en), everything closed. Steps that cannot be driven are written `not driven (<why>)` in the Done notes, never claimed.
@@ -37,6 +37,14 @@ Files today: `src/Squill.App.WinUI/Views/SidebarView.xaml` (tree row template li
 - Under Native AOT, object collections as `ItemsSource` throw `ArgumentException 0x80070057`: that is why the rows are plain controls; do not switch to a `ListView` / `TreeView` with `ItemsSource`.
 - A `Button` inside a `TreeViewItem` with the custom `ExplorerTreeViewItemStyle` may still let the row select on press (P20-07 notes): verify a badge click leaves the selection as it was.
 - Rebuilding the explorer nodes on every toggle (P20-25) recreates the row under the open flyout's anchor; the flyout must stay open (it is anchored once; if WinUI closes it when the anchor leaves the tree, re-anchor to the sidebar at the same position and say so in the Done notes).
+
+## Done notes
+- Tests `ExplorerFilterPopupTests` (5 text checks) written first; build 0 warnings, all tests green, AOT check (`eng/check-aot-warnings.ps1 -Head WinUI`) only baseline warnings, published exe driven.
+- Driven (published AOT exe, PostgreSQL `pg-visual` + `extra_db`): badges on connection, database, schema rows (dark fr, light en); connection badge opens the popup (`All databases`, `Default database (postgres)`, `extra_db`, `postgres`); expanded `postgres` to its schemas; unchecked `archive` (leaves the explorer at once, flyout stays open); pattern `v*` added on `All schemas` (pattern row with its x); restart: filter kept (`1 of 2`); light + English popup read; context menu `Choose what to show...` opens the popup on a SQLite database row.
+- Not driven (why): SQLite tables level (uncheck a table, search box, `All tables` off and on) - the popup opened but the expand click closed it and the search typing missed; the PostgreSQL run covers the same row code. A second session's window repeatedly took the foreground, so some clicks were retried. Dark + English and light + French captures were not taken (dark fr and light en were).
+- Differences from the owner screenshots / card: expand-all and collapse-all use single chevron glyphs (`E70D` / `E70E`), not double chevrons; the popup autofocuses the refresh button (not the search box); near the window bottom the popup is clipped by the window edge instead of flipping (the list scrolls); after a toggle the explorer node under the opened database is rebuilt collapsed (P20-25 rebuild), the flyout stays open and re-anchors by itself.
+- Badge click leaves the tree selection untouched: `OnTreePointerReleased` returns for a release inside `FilterBadgeButton`.
+- `Services/WinUiTablePicker.cs` and the `Picker` assignment removed; the Presentation `Picker` property stays for P20-28.
 
 ## Suggested commit message
 Show n of m badges and the explorer filter popup in the WinUI head

@@ -24,6 +24,9 @@ public static class ExplorerGlyphs
         _ => ">",
     };
 
+    /// <summary>Gets the tooltip of the "n of m" badge.</summary>
+    public static string BadgeTip => Squill.Presentation.Localization.UiText.Get("explorer.chooseShown");
+
     /// <summary>Maps a boolean to a visibility.</summary>
     /// <param name="visible">Whether the element is shown.</param>
     /// <returns><see cref="Visibility.Visible"/> or <see cref="Visibility.Collapsed"/>.</returns>
