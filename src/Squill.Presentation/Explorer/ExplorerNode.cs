@@ -80,8 +80,17 @@ public sealed partial class ExplorerNode(string title, ExplorerNodeKind kind, st
     /// <summary>Gets the number of objects under a schema or folder node, or <see langword="null"/>. Static: the filter does not change it.</summary>
     public int? Count { get; } = count;
 
-    /// <summary>Gets the one text the heads draw right-aligned: the <see cref="ErrorText"/>, else <see cref="Detail"/>, else the formatted <see cref="Count"/>, else <see langword="null"/>.</summary>
-    public string? Trailing => ErrorText ?? Detail ?? (Count is { } n ? DisplayFormat.Count(n) : null);
+    /// <summary>Gets the one text the heads draw right-aligned: the <see cref="ErrorText"/>, else <see cref="Detail"/>, else the formatted <see cref="Count"/> (not when a <see cref="FilterBadge"/> is set), else <see langword="null"/>.</summary>
+    public string? Trailing => ErrorText ?? Detail ?? (FilterBadge is null && Count is { } n ? DisplayFormat.Count(n) : null);
+
+    /// <summary>Gets or sets the <c>n of m</c> text of a connection, database or schema node whose children the user can filter, or <see langword="null"/>.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Trailing))]
+    [NotifyPropertyChangedFor(nameof(HasFilterBadge))]
+    public partial string? FilterBadge { get; set; }
+
+    /// <summary>Gets whether <see cref="FilterBadge"/> is set.</summary>
+    public bool HasFilterBadge => FilterBadge is not null;
 
     /// <summary>Gets or sets the message of the last failure to open the database behind a database node, or <see langword="null"/>.</summary>
     [ObservableProperty]

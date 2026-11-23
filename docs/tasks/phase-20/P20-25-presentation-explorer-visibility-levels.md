@@ -1,6 +1,6 @@
 # P20-25 - Presentation: the explorer hides databases, schemas and tables, and shows `n of m` badges
 
-Status: todo
+Status: done
 Depends on: P20-24
 
 ## Goal
@@ -28,14 +28,14 @@ Today (`src/Squill.Presentation/Explorer/ExplorerTreeViewModel.cs`): `_hidden` (
 - The popup view-model and its catalog keys (P20-26), the heads (P20-27, P20-28), removing `ITableVisibilityPicker` (P20-28). Listing system schemas (not read by the schema readers). Hiding the connection node itself.
 
 ## Tasks
-- [ ] Tests first, `tests/Squill.Presentation.Tests/Explorer/ExplorerVisibilityTests.cs` (reuse the fixtures of `ExplorerTreeViewModelTests.cs`: `Session(...)` with `Databases = [...]` and `DatabaseOpener` as at line 365, `MemoryFilters`):
+- [x] Tests first, `tests/Squill.Presentation.Tests/Explorer/ExplorerVisibilityTests.cs` (reuse the fixtures of `ExplorerTreeViewModelTests.cs`: `Session(...)` with `Databases = [...]` and `DatabaseOpener` as at line 365, `MemoryFilters`):
   - databases: connection with `d` + `other` + `bad`: badge `3 of 3`; `DatabaseLevel(id).Hide("other")` + `ApplyVisibility` -> no `other` node, badge `2 of 3`, saved `Databases.Hidden == ["other"]`; a pattern `o*` shows `other` only (the profile database too only if it matches);
   - schemas: snapshot with `public` and `ventes` -> database badge `2 of 2`; hide `ventes` -> its tables, routines and triggers are gone, badge `1 of 2`, saved under `Schemas["d"]`;
   - tables: schema badge `n of m`, `HiddenCount`, schema `Trailing` is the badge not the count; SQLite-like snapshot (no schema) -> the database badge counts tables;
   - a saved file with all three parts is applied when the connection opens (`WaitAsync` as in `SavedFilter_IsAppliedWhenTheConnectionOpens`);
   - a hidden selected table leaves `SelectedNodes`.
-- [ ] Update the existing tests that assert `explorer.hiddenTables` (`ChooseTables_HidesTheUnchecked_ShowsACount_AndSavesPerDatabase`, `HideTable_ThenShowAll_RoundTrips`: the database `Trailing` is now `null`, the schema `public` carries the badge) and `Trailing_PrefersDetail_ThenFormattedCount_ThenNull` (add: a badge hides the count). Do not weaken the other assertions.
-- [ ] Implement; catalog keys `explorer.filterBadge` (fr, en), remove `explorer.hiddenTables.*`; parity and used-keys tests green.
+- [x] Update the existing tests that assert `explorer.hiddenTables` (`ChooseTables_HidesTheUnchecked_ShowsACount_AndSavesPerDatabase`, `HideTable_ThenShowAll_RoundTrips`: the database `Trailing` is now `null`, the schema `public` carries the badge) and `Trailing_PrefersDetail_ThenFormattedCount_ThenNull` (add: a badge hides the count). Do not weaken the other assertions.
+- [x] Implement; catalog keys `explorer.filterBadge` (fr, en), remove `explorer.hiddenTables.*`; parity and used-keys tests green.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance of [verification-recipe.md](verification-recipe.md). Both heads still build (`Squill.Windows.slnx` too): they bind `Trailing`, `HiddenCount` and `ChooseTablesCommand`, which keep their names.

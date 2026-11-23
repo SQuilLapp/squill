@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Squill.Presentation.Tests.Explorer;
 
-public sealed class ExplorerTreeViewModelTests
+public sealed partial class ExplorerTreeViewModelTests
 {
     private static readonly ColumnDefinition Id = new("id", "int", false, true, null);
     private static readonly ColumnDefinition Email = new("email", "text", true, false, null);
@@ -324,6 +324,7 @@ public sealed class ExplorerTreeViewModelTests
         Assert.Equal("d", new ExplorerNode("t", ExplorerNodeKind.Column, "d", count: 3).Trailing);
         Assert.Equal("1,208", new ExplorerNode("t", ExplorerNodeKind.Folder, count: 1208).Trailing);
         Assert.Null(new ExplorerNode("t", ExplorerNodeKind.Table).Trailing);
+        Assert.Null(new ExplorerNode("t", ExplorerNodeKind.Schema, count: 3) { FilterBadge = "2 of 3" }.Trailing);
     }
 
     [Fact]
@@ -537,7 +538,8 @@ public sealed class ExplorerTreeViewModelTests
         Assert.Equal(["public.logs", "public.users", "public.v"], picker.Offered!.Select(c => c.Key));
         Assert.Equal(["users", "v"], TableTitles(database));
         Assert.Equal(1, database.HiddenCount);
-        Assert.Equal(UiText.FormatPlural("explorer.hiddenTables", 1), database.Trailing);
+        Assert.Null(database.Trailing);
+        Assert.Equal(UiText.Format("explorer.filterBadge", "2", "3"), Descendants(database).Single(n => n.Kind == ExplorerNodeKind.Schema).FilterBadge);
         Assert.Equal(["public.logs"], filters.Saved[profile.Id].Hidden["d"]);
     }
 
