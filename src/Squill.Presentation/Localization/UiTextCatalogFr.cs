@@ -64,6 +64,7 @@ internal static class UiTextCatalogFr
         ("explorer.filter.removePattern", "Retirer le motif"),
         ("explorer.filter.expandAll", "Tout déplier"),
         ("explorer.filter.collapseAll", "Tout replier"),
+        ("explorer.filter.resize", "Redimensionner"),
         ("explorer.chooseShown", "Choisir ce qui est affiché..."),
         ("explorer.collapseAll", "Tout réduire"),
         ("explorer.routines", "Fonctions et procédures"),

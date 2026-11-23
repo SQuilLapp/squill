@@ -13,8 +13,8 @@ namespace Squill.App.WinUI.Views;
 /// <summary>The DataGrip-style popup that edits what the explorer shows; it only draws <see cref="ExplorerFilterViewModel"/>, built from plain controls in code (data-bound item lists break under Native AOT).</summary>
 internal static class ExplorerFilterMenu
 {
-    private const double MenuWidth = 440;
-    private const double ListHeight = 420;
+    // Remembered for the session only, shared by every level; the next open fits it to the window again.
+    private static ExplorerFilterPopupSize? s_size;
 
     /// <summary>Opens the popup under an explorer row.</summary>
     /// <param name="anchor">The element the popup hangs from.</param>
@@ -23,13 +23,21 @@ internal static class ExplorerFilterMenu
     {
         if (anchor.XamlRoot is null)
             return;
-        var flyout = new Flyout { Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft };
+        var wanted = s_size ?? ExplorerFilterPopupSize.Default;
+        var bounds = anchor.TransformToVisual(null).TransformBounds(new Windows.Foundation.Rect(0, 0, anchor.ActualWidth, anchor.ActualHeight));
+        var root = anchor.XamlRoot.Size;
+        var spaceBelow = root.Height - bounds.Bottom - ExplorerFilterPopupSize.WindowMargin;
+        var spaceAbove = bounds.Top - ExplorerFilterPopupSize.WindowMargin;
+        var above = ExplorerFilterPopupSize.OpensAbove(wanted.Height, spaceBelow, spaceAbove);
+        var size = ExplorerFilterPopupSize.Fit(wanted, root.Width - bounds.Left - ExplorerFilterPopupSize.WindowMargin, above ? spaceAbove : spaceBelow);
+        var flyout = new Flyout { Placement = above ? FlyoutPlacementMode.TopEdgeAlignedLeft : FlyoutPlacementMode.BottomEdgeAlignedLeft };
         var presenter = new Style(typeof(FlyoutPresenter));
         presenter.Setters.Add(new Setter(Control.PaddingProperty, new Thickness(0)));
-        presenter.Setters.Add(new Setter(FrameworkElement.MaxWidthProperty, 600d));
+        presenter.Setters.Add(new Setter(FrameworkElement.MaxWidthProperty, double.PositiveInfinity));
+        presenter.Setters.Add(new Setter(FrameworkElement.MaxHeightProperty, double.PositiveInfinity));
         flyout.FlyoutPresenterStyle = presenter;
         flyout.Closed += (_, _) => flyout.Content = null;
-        flyout.Content = Build(anchor, vm);
+        flyout.Content = Build(anchor, vm, size);
         flyout.ShowAt(anchor);
     }
 
@@ -45,7 +53,7 @@ internal static class ExplorerFilterMenu
         Content = content,
     };
 
-    private static Grid Build(FrameworkElement owner, ExplorerFilterViewModel vm)
+    private static Grid Build(FrameworkElement owner, ExplorerFilterViewModel vm, ExplorerFilterPopupSize size)
     {
         var search = new TextBox { PlaceholderText = UiText.Get("explorer.filter"), Text = vm.SearchText, Height = 28, MinHeight = 28 };
         AutomationProperties.SetName(search, UiText.Get("explorer.filter"));
@@ -56,7 +64,7 @@ internal static class ExplorerFilterMenu
         var bar = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(8, 6, 8, 0), Children = { refresh, expand, collapse } };
 
         var list = new StackPanel { Padding = new Thickness(0, 4, 0, 4) };
-        var scroller = new ScrollViewer { MaxHeight = ListHeight, Content = list, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        var scroller = new ScrollViewer { Content = list, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
 
         vm.Rows.CollectionChanged += (_, e) =>
         {
@@ -71,13 +79,16 @@ internal static class ExplorerFilterMenu
         foreach (var row in vm.Rows)
             AddRow(list, owner, row);
 
-        var panel = new Grid { Width = MenuWidth, RowSpacing = 6, RowDefinitions = { new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Auto } } };
+        var panel = new Grid { Width = size.Width, Height = size.Height, RowSpacing = 6, RowDefinitions = { new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }, new RowDefinition { Height = GridLength.Auto } } };
         var searchBox = new Border { Padding = new Thickness(8, 0, 8, 0), Child = search };
+        var grip = new ResizeGrip(panel, resized => s_size = resized);
         Grid.SetRow(searchBox, 1);
         Grid.SetRow(scroller, 2);
+        Grid.SetRow(grip, 3);
         panel.Children.Add(bar);
         panel.Children.Add(searchBox);
         panel.Children.Add(scroller);
+        panel.Children.Add(grip);
         return panel;
     }
 

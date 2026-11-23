@@ -27,6 +27,7 @@
     <Content Include="..\..\tokens\squill.tokens.json" Link="squill.tokens.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\SchemaCompareView.cs" Link="Xaml\SchemaCompareView.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\ExplorerFilterMenu.cs" Link="Xaml\ExplorerFilterMenu.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\ResizeGrip.cs" Link="Xaml\ResizeGrip.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\SessionsMonitorView.cs" Link="Xaml\SessionsMonitorView.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\SecurityView.cs" Link="Xaml\SecurityView.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\ImportWizardWindow.xaml.cs" Link="Xaml\ImportWizardWindow.cs" CopyToOutputDirectory="PreserveNewest" />

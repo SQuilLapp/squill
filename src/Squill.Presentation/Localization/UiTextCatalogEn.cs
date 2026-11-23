@@ -64,6 +64,7 @@ internal static class UiTextCatalogEn
         ("explorer.filter.removePattern", "Remove pattern"),
         ("explorer.filter.expandAll", "Expand all"),
         ("explorer.filter.collapseAll", "Collapse all"),
+        ("explorer.filter.resize", "Resize"),
         ("explorer.chooseShown", "Choose what to show..."),
         ("explorer.collapseAll", "Collapse all"),
         ("explorer.routines", "Routines"),

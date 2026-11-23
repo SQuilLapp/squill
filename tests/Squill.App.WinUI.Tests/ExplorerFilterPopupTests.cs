@@ -36,4 +36,21 @@ public class ExplorerFilterPopupTests
 
     [Fact]
     public void Badge_button_style_exists() => Assert.Contains("x:Key=\"ExplorerBadgeButtonStyle\"", File.ReadAllText(Path.Combine("Styles", "Controls.xaml")));
+
+    [Fact]
+    public void Popup_is_resizable_and_placed_inside_the_window()
+    {
+        var menu = Read("ExplorerFilterMenu.cs");
+        foreach (var text in new[] { "ResizeGrip", "ExplorerFilterPopupSize.Fit", "OpensAbove", "TopEdgeAlignedLeft", "PositiveInfinity" })
+            Assert.Contains(text, menu);
+        Assert.DoesNotContain("MaxHeight = ListHeight", menu);
+        var grip = Read("ResizeGrip.cs");
+        Assert.Contains("SizeNorthwestSoutheast", grip);
+        Assert.Contains("CapturePointer", grip);
+        foreach (var code in new[] { menu, grip })
+        {
+            Assert.DoesNotContain("ItemsSource", code);
+            Assert.DoesNotContain("Application.Current.Resources", code);
+        }
+    }
 }

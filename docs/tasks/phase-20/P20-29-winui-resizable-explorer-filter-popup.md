@@ -1,6 +1,6 @@
 # P20-29 - WinUI: a resizable explorer filter popup, its size kept for the session
 
-Status: todo
+Status: done
 Depends on: P20-27, P20-28
 
 ## Goal
@@ -28,19 +28,19 @@ Files today: `src/Squill.App.WinUI/Views/ExplorerFilterMenu.cs` (`Flyout`, place
 - The Avalonia head (P20-30), saving the size in settings, edge grips, resizing the popup when the window itself is resized while it is open (the next open fits it again), view-model changes.
 
 ## Tasks
-- [ ] Tests first:
+- [x] Tests first:
   - `tests/Squill.Presentation.Tests/Explorer/ExplorerFilterPopupSizeTests.cs`: `Fit_WithinLimits_KeepsTheSize`; `Fit_TooLarge_ClampsToTheSpace`; `Fit_TooSmall_ClampsToTheMinimum`; `Fit_WindowSmallerThanMinimum_TheSpaceWins` (max 200 x 100 gives 200 x 100); `Fit_NegativeSpace_GivesZero`; `OpensAbove_FitsBelow_False`; `OpensAbove_MoreRoomAbove_True`; `OpensAbove_MoreRoomBelow_False`.
   - `tests/Squill.App.WinUI.Tests/ExplorerFilterPopupTests.cs` (text checks, link `Views\ResizeGrip.cs` as `Content` `Xaml\ResizeGrip.cs` in the csproj like `ExplorerFilterMenu.cs`): `ExplorerFilterMenu.cs` contains `ResizeGrip`, `ExplorerFilterPopupSize.Fit`, `OpensAbove`, `TopEdgeAlignedLeft`, `PositiveInfinity` and no longer `MaxHeight = ListHeight`; `ResizeGrip.cs` contains `SizeNorthwestSoutheast` and `CapturePointer`, and neither file contains `ItemsSource` or `Application.Current.Resources`.
   - See them fail, then implement; catalog parity and used-keys tests stay green with `explorer.filter.resize`.
-- [ ] Implement the size type, the grip, the layout and the placement.
-- [ ] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`, procedure of recipe 3 of [verification-recipe.md](verification-recipe.md)), SQLite `-Scenario Full` is enough (PostgreSQL `pg-visual` optional):
+- [x] Implement the size type, the grip, the layout and the placement.
+- [x] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`, procedure of recipe 3 of [verification-recipe.md](verification-recipe.md)), SQLite `-Scenario Full` is enough (PostgreSQL `pg-visual` optional):
   - open the popup from a schema badge: default size, list about as tall as in P20-27;
   - drag the grip right and down (about +200 x +150): the popup and the list grow, the rows reflow, no scroll bar on the presenter itself; drag beyond the window bottom-right: the popup stops 8 px inside the window; drag up-left far: it stops at 320 x 220;
   - close with `Escape`, reopen from another badge (or the context menu): same size as left;
   - maximize then restore the window to a small height (about 600 px), open the popup from a row near the bottom of the explorer: it opens above or shrinks, never cut by the window edge;
   - restart the app: the default size again (in memory only, by design).
   - Captures in dark and light (`SQUILL_LANGUAGE` French and English for one of them at least): (1) popup at default size, (2) enlarged popup, (3) popup opened near the window bottom. Read every PNG; check the grip is visible on both themes. Captures are not committed; report what differs in the Done notes.
-- [ ] Close the app, any container (`podman ps -a` empty), `dotnet build-server shutdown`.
+- [x] Close the app, any container (`podman ps -a` empty), `dotnet build-server shutdown`.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance with `Squill.Windows.slnx` (the Presentation type is built by both solutions; `Squill.slnx` must stay green too), the WinUI AOT publish (`eng/check-aot-warnings.ps1 -Head WinUI`, baseline warnings only), the app starts, captures read (dark and light), everything closed. Steps that cannot be driven are written `not driven (<why>)` in the Done notes, never claimed.
@@ -54,3 +54,10 @@ Files today: `src/Squill.App.WinUI/Views/ExplorerFilterMenu.cs` (`Flyout`, place
 
 ## Suggested commit message
 Make the WinUI explorer filter popup resizable and keep it inside the window
+
+## Done notes
+- Built as designed: `ExplorerFilterPopupSize` (Presentation, 8 tests), `ResizeGrip`, four-row layout, `OpensAbove` / `Fit` placement, presenter `MaxWidth` / `MaxHeight` infinite, key `explorer.filter.resize`. `Squill.Windows.slnx` and `Squill.slnx` 0 warnings, 4429 tests green, WinUI AOT check baseline only.
+- Deviation: the transparent hit-test brush must be on the grip's inner `Canvas` (on the `UserControl` alone the press never reached the grip).
+- Driven on the published WinUI exe (SQLite `-Scenario Full`, 150 % display): grip visible in dark/English and light/French; drag +200 x +100 grows the popup and the list; drag beyond the window stops about 8 px inside; drag up-left stops at the 320 x 220 minimum (checked by UI Automation rectangles); size reused when reopened from another badge; popup opened near the window bottom opens above (dark capture) and the grip hit-test worked there. The flyout did not close on grip press and `TransformToVisual(null)` gave window coordinates: no risk triggered.
+- Difference: when an enlarged above-placed popup is taller than the room above, WinUI re-places it (light/French capture: it moved below the anchor and stayed inside the window).
+- Not driven: restart check (in-memory by design), toggle re-anchor while enlarged, a maximize/restore pass; the mouse had to be injected with absolute moves (`SetCursorPos` moves produced no pointer events).
