@@ -1,6 +1,6 @@
 # P20-33 - Presentation: a long paste does its heavy work off the UI thread
 
-Status: todo
+Status: done
 Depends on: P20-31, P20-40
 
 Note (P20-40): path E below is described as it was at `e3d27ea`. Since P20-40, a multi-line paste into the in-place editor goes to `GridEditController.PasteText` and the box only shows a 500-character read-only preview; measure path E with that code (E1 is then the single-line case).
@@ -35,14 +35,14 @@ Conclusion: after P20-31, the managed costs worth moving are the preview pane's 
 - The popup and the head wiring (P20-34 WinUI, P20-35 Avalonia), and therefore the localization keys (added by P20-34, used by both heads). Pasting a multi-line text into one cell from the grid (today it is split into rows; owner question), minifying JSON on apply, cancelling a paste.
 
 ## Tasks
-- [ ] Measure (see design decisions), record the table in the Done notes, remove the temporary code.
-- [ ] Tests first:
+- [x] Measure (see design decisions), record the table in the Done notes, remove the temporary code.
+- [x] Tests first:
   - `tests/Squill.Presentation.Tests/Results/EditableGridDataSourceTests.cs` (existing file or new): `SetCells_RaisesChangedOnce`; `SetCells_Empty_RaisesNothing`; `SetCells_DeletedRow_Throws` (same as `SetCell`).
   - `tests/Squill.Presentation.Tests/Editing/GridEditControllerTests.cs`: `Paste_RaisesGridChangedOnce` (a 3 x 2 block); `PasteAsync_WritesBlockFromActiveCell` (same data as `Paste_WritesBlockFromActiveCell`); `PasteAsync_ReportsFirstErrorAndKeepsEarlierCells`; `PasteAsync_LongText_ParsesOffTheCallingThread` (a 200,000-character single cell: the parse runs on another thread, checked through a column whose parse is observable, or by asserting the returned task is not completed synchronously; pick the form that is not timing-dependent).
   - `tests/Squill.Presentation.Tests/Query/CellPreviewTests.cs`: `Refresh_ValidJson_ParsesOnce` (through a counter or by checking `Error` is null and `Text` is indented for a document; pick a form that does not need a hook in production code, otherwise an `internal` parse counter is acceptable); `Text_LongJson_ValidatesInBackground` (`IsWorking` true right after setting a 150,000-character `Text`, false after `await Pending`, `Error` then set for invalid JSON, `ApplyCommand.CanExecute` false while working); `Refresh_LongJson_SetsTextOnce` (count `PropertyChanged` for `Text`); `Text_ShortJson_StaysSynchronous` (`IsWorking` never true).
   - `tests/Squill.Presentation.Tests/Editing/LongPasteTests.cs`: `IsLong_BelowThreshold_False`, `IsLong_AtThreshold_True`, `IsLong_Null_False`.
   - See them fail, then implement.
-- [ ] Implement `LongPaste`, `SetCells` / `TrySetCells`, `PasteAsync` and the shared `Paste` steps, the preview view-model changes.
+- [x] Implement `LongPaste`, `SetCells` / `TrySetCells`, `PasteAsync` and the shared `Paste` steps, the preview view-model changes.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance of [verification-recipe.md](verification-recipe.md) with `Squill.slnx` and `Squill.Windows.slnx` (both build Presentation); no head code is committed by this card, so no AOT publish beyond the measurement one.
@@ -55,3 +55,17 @@ Conclusion: after P20-31, the managed costs worth moving are the preview pane's 
 
 ## Suggested commit message
 Move the heavy work of a long paste off the UI thread and raise one change per grid paste
+
+## Done notes
+- **Measurement** (temporary test, removed; JIT build, `Release`, warm, indented-JSON array of objects, 100 KB / 1 MB / 5 MB of input):
+
+  | Stage (managed) | 100 KB | 1 MB | 5 MB |
+  |---|---|---|---|
+  | `TryPretty` (parse + indented write + decode) | 13 ms | 39 ms | 197 ms |
+  | `CellValueParser.TryParse` of a `string` column | 1 ms | 0 ms | 0 ms |
+
+  The native stages (E1 `TextBox` insert, the pane's `TextBox` set, E4 redraw) and the end-to-end WinUI AOT paste through E, P and G were **not measured**: no GUI drive was available in this session. Nothing contradicts the card: the managed stages named cheap stay under 100 ms at 1 MB. The 5 MB `TryPretty` (about 200 ms, done twice per refresh before this card) is what moves off the UI thread.
+- **Threshold**: kept at `LongPaste.Threshold = 100_000`, not raised to 1,000,000, because the native `TextBox` stages that the popup of P20-34 / P20-35 covers are unmeasured. P20-34 should record the native timings when it drives the WinUI AOT build and may then raise the constant.
+- Deviation: the "latest request wins" rule uses an integer request counter instead of a `CancellationTokenSource` (same behaviour; the superseded result is dropped, the work itself is not cancelled). `PasteAsync` does take a token and cancels the parse.
+- `EditableGridDataSource.SetCells` raises `Changed` once, also if a later cell throws (earlier cells are already recorded). `ResultEditorViewModel.TrySetCells` is `internal`; a refused cell (view active, read-only, deleted row) is reported like a parse error, with the `results.pasteIssue` prefix.
+- `CellPreviewViewModel`: `Refresh` parses once (`Validate` skips the JSON parse when already known valid, and `Text` is assigned with `OnTextChanged` muted, so Validate also runs once). `Refresh_ValidJson_ParsesOnce` is tested through its observable result (`Error` null, indented `Text`) without a parse counter in production code. Long-text tests use a queueing `SynchronizationContext` so the in-between state is deterministic.

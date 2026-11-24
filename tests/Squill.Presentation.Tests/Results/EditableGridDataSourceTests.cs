@@ -312,4 +312,39 @@ public sealed class EditableGridDataSourceTests
 
         public void Raise() => Changed?.Invoke(this, EventArgs.Empty);
     }
+
+    [Fact]
+    public void SetCells_RaisesChangedOnce()
+    {
+        var g = Make();
+        var raised = 0;
+        g.Changed += (_, _) => raised++;
+
+        g.SetCells([(0, 1, "a"), (1, 1, "b"), (2, 1, "c")]);
+
+        Assert.Equal(1, raised);
+        Assert.Equal("b", g.GetCell(1, 1));
+        Assert.Equal(3, g.PendingCount);
+    }
+
+    [Fact]
+    public void SetCells_Empty_RaisesNothing()
+    {
+        var g = Make();
+        var raised = 0;
+        g.Changed += (_, _) => raised++;
+
+        g.SetCells([]);
+
+        Assert.Equal(0, raised);
+    }
+
+    [Fact]
+    public void SetCells_DeletedRow_Throws()
+    {
+        var g = Make();
+        g.DeleteRow(1);
+
+        Assert.Throws<InvalidOperationException>(() => g.SetCells([(0, 1, "a"), (1, 1, "b")]));
+    }
 }

@@ -463,4 +463,72 @@ public sealed class GridEditControllerTests
         Assert.True(f.Controller.Commit(EditMove.None));
         Assert.Equal("a\r\nb", f.Grid.GetCell(0, 2));
     }
+
+    [Fact]
+    public void Paste_RaisesGridChangedOnce()
+    {
+        var f = new Fixture().At(0, 1);
+        var raised = 0;
+        f.Grid.Changed += (_, _) => raised++;
+
+        Assert.Null(f.Controller.Paste("a\tb\n c\td\ne\tf"));
+
+        Assert.Equal(1, raised);
+        Assert.Equal(" c", f.Grid.GetCell(1, 1));
+    }
+
+    [Fact]
+    public async Task PasteAsync_WritesBlockFromActiveCell()
+    {
+        var f = new Fixture().At(1, 1);
+
+        Assert.Null(await f.Controller.PasteAsync("a\t\\N\t5\r\nb\t\t6\r\n", CancellationToken.None));
+
+        Assert.Equal("a", f.Grid.GetCell(1, 1));
+        Assert.Null(f.Grid.GetCell(1, 2));
+        Assert.Equal(5, f.Grid.GetCell(1, 3));
+        Assert.Equal("b", f.Grid.GetCell(2, 1));
+        Assert.Equal("", f.Grid.GetCell(2, 2));
+        Assert.Equal(6, f.Grid.GetCell(2, 3));
+    }
+
+    [Fact]
+    public async Task PasteAsync_ReportsFirstErrorAndKeepsEarlierCells()
+    {
+        using var _ = UiText.Override(UiLanguage.English);
+        var f = new Fixture().At(0, 1);
+
+        var error = await f.Controller.PasteAsync("ok\tn\tabc\nnext\tn\t1", CancellationToken.None);
+
+        Assert.StartsWith("Row 1, column Qty: ", error, StringComparison.Ordinal);
+        Assert.Equal("ok", f.Grid.GetCell(0, 1));
+        Assert.Equal("n", f.Grid.GetCell(0, 2));
+        Assert.Equal("n1", f.Grid.GetCell(1, 1));
+    }
+
+    [Fact]
+    public async Task PasteAsync_LongText_WritesTheWholeTextAndRaisesChangedOnce()
+    {
+        var f = new Fixture().At(0, 1);
+        var raised = 0;
+        f.Grid.Changed += (_, _) => raised++;
+        var text = new string('x', 200_000);
+
+        Assert.Null(await f.Controller.PasteAsync(text, CancellationToken.None));
+
+        Assert.Equal(text, f.Grid.GetCell(0, 1));
+        Assert.Equal(1, raised);
+    }
+
+    [Fact]
+    public async Task PasteAsync_Cancelled_WritesNothing()
+    {
+        var f = new Fixture().At(0, 1);
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => f.Controller.PasteAsync("a", cts.Token));
+
+        Assert.Equal(0, f.Editor.PendingCount);
+    }
 }

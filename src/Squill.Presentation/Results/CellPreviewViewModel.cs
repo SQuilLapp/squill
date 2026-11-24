@@ -3,6 +3,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Squill.Core;
 using Squill.Presentation.Editing;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Query;
@@ -26,6 +27,8 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
     private bool _dismissed;
     private long _row;
     private int _column;
+    private int _request;
+    private bool _refreshing;
 
     /// <summary>Follows the selection and the data of a result.</summary>
     /// <param name="result">The grid result whose selected cell is previewed.</param>
@@ -55,6 +58,14 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
 
     /// <summary>Gets whether the apply button is shown.</summary>
     public bool ShowApply => CanEdit;
+
+    /// <summary>Gets whether a long value is being parsed or checked in the background; <see cref="ApplyCommand"/> waits for it.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ApplyCommand))]
+    public partial bool IsWorking { get; private set; }
+
+    /// <summary>Gets the last background request, completed when the pane is idle.</summary>
+    internal Task Pending { get; private set; } = Task.CompletedTask;
 
     /// <summary>Gets whether <see cref="Error"/> has a message to show.</summary>
     public bool HasError => !string.IsNullOrEmpty(Error);
@@ -95,8 +106,43 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
 
     partial void OnTextChanged(string value)
     {
+        if (_refreshing)
+            return;
         IsDirty = CanEdit && value != _original;
-        Error = Validate(value);
+        if (CanEdit && LongPaste.IsLong(value))
+        {
+            var column = Column();
+            StartBackground(() => Validate(value, column, false), error => Error = error);
+            return;
+        }
+
+        Supersede();
+        Error = Validate(value, Column(), false);
+    }
+
+    private ColumnInfo? Column() => _result.DisplayGrid is { } grid && _column < grid.Columns.Count ? grid.Columns[_column] : null;
+
+    private void Supersede()
+    {
+        _request++;
+        IsWorking = false;
+    }
+
+    // Runs work on the thread pool; the result is applied on the UI thread unless a newer request replaced this one.
+    private void StartBackground<T>(Func<T> work, Action<T> apply)
+    {
+        var request = ++_request;
+        IsWorking = true;
+        Pending = Run();
+
+        async Task Run()
+        {
+            var result = await Task.Run(work).ConfigureAwait(true);
+            if (request != _request)
+                return;
+            apply(result);
+            IsWorking = false;
+        }
     }
 
     /// <summary>Hides the pane until another cell is selected.</summary>
@@ -111,7 +157,7 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
     [RelayCommand]
     private void Format()
     {
-        if (TryPretty(Text, out var pretty, out _))
+        if (!IsWorking && TryPretty(Text, out var pretty, out _))
             Text = pretty;
     }
 
@@ -131,7 +177,7 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
         IsDirty = false;
     }
 
-    private bool CanApply() => CanEdit && IsDirty && Error is null;
+    private bool CanApply() => CanEdit && IsDirty && Error is null && !IsWorking;
 
     private void Watch()
     {
@@ -172,26 +218,57 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
         }
 
         var json = CellEditorKinds.For(column) == CellEditorKind.Json || LooksLikeJson(value);
-        var isJson = json && TryPretty(value, out value, out _);
         Title = column.Name;
         TypeText = column.DataTypeName;
-        IsJson = isJson;
         CanEdit = _result is { EditController: { } edit, Editor: { } editor } && editor.Grid.CanEdit
             && edit.IsColumnEditable(_column) && editor.Grid.GetRowState(_row) != RowState.Deleted;
-        _original = value;
-        Text = value;
         IsDirty = false;
-        Error = Validate(value);
+        if (json && LongPaste.IsLong(value))
+        {
+            // Text is set once, when the pretty text is ready, so the pane's native box is not filled twice.
+            var canEdit = CanEdit;
+            var raw = value;
+            StartBackground(() =>
+            {
+                var ok = TryPretty(raw, out var pretty, out _);
+                return (ok, pretty, Error: canEdit ? Validate(pretty, column, ok) : null);
+            }, r => Show(r.ok, r.pretty, r.Error));
+            IsOpen = !_dismissed;
+            return;
+        }
+
+        Supersede();
+        var isJson = json && TryPretty(value, out value, out _);
+        Show(isJson, value, Validate(value, column, isJson));
         IsOpen = !_dismissed && (isJson || json || value.Length >= LongTextLength || value.Contains('\n', StringComparison.Ordinal));
     }
 
-    private string? Validate(string text)
+    private void Show(bool isJson, string value, string? error)
     {
-        if (!CanEdit)
+        IsJson = isJson;
+        _original = value;
+        _refreshing = true;
+        try
+        {
+            Text = value;
+        }
+        finally
+        {
+            _refreshing = false;
+        }
+
+        IsDirty = false;
+        Error = error;
+    }
+
+    // jsonKnownValid skips the JSON parse when the caller already parsed the text.
+    private string? Validate(string text, ColumnInfo? column, bool jsonKnownValid)
+    {
+        if (!CanEdit || column is null)
             return null;
-        if (CellEditorKinds.For(_result.DisplayGrid!.Columns[_column]) == CellEditorKind.Json && !TryPretty(text, out _, out var jsonError))
+        if (!jsonKnownValid && CellEditorKinds.For(column) == CellEditorKind.Json && !TryPretty(text, out _, out var jsonError))
             return UiText.Format("preview.invalidJson", jsonError);
-        return CellValueParser.TryParse(text, _result.DisplayGrid!.Columns[_column], out _, out var error) ? null : error;
+        return CellValueParser.TryParse(text, column, out _, out var error) ? null : error;
     }
 
     private static bool LooksLikeJson(string text)

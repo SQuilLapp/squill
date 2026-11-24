@@ -145,4 +145,107 @@ public sealed class CellPreviewTests : IAsyncLifetime
 
         public ValueTask SaveAsync(AppSettings settings, CancellationToken ct) => ValueTask.CompletedTask;
     }
+
+    // Queues what the view-model resumes on the "UI thread" until the test pumps it, so the in-between state is observable.
+    private sealed class QueueContext : SynchronizationContext, IDisposable
+    {
+        private readonly SynchronizationContext? _previous = Current;
+        private readonly System.Collections.Concurrent.BlockingCollection<Action> _queue = [];
+
+        public QueueContext() => SetSynchronizationContext(this);
+
+        public override void Post(SendOrPostCallback d, object? state) => _queue.Add(() => d(state));
+
+        public void Pump(Task until)
+        {
+            while (!until.IsCompleted)
+            {
+                if (_queue.TryTake(out var work, 20))
+                    work();
+            }
+        }
+
+        public void Dispose() => SetSynchronizationContext(_previous);
+    }
+
+    [Fact]
+    public async Task Refresh_ValidJson_ShowsIndentedTextWithoutError()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+
+        result.Selection!.SelectCell(0, 2, false);
+
+        Assert.Null(result.Preview!.Error);
+        Assert.Contains("\n", result.Preview.Text);
+        Assert.False(result.Preview.IsDirty);
+    }
+
+    [Fact]
+    public async Task Text_LongJson_ValidatesInBackground()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+
+        preview.Text = "{\"a\":\"" + new string('x', 150_000);
+
+        Assert.True(preview.IsWorking);
+        Assert.False(preview.ApplyCommand.CanExecute(null));
+        ui.Pump(preview.Pending);
+        Assert.False(preview.IsWorking);
+        Assert.False(string.IsNullOrEmpty(preview.Error));
+    }
+
+    [Fact]
+    public async Task Text_LongJson_LatestRequestWins()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+
+        preview.Text = "{\"a\":\"" + new string('x', 150_000);
+        preview.Text = "{\"a\":\"" + new string('x', 150_000) + "\"}";
+        ui.Pump(preview.Pending);
+
+        Assert.False(preview.IsWorking);
+        Assert.Null(preview.Error);
+        Assert.True(preview.ApplyCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task Refresh_LongJson_SetsTextOnce()
+    {
+        var result = await RunAsync("SELECT '{\"k\":\"' || replace(hex(zeroblob(60000)), '0', 'a') || '\"}' AS doc");
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+        var changes = 0;
+        preview.PropertyChanged += (_, e) => changes += e.PropertyName == nameof(preview.Text) ? 1 : 0;
+
+        result.Selection!.SelectCell(0, 0, false);
+
+        Assert.True(preview.IsWorking);
+        Assert.Equal(0, changes);
+        ui.Pump(preview.Pending);
+        Assert.False(preview.IsWorking);
+        Assert.Equal(1, changes);
+        Assert.True(preview.IsJson);
+        Assert.Contains("\n", preview.Text);
+    }
+
+    [Fact]
+    public async Task Text_ShortJson_StaysSynchronous()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+        var working = false;
+        preview.PropertyChanged += (_, e) => working |= e.PropertyName == nameof(preview.IsWorking) && preview.IsWorking;
+
+        preview.Text = "{\"a\": 2}";
+
+        Assert.False(working);
+        Assert.Null(preview.Error);
+    }
 }
