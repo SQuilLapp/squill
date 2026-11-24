@@ -1,7 +1,9 @@
 # P20-34 - WinUI: a "Pasting..." popup with an indeterminate progress bar during a long paste
 
 Status: todo
-Depends on: P20-33
+Depends on: P20-33, P20-40
+
+Note (P20-40): the in-place editor already handles `Paste` (and `PreviewKeyDown` while read-only) since P20-40. For the editor, do not add a second handler: wrap P20-40's paste body with the overlay for a long text (show, yield, same body, hide). The `SelectedText = text` design below stays for the preview pane only.
 
 ## Goal
 When the user pastes a text of at least `LongPaste.Threshold` characters (P20-33) into the grid, the in-place cell editor or the preview pane, show a modal-ish popup over the result area, an indeterminate progress bar and `Pasting…` / `Collage en cours…`, like DataGrip; it closes when the paste is done. The window keeps repainting meanwhile (the managed work runs off the UI thread since P20-33; the native `TextBox` insert stays on the UI thread and the bar keeps moving because WinUI runs the indeterminate animation on the composition thread). Below the threshold nothing changes.

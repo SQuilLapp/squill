@@ -3,6 +3,8 @@
 Status: todo
 Depends on: P20-32, P20-33, P20-34
 
+Note (P20-40): the in-place editor already handles `PastingFromClipboard` (and a tunnel `KeyDown` while read-only) since P20-40 (`DataGridView.PasteIntoEditor`). For the editor, wrap that path with the overlay for a long text instead of adding a second handler; the design below stays for the preview pane.
+
 ## Goal
 Bring P20-34 to the Avalonia head: a paste of at least `LongPaste.Threshold` characters into the grid, the in-place cell editor or the preview pane shows a popup over the result area with an indeterminate progress bar and `Pasting…` / `Collage en cours…` (keys of P20-34), closed when the paste is done; the preview pane shows a working strip while `CellPreviewViewModel.IsWorking`.
 

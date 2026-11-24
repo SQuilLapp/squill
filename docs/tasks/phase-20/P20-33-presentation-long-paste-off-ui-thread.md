@@ -1,7 +1,9 @@
 # P20-33 - Presentation: a long paste does its heavy work off the UI thread
 
 Status: todo
-Depends on: P20-31
+Depends on: P20-31, P20-40
+
+Note (P20-40): path E below is described as it was at `e3d27ea`. Since P20-40, a multi-line paste into the in-place editor goes to `GridEditController.PasteText` and the box only shows a 500-character read-only preview; measure path E with that code (E1 is then the single-line case).
 
 ## Goal
 Owner request after the report of P20-31: pasting a very long text into a cell freezes the window; show a "Pasting..." popup with an indeterminate progress bar, like DataGrip, and keep the UI responsive. This card measures where a long paste really spends its time once P20-31 removed the drawing cost, defines the threshold, and moves the managed work that can leave the UI thread off it. The popup itself is built per head: WinUI P20-34, Avalonia P20-35.
