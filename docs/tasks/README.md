@@ -425,7 +425,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-29](phase-20/P20-29-winui-resizable-explorer-filter-popup.md) | WinUI: resizable explorer filter popup (corner grip, size kept for the session, kept inside the window) | P20-27, P20-28 | done |
 | [P20-30](phase-20/P20-30-avalonia-resizable-explorer-filter-popup.md) | Avalonia: resizable explorer filter popup | P20-28, P20-29 | done |
 | [P20-31](phase-20/P20-31-winui-grid-single-line-cell-preview.md) | WinUI: grid cells show a single-line, capped preview of long and multi-line values (shared `CellText.Preview`) | none | done |
-| [P20-32](phase-20/P20-32-avalonia-grid-single-line-cell-preview.md) | Avalonia: grid cells show a single-line, capped preview | P20-31 | todo |
+| [P20-32](phase-20/P20-32-avalonia-grid-single-line-cell-preview.md) | Avalonia: grid cells show a single-line, capped preview | P20-31 | done |
 | [P20-33](phase-20/P20-33-presentation-long-paste-off-ui-thread.md) | Presentation: a long paste does its heavy work off the UI thread (measure, threshold, one change per grid paste) | P20-31, P20-40 | todo |
 | [P20-34](phase-20/P20-34-winui-long-paste-progress.md) | WinUI: a `Pasting…` popup with an indeterminate bar during a long paste | P20-33, P20-40 | todo |
 | [P20-35](phase-20/P20-35-avalonia-long-paste-progress.md) | Avalonia: a `Pasting…` popup with an indeterminate bar during a long paste | P20-32, P20-33, P20-34 | todo |

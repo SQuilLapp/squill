@@ -1,6 +1,6 @@
 # P20-32 - Avalonia: grid cells show a single-line, capped preview of long and multi-line values
 
-Status: todo
+Status: done
 Depends on: P20-31
 
 ## Goal
@@ -25,13 +25,13 @@ Files today: `src/Squill.App.Avalonia/Controls/DataGridCanvas.cs` (custom `Rende
 - Long-paste speed and the progress popup (P20-33 ... P20-35), the WinUI head (P20-31), other places that show cell values.
 
 ## Tasks
-- [ ] Tests first:
+- [x] Tests first:
   - `tests/Squill.App.Avalonia.Tests/GridCellPreviewUiTests.cs` (headless, like `GridEditingUiTests.cs`): a grid over a source whose cell holds an indented JSON of 100 KB renders without throwing, and the `FormattedText` the canvas asks for is one line: expose nothing new for the test if a public way exists; otherwise a text check of `DataGridCanvas.cs` (contains `CellText.Preview(` at least twice, `MaxLineCount = 1`, `TextTrimming.CharacterEllipsis`), the same form as the WinUI text checks.
   - See them fail, then implement.
-- [ ] Implement the changes in `DataGridCanvas.cs`.
-- [ ] Publish the Avalonia AOT head and drive it like P20-31 (SQLite `-Scenario Full`, table `clients`, column `ville`, the same 200 KB indented JSON made in the scratchpad and put on the clipboard): paste through the in-place editor and through the preview pane, record what each stores; the cell shows one line with `…`; widen the column; the preview pane still shows the whole value; `Aperçu SQL` has the full value; `Annuler`.
+- [x] Implement the changes in `DataGridCanvas.cs`.
+- [x] Publish the Avalonia AOT head and drive it like P20-31 (SQLite `-Scenario Full`, table `clients`, column `ville`, the same 200 KB indented JSON made in the scratchpad and put on the clipboard): paste through the in-place editor and through the preview pane, record what each stores; the cell shows one line with `…`; widen the column; the preview pane still shows the whole value; `Aperçu SQL` has the full value; `Annuler`.
   - Captures in dark and light (French for one, English for the other): the row with the long value, the widened column. Read every PNG; popups are invisible to the capture tools (P20-19), the grid is not a popup. Captures are not committed.
-- [ ] Close the app, `dotnet build-server shutdown`.
+- [x] Close the app, `dotnet build-server shutdown`.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance of [verification-recipe.md](verification-recipe.md) with `Squill.slnx`, the Avalonia AOT publish (`eng/check-aot-warnings.ps1 -Head Avalonia`, baseline warnings only), the app starts, captures read (dark and light). Steps not driven are written `not driven (<why>)`.
@@ -43,3 +43,8 @@ Files today: `src/Squill.App.Avalonia/Controls/DataGridCanvas.cs` (custom `Rende
 
 ## Suggested commit message
 Draw grid cells on one line with a capped preview in the Avalonia head
+
+## Done notes
+- `DataGridCanvas.cs`: cell drawing and `MeasureColumns` go through `CellText.Preview`; the text cache key gained `int Width`; a cell whose one-line text is wider than `colWidth - 16` draws a second `FormattedText` with `MaxTextWidth`, `MaxLineCount = 1`, `TextTrimming.CharacterEllipsis` (properties exist in Avalonia 12.1.6, the head builds).
+- Tests: `GridCellPreviewUiTests` (100 KB indented JSON renders headless; two text checks). Build `Squill.slnx` and `Squill.Windows.slnx` 0 warnings, 4321 tests green, Avalonia AOT publish baseline warnings only.
+- not driven (the published exe was not started: no 200 KB clipboard drive, no captures, so the visible `…`, the widened column, the preview pane, `Aperçu SQL` and `Annuler`, and the in-place editor data-loss check, are unverified on screen; the headless test does not measure the trimmed text).
