@@ -1,6 +1,6 @@
 # P20-31 - WinUI: grid cells show a single-line, capped preview of long and multi-line values
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -35,18 +35,18 @@ Files today: `src/Squill.App.WinUI/Controls/DataGridCanvas.cs` (Win2D surface: `
 - The Avalonia head (P20-32). Long-paste speed and a progress popup (P20-33 ... P20-35). Whether an applied JSON is stored indented or minified (open question for the owner, see the README phase 20 section). The column menu value list, the explorer and any other place that shows cell values (they use `TextBlock`s with their own trimming).
 
 ## Tasks
-- [ ] Tests first:
+- [x] Tests first:
   - `tests/Squill.Presentation.Tests/Results/CellTextTests.cs`: `Preview_ShortPlainText_ReturnsSameInstance`; `Preview_PlainSpaces_Kept` (`"a   b"` same instance); `Preview_LineBreaks_BecomeOneSpace` (`"a\r\nb\nc\rd"` gives `"a b c d"`); `Preview_IndentedJson_ReadsAsOneLine` (`"{\n  \"type\": \"Point\",\n  \"coordinates\": [\n    2.63,\n    48.99\n  ]\n}"` gives `"{ \"type\": \"Point\", \"coordinates\": [ 2.63, 48.99 ] }"`); `Preview_TabsAndControlChars_BecomeOneSpace`; `Preview_ExactlyPreviewLength_NoEllipsis`; `Preview_LongText_CappedWithEllipsis` (length `PreviewLength`, last char `…`); `Preview_SurrogatePairAtCut_NotSplit`; `Preview_MillionLineBreaksThenText_StopsEarly` (result length at most `PreviewLength`, ends with `…`); `Preview_TenMegabytes_IsCapped`.
   - `tests/Squill.App.WinUI.Tests/GridCellPreviewTests.cs` (text checks; link `Controls\DataGridCanvas.cs` as `Content` `Xaml\DataGridCanvas.cs` in the csproj like `ExplorerFilterMenu.cs`): the file contains `CellText.Preview(` at least twice (draw and measure), `CanvasTrimmingSign.Ellipsis` and `CanvasTextTrimmingGranularity.Character`, and still `WordWrapping = CanvasWordWrapping.NoWrap`.
   - See them fail, then implement.
-- [ ] Implement `CellText` and the `DataGridCanvas` changes.
-- [ ] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`, recipe 3 of [verification-recipe.md](verification-recipe.md)), SQLite `-Scenario Full`, table `clients` (`ville` is a nullable `TEXT`):
+- [x] Implement `CellText` and the `DataGridCanvas` changes.
+- [x] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`, recipe 3 of [verification-recipe.md](verification-recipe.md)), SQLite `-Scenario Full`, table `clients` (`ville` is a nullable `TEXT`):
   - make a test value in the scratchpad (not committed): an indented JSON of about 200 KB (for example a GeoJSON `FeatureCollection` of a few thousand coordinate pairs, written by a PowerShell one-liner) and put it on the clipboard with `Set-Clipboard -Value (Get-Content -Raw <file>)`;
   - add a row (`Ctrl+Insert`), set `raison_sociale` and `cree_le`, then put the JSON in `ville` both ways and **record in the Done notes what each way stores**: (a) double-click the cell, `Ctrl+V` in the in-place editor, `Enter` (does the single-line WinUI `TextBox` keep the line breaks?); (b) select the cell, paste into the preview pane, `Appliquer`;
   - the cell shows one line, `{ "type": "FeatureCollection", ...` cut with `…` at the cell edge; no text outside the row; widen the column by drag: more text, still one line; the grid scrolls and redraws without visible lag (note `LastRenderMs` if the bench overlay is used, otherwise by eye);
   - the preview pane still shows the whole value; the in-place editor opened on the cell still holds the whole value (check its length through UI Automation `Value` if the driver can read it, otherwise `not driven`); `Aperçu SQL` shows the full value in the `INSERT`; `Annuler` drops it (do not commit unless the scenario is a throw-away copy).
   - Captures in dark and light (`SQUILL_LANGUAGE` French for one, English for the other): (1) the row with the long value, (2) the widened column. Read every PNG. Captures are not committed.
-- [ ] Close the app, `dotnet build-server shutdown`.
+- [x] Close the app, `dotnet build-server shutdown`.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance with `Squill.Windows.slnx` (the Presentation type is built by both solutions; `Squill.slnx` must stay green too), the WinUI AOT publish (`eng/check-aot-warnings.ps1 -Head WinUI`, baseline warnings only), the app starts, captures read (dark and light). Steps that cannot be driven are written `not driven (<why>)` in the Done notes, never claimed.
@@ -58,3 +58,9 @@ Files today: `src/Squill.App.WinUI/Controls/DataGridCanvas.cs` (Win2D surface: `
 
 ## Suggested commit message
 Draw grid cells on one line with a capped preview in the WinUI head
+
+## Done notes
+- `CellText.Preview` (Presentation) and the `DataGridCanvas` changes are as specified; 10 `CellTextTests`, 2 `GridCellPreviewTests`; both solutions build with 0 warnings, all tests green, WinUI AOT check: baseline warnings only.
+- Driven on the published WinUI AOT exe (SQLite `Full`, table `clients`, dark / French then light / English). A multi-line value of about 600 KB (indented JSON repeated 20,000 times, from a query) draws on one line, cut with `…` at the cell edge, nothing outside the row; trimmed long text in `email` also shows the ellipsis. Captures read, not committed.
+- How the line breaks get into a value: (a) double-click the cell, `Ctrl+V` of the 298 KB indented JSON in the in-place editor, `Enter`: the single-line `TextBox` keeps **only the first line** (`{`); the cell then holds `{`. That is a loss at paste time (the editor's single-line behaviour, not at re-commit); worth a card if the owner expects the whole text. (b) paste in the preview pane + `Appliquer`: not driven (could not find the pane in the window; `Ctrl+Insert` is not in the driver's key list, the `+` button was used to add the row).
+- Not driven: widening a column by drag (the driver has no drag action), `LastRenderMs`, editor value length via UI Automation, `Aperçu SQL` of the long value, `Annuler` was used only on the short test row.

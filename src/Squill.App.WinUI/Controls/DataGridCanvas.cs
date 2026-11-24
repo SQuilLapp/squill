@@ -38,7 +38,7 @@ public sealed partial class DataGridCanvas : Grid
     internal const double GutterWidth = 36;
 
     private readonly CanvasControl _canvas = new();
-    private readonly LruCache<(string Text, Face Face, bool Struck), CanvasTextLayout> _text = new(4096, layout => layout.Dispose());
+    private readonly LruCache<(string Text, Face Face, bool Struck, int Width), CanvasTextLayout> _text = new(4096, layout => layout.Dispose());
     private readonly GridLayout _layout;
     private IGridDataSource? _source;
     private GridColors? _colors;
@@ -338,7 +338,14 @@ public sealed partial class DataGridCanvas : Grid
                     color = c.Muted;
                 }
 
+                value = CellText.Preview(value);
                 var layout = TextLayout(ds, value, face, state == RowState.Deleted);
+                var room = (int)Math.Floor(colWidth - (2 * CellPadding));
+                if (room > 0 && layout.LayoutBounds.Width > room)
+                {
+                    layout = TextLayout(ds, value, face, state == RowState.Deleted, room);
+                }
+
                 var textWidth = (float)layout.LayoutBounds.Width;
                 var x = IsNumeric(info) && face == Face.Mono ? Math.Max(left + CellPadding, left + colWidth - CellPadding - textWidth) : left + CellPadding;
                 ds.DrawTextLayout(layout, x, top + ((rowHeight - (float)layout.LayoutBounds.Height) / 2), color);
@@ -467,13 +474,19 @@ public sealed partial class DataGridCanvas : Grid
     private static bool IsNumeric(ColumnInfo info) =>
         Type.GetTypeCode(Nullable.GetUnderlyingType(info.ClrType) ?? info.ClrType) is >= TypeCode.SByte and <= TypeCode.Decimal;
 
-    private CanvasTextLayout TextLayout(ICanvasResourceCreator creator, string text, Face face, bool struck = false)
+    private CanvasTextLayout TextLayout(ICanvasResourceCreator creator, string text, Face face, bool struck = false, int width = 0)
     {
-        if (!_text.TryGet((text, face, struck), out var layout))
+        if (!_text.TryGet((text, face, struck, width), out var layout))
         {
             var faces = _faces ??= ResolveFaces();
             // The layout copies the format, so a short-lived one is enough.
             using var format = new CanvasTextFormat { WordWrapping = CanvasWordWrapping.NoWrap };
+            if (width > 0)
+            {
+                format.TrimmingGranularity = CanvasTextTrimmingGranularity.Character;
+                format.TrimmingSign = CanvasTrimmingSign.Ellipsis;
+            }
+
             switch (face)
             {
                 case Face.UiSemibold:
@@ -496,13 +509,13 @@ public sealed partial class DataGridCanvas : Grid
                     break;
             }
 
-            layout = new CanvasTextLayout(creator, text, format, Unbounded, (float)_layout.RowHeight);
+            layout = new CanvasTextLayout(creator, text, format, width > 0 ? width : Unbounded, (float)_layout.RowHeight);
             if (struck)
             {
                 layout.SetStrikethrough(0, text.Length, true);
             }
 
-            _text.Add((text, face, struck), layout);
+            _text.Add((text, face, struck, width), layout);
         }
 
         return layout;
@@ -547,7 +560,7 @@ public sealed partial class DataGridCanvas : Grid
             var max = TextLayout(creator, info.Name, Face.UiSemibold).LayoutBounds.Width + 6 + TextLayout(creator, info.DataTypeName, Face.MonoSmall).LayoutBounds.Width + KeyGlyphWidth + ButtonsZone;
             for (var row = 0; row < sample; row++)
             {
-                var value = CellFormatter.FormatDisplay(source.GetCell(row, col), info) ?? "NULL";
+                var value = CellText.Preview(CellFormatter.FormatDisplay(source.GetCell(row, col), info) ?? "NULL");
                 max = Math.Max(max, TextLayout(creator, value, Face.Mono).LayoutBounds.Width);
             }
 
