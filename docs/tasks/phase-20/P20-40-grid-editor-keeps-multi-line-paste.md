@@ -1,6 +1,6 @@
 # P20-40 - Grid: the in-place cell editor keeps a pasted multi-line text whole (both heads)
 
-Status: todo
+Status: done
 Depends on: P20-31
 
 ## Goal
@@ -48,16 +48,16 @@ Files today: `src/Squill.App.WinUI/Controls/DataGridView.cs` (`_editor`, its `Te
 - Typing a line break in the in-place editor, a multi-line in-place editor, making the preview pane paste exact (see open question), pasting a multi-line text into one cell with `Ctrl+V` on the grid (no editor open: still split into rows, tab-separated semantics), drag and drop of text into the editor, minifying JSON, the long-paste popup (P20-34 / P20-35).
 
 ## Tasks
-- [ ] Tests first:
+- [x] Tests first:
   - `tests/Squill.Presentation.Tests/Results/CellTextTests.cs`: `IsSingleLine_PlainText_True`; `IsSingleLine_Tab_True`; `IsSingleLine_LineBreak_False` (`[Theory]` over `\r`, `\n`, `\r\n`, U+000B, U+000C, U+0085, U+2028, U+2029).
   - `tests/Squill.Presentation.Tests/Editing/GridEditControllerTests.cs` (text column unless said): `PasteText_MultiLine_KeepsTextExactly` (`"{\r\n  \"a\": 1,\n\t\"b\": [2]\r\n}"` into an empty cell: `EditText` equal, `IsMultiLine` true, `EditDisplayText` is `CellText.Preview` of it; `Commit(EditMove.Down)` true and the grid cell equals the text exactly); `PasteText_InsertsAtSelection` (`"abcd"`, start 1, length 2, `"X\nY"` gives `"aX\nYd"`); `PasteText_SelectionOutOfRange_IsClamped`; `PasteText_WhileMultiLine_ReplacesWholeValue` (single-line text: `IsMultiLine` false after); `PasteText_WhileUsingDefault_ReplacesDefaultLabel`; `PasteText_WholeNumberColumn_DropsLineBreaks` (`"1\r\n2"` gives `"12"`, `IsMultiLine` false); `PasteText_NotEditing_DoesNothing`; `PasteText_300KbIndentedJson_KeptExactly` (built in the test with `\r\n`, length and content equal after `Commit`); `Begin_MultiLineValue_IsMultiLineAndCommitsUnchanged` (cell holds `"a\r\nb"`: `IsMultiLine`, display `"a b"`, `Commit(EditMove.None)` leaves `"a\r\nb"`).
   - `tests/Squill.App.Avalonia.Tests/GridEditingUiTests.cs` (headless, existing patterns): `TextBox_SingleLine_DropsLinesAfterTheFirst` (characterization of the root cause: a focused `TextBox` with `AcceptsReturn = false` given `"a\nb"` as text input keeps `"a"`; if Avalonia 12 keeps both lines, write that in the Done notes and keep the rest of the card, the read-only display is still needed); `Editor_PasteMultiLine_ShowsPreviewReadOnlyAndCommitsExactText` (begin an edit on a text cell, `PasteIntoEditor(multiLine)`: `CellEditor.Text` is the preview, `CellEditor.IsReadOnly` true, `Enter` stores the exact text); `Editor_OpenOnMultiLineValue_EnterKeepsValue`; `Editor_PasteSingleLineWhileMultiLine_ReplacesAndBecomesEditable`.
   - `tests/Squill.App.WinUI.Tests/GridEditorMultiLineTests.cs` (text checks; link `Controls\DataGridView.cs` as `Content` like P20-31 linked `DataGridCanvas.cs`; if P20-34 already linked it, reuse the link): the file contains `.Paste +=`, `PreviewKeyDown`, `PasteText(`, `EditDisplayText`, `IsMultiLine`, `IsReadOnly`, `results.multiLineEdit`, and does not contain `AcceptsReturn = true` nor `Application.Current.Resources`.
   - Catalog parity and used-keys tests green with the new key.
   - See them fail, then implement.
-- [ ] Implement `CellText.IsSingleLine`, the controller members, the key, both heads.
-- [ ] Test data (scratchpad, not committed): an indented GeoJSON of about 300 KB with `\r\n` line breaks (PowerShell one-liner); `Set-Clipboard -Value (Get-Content -Raw <file>)`; save `Get-Clipboard -Raw` to `clip.txt` with `Set-Content -NoNewline -Encoding utf8NoBOM` and record its length and SHA-256 (`Get-FileHash`): that is the reference.
-- [ ] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`, recipe 3 of [verification-recipe.md](verification-recipe.md)), SQLite `New-VisualProfile.ps1 -Scenario Full` in the scratchpad (the `ventes.db` there is a throw-away copy, so committing is allowed), table `clients`, column `ville`, dark theme / French:
+- [x] Implement `CellText.IsSingleLine`, the controller members, the key, both heads.
+- [x] Test data (scratchpad, not committed): an indented GeoJSON of about 300 KB with `\r\n` line breaks (PowerShell one-liner); `Set-Clipboard -Value (Get-Content -Raw <file>)`; save `Get-Clipboard -Raw` to `clip.txt` with `Set-Content -NoNewline -Encoding utf8NoBOM` and record its length and SHA-256 (`Get-FileHash`): that is the reference.
+- [x] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`, recipe 3 of [verification-recipe.md](verification-recipe.md)), SQLite `New-VisualProfile.ps1 -Scenario Full` in the scratchpad (the `ventes.db` there is a throw-away copy, so committing is allowed), table `clients`, column `ville`, dark theme / French:
   1. add a row with the `+` button, set `raison_sociale` and `cree_le` (as P20-31), double-click `ville`, `Ctrl+V`: the box shows one line `{ "type": "FeatureCollection", ...` and is read-only (typing a letter changes nothing); capture.
   2. `Enter`: the cell draws one line (P20-31); select the cell again: the preview pane opens with the indented text; capture.
   3. double-click the cell again, `Enter` without typing: the value is unchanged (step 5 checks it).
@@ -65,9 +65,9 @@ Files today: `src/Squill.App.WinUI/Controls/DataGridView.cs` (`_editor`, its `Te
   5. commit the pending changes (edit bar commit button), close the app; read the value with `sqlite3 <dir>/ventes.db "SELECT length(ville), writefile('<scratch>/stored.txt', ville) FROM clients WHERE rowid = (SELECT max(rowid) FROM clients WHERE length(ville) > 1000)"` (or a `dotnet run` file script with Microsoft.Data.Sqlite if `sqlite3` is not on PATH); the length and the SHA-256 of `stored.txt` equal those of `clip.txt`. Write both in the Done notes.
   6. light theme / English: steps 1 and 2 again (captures only).
   7. preview-pane path, for the record only (no fix here): select the stored cell, select all in the pane, `Ctrl+V` the same clipboard, `Appliquer`, commit, read the value as in step 5 and write in the Done notes whether it is exact (expected: not exact on WinUI, the pane's `TextBox` returns `\r` line breaks and a JSON column is re-indented).
-- [ ] Publish the Avalonia AOT head and drive steps 1, 2, 3 and 5 (dark / French, then step 1 in light / English); record the hash check. Steps the driver cannot reach are `not driven (<why>)`.
-- [ ] Read every PNG; captures are not committed. Close the apps, `dotnet build-server shutdown`.
-- [ ] Set the P20-40 row of `docs/tasks/README.md` to `done` and write the Done notes (hash check per head, what each step showed, the preview-pane result of step 7).
+- [x] Publish the Avalonia AOT head and drive steps 1, 2, 3 and 5 (dark / French, then step 1 in light / English); record the hash check. Steps the driver cannot reach are `not driven (<why>)`.
+- [x] Read every PNG; captures are not committed. Close the apps, `dotnet build-server shutdown`.
+- [x] Set the P20-40 row of `docs/tasks/README.md` to `done` and write the Done notes (hash check per head, what each step showed, the preview-pane result of step 7).
 
 ## Acceptance criteria
 - Recipe 2 common acceptance with `Squill.slnx` and `Squill.Windows.slnx`, the WinUI and Avalonia AOT publishes (`eng/check-aot-warnings.ps1 -Head WinUI` and `-Head Avalonia`, baseline warnings only), both apps start, captures read (dark and light).
@@ -81,3 +81,16 @@ Files today: `src/Squill.App.WinUI/Controls/DataGridView.cs` (`_editor`, its `Te
 
 ## Suggested commit message
 Keep a pasted multi-line text whole in the grid cell editor of both heads
+
+## Done notes
+- Implemented as designed: `CellText.IsSingleLine`, `GridEditController.IsMultiLine` / `EditDisplayText` / `PasteText`, key `results.multiLineEdit`, both heads (`.Paste` / `PreviewKeyDown` on WinUI, `PastingFromClipboard` / tunnel `KeyDown` and `internal PasteIntoEditor` on Avalonia). The WinUI test project now links `DataGridView.cs` as `Xaml\DataGridView.cs`. The clipboard read catches exceptions (the existing `PasteAsync` does not).
+- Characterization test (Avalonia 12.1.6): a focused `TextBox` with `AcceptsReturn = false` given `"a\nb"` keeps `a`, so the Avalonia editor had the same loss. Presentation, WinUI text and headless Avalonia tests green; both solutions 0 warnings; `eng/check-aot-warnings.ps1` WinUI and Avalonia: baseline warnings only.
+- Driven on the WinUI AOT exe (SQLite `Full`, existing row 10017 of `clients` instead of a new row, `Ctrl+A` then `Ctrl+V` because the cell already held `Marseille`). Clipboard text: 298,034 bytes, SHA-256 `73465D48...FD3BD9` (12,882 `\r\n`).
+  1. Dark / French: the box shows one line, read-only (a typed `z` changed nothing).
+  2. `Enter`: the cell draws one line; selecting it opens the preview pane with the indented text.
+  3. Reopened + `Enter` without typing: value unchanged (hash below).
+  4. Single-line paste after typing `abc` into `Toulouse`: inserted at the caret, box editable, `Ctrl+Z` removed the pasted text (typed `abc` stayed).
+  5. After `Valider`, the stored `ville` is 298,034 bytes with the same SHA-256 as the clipboard: exact. Light / English run (step 6): same one-line box and pane; stored value again 298,034 bytes, same hash prefix.
+  7. Preview pane (`Ctrl+A`, `Ctrl+V`, `Appliquer`, commit): stored value is 285,152 bytes, 12,882 lone `\r` and no `\n`: **not exact** on WinUI (the pane `TextBox` returns `\r`), as expected; not fixed here.
+- Found, not fixed: in light theme the preview pane is drawn dark with near-invisible light text (WinUI); worth its own card.
+- Avalonia AOT exe: published and started, but the driver's clicks on the canvas grid did not open the editor, so steps 1, 2, 3 and 5 are `not driven (the grid is canvas-drawn and no UIA element; two click attempts did not open the editor)`. Covered by the four headless tests.

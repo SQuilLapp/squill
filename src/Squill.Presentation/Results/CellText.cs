@@ -2,7 +2,7 @@ using System.Buffers;
 
 namespace Squill.Presentation.Results;
 
-/// <summary>Display-only text rules for grid cells: one line, bounded length. Never used for editing, the clipboard, export, the preview pane or commits.</summary>
+/// <summary>Display-only text rules for grid cells: one line, bounded length. Also what the in-place editor shows, read-only, for a multi-line value. Never used for the clipboard, export, the preview pane or commits.</summary>
 public static class CellText
 {
     /// <summary>Most characters a grid cell ever draws or measures (the last one is the ellipsis when the text was cut).</summary>
@@ -10,7 +10,14 @@ public static class CellText
 
     private const int ScanLimit = 8 * PreviewLength;
 
+    private static readonly SearchValues<char> s_lineBreaks = SearchValues.Create("\r\n\u000B\u000C\u0085\u2028\u2029");
+
     private static readonly SearchValues<char> s_flattened = SearchValues.Create(CreateFlattened());
+
+    /// <summary>Returns whether <paramref name="text"/> holds no line break (CR, LF, VT, FF, NEL, LS or PS; tabs are fine).</summary>
+    /// <param name="text">The text to test.</param>
+    /// <returns><see langword="true"/> when a one-line box can hold the text as is.</returns>
+    public static bool IsSingleLine(string text) => text.AsSpan().IndexOfAny(s_lineBreaks) < 0;
 
     /// <summary>Flattens <paramref name="text"/> to one line of at most <see cref="PreviewLength"/> characters.</summary>
     /// <param name="text">The full cell text.</param>

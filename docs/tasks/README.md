@@ -433,7 +433,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-37](phase-20/P20-37-presentation-auto-refresh-interval.md) | Presentation: the auto-refresh interval of a query tab (timer, pause rules, `Custom...`, keys) | P20-36 | todo |
 | [P20-38](phase-20/P20-38-winui-auto-refresh-button.md) | WinUI: the auto-refresh clock button and its menu, scroll and widths kept across a refresh | P20-37 | todo |
 | [P20-39](phase-20/P20-39-avalonia-auto-refresh-button.md) | Avalonia: the auto-refresh clock button and its menu, README and changelog | P20-37, P20-38 | todo |
-| [P20-40](phase-20/P20-40-grid-editor-keeps-multi-line-paste.md) | Grid: the in-place cell editor keeps a pasted multi-line text whole (both heads; read-only one-line preview, exact value) | P20-31 | todo |
+| [P20-40](phase-20/P20-40-grid-editor-keeps-multi-line-paste.md) | Grid: the in-place cell editor keeps a pasted multi-line text whole (both heads; read-only one-line preview, exact value) | P20-31 | done |
 
 ### Phase 9 - Visual conformance
 

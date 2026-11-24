@@ -70,4 +70,21 @@ public sealed class CellTextTests
         Assert.Equal(CellText.PreviewLength, p.Length);
         Assert.Equal('…', p[^1]);
     }
+
+    [Fact]
+    public void IsSingleLine_PlainText_True() => Assert.True(CellText.IsSingleLine("abc {\"a\": 1}"));
+
+    [Fact]
+    public void IsSingleLine_Tab_True() => Assert.True(CellText.IsSingleLine("a\tb"));
+
+    [Theory]
+    [InlineData("a\rb")]
+    [InlineData("a\nb")]
+    [InlineData("a\r\nb")]
+    [InlineData("a\u000Bb")]
+    [InlineData("a\u000Cb")]
+    [InlineData("a\u0085b")]
+    [InlineData("a\u2028b")]
+    [InlineData("a\u2029b")]
+    public void IsSingleLine_LineBreak_False(string text) => Assert.False(CellText.IsSingleLine(text));
 }

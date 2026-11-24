@@ -48,6 +48,12 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
     /// <summary>Gets the text typed so far.</summary>
     public string EditText { get; private set; } = "";
 
+    /// <summary>Gets whether the text holds a line break, so the one-line editor shows it read-only.</summary>
+    public bool IsMultiLine => IsEditing && !UsesDefault && !CellText.IsSingleLine(EditText);
+
+    /// <summary>Gets what the one-line editor box shows: the text, or its one-line preview when <see cref="IsMultiLine"/>.</summary>
+    public string EditDisplayText => IsMultiLine ? CellText.Preview(EditText) : EditText;
+
     /// <summary>Gets whether the text stands for the default value of the column, not for a typed value.</summary>
     public bool UsesDefault { get; private set; }
 
@@ -93,6 +99,26 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
         EditText = CellEditorKinds.Sanitize(EditorKind, text);
         Error = Validate(EditText);
         Raise();
+    }
+
+    /// <summary>Pastes a text into the value being edited, keeping it exact (line breaks included).</summary>
+    /// <param name="text">The clipboard text.</param>
+    /// <param name="selectionStart">Start of the replaced range in the box text; ignored while the value is multi-line or the default.</param>
+    /// <param name="selectionLength">Length of the replaced range; a negative length counts as 0.</param>
+    public void PasteText(string text, int selectionStart, int selectionLength)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        if (!IsEditing)
+            return;
+        if (IsMultiLine || UsesDefault)
+        {
+            SetText(text);
+            return;
+        }
+
+        var start = Math.Clamp(selectionStart, 0, EditText.Length);
+        var length = Math.Clamp(selectionLength, 0, EditText.Length - start);
+        SetText(string.Concat(EditText.AsSpan(0, start), text, EditText.AsSpan(start + length)));
     }
 
     /// <summary>Applies a choice of the popup: the default value, or a text; a boolean choice is recorded at once.</summary>

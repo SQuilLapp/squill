@@ -1,11 +1,13 @@
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Squill.App.WinUI.Views;
 using Squill.Presentation;
 using Squill.Presentation.Editing;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 using Windows.System;
 
@@ -46,12 +48,28 @@ public sealed partial class DataGridView : Grid
         Children.Add(_overlay);
         _editor.TextChanged += (_, _) =>
         {
-            if (_controller is { IsEditing: true } c && !_syncing && c.EditText != _editor.Text)
+            if (_controller is { IsEditing: true, IsMultiLine: false } c && !_syncing && c.EditText != _editor.Text)
             {
                 c.SetText(_editor.Text);
             }
         };
         _editor.KeyDown += OnEditorKeyDown;
+        _editor.Paste += (_, e) =>
+        {
+            e.Handled = true;
+            _ = PasteIntoEditorAsync(_editor.SelectionStart, _editor.SelectionLength);
+        };
+        _editor.PreviewKeyDown += (_, e) =>
+        {
+            // A read-only box raises no Paste event.
+            var ctrl = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+            var shift = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+            if (_controller is { IsEditing: true, IsMultiLine: true } && ((ctrl && e.Key == VirtualKey.V) || (shift && e.Key == VirtualKey.Insert)))
+            {
+                e.Handled = true;
+                _ = PasteIntoEditorAsync(0, 0);
+            }
+        };
         PointerWheelChanged += (_, e) =>
         {
             if (!e.Handled)
@@ -158,6 +176,46 @@ public sealed partial class DataGridView : Grid
         }
     }
 
+    // The controller owns the text: a multi-line paste never goes through the one-line box.
+    private async Task PasteIntoEditorAsync(int start, int length)
+    {
+        if (_controller is not { IsEditing: true } c)
+        {
+            return;
+        }
+
+        var (row, column) = (c.EditRow, c.EditColumn);
+        string text;
+        try
+        {
+            var content = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
+            if (!content.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.Text))
+            {
+                return;
+            }
+
+            text = await content.GetTextAsync();
+        }
+        catch (Exception)
+        {
+            return;
+        }
+
+        if (!c.IsEditing || c.EditRow != row || c.EditColumn != column)
+        {
+            return;
+        }
+
+        if (CellText.IsSingleLine(text) && !c.IsMultiLine)
+        {
+            _editor.SelectedText = text;
+        }
+        else
+        {
+            c.PasteText(text, start, length);
+        }
+    }
+
     private void SyncEditor()
     {
         _syncing = true;
@@ -176,11 +234,15 @@ public sealed partial class DataGridView : Grid
                 return;
             }
 
-            if (_editor.Text != c.EditText)
+            if (_editor.Text != c.EditDisplayText)
             {
-                _editor.Text = c.EditText;
+                _editor.Text = c.EditDisplayText;
                 _editor.SelectionStart = _editor.Text.Length;
             }
+
+            _editor.IsReadOnly = c.IsMultiLine;
+            var hint = c.IsMultiLine ? UiText.Get("results.multiLineEdit") : null;
+            AutomationProperties.SetHelpText(_editor, hint ?? "");
 
             _editor.PlaceholderText = c.EditHint ?? "";
             _picker.Visibility = CellEditorKinds.HasPicker(c.EditorKind) ? Visibility.Visible : Visibility.Collapsed;
@@ -188,7 +250,7 @@ public sealed partial class DataGridView : Grid
             var danger = c.Error is not null;
             _editorFrame.BorderBrush = Tokens.Brush(this, danger ? "SquillDangerBrush" : "SquillAccentBrush");
             _editorFrame.BorderThickness = new Thickness(danger ? 2 : 1);
-            ToolTipService.SetToolTip(_editor, c.Error);
+            ToolTipService.SetToolTip(_editor, c.Error ?? hint);
             if (_canvas.CellRect(c.EditRow, c.EditColumn) is { } r)
             {
                 Microsoft.UI.Xaml.Controls.Canvas.SetLeft(_editorFrame, r.X);

@@ -232,6 +232,7 @@ internal static class UiTextCatalogEn
         ("results.rowMatchedMany", "Row {0} matched more than one row"),
         ("results.paste", "Paste"),
         ("results.pasteIssue", "Row {0}, column {1}: {2}"),
+        ("results.multiLineEdit", "Multi-line value shown on one line: Enter keeps it, Ctrl+V replaces it, Esc cancels. Edit the text in the preview pane."),
         ("preview.apply", "Apply"),
         ("preview.close", "Close"),
         ("preview.format", "Format JSON"),

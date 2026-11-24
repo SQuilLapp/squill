@@ -241,4 +241,55 @@ public sealed class GridEditingUiTests
 
         return Color.FromRgb(buffer[2], buffer[1], buffer[0]);
     }
+
+    private const string Multi = "{\r\n  \"a\": 1,\n\t\"b\": [2]\r\n}";
+
+    [Fact]
+    public Task TextBox_SingleLine_DropsLinesAfterTheFirst() => RunAsync(() =>
+    {
+        var box = new TextBox { AcceptsReturn = false };
+        var window = new Window { Width = 300, Height = 100, Content = box };
+        window.Show();
+        box.Focus();
+        window.KeyTextInput("a\nb");
+        var kept = box.Text;
+        window.Close();
+        Assert.Equal("a", kept);
+    });
+
+    [Fact]
+    public Task Editor_PasteMultiLine_ShowsPreviewReadOnlyAndCommitsExactText() => RunAsync(() =>
+    {
+        using var f = new Fixture().At(1, 2);
+        f.Window.KeyPressQwerty(PhysicalKey.F2, RawInputModifiers.None);
+        f.View.PasteIntoEditor(Multi);
+        Assert.Equal(CellText.Preview(Multi), f.View.CellEditor.Text);
+        Assert.True(f.View.CellEditor.IsReadOnly);
+        f.Window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+        Assert.False(f.Controller.IsEditing);
+        Assert.Equal(Multi, f.Editor.Grid.GetCell(1, 2));
+    });
+
+    [Fact]
+    public Task Editor_OpenOnMultiLineValue_EnterKeepsValue() => RunAsync(() =>
+    {
+        using var f = new Fixture().At(1, 2);
+        f.Editor.TrySetCell(1, 2, Multi);
+        f.Window.KeyPressQwerty(PhysicalKey.F2, RawInputModifiers.None);
+        Assert.True(f.View.CellEditor.IsReadOnly);
+        f.Window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+        Assert.Equal(Multi, f.Editor.Grid.GetCell(1, 2));
+    });
+
+    [Fact]
+    public Task Editor_PasteSingleLineWhileMultiLine_ReplacesAndBecomesEditable() => RunAsync(() =>
+    {
+        using var f = new Fixture().At(1, 2);
+        f.Editor.TrySetCell(1, 2, Multi);
+        f.Window.KeyPressQwerty(PhysicalKey.F2, RawInputModifiers.None);
+        f.View.PasteIntoEditor("one line");
+        Assert.False(f.View.CellEditor.IsReadOnly);
+        Assert.Equal("one line", f.View.CellEditor.Text);
+        Assert.Equal("one line", f.Controller.EditText);
+    });
 }

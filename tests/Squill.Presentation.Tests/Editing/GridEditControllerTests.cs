@@ -355,4 +355,112 @@ public sealed class GridEditControllerTests
 
         Assert.StartsWith(prefix, f.Controller.Paste("ok	n	abc"), StringComparison.Ordinal);
     }
+
+    private const string Json = "{\r\n  \"a\": 1,\n\t\"b\": [2]\r\n}";
+
+    [Fact]
+    public void PasteText_MultiLine_KeepsTextExactly()
+    {
+        var f = new Fixture().At(0, 2);
+        f.Controller.Begin();
+        f.Controller.PasteText(Json, 0, 0);
+
+        Assert.Equal(Json, f.Controller.EditText);
+        Assert.True(f.Controller.IsMultiLine);
+        Assert.Equal(CellText.Preview(Json), f.Controller.EditDisplayText);
+        Assert.True(f.Controller.Commit(EditMove.Down));
+        Assert.Equal(Json, f.Grid.GetCell(0, 2));
+    }
+
+    [Fact]
+    public void PasteText_InsertsAtSelection()
+    {
+        var f = new Fixture().At(0, 2);
+        f.Controller.Begin("abcd");
+        f.Controller.PasteText("X\nY", 1, 2);
+        Assert.Equal("aX\nYd", f.Controller.EditText);
+    }
+
+    [Fact]
+    public void PasteText_SelectionOutOfRange_IsClamped()
+    {
+        var f = new Fixture().At(0, 2);
+        f.Controller.Begin("abcd");
+        f.Controller.PasteText("X", 99, 5);
+        Assert.Equal("abcdX", f.Controller.EditText);
+        f.Controller.PasteText("Y", -3, -2);
+        Assert.Equal("YabcdX", f.Controller.EditText);
+        f.Controller.PasteText("Z", 4, 99);
+        Assert.Equal("YabcZ", f.Controller.EditText);
+    }
+
+    [Fact]
+    public void PasteText_WhileMultiLine_ReplacesWholeValue()
+    {
+        var f = new Fixture().At(0, 2);
+        f.Controller.Begin("a\nb");
+        Assert.True(f.Controller.IsMultiLine);
+        f.Controller.PasteText("one", 1, 1);
+        Assert.Equal("one", f.Controller.EditText);
+        Assert.False(f.Controller.IsMultiLine);
+    }
+
+    [Fact]
+    public void PasteText_WhileUsingDefault_ReplacesDefaultLabel()
+    {
+        var f = new Fixture().At(0, 3);
+        f.Controller.Begin();
+        f.Controller.SetDefault();
+        Assert.True(f.Controller.UsesDefault);
+        f.Controller.PasteText("7", 1, 0);
+        Assert.False(f.Controller.UsesDefault);
+        Assert.Equal("7", f.Controller.EditText);
+    }
+
+    [Fact]
+    public void PasteText_WholeNumberColumn_DropsLineBreaks()
+    {
+        var f = new Fixture().At(0, 3);
+        f.Controller.Begin("");
+        f.Controller.PasteText("1\r\n2", 0, 0);
+        Assert.Equal("12", f.Controller.EditText);
+        Assert.False(f.Controller.IsMultiLine);
+    }
+
+    [Fact]
+    public void PasteText_NotEditing_DoesNothing()
+    {
+        var f = new Fixture().At(0, 2);
+        f.Controller.PasteText("x", 0, 0);
+        Assert.False(f.Controller.IsEditing);
+        Assert.Equal("", f.Controller.EditText);
+    }
+
+    [Fact]
+    public void PasteText_300KbIndentedJson_KeptExactly()
+    {
+        var sb = new System.Text.StringBuilder("{\r\n");
+        for (var i = 0; sb.Length < 300_000; i++)
+            sb.Append("  \"k").Append(i).Append("\": [1, 2, 3],\r\n");
+        sb.Append('}');
+        var text = sb.ToString();
+        var f = new Fixture().At(0, 2);
+        f.Controller.Begin();
+        f.Controller.PasteText(text, 0, 0);
+        Assert.True(f.Controller.Commit(EditMove.None));
+        Assert.Equal(text.Length, ((string)f.Grid.GetCell(0, 2)!).Length);
+        Assert.Equal(text, f.Grid.GetCell(0, 2));
+    }
+
+    [Fact]
+    public void Begin_MultiLineValue_IsMultiLineAndCommitsUnchanged()
+    {
+        var f = new Fixture().At(0, 2);
+        f.Editor.TrySetCell(0, 2, "a\r\nb");
+        f.Controller.Begin();
+        Assert.True(f.Controller.IsMultiLine);
+        Assert.Equal("a b", f.Controller.EditDisplayText);
+        Assert.True(f.Controller.Commit(EditMove.None));
+        Assert.Equal("a\r\nb", f.Grid.GetCell(0, 2));
+    }
 }
