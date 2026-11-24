@@ -233,6 +233,8 @@ internal static class UiTextCatalogFr
         ("results.paste", "Coller"),
         ("results.pasteIssue", "Ligne {0}, colonne {1} : {2}"),
         ("results.multiLineEdit", "Valeur sur plusieurs lignes affichée sur une ligne : Entrée la garde, Ctrl+V la remplace, Échap annule. Modifiez le texte dans le volet d'aperçu."),
+        ("results.pasting", "Collage en cours…"),
+        ("preview.working", "Vérification de la valeur…"),
         ("preview.apply", "Appliquer"),
         ("preview.close", "Fermer"),
         ("preview.format", "Formater le JSON"),

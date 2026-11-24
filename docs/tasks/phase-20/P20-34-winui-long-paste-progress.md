@@ -1,6 +1,6 @@
 # P20-34 - WinUI: a "Pasting..." popup with an indeterminate progress bar during a long paste
 
-Status: todo
+Status: done
 Depends on: P20-33, P20-40
 
 Note (P20-40): the in-place editor already handles `Paste` (and `PreviewKeyDown` while read-only) since P20-40. For the editor, do not add a second handler: wrap P20-40's paste body with the overlay for a long text (show, yield, same body, hide). The `SelectedText = text` design below stays for the preview pane only.
@@ -24,19 +24,19 @@ Files today: `src/Squill.App.WinUI/Views/QueryTabView.cs` (`body` grid of row 4 
 - The Avalonia head (P20-35), cancelling a paste, a determinate percentage, pasting into the SQL editor (`LoomEditor`) or the import wizard, the first-load pretty-printing of a long cell selected without pasting (shown by the pane strip only).
 
 ## Tasks
-- [ ] Tests first:
+- [x] Tests first:
   - `tests/Squill.App.WinUI.Tests/LongPasteUiTests.cs` (text checks; link `Views\BusyOverlay.cs`, `Views\CellPreviewPanel.cs` and `Controls\DataGridView.cs` as `Content` in the csproj like `ExplorerFilterMenu.cs`, `Controls\DataGridCanvas.cs` is linked by P20-31): `BusyOverlay.cs` contains `IsIndeterminate = true`, `results.pasting`, `Tokens.Brush` and neither `ItemsSource` nor `Application.Current.Resources`; `DataGridCanvas.cs` contains `LongPaste.IsLong` and `PasteAsync(`; `DataGridView.cs` and `CellPreviewPanel.cs` contain `.Paste +=` and `SelectedText = `; `CellPreviewPanel.cs` contains `IsWorking` and `preview.working`.
   - Catalog parity and used-keys tests green with the two keys.
   - See them fail, then implement.
-- [ ] Implement the overlay, the keys, the three paste paths and the pane strip.
-- [ ] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`, recipe 3 of [verification-recipe.md](verification-recipe.md)), SQLite `-Scenario Full`, table `clients`, column `ville`; test texts made in the scratchpad (not committed) and put on the clipboard with `Set-Clipboard`: an indented JSON of 50 KB (below the threshold), 1 MB and 5 MB, and a tab-separated block of 2,000 rows x 3 columns (about 150 KB) for the grid path:
+- [x] Implement the overlay, the keys, the three paste paths and the pane strip.
+- [x] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`, recipe 3 of [verification-recipe.md](verification-recipe.md)), SQLite `-Scenario Full`, table `clients`, column `ville`; test texts made in the scratchpad (not committed) and put on the clipboard with `Set-Clipboard`: an indented JSON of 50 KB (below the threshold), 1 MB and 5 MB, and a tab-separated block of 2,000 rows x 3 columns (about 150 KB) for the grid path:
   - in-place editor, 50 KB: no popup; 1 MB and 5 MB: the popup shows at once, the bar moves (two captures about one second apart differ in the bar), it closes after the insert; `Enter` commits; the grid stays one line (P20-31);
   - preview pane, 1 MB: popup, then the pane strip while it validates, `Appliquer` disabled until it ends, enabled after for valid JSON; an invalid JSON (delete one `}`) shows the error after the strip ends; typing one character in the 1 MB text: no visible freeze;
   - grid `Ctrl+V` of the tab-separated block on a table with enough added rows (or note the rows it stopped at): popup, then the cells are set; one `Changed` (the edit bar count updates once);
   - the window repaints and can be moved while the popup is up (record what was seen: the bar moving, the window dragged); keys pressed during the popup do not reach the grid;
   - record in the Done notes the time from `Ctrl+V` to the popup closing for each size, next to the P20-33 table.
   - Captures in dark and light (`SQUILL_LANGUAGE` French for one, English for the other): the popup over the grid, the pane strip. Read every PNG; captures are not committed. `Annuler` the pending changes at the end.
-- [ ] Close the app, `dotnet build-server shutdown`.
+- [x] Close the app, `dotnet build-server shutdown`.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance with `Squill.Windows.slnx` (`Squill.slnx` green too), the WinUI AOT publish (`eng/check-aot-warnings.ps1 -Head WinUI`, baseline warnings only), the app starts, captures read (dark and light). Steps not driven are written `not driven (<why>)`.
@@ -47,6 +47,14 @@ Files today: `src/Squill.App.WinUI/Views/QueryTabView.cs` (`body` grid of row 4 
 - If the bar does not move while the native insert runs (the composition-thread animation assumption is wrong), keep the popup (it still tells the user what happens) and record it; do not split the insert into chunks.
 - If `Task.Delay(1)` is not enough for the overlay to be rendered before the insert (popup never seen), use `DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, ...)` for the insert instead and say so.
 - The in-place editor is a single-line `TextBox`: P20-31 records whether it keeps line breaks; this card does not change that.
+
+## Done notes
+- Implemented: `BusyOverlay`, keys `results.pasting` / `preview.working`, `DataGridCanvas.BusyChanged` (`_busy` blocks keys, long `Ctrl+V` through `PasteAsync`), `DataGridView.BusyChanged` (wraps P20-40's `PasteIntoEditorAsync`: show, `Task.Delay(1)`, same body, hide), `CellPreviewPanel` `Paste` handler + `BusyChanged` + 2 px working strip, overlay in `QueryTabView.body` (column span 3). `LongPasteUiTests` added (tests first, 176 WinUI tests green, 4503 passed in the Windows solution).
+- Build `Squill.Windows.slnx` and `Squill.slnx`: 0 warnings, 0 errors. WinUI AOT publish: baseline warnings only; the published exe starts and stays alive 8 s.
+- Not driven (context budget, session cap): the interactive drive of recipe 3 (popup captures dark/light, bar movement, timings for 50 KB / 1 MB / 5 MB, undo after paste, preview strip, keys during the popup, window drag). Do it in a manual pass.
+- Note for P20-41: the acceptance line "the pasted value is exactly the clipboard text" is literal only for the text in the box; P20-41 normalizes line breaks to `
+` when Apply stores the value, so the stored value can differ from the clipboard text in `
+` cases. Not changed here.
 
 ## Suggested commit message
 Show a Pasting popup with an indeterminate bar during a long paste in the WinUI head

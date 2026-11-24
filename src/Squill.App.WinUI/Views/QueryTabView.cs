@@ -58,6 +58,7 @@ public sealed partial class QueryTabView : UserControl
     private readonly Border _snippetsTabBar = new() { BorderThickness = new Thickness(0, 0, 0, 2) };
     private readonly DataGridView _grid = new();
     private readonly CellPreviewPanel _preview = new();
+    private readonly BusyOverlay _busy = new();
     private readonly TextBlock _message = new() { Margin = new Thickness(12), TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true, Foreground = Brush("SquillFgBrush"), Visibility = Visibility.Collapsed };
     private readonly TextBlock _empty = new() { Margin = new Thickness(12), Text = UiText.Get("results.empty"), Foreground = Brush("SquillFg3Brush") };
     private readonly ProgressBar _progress = new() { IsIndeterminate = true, Height = 2, Visibility = Visibility.Collapsed };
@@ -164,6 +165,10 @@ public sealed partial class QueryTabView : UserControl
         Grid.SetColumn(_preview, 2);
         body.Children.Add(previewSplitter);
         body.Children.Add(_preview);
+        Grid.SetColumnSpan(_busy, 3);
+        body.Children.Add(_busy);
+        _grid.BusyChanged += OnBusyChanged;
+        _preview.BusyChanged += OnBusyChanged;
         // A closed pane gives its whole column back (the width the user dragged stays in Width, only the limits change).
         _preview.OpenChanged += (_, open) =>
         {
@@ -797,6 +802,18 @@ public sealed partial class QueryTabView : UserControl
     }
 
     private static Style Res(string key) => (Style)Application.Current.Resources[key];
+
+    private void OnBusyChanged(object? sender, bool busy)
+    {
+        if (busy)
+        {
+            _busy.Show();
+        }
+        else
+        {
+            _busy.Hide();
+        }
+    }
 
     private static Microsoft.UI.Xaml.Media.Brush Brush(string key) => Tokens.Brush(key);
 }

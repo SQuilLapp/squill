@@ -94,6 +94,9 @@ public sealed partial class DataGridCanvas : Grid
         };
     }
 
+    /// <summary>Raised when a long paste starts (<see langword="true"/>) and when it ends (<see langword="false"/>), so the host can show a busy popup.</summary>
+    public event EventHandler<bool>? BusyChanged;
+
     /// <summary>Raised when the content extent, viewport or scroll offsets changed so hosts can update scroll bars.</summary>
     public event EventHandler? ScrollStateChanged;
 
@@ -741,9 +744,11 @@ public sealed partial class DataGridCanvas : Grid
         }
     }
 
+    private bool _busy;
+
     private void OnKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (_source is not { } source)
+        if (_source is not { } source || _busy)
         {
             return;
         }
@@ -789,7 +794,7 @@ public sealed partial class DataGridCanvas : Grid
 
     private void OnCharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs e)
     {
-        if (_edit is { } edit && !char.IsControl(e.Character) && edit.Begin(e.Character.ToString()))
+        if (!_busy && _edit is { } edit && !char.IsControl(e.Character) && edit.Begin(e.Character.ToString()))
         {
             e.Handled = true;
         }
@@ -827,7 +832,27 @@ public sealed partial class DataGridCanvas : Grid
             return;
         }
 
-        var error = edit.Paste(await content.GetTextAsync());
+        var text = await content.GetTextAsync();
+        string? error;
+        if (LongPaste.IsLong(text))
+        {
+            _busy = true;
+            BusyChanged?.Invoke(this, true);
+            try
+            {
+                error = await edit.PasteAsync(text, CancellationToken.None);
+            }
+            finally
+            {
+                _busy = false;
+                BusyChanged?.Invoke(this, false);
+            }
+        }
+        else
+        {
+            error = edit.Paste(text);
+        }
+
         if (error is not null && Dialogs is { } dialogs)
         {
             await dialogs.ShowErrorAsync(UiText.Get("results.paste"), error);

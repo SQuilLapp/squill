@@ -30,6 +30,8 @@
     <Content Include="..\..\src\Squill.App.WinUI\Controls\DataGridView.cs" Link="Xaml\DataGridView.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\ExplorerFilterMenu.cs" Link="Xaml\ExplorerFilterMenu.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\ResizeGrip.cs" Link="Xaml\ResizeGrip.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\BusyOverlay.cs" Link="Xaml\BusyOverlay.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Views\CellPreviewPanel.cs" Link="Xaml\CellPreviewPanel.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\SessionsMonitorView.cs" Link="Xaml\SessionsMonitorView.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\SecurityView.cs" Link="Xaml\SecurityView.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\ImportWizardWindow.xaml.cs" Link="Xaml\ImportWizardWindow.cs" CopyToOutputDirectory="PreserveNewest" />

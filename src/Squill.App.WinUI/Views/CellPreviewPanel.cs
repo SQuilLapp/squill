@@ -1,9 +1,12 @@
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Squill.Presentation.Editing;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Squill.App.WinUI.Views;
 
@@ -29,6 +32,7 @@ public sealed partial class CellPreviewPanel : UserControl
     private readonly Button _format = new() { Height = 26, MinHeight = 26, Content = UiText.Get("preview.format") };
     private readonly Button _apply = new() { Style = (Style)Application.Current.Resources["PrimaryButtonStyle"], Height = 26, MinHeight = 26, Content = UiText.Get("preview.apply") };
     private readonly Button _close = new() { Height = 26, MinHeight = 26, Content = UiText.Get("preview.close") };
+    private readonly ProgressBar _working = new() { IsIndeterminate = true, Height = 2, Visibility = Visibility.Collapsed };
     private CellPreviewViewModel? _model;
     private bool _syncing;
 
@@ -51,11 +55,14 @@ public sealed partial class CellPreviewPanel : UserControl
         footer.Children.Add(_format);
         footer.Children.Add(_apply);
 
-        var root = new Grid { RowDefinitions = { new RowDefinition { Height = GridLength.Auto }, new RowDefinition(), new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Auto } } };
-        Grid.SetRow(_text, 1);
-        Grid.SetRow(_error, 2);
-        Grid.SetRow(footer, 3);
+        var root = new Grid { RowDefinitions = { new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Auto }, new RowDefinition(), new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Auto } } };
+        AutomationProperties.SetName(_working, UiText.Get("preview.working"));
+        Grid.SetRow(_working, 1);
+        Grid.SetRow(_text, 2);
+        Grid.SetRow(_error, 3);
+        Grid.SetRow(footer, 4);
         root.Children.Add(header);
+        root.Children.Add(_working);
         root.Children.Add(_text);
         root.Children.Add(_error);
         root.Children.Add(footer);
@@ -72,6 +79,11 @@ public sealed partial class CellPreviewPanel : UserControl
             if (_model is not null && !_syncing && _model.Text != _text.Text)
                 _model.Text = _text.Text;
         };
+        _text.Paste += (_, e) =>
+        {
+            e.Handled = true;
+            _ = PasteAsync();
+        };
         _close.Click += (_, _) => _model?.CloseCommand.Execute(null);
         _format.Click += (_, _) => _model?.FormatCommand.Execute(null);
         _apply.Click += (_, _) => _model?.ApplyCommand.Execute(null);
@@ -79,6 +91,47 @@ public sealed partial class CellPreviewPanel : UserControl
 
     /// <summary>Raised when the pane is shown or hidden; the argument tells which.</summary>
     public event EventHandler<bool>? OpenChanged;
+
+    /// <summary>Raised when a long paste into the pane starts (<see langword="true"/>) and ends (<see langword="false"/>).</summary>
+    public event EventHandler<bool>? BusyChanged;
+
+    // Replaces the built-in paste so a long text can show the busy popup before the native insert blocks the UI thread.
+    private async Task PasteAsync()
+    {
+        string text;
+        try
+        {
+            var content = Clipboard.GetContent();
+            if (!content.Contains(StandardDataFormats.Text))
+            {
+                return;
+            }
+
+            text = await content.GetTextAsync();
+        }
+        catch (Exception)
+        {
+            return;
+        }
+
+        if (!LongPaste.IsLong(text))
+        {
+            _text.SelectedText = text;
+            return;
+        }
+
+        BusyChanged?.Invoke(this, true);
+        try
+        {
+            // Lets the popup lay out and render before the native insert.
+            await Task.Delay(1);
+            _text.SelectedText = text;
+        }
+        finally
+        {
+            BusyChanged?.Invoke(this, false);
+        }
+    }
 
     private static Brush Brush(string key) => Tokens.Brush(key);
 
@@ -113,6 +166,7 @@ public sealed partial class CellPreviewPanel : UserControl
                 _format.IsEnabled = m.IsJson;
                 _apply.Visibility = m.ShowApply ? Visibility.Visible : Visibility.Collapsed;
                 _apply.IsEnabled = m.ApplyCommand.CanExecute(null);
+                _working.Visibility = m.IsWorking ? Visibility.Visible : Visibility.Collapsed;
             }
             finally
             {

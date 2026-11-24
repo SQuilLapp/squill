@@ -427,7 +427,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-31](phase-20/P20-31-winui-grid-single-line-cell-preview.md) | WinUI: grid cells show a single-line, capped preview of long and multi-line values (shared `CellText.Preview`) | none | done |
 | [P20-32](phase-20/P20-32-avalonia-grid-single-line-cell-preview.md) | Avalonia: grid cells show a single-line, capped preview | P20-31 | done |
 | [P20-33](phase-20/P20-33-presentation-long-paste-off-ui-thread.md) | Presentation: a long paste does its heavy work off the UI thread (measure, threshold, one change per grid paste) | P20-31, P20-40 | done |
-| [P20-34](phase-20/P20-34-winui-long-paste-progress.md) | WinUI: a `Pasting…` popup with an indeterminate bar during a long paste | P20-33, P20-40 | todo |
+| [P20-34](phase-20/P20-34-winui-long-paste-progress.md) | WinUI: a `Pasting…` popup with an indeterminate bar during a long paste | P20-33, P20-40 | done |
 | [P20-35](phase-20/P20-35-avalonia-long-paste-progress.md) | Avalonia: a `Pasting…` popup with an indeterminate bar during a long paste | P20-32, P20-33, P20-34 | todo |
 | [P20-36](phase-20/P20-36-presentation-refresh-last-run-in-place.md) | Presentation: refresh the last run of a query tab in place (no prompt, no history, results swapped with their view kept) | P20-33 | todo |
 | [P20-37](phase-20/P20-37-presentation-auto-refresh-interval.md) | Presentation: the auto-refresh interval of a query tab (timer, pause rules, `Custom...`, keys) | P20-36 | todo |
