@@ -19,7 +19,7 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
     /// <summary>The length from which a value opens the pane by itself.</summary>
     public const int LongTextLength = 80;
 
-    private static readonly JsonWriterOptions PrettyOptions = new() { Indented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+    private static readonly JsonWriterOptions PrettyOptions = new() { Indented = true, NewLine = "\n", Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     private readonly ResultViewModel _result;
     private IGridDataSource? _grid;
@@ -108,7 +108,7 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
     {
         if (_refreshing)
             return;
-        IsDirty = CanEdit && value != _original;
+        IsDirty = CanEdit && NormalizeLineBreaks(value) != _original;
         if (CanEdit && LongPaste.IsLong(value))
         {
             var column = Column();
@@ -166,14 +166,15 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
     {
         if (_result.Editor is not { } editor)
             return;
-        var error = editor.TrySetCell(_row, _column, Text);
+        var value = NormalizeLineBreaks(Text);
+        var error = editor.TrySetCell(_row, _column, value);
         if (error is not null)
         {
             Error = error;
             return;
         }
 
-        _original = Text;
+        _original = value;
         IsDirty = false;
     }
 
@@ -246,7 +247,7 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
     private void Show(bool isJson, string value, string? error)
     {
         IsJson = isJson;
-        _original = value;
+        _original = NormalizeLineBreaks(value);
         _refreshing = true;
         try
         {
@@ -275,6 +276,32 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
     {
         var t = text.AsSpan().TrimStart();
         return t.Length > 1 && (t[0] == '{' || t[0] == '[');
+    }
+
+    /// <summary>Replaces every <c>\r\n</c> and every lone <c>\r</c> with <c>\n</c>; nothing else changes.</summary>
+    /// <param name="text">The text to normalize.</param>
+    /// <returns>The normalized text, or <paramref name="text"/> itself when it has no <c>\r</c>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="text"/> is <see langword="null"/>.</exception>
+    public static string NormalizeLineBreaks(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        var first = text.IndexOf('\r', StringComparison.Ordinal);
+        if (first < 0)
+            return text;
+        var sb = new StringBuilder(text.Length).Append(text, 0, first);
+        for (var i = first; i < text.Length; i++)
+        {
+            if (text[i] != '\r')
+                sb.Append(text[i]);
+            else
+            {
+                sb.Append('\n');
+                if (i + 1 < text.Length && text[i + 1] == '\n')
+                    i++;
+            }
+        }
+
+        return sb.ToString();
     }
 
     /// <summary>Indents a JSON document.</summary>

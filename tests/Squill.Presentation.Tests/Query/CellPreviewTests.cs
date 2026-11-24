@@ -26,6 +26,7 @@ public sealed class CellPreviewTests : IAsyncLifetime
             "CREATE TABLE t (id INTEGER PRIMARY KEY, short TEXT, doc JSON)",
             "INSERT INTO t (short, doc) VALUES ('abc', '{\"a\":1,\"b\":[1,2]}'), ('x', NULL), ('y', 'line one' || char(10) || 'line two')",
             "INSERT INTO t (short, doc) VALUES ('z', '" + new string('q', 120) + "')",
+            "INSERT INTO t (short, doc) VALUES ('one' || char(13) || char(10) || 'two', NULL)",
         })
             await (await _connection.ExecuteAsync(sql, [], CancellationToken.None)).DisposeAsync();
         var schema = await _connection.ReadSchemaAsync(CancellationToken.None);
@@ -232,6 +233,104 @@ public sealed class CellPreviewTests : IAsyncLifetime
         Assert.Equal(1, changes);
         Assert.True(preview.IsJson);
         Assert.Contains("\n", preview.Text);
+    }
+
+    [Fact]
+    public async Task Refresh_JsonValue_TextHasNoCr()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+
+        result.Selection!.SelectCell(0, 2, false);
+
+        Assert.DoesNotContain('\r', result.Preview!.Text);
+    }
+
+    [Fact]
+    public async Task Text_DiffersOnlyByLineBreaks_IsNotDirty()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+
+        preview.Text = preview.Text.Replace("\n", "\r");
+
+        Assert.False(preview.IsDirty);
+        Assert.False(preview.ApplyCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task Text_TextValueWithCrLf_RoundTripIsNotDirty()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(4, 1, false);
+        var preview = result.Preview!;
+        Assert.True(preview.IsOpen);
+
+        preview.Text = "one\rtwo";
+
+        Assert.False(preview.IsDirty);
+    }
+
+    [Fact]
+    public async Task Apply_CrLineBreaks_StoresLf()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+
+        preview.Text = "{\r  \"a\": 2\r}";
+        preview.ApplyCommand.Execute(null);
+
+        Assert.Equal("{\n  \"a\": 2\n}", result.Editor!.Grid.GetCell(0, 2));
+        Assert.False(preview.IsDirty);
+    }
+
+    [Fact]
+    public async Task Apply_MixedLineBreaks_StoresLf()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(2, 2, false);
+
+        result.Preview!.Text = "a\r\nb\nc\rd";
+        result.Preview.ApplyCommand.Execute(null);
+
+        Assert.Equal("a\nb\nc\nd", result.Editor!.Grid.GetCell(2, 2));
+    }
+
+    [Fact]
+    public async Task Apply_300KbIndentedJsonWithCr_StoresLfText()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+        var lf = "{\n" + string.Concat(Enumerable.Range(0, 10_000).Select(i => $"  \"k{i}\": \"vvvvvvvvvvvvvvvvvvvv\",\n")) + "  \"z\": 1\n}";
+        var cr = lf.Replace("\n", "\r");
+
+        preview.Text = cr;
+        ui.Pump(preview.Pending);
+        preview.ApplyCommand.Execute(null);
+        ui.Pump(preview.Pending);
+
+        var stored = (string)result.Editor!.Grid.GetCell(0, 2)!;
+        Assert.Equal(lf, stored);
+        Assert.Equal(cr.Length, stored.Length);
+    }
+
+    [Fact]
+    public async Task Apply_EditedMinifiedJson_StoresShownIndentedText()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+
+        preview.Text = preview.Text.Replace("\"a\": 1", "\"a\": 2");
+        preview.ApplyCommand.Execute(null);
+
+        var stored = (string)result.Editor!.Grid.GetCell(0, 2)!;
+        Assert.Contains("\"a\": 2", stored);
+        Assert.Contains('\n', stored);
+        Assert.DoesNotContain('\r', stored);
     }
 
     [Fact]

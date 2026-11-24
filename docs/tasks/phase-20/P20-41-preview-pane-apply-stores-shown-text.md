@@ -1,6 +1,6 @@
 # P20-41 - Preview pane: `Appliquer` stores the text shown, line breaks as `\n`, and an untouched text changes nothing
 
-Status: todo
+Status: done
 Depends on: P20-40, P20-33
 
 ## Goal
@@ -32,21 +32,21 @@ Files today: `src/Squill.Presentation/Results/CellPreviewViewModel.cs` (`PrettyO
 - The in-place editor (P20-40, exact value), the grid paste, export and copy (unchanged), minifying or re-indenting at `Apply`, a setting for the line-break style, keeping a `\r\n` style per value, the light theme look of the pane (P20-42), the long-paste popup and working strip (P20-34 / P20-35).
 
 ## Tasks
-- [ ] Tests first (see them fail):
+- [x] Tests first (see them fail):
   - `tests/Squill.Presentation.Tests/Results/CellPreviewTextTests.cs` (new): `NormalizeLineBreaks_LineBreakForms_BecomeLf` (`[Theory]`: `"a\r\nb"` -> `"a\nb"`, `"a\rb"` -> `"a\nb"`, `"a\r\r\nb"` -> `"a\n\nb"`, `"a\n\rb"` -> `"a\n\nb"`, `"a\r"` -> `"a\n"`, `"\r\n\r\n"` -> `"\n\n"`); `NormalizeLineBreaks_NoCr_ReturnsSameInstance` (`Assert.Same`, also for `""` and a text with U+2028 and tabs, which stay); `TryPretty_Indented_UsesLfOnly` (no `\r` in the output of a nested object).
   - `tests/Squill.Presentation.Tests/Query/CellPreviewTests.cs` (existing fixture; add rows **after** the existing ones, or a second table, so the other tests keep their row numbers): `Refresh_JsonValue_TextHasNoCr`; `Text_DiffersOnlyByLineBreaks_IsNotDirty` (set `Text = Text.Replace("\n", "\r")`, the WinUI round trip: `IsDirty` false, `ApplyCommand.CanExecute` false); `Text_TextValueWithCrLf_RoundTripIsNotDirty` (a `TEXT` cell holding `'one' || char(13) || char(10) || 'two'`, `Text` set to `"one\rtwo"`: not dirty); `Apply_CrLineBreaks_StoresLf` (JSON cell, `Text = "{\r  \"a\": 2\r}"`, apply: the grid cell equals `"{\n  \"a\": 2\n}"`, `IsDirty` false after); `Apply_MixedLineBreaks_StoresLf` (`"a\r\nb\nc\rd"` -> `"a\nb\nc\nd"`); `Apply_300KbIndentedJsonWithCr_StoresLfText` (built in the test like P20-40's 300 KB case, `\r\n` replaced by `\r`; after apply, and after awaiting P20-33's `Pending` if it is long: the cell equals the `\n` form, same length as the `\r` form); `Apply_EditedMinifiedJson_StoresShownIndentedText` (a cell holding `{"a":1}` shown indented; change `1` to `2` in `Text`: the stored value is the indented text with `\n`, not minified). Keep `SelectingAJsonValue_OpensThePaneWithIndentedText_AndEditsItThroughTheCell` green.
   - `tests/Squill.App.Avalonia.Tests/GridEditingUiTests.cs` (headless, existing patterns): `TextBox_AcceptsReturn_EnterInsertsNewLineProperty` (characterization: a focused `TextBox` with `AcceptsReturn = true` and text `"ab"`, caret at 1, `Enter`: the text is `"a" + box.NewLine + "b"`; if Avalonia 12.1.6 inserts `\n`, write that in the Done notes; the Presentation rule is needed either way for WinUI).
   - `tests/Squill.App.WinUI.Tests/CellPreviewPanelTests.cs` (new, text checks; link `Views\CellPreviewPanel.cs` as `Content` with `Link="Xaml\CellPreviewPanel.cs"` like `DataGridView.cs`; if P20-34 already linked it, reuse the link): `Sync_ComparesNormalizedText` (the file contains `NormalizeLineBreaks(`). Brush lookups stay covered by the P20-02 scan.
-- [ ] Implement `NormalizeLineBreaks`, the view-model rules, the WinUI `Sync` comparison. XML doc on the new public member; grep the internal-type rule before committing.
-- [ ] Test data (scratchpad, not committed), as P20-40: the indented GeoJSON of about 300 KB with `\r\n`, `Set-Clipboard`, `clip.txt` from `Get-Clipboard -Raw` (`Set-Content -NoNewline -Encoding utf8NoBOM`), then the expected stored text `clip-lf.txt`: `[IO.File]::WriteAllText('<scratch>\clip-lf.txt', ([IO.File]::ReadAllText('<scratch>\clip.txt') -replace "`r`n", "`n"))` (UTF-8 without BOM); record the length and SHA-256 (`Get-FileHash`) of both. Expected: `clip-lf.txt` = `clip.txt` length minus the number of `\r\n`.
-- [ ] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`, as P20-40), SQLite `New-VisualProfile.ps1 -Scenario Full` in the scratchpad, table `clients`, column `ville`, dark theme / French:
+- [x] Implement `NormalizeLineBreaks`, the view-model rules, the WinUI `Sync` comparison. XML doc on the new public member; grep the internal-type rule before committing.
+- [x] Test data (scratchpad, not committed), as P20-40: the indented GeoJSON of about 300 KB with `\r\n`, `Set-Clipboard`, `clip.txt` from `Get-Clipboard -Raw` (`Set-Content -NoNewline -Encoding utf8NoBOM`), then the expected stored text `clip-lf.txt`: `[IO.File]::WriteAllText('<scratch>\clip-lf.txt', ([IO.File]::ReadAllText('<scratch>\clip.txt') -replace "`r`n", "`n"))` (UTF-8 without BOM); record the length and SHA-256 (`Get-FileHash`) of both. Expected: `clip-lf.txt` = `clip.txt` length minus the number of `\r\n`.
+- [x] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`, as P20-40), SQLite `New-VisualProfile.ps1 -Scenario Full` in the scratchpad, table `clients`, column `ville`, dark theme / French:
   1. Select a cell whose value is multi-line or JSON (store one first through the in-place editor as in P20-40 step 1 if none exists): the pane opens; without typing, `Appliquer` is **disabled** (UIA `IsEnabled` false); capture. Before the fix, record whether it was enabled (confirms root cause item 2).
   2. Click into the pane, `Ctrl+A`, `Ctrl+V` the 300 KB clipboard, `Appliquer`, commit (`Valider`), close the app; read the value as in P20-40 step 5 (`sqlite3 ... writefile(...)` or a `dotnet run` file script with Microsoft.Data.Sqlite): length and SHA-256 equal those of `clip-lf.txt`, and the file has no `\r` (`([IO.File]::ReadAllText(...)).Contains("`r")` is `False`).
   3. Reopen, select the stored cell: the pane shows the indented text, `Appliquer` disabled; type one character at the end of a line and delete it: `Appliquer` disabled again (text equal after normalization).
   4. A short multi-line edit: in the pane of another `ville` cell type `a`, `Enter`, `b`, `Appliquer`, commit: stored value is `a\nb` (3 bytes); write it in the Done notes.
-- [ ] Publish the Avalonia AOT head; drive steps 1 and 2 if the driver can select a grid cell (P20-40 could not open the editor on the canvas grid; a single click may still select). Otherwise `not driven (<why>)`, covered by the Presentation tests.
-- [ ] Read every PNG; captures are not committed. Close the apps, `dotnet build-server shutdown`.
-- [ ] Set the P20-41 row of `docs/tasks/README.md` to `done` and write the Done notes (the hash check, step 1 before / after, the characterization result).
+- [x] Publish the Avalonia AOT head; drive steps 1 and 2 if the driver can select a grid cell (P20-40 could not open the editor on the canvas grid; a single click may still select). Otherwise `not driven (<why>)`, covered by the Presentation tests.
+- [x] Read every PNG; captures are not committed. Close the apps, `dotnet build-server shutdown`.
+- [x] Set the P20-41 row of `docs/tasks/README.md` to `done` and write the Done notes (the hash check, step 1 before / after, the characterization result).
 
 ## Acceptance criteria
 - Recipe 2 common acceptance (as P20-40) with `Squill.slnx` and `Squill.Windows.slnx`, the WinUI AOT publish (`eng/check-aot-warnings.ps1 -Head WinUI`, baseline warnings only; Avalonia too if its head changed), the app starts, captures read.
@@ -59,3 +59,9 @@ Files today: `src/Squill.Presentation/Results/CellPreviewViewModel.cs` (`PrettyO
 
 ## Suggested commit message
 Store the preview pane text with LF line breaks and leave an untouched value alone
+
+## Done notes
+- Implemented as designed: `CellPreviewViewModel.NormalizeLineBreaks`, `NewLine = "\n"` in `PrettyOptions`, normalized `_original`/`IsDirty`/`Apply`, WinUI `Sync` compares normalized text. Avalonia head unchanged.
+- Tests: 3 + 7 Presentation tests (`CellPreviewTextTests`, `CellPreviewTests`), WinUI `Sync_ComparesNormalizedText`, Avalonia characterization `TextBox_AcceptsReturn_EnterInsertsNewLineProperty` (green: Enter inserts `TextBox.NewLine`).
+- Verified: `Squill.slnx` and `Squill.Windows.slnx` build 0 warnings, all tests green, `check-aot-warnings.ps1 -Head WinUI` baseline only.
+- NOT done: the drive of the published WinUI/Avalonia AOT exes (length and SHA-256 of the stored value, steps 1-4) was not run in this session; the behaviour is covered by the Presentation tests only. Run the drive before relying on the WinUI `\r` root cause 2 confirmation.

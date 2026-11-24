@@ -157,7 +157,7 @@ public sealed partial class CellPreviewPanel : UserControl
             {
                 _title.Text = m.Title;
                 _type.Text = m.TypeText;
-                if (_text.Text != m.Text)
+                if (CellPreviewViewModel.NormalizeLineBreaks(_text.Text) != CellPreviewViewModel.NormalizeLineBreaks(m.Text))
                     _text.Text = m.Text;
                 _text.IsReadOnly = !m.CanEdit;
                 _error.Text = m.Error ?? "";

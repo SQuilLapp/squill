@@ -282,6 +282,18 @@ public sealed class GridEditingUiTests
     });
 
     [Fact]
+    public Task TextBox_AcceptsReturn_EnterInsertsNewLineProperty() => RunAsync(() =>
+    {
+        var box = new TextBox { AcceptsReturn = true, Text = "ab", CaretIndex = 1 };
+        var window = new Window { Content = box };
+        window.Show();
+        box.Focus();
+        window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+        Assert.Equal("a" + box.NewLine + "b", box.Text);
+        window.Close();
+    });
+
+    [Fact]
     public Task Editor_PasteSingleLineWhileMultiLine_ReplacesAndBecomesEditable() => RunAsync(() =>
     {
         using var f = new Fixture().At(1, 2);
