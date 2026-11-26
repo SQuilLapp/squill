@@ -27,6 +27,9 @@ internal sealed class ColumnMenu
     /// <summary>Creates the menu; it stays hidden until <see cref="Show"/>.</summary>
     public ColumnMenu() => _flyout.Closed += OnClosed;
 
+    /// <summary>Closes the menu when it is open.</summary>
+    public void Hide() => _flyout.Hide();
+
     /// <summary>Gets the content of the open menu, or <see langword="null"/> when it is closed.</summary>
     public Control? Content => _flyout.Content as Control;
 

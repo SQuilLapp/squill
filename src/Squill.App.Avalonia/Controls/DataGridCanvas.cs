@@ -199,6 +199,36 @@ public sealed class DataGridCanvas : Control
         set => SetScroll(_scrollX, value);
     }
 
+    /// <summary>Captures the scroll offsets and, when the user resized a column, the column widths, so a refresh can put the view back.</summary>
+    /// <returns>The memo for <see cref="RestoreView"/>.</returns>
+    public GridViewMemo SaveView()
+    {
+        double[]? widths = null;
+        if (_userResized)
+        {
+            widths = new double[_layout.ColumnCount];
+            for (var i = 0; i < widths.Length; i++)
+                widths[i] = _layout.ColumnWidth(i);
+        }
+
+        return new GridViewMemo(_scrollX, _scrollY, widths, _layout.ColumnCount);
+    }
+
+    /// <summary>Puts back the scroll offsets (clamped) and the widths the user chose after the data source was replaced.</summary>
+    /// <param name="memo">What <see cref="SaveView"/> returned for the previous data.</param>
+    public void RestoreView(GridViewMemo memo)
+    {
+        var count = _source?.Columns.Count ?? 0;
+        if (memo.Widths is { } widths && widths.Length == count && count == memo.ColumnCount)
+        {
+            _layout.SetColumnWidths(widths);
+            _userResized = true;
+        }
+
+        SetScroll(memo.ScrollX, memo.ScrollY);
+        InvalidateVisual();
+    }
+
     /// <summary>Gets the duration of the last <see cref="Render"/> call, in milliseconds.</summary>
     public double LastRenderMs { get; private set; }
 
@@ -1005,3 +1035,10 @@ public sealed class ColumnMenuRequestedEventArgs(int column, Point anchor) : Eve
     /// <summary>Gets where the menu hangs, in canvas coordinates.</summary>
     public Point Anchor { get; } = anchor;
 }
+
+/// <summary>The scroll offsets and chosen column widths of a grid, kept across a refresh.</summary>
+/// <param name="ScrollX">The horizontal scroll offset.</param>
+/// <param name="ScrollY">The vertical scroll offset.</param>
+/// <param name="Widths">The widths of the columns when the user resized one, else <see langword="null"/>.</param>
+/// <param name="ColumnCount">The number of columns the memo was taken with.</param>
+public readonly record struct GridViewMemo(double ScrollX, double ScrollY, double[]? Widths, int ColumnCount);

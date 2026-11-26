@@ -55,6 +55,10 @@ The query toolbar has an `Auto-commit | Manuel` toggle. In `Manuel` the first st
 
 Oracle keeps auto-commit. See [ADR 0012](docs/adr/0012-transactions-and-production-confirmation.md) for the design and known limits; the windows still need the owner's checks of [docs/verification/transactions.md](docs/verification/transactions.md).
 
+## Auto-refresh of a query tab
+
+The clock button before `Stop` re-runs the last run of a tab every `5 s`, `10 s`, `30 s`, `1 m`, `5 m` or a custom 1 to 3600 seconds (default `Disabled`, per tab, not saved). Only a read-only run that ended without error can refresh. A refresh writes no history, keeps the sort, filters, scroll and column widths, and does not close the completion popup. It pauses while grid edits are pending, a value is being edited, the transaction failed, the session is busy or the tab is hidden, and it stops on the first failed refresh or on `Stop`.
+
 ## Dropping several tables, and what phase 20 did not verify
 
 In the explorer, select several tables (Ctrl+click, Shift+click) and use `Supprimer N tables` or `Delete`: the confirmation lists them, referencing tables go first, a table outside the selection that references one blocks the drop (there is no `CASCADE`), and PostgreSQL, SQL Server and SQLite drop all or none (MySQL stops at the first failure). Dropping a single table now follows the same path, including the Production confirmation. Checklist for the owner: [docs/verification/multi-delete.md](docs/verification/multi-delete.md).

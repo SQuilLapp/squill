@@ -81,6 +81,14 @@
               <Border Name="AnalyzeChip" Classes="kbd"><TextBlock Text="{loc:Text plan.analyzeShortcut}" /></Border>
             </StackPanel>
           </Button>
+          <Button Name="AutoRefreshButton" Classes="ghost" Height="28" MinHeight="28" Padding="8,0" IsEnabled="False"
+                  ToolTip.ShowOnDisabled="True" Click="OnAutoRefreshClicked">
+            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+              <Path Name="AutoRefreshIcon" Classes="icon" Width="14" Height="14" Data="{StaticResource SquillIconTimer}" />
+              <TextBlock Name="AutoRefreshLabel" Classes="mono" FontSize="12" IsVisible="False" VerticalAlignment="Center" />
+              <Path Classes="icon" Width="10" Height="10" Data="{StaticResource SquillIconCollapse}" />
+            </StackPanel>
+          </Button>
           <Button Name="StopButton" Height="28" MinHeight="28" Content="{loc:Text editor.stop}"
                   IsEnabled="{Binding IsRunning}" Command="{Binding CancelCommand}" />
           <Border Name="TxSeparator" Width="1" Height="18" Margin="4,0" Background="{DynamicResource SquillBorderBrush}" VerticalAlignment="Center" />
