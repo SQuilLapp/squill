@@ -1,8 +1,12 @@
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
+using Avalonia.Threading;
+using Squill.Presentation.Editing;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 
@@ -18,6 +22,7 @@ public sealed class CellPreviewPanel : Border
     private readonly Button _format = new() { Classes = { "ghost" }, Height = 26, MinHeight = 26, Content = UiText.Get("preview.format") };
     private readonly Button _apply = new() { Classes = { "primary" }, Height = 26, MinHeight = 26, Content = UiText.Get("preview.apply") };
     private readonly Button _close = new() { Classes = { "ghost" }, Height = 26, MinHeight = 26, Content = UiText.Get("preview.close") };
+    private readonly ProgressBar _working = new() { IsIndeterminate = true, Height = 2, IsVisible = false };
     private CellPreviewViewModel? _model;
     private bool _syncing;
 
@@ -52,9 +57,12 @@ public sealed class CellPreviewPanel : Border
         bottom.Children.Add(footer);
 
         var root = new DockPanel();
+        AutomationProperties.SetName(_working, UiText.Get("preview.working"));
         DockPanel.SetDock(header, Dock.Top);
+        DockPanel.SetDock(_working, Dock.Top);
         DockPanel.SetDock(bottom, Dock.Bottom);
         root.Children.Add(header);
+        root.Children.Add(_working);
         root.Children.Add(bottom);
         root.Children.Add(_text);
         Child = root;
@@ -64,6 +72,12 @@ public sealed class CellPreviewPanel : Border
             if (_model is not null && !_syncing && _model.Text != (_text.Text ?? ""))
                 _model.Text = _text.Text ?? "";
         };
+        // Replaces the built-in paste so a long text can show the busy popup before the insert blocks the UI thread.
+        _text.PastingFromClipboard += (_, e) =>
+        {
+            e.Handled = true;
+            _ = PasteAsync();
+        };
         _close.Click += (_, _) => _model?.CloseCommand.Execute(null);
         _format.Click += (_, _) => _model?.FormatCommand.Execute(null);
         _apply.Click += (_, _) => _model?.ApplyCommand.Execute(null);
@@ -71,6 +85,44 @@ public sealed class CellPreviewPanel : Border
 
     /// <summary>Raised when the pane is shown or hidden; the argument tells which.</summary>
     public event EventHandler<bool>? OpenChanged;
+
+    /// <summary>Raised when a long paste into the pane starts (<see langword="true"/>) and ends (<see langword="false"/>).</summary>
+    public event EventHandler<bool>? BusyChanged;
+
+    private async Task PasteAsync()
+    {
+        string? text;
+        try
+        {
+            text = TopLevel.GetTopLevel(_text)?.Clipboard is { } clipboard ? await clipboard.TryGetTextAsync() : null;
+        }
+        catch (Exception)
+        {
+            return;
+        }
+
+        if (text is null)
+        {
+            return;
+        }
+
+        if (!LongPaste.IsLong(text))
+        {
+            _text.SelectedText = text;
+            return;
+        }
+
+        BusyChanged?.Invoke(this, true);
+        try
+        {
+            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Render);
+            _text.SelectedText = text;
+        }
+        finally
+        {
+            BusyChanged?.Invoke(this, false);
+        }
+    }
 
     /// <summary>Shows the preview of another result, or nothing when <see langword="null"/>.</summary>
     /// <param name="model">The preview view-model of the result on screen.</param>
@@ -103,6 +155,7 @@ public sealed class CellPreviewPanel : Border
                 _format.IsEnabled = m.IsJson;
                 _apply.IsVisible = m.ShowApply;
                 _apply.IsEnabled = m.ApplyCommand.CanExecute(null);
+                _working.IsVisible = m.IsWorking;
             }
             finally
             {

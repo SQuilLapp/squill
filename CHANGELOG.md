@@ -10,6 +10,10 @@
 
 - Explorer filter popup, opened from an `n of m` badge on connection, database and schema rows or from the context menu: choose which databases, schemas and tables are shown, with wildcard patterns. It replaces the "Tables to show" dialog, is saved per connection, and filters saved by earlier versions are kept.
 
+### Fixed
+
+- Pasting a very long text (100,000 characters or more) into a result grid, a cell editor or the value pane shows a `Pasting…` popup with a progress bar instead of freezing the window with no sign of life.
+
 ## [0.5.2] - 2026-11-20
 
 ### Fixed

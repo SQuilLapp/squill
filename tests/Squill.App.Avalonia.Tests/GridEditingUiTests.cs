@@ -304,4 +304,18 @@ public sealed class GridEditingUiTests
         Assert.Equal("one line", f.View.CellEditor.Text);
         Assert.Equal("one line", f.Controller.EditText);
     });
+
+    [Fact]
+    public Task Grid_LongPaste_RaisesBusyAroundTheChangeAndShortRaisesNothing() => Headless.Dispatch(async () =>
+    {
+        using var f = new Fixture().At(1, 1);
+        var events = new List<bool>();
+        f.View.Canvas.BusyChanged += (_, busy) => events.Add(busy);
+        await f.View.Canvas.PasteTextAsync(f.Controller, "short");
+        Assert.Empty(events);
+        var text = new string('x', LongPaste.Threshold);
+        await f.View.Canvas.PasteTextAsync(f.Controller, text);
+        Assert.Equal([true, false], events);
+        Assert.Equal(text, f.Editor.Grid.GetCell(1, 1));
+    }, TestContext.Current.CancellationToken);
 }

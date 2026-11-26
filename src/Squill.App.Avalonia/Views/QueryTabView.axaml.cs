@@ -40,6 +40,8 @@ public sealed partial class QueryTabView : UserControl
     {
         InitializeComponent();
         Preview.OpenChanged += (_, open) => SyncPreviewColumn(open);
+        ResultGrid.BusyChanged += OnBusyChanged;
+        Preview.BusyChanged += OnBusyChanged;
         SyncPreviewColumn(false);
         Empty.Text = UiText.Get("results.empty");
         IsVisible = false;
@@ -399,6 +401,18 @@ public sealed partial class QueryTabView : UserControl
     }
 
     // A closed pane gives its whole column back (the width the user dragged stays in Width, only the limits change).
+    private void OnBusyChanged(object? sender, bool busy)
+    {
+        if (busy)
+        {
+            Busy.Show();
+        }
+        else
+        {
+            Busy.Hide();
+        }
+    }
+
     private void SyncPreviewColumn(bool open)
     {
         PreviewSplitter.IsVisible = open;

@@ -48,6 +48,7 @@ public sealed class DataGridView : Grid
                 c.SetText(_editor.Text ?? "");
             }
         };
+        _canvas.BusyChanged += (_, busy) => BusyChanged?.Invoke(this, busy);
         _editor.KeyDown += OnEditorKeyDown;
         _editor.PastingFromClipboard += (_, e) =>
         {
@@ -85,6 +86,9 @@ public sealed class DataGridView : Grid
             }
         };
     }
+
+    /// <summary>Raised when a long paste (grid or in-place editor) starts (<see langword="true"/>) and ends (<see langword="false"/>).</summary>
+    public event EventHandler<bool>? BusyChanged;
 
     /// <summary>Gets the drawing surface.</summary>
     public DataGridCanvas Canvas => _canvas;
@@ -220,7 +224,25 @@ public sealed class DataGridView : Grid
 
         if (text is not null && c.IsEditing && c.EditRow == row && c.EditColumn == column)
         {
-            PasteIntoEditor(text);
+            var isLong = LongPaste.IsLong(text);
+            if (isLong)
+            {
+                BusyChanged?.Invoke(this, true);
+                // Lets the popup render before the text insert blocks the UI thread.
+                await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Render);
+            }
+
+            try
+            {
+                PasteIntoEditor(text);
+            }
+            finally
+            {
+                if (isLong)
+                {
+                    BusyChanged?.Invoke(this, false);
+                }
+            }
         }
     }
 

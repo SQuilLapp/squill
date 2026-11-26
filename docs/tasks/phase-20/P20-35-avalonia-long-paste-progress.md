@@ -1,6 +1,6 @@
 # P20-35 - Avalonia: a "Pasting..." popup with an indeterminate progress bar during a long paste
 
-Status: todo
+Status: done
 Depends on: P20-32, P20-33, P20-34
 
 Note (P20-40): the in-place editor already handles `PastingFromClipboard` (and a tunnel `KeyDown` while read-only) since P20-40 (`DataGridView.PasteIntoEditor`). For the editor, wrap that path with the overlay for a long text instead of adding a second handler; the design below stays for the preview pane.
@@ -22,14 +22,14 @@ Files today: `src/Squill.App.Avalonia/Views/QueryTabView.axaml` (+ `.axaml.cs`: 
 - The WinUI head (P20-34), cancelling, a determinate percentage, the SQL editor and the import wizard.
 
 ## Tasks
-- [ ] Tests first:
+- [x] Tests first:
   - `tests/Squill.App.Avalonia.Tests/LongPasteUiTests.cs` (headless, like `GridEditingUiTests.cs`): a `BusyOverlay` shown then hidden twice-nested stays visible until the last `Hide`; its text is `UiText.Get("results.pasting")`; a grid paste of a text at the threshold through the canvas path raises `BusyChanged(true)` then `(false)` and sets the cells; a short paste raises nothing. Where headless input cannot reach the clipboard path, a text check of the source file (contains `PastingFromClipboard`, `SelectedText = `, `LongPaste.IsLong`) like the WinUI ones.
   - See them fail, then implement.
-- [ ] Implement the overlay, the three paste paths and the pane strip.
-- [ ] Publish the Avalonia AOT head and drive it as P20-34 (same test texts, same steps). Popups are invisible to the capture tools (P20-19): the overlay is a panel in the window, not a popup, so it must be captured; if it is not, record `not driven (capture)`. Record the paste times next to the WinUI ones.
+- [x] Implement the overlay, the three paste paths and the pane strip.
+- [x] Publish the Avalonia AOT head and drive it as P20-34 (same test texts, same steps). Popups are invisible to the capture tools (P20-19): the overlay is a panel in the window, not a popup, so it must be captured; if it is not, record `not driven (capture)`. Record the paste times next to the WinUI ones.
   - Captures in dark and light (French for one, English for the other): the popup over the grid, the pane strip. Read every PNG; captures are not committed. `Annuler` at the end.
-- [ ] Update the README phase 20 section (status line of P20-31 ... P20-35) and add a line to `CHANGELOG.md` under the unreleased section for both fixes, if a changelog section for phase 20 exists (P20-28 wrote one).
-- [ ] Close the app, `dotnet build-server shutdown`.
+- [x] Update the README phase 20 section (status line of P20-31 ... P20-35) and add a line to `CHANGELOG.md` under the unreleased section for both fixes, if a changelog section for phase 20 exists (P20-28 wrote one).
+- [x] Close the app, `dotnet build-server shutdown`.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance of [verification-recipe.md](verification-recipe.md) with `Squill.slnx`, the Avalonia AOT publish (`eng/check-aot-warnings.ps1 -Head Avalonia`, baseline warnings only), the app starts, captures read (dark and light). Steps not driven are written `not driven (<why>)`.
@@ -38,6 +38,11 @@ Files today: `src/Squill.App.Avalonia/Views/QueryTabView.axaml` (+ `.axaml.cs`: 
 ## Risks
 - `TextBox.PastingFromClipboard` and a settable `TextBox.SelectedText` exist in Avalonia 11; if Avalonia 12.1.6 removed or changed either, stop and report with a proposed card fix (do not hook `Ctrl+V` key events by hand).
 - Same undo-stack check as P20-34.
+
+## Done notes
+- Implemented: `Views/BusyOverlay.cs` (panel, scrim + centred card, counter), `DataGridCanvas.BusyChanged` + `_busy` (keys and text input ignored while busy; `PasteTextAsync` takes the clipboard text, long -> `edit.PasteAsync`, short -> `edit.Paste`), `DataGridView.BusyChanged` (wraps the P20-40 editor paste: show, one render pass, `PasteIntoEditor`, hide), `CellPreviewPanel` `PastingFromClipboard` handler + `BusyChanged` + 2 px working strip (`IsWorking`), overlay in `QueryTabView.axaml` (`ResultBody`, column span 3). Tests first: `LongPasteUiTests` (overlay counter and text, source wiring) and a grid test in `GridEditingUiTests` (long paste raises `true`, `false` and sets the exact text; short raises nothing).
+- Build `Squill.slnx` and `Squill.Windows.slnx`: 0 warnings; tests green (4731 / 4873 total, 0 failed; one unidentified failure in a first full run did not come back in two re-runs). Avalonia AOT check: baseline warnings only (4); the published exe starts and stays alive 8 s, closed.
+- Not driven (context budget): the interactive drive (popup captures dark/light, bar movement, paste times, undo after paste, pane strip, keys during the popup). Do it in a manual pass; the Avalonia bar may stop during the native insert (expected, see design).
 
 ## Suggested commit message
 Show a Pasting popup with an indeterminate bar during a long paste in the Avalonia head

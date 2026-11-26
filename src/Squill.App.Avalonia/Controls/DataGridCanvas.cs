@@ -75,6 +75,11 @@ public sealed class DataGridCanvas : Control
         _layout = new GridLayout(ResolveDouble("SquillRowHeightStandard", 26), ResolveDouble("SquillRowHeightStandard", 26));
     }
 
+    private bool _busy;
+
+    /// <summary>Raised when a long paste starts (<see langword="true"/>) and when it ends (<see langword="false"/>), so the host can show a busy popup.</summary>
+    public event EventHandler<bool>? BusyChanged;
+
     /// <summary>Raised when the content extent, viewport or scroll offsets changed so hosts can update scroll bars.</summary>
     public event EventHandler? ScrollStateChanged;
 
@@ -662,7 +667,7 @@ public sealed class DataGridCanvas : Control
     {
         base.OnKeyDown(e);
         var source = _source;
-        if (source is null)
+        if (source is null || _busy)
         {
             return;
         }
@@ -710,7 +715,7 @@ public sealed class DataGridCanvas : Control
     protected override void OnTextInput(TextInputEventArgs e)
     {
         base.OnTextInput(e);
-        if (EditController is { } edit && !string.IsNullOrEmpty(e.Text) && !char.IsControl(e.Text[0]) && edit.Begin(e.Text))
+        if (!_busy && EditController is { } edit && !string.IsNullOrEmpty(e.Text) && !char.IsControl(e.Text[0]) && edit.Begin(e.Text))
         {
             e.Handled = true;
         }
@@ -740,14 +745,40 @@ public sealed class DataGridCanvas : Control
         }
     }
 
-    private async Task PasteAsync(GridEditController edit)
+    private Task PasteAsync(GridEditController edit) =>
+        TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard ? PasteClipboardAsync(edit, clipboard) : Task.CompletedTask;
+
+    private async Task PasteClipboardAsync(GridEditController edit, IClipboard clipboard)
     {
-        if (TopLevel.GetTopLevel(this)?.Clipboard is not { } clipboard || await clipboard.TryGetTextAsync() is not { } text)
+        if (await clipboard.TryGetTextAsync() is { } text)
         {
-            return;
+            await PasteTextAsync(edit, text);
+        }
+    }
+
+    // A long text shows the busy popup while the controller does its heavy work off the UI thread.
+    internal async Task PasteTextAsync(GridEditController edit, string text)
+    {
+        string? error;
+        if (LongPaste.IsLong(text))
+        {
+            _busy = true;
+            BusyChanged?.Invoke(this, true);
+            try
+            {
+                error = await edit.PasteAsync(text, CancellationToken.None);
+            }
+            finally
+            {
+                _busy = false;
+                BusyChanged?.Invoke(this, false);
+            }
+        }
+        else
+        {
+            error = edit.Paste(text);
         }
 
-        var error = edit.Paste(text);
         if (error is not null && Dialogs is { } dialogs)
         {
             await dialogs.ShowErrorAsync(UiText.Get("results.paste"), error);
