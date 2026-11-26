@@ -1,0 +1,108 @@
+# P20-43 - Preview pane: a very long value no longer freezes the UI thread (shown text capped, whole value kept for copy and apply)
+
+Status: todo
+Depends on: P20-33, P20-41, P20-42
+
+## Goal
+Bug measured by the owner on the published WinUI AOT exe built from `fc94469`, with a real single-line GeoJSON of 1,728,825 bytes stored in a cell: **merely selecting the cell freezes the UI thread for about 38 s** (two runs: 38.2 s and 38.5 s), no paste involved, and nothing on screen says the app is busy. Cap the text the preview pane puts into its native `TextBox`, in one shared rule in Presentation used by both heads, keep copy and apply working on the **whole** value, and prove it with a measured drive on the published AOT exe.
+
+What already works and is NOT the bug (same file, same exe): pasting it into the grid's in-place editor, applying it, and `Ctrl+C` of the grid cell are all byte-identical to the file.
+
+Files today: `src/Squill.Presentation/Results/CellPreviewViewModel.cs` (`LongTextLength`, `Refresh`, `Show`, `OnTextChanged`, `Format`, `Apply`, `TryPretty`, `StartBackground`), `src/Squill.App.WinUI/Views/CellPreviewPanel.cs` and `src/Squill.App.Avalonia/Views/CellPreviewPanel.cs` (`Sync`, `TextChanged`, `Paint` on WinUI), `src/Squill.Presentation/Localization/UiTextCatalogEn.cs` and `UiTextCatalogFr.cs` (`preview.*` keys), `src/Squill.Presentation/Editing/LongPaste.cs` (`Threshold = 100_000`), tests `tests/Squill.Presentation.Tests/Query/CellPreviewTests.cs`, `tests/Squill.Presentation.Tests/Results/CellPreviewTextTests.cs`, `tests/Squill.App.WinUI.Tests/CellPreviewPanelTests.cs`, `tests/Squill.App.Avalonia.Tests/GridEditingUiTests.cs`.
+
+## Root cause (measured on the WinUI AOT exe, read in the code at `fc94469`)
+1. `Refresh` pretty-prints a long JSON value in the background (P20-33) and then sets `Text` once. The pretty text of the 1.7 MB file is about 4,000,044 chars and about 167,000 lines. `CellPreviewPanel.Sync` (WinUI, line 168) then runs `_text.Text = m.Text` on the UI thread: **29.3 s** of the freeze is that one assignment; the rest of `Sync` takes about 20 ms.
+2. The cost of the native `TextBox` grows with the **line count**, not the size: a 1.7 MB single-line text takes 0.3 s, a 4 MB text of 167k lines takes 19 s (about 0.11 ms per line). So the pretty-printing done for display is what turns a fast value into a slow one.
+3. Related symptoms with the same cause (not separate bugs; this card covers them through the same cap): pasting into the pane is sluggish for tens of seconds (the P20-34 popup shows); `Ctrl+A` `Ctrl+C` in the pane takes 8.6 s and copies the pretty-printed 4 MB `\r\n` text instead of the stored value; a 1.7 MB **single** line set into a WinUI `TextBox` is not drawn at all (the box looks blank although the value is there; seen in the in-place editor, the pane uses the same control).
+4. The `Pasting…` popup of P20-34 / P20-35 is raised by the paste handler only, so the select freeze has no feedback at all.
+5. Avalonia was not driven. Its `Sync` does the same full assignment (`_text.Text = m.Text`); whether its `TextBox` is as slow is unknown. Measure it before changing anything (task 2).
+
+## Design decisions (final)
+- **One shared rule** in `CellPreviewViewModel` (Presentation, next to `LongTextLength`; both heads only show what the view-model gives them):
+  - `public const int MaxShownLines = 2_000;` and `public const int MaxShownChars = LongPaste.Threshold;` (100,000). XML doc on both: the most lines / characters the pane puts into its text box; above either, the pane shows the start of the value. Why these numbers: 0.11 ms per line measured gives about 0.25 s for 2,000 lines, well under the 1 s target; 100,000 chars is the existing long-text threshold of P20-33, and a single line of 1.7 MB was not drawn. The drive (step 3) checks both and may lower them; change them only here.
+  - `internal static string? Head(string text)`: returns `null` when `text` has at most `MaxShownLines` lines and at most `MaxShownChars` chars (the common case, no allocation); otherwise the shortest of: the text up to (not including) the line break that ends line `MaxShownLines` (`\n`, `\r\n` or lone `\r` ends a line), and the first `MaxShownChars` chars, never ending between the two halves of a surrogate pair (back off one char). It stops scanning as soon as either limit is reached (no full line count of a 4 MB text). `ArgumentNullException.ThrowIfNull(text)`.
+- **View-model state** (`CellPreviewViewModel`):
+  - `[ObservableProperty] public partial bool IsTruncated { get; private set; }`: the pane shows only the start of the value.
+  - `public string? FullValue`: the whole cell value as the grid copies it (`CellFormatter.Format`, raw, not pretty-printed) when `IsTruncated`, otherwise `null`. Set in `Show`, kept in a field.
+  - `[ObservableProperty] public partial string? Notice { get; private set; }`: `UiText.Format("preview.truncated", Text.Length, FullValue.Length)` when truncated, else `null`.
+  - `public bool CanFormat => IsJson || IsTruncated;` and `public string FormatLabel => UiText.Get(IsTruncated ? "preview.showAll" : "preview.format");` (computed like `ShowFormat`; `ViewChanged` already fires on every property change). `ShowFormat` becomes `IsJson || CanEdit || IsTruncated`.
+- **`Refresh`**: unchanged up to the text to show. On both paths (background long JSON, and the synchronous short path) apply `Head` to the text that would be shown (the pretty text for JSON, the raw value otherwise; a short minified JSON can still pretty-print to more than 2,000 lines). When `Head` returns a head: `Show` the head with `IsTruncated = true`, `FullValue` = the raw value, `Error = null` and **no validation** (the box is read-only, nothing can be applied). `IsOpen` as today. When it returns `null`: exactly today's behaviour.
+- **`OnTextChanged`**: return early (after the `_refreshing` check) when `IsTruncated`: never dirty, no validation. This covers the WinUI `\r` round trip of the head (P20-41 root cause 2).
+- **`Format` while truncated = "Show all"**: `StartBackground(() => { json ? TryPretty(full) : full; validate as Refresh does })`, then `Show` the whole text with `IsTruncated = false`, `FullValue = null`, `Notice = null`. From then on the pane behaves exactly as today (P20-41: editable when `CanEdit`, `Apply` stores the shown text with `\n`, untouched text never dirty). The user asked for it, so the native fill may still block for the measured time (about 19 s for 167k lines); see Open points. `Format` on a value that is not truncated is unchanged.
+- **`Apply`** unchanged; it can never run while truncated (`IsDirty` stays `false`). The in-place editor and the grid paste are not touched, so the cell keeps its exact value until the user applies something.
+- **Copy of the whole value**: in each head, the box's copy event (WinUI `TextBox.CopyingToClipboard`, Avalonia `TextBox.CopyingToClipboard`): when `_model is { IsTruncated: true, FullValue: { } full }` **and the whole shown text is selected** (`Ctrl+A`), set `e.Handled = true` and put `full` on the clipboard (WinUI: `DataPackage.SetText` + `Clipboard.SetContent`, as `Controls/DataGridCanvas.cs` does; Avalonia: `TopLevel.GetTopLevel(_text)?.Clipboard` then `SetTextAsync`, as `DataGridCanvas.cs` does). A partial selection copies what is selected, as today.
+- **Heads** (`Sync` and the constructor, both heads, same shape):
+  - `_text.IsReadOnly = !m.CanEdit || m.IsTruncated;`
+  - a new `_notice` `TextBlock` (`FontSize = 12`, wrap, margin as `_error`) placed just above `_error`, `Text = m.Notice`, visible when `m.Notice` is not `null`. WinUI: its foreground is set in `Paint` with `Tokens.Brush(this, "SquillFg3Brush")` (P20-42 rule, no field-initializer brush). Avalonia: `Bind(TextBlock.ForegroundProperty, GetResourceObservable("SquillFg3Brush"))` as `_type`.
+  - `_format.Content = m.FormatLabel; _format.IsEnabled = m.CanFormat;`
+  - Keep the P20-41 normalized comparison before `_text.Text = m.Text` (WinUI) and the P20-34 / P20-35 `PasteAsync` untouched.
+- **New UI text** (EN and FR catalogs, parity and used-keys tests must stay green):
+  - `preview.truncated`: EN `Only the start of this value is shown ({0:N0} of {1:N0} characters). Show all loads it whole and may take a while; copying all the text copies the whole value.` FR `Seul le début de cette valeur est affiché ({0:N0} sur {1:N0} caractères). Tout afficher la charge en entier et peut prendre du temps ; copier tout le texte copie la valeur entière.`
+  - `preview.showAll`: EN `Show all`, FR `Tout afficher`.
+- No new package, no `Application.Current.Resources` brush lookup, no reflection, no `NoWarn`.
+
+## Out of scope
+- The in-place grid editor (P20-40): its blank box after pasting a 1.7 MB single line is the same WinUI drawing limit, but the editor holds the exact value and works; a follow-up card if the owner wants it (see Open points).
+- A progress popup for the explicit `Show all` fill, virtualizing or replacing the `TextBox` (LoomEditor), syntax colouring, a setting for the limits, minifying at apply, the P20-34 / P20-35 paste popup and its text, the grid paste and export, the theme of the pane (P20-42).
+
+## Tasks
+- [ ] Test data (scratchpad, **never committed**, no file added to `eng/testdata`): generate a deterministic single-line GeoJSON close to the owner's file with this PowerShell (tune `$features` / `$points` / `$pad` only if the counts below are off; record the final values):
+  ```powershell
+  $inv = [Globalization.CultureInfo]::InvariantCulture; $features = 2000; $points = 16; $pad = ('zone é ' * 58).Substring(0, 400)
+  $sb = [Text.StringBuilder]::new('{"type":"FeatureCollection","features":[')
+  for ($f = 0; $f -lt $features; $f++) {
+      if ($f) { [void]$sb.Append(',') }
+      [void]$sb.Append('{"type":"Feature","properties":{"id":').Append($f).Append(',"note":"').Append($pad).Append('"},"geometry":{"type":"Polygon","coordinates":[[')
+      for ($p = 0; $p -lt $points; $p++) {
+          if ($p) { [void]$sb.Append(',') }
+          [void]$sb.Append('[').Append((2.35 + $f * 0.001 + $p * 0.0001).ToString('F6', $inv)).Append(',').Append((48.85 + $p * 0.0001).ToString('F6', $inv)).Append(']')
+      }
+      [void]$sb.Append(']]}}')
+  }
+  [void]$sb.Append(']}'); [IO.File]::WriteAllText('<scratch>\geo.json', $sb.ToString())  # UTF-8, no BOM, no final line break
+  ```
+  Expected: about 1.7 MB, one line, and its indented form (any indenter, for example `ConvertFrom-Json | ConvertTo-Json -Depth 20`) about 150,000 to 200,000 lines. Record length, SHA-256 (`Get-FileHash`) and the indented line count. If the owner's original file is on the machine (1,728,825 bytes, SHA-256 starting `3ae8c2e6`), repeat steps 2 and 4 of the WinUI drive with it as well; do not copy it into the repository.
+- [ ] **Measure before changing anything** (baseline, both heads): publish the WinUI and Avalonia AOT heads from the current `HEAD`, SQLite `New-VisualProfile.ps1 -Scenario Full` in the scratchpad, store the generated value with `sqlite3 <dir>\ventes.db "UPDATE clients SET ville = CAST(readfile('<scratch>\geo.json') AS TEXT) WHERE rowid = (SELECT min(rowid) FROM clients)"` (or a `dotnet run` file script with Microsoft.Data.Sqlite, as P20-40), open `clients`, then select the `ville` cell of that row with `Drive-Window.ps1 -Action Click -Mode Mouse` while a **responsiveness probe** runs: a scratch PowerShell started just before the click that, for 60 s, calls `SendMessageTimeout(<main hwnd>, WM_NULL, 0, 0, SMTO_ABORTIFHUNG, 100, out _)` every 50 ms and records the **longest gap between two successful returns** (the stall). Expected WinUI: about 38 s (the owner's measurement). Record the Avalonia stall; if the driver cannot select a cell on the Avalonia canvas grid (P20-40), write `not driven (<why>)` and measure instead in a headless test (see the Avalonia test below). Close both apps.
+- [ ] Tests first (see them fail):
+  - `tests/Squill.Presentation.Tests/Results/CellPreviewTextTests.cs`: `Head_WithinLimits_ReturnsNull` (empty, 1,999 lines, exactly `MaxShownLines` lines, exactly `MaxShownChars` chars); `Head_TooManyLines_CutsAtLineBreak` (`[Theory]` with `\n`, `\r\n` and `\r`: 2,500 short lines give exactly `MaxShownLines` lines, no trailing break); `Head_LongSingleLine_CutsAtMaxChars` (1.7 M chars: length `MaxShownChars`); `Head_DoesNotSplitSurrogatePair` (an emoji straddling `MaxShownChars`: length `MaxShownChars - 1`, last char not a high surrogate); `Head_LongLinesBeforeLineLimit_CutsAtChars` (1,000 lines of 200 chars: length `MaxShownChars`).
+  - `tests/Squill.Presentation.Tests/Query/CellPreviewTests.cs` (existing fixture; add rows **after** the existing ones so the other tests keep their row numbers; build the long values in the test, for example a minified JSON array of about 3,000 objects so its pretty text exceeds 2,000 lines, and a 150,000-char single-line text): `Refresh_HugePrettyJson_ShowsHeadReadOnly` (after `ui.Pump(preview.Pending)`: `IsTruncated`, `Text` equals `Head(pretty)`, at most `MaxShownLines` lines, `Notice` not null, `FullValue` equals the raw cell text, `Error` null); `Refresh_LongSingleLineText_ShowsHead` (non-JSON, `Text.Length == MaxShownChars`); `Refresh_ShortValue_IsNotTruncated` (existing behaviour: `IsTruncated` false, `FullValue` and `Notice` null); `Text_TruncatedHeadRoundTrip_IsNeverDirty` (set `Text = Text.Replace("\n", "\r")` and then `Text + "x"`: `IsDirty` false, `ApplyCommand.CanExecute` false, no background validation started: `IsWorking` false); `Format_Truncated_ShowsWholeTextAndClearsNotice` (`FormatCommand`, pump: `IsTruncated` false, `Text` equals the pretty text, `Notice` and `FullValue` null, `IsDirty` false); `Apply_AfterShowAll_StoresShownTextWithLf` (edit one value in the whole text, apply: the cell equals the edited text with `\n` only, as P20-41); `FullValue_EqualsGridCopy` (`FullValue` equals what `GridSelection.ToTsv` gives for that one cell). Keep every P20-33 and P20-41 test green.
+  - `tests/Squill.Presentation.Tests/UiTextTests.cs`: parity and used-keys stay green with the two new keys.
+  - `tests/Squill.App.WinUI.Tests/CellPreviewPanelTests.cs` (text checks on the linked file): `Pane_caps_and_copies_whole_value` (contains `IsTruncated`, `CopyingToClipboard`, `FullValue`, `Notice`, `FormatLabel`, `Tokens.Brush(this, "SquillFg3Brush")`); `Pane_paints_from_its_own_theme` stays green.
+  - `tests/Squill.App.Avalonia.Tests/GridEditingUiTests.cs` (headless, existing patterns): `PreviewPane_TruncatedValue_ShowsHeadNoticeAndIsReadOnly` (a pane attached to a view-model on a long value: box text equals `Text`, `IsReadOnly`, notice visible, format button content is `Show all` / `Tout afficher`); if task 2 could not drive Avalonia, also `TextBox_Set167kLines_Characterization` (a `TextBox` in a headless window, `Stopwatch` around setting the 167k-line text and one layout pass; assert nothing, write the time in the Done notes).
+- [ ] Implement `Head`, the constants, the view-model state and rules, both heads, the two keys. XML doc on every new public member; one-line `<summary>` rule for internal types (grep before committing).
+- [ ] Build and tests: `rtk bypass dotnet build Squill.slnx -c Release -warnaserror` and `Squill.Windows.slnx` (0 warnings), `rtk bypass dotnet test` (both solutions), `eng/check-aot-warnings.ps1 -Head WinUI` and `-Head Avalonia` (baseline warnings only).
+- [ ] **Measured drive, WinUI AOT exe** (P20-01 `Drive-Window.ps1`, recipe 3 of [verification-recipe.md](verification-recipe.md)), same profile and stored value as the baseline, dark theme / French, then light / English for step 1 only:
+  1. Select the `ville` cell holding the generated value with the probe running: **longest stall < 1 s** (record it next to the baseline). The pane opens with the indented start of the value, read-only, the notice under it, the button reads `Tout afficher`; capture, read the PNG.
+  2. `Ctrl+C` on the grid cell: `Get-Clipboard -Raw` saved as in P20-40 (`Set-Content -NoNewline -Encoding utf8NoBOM`) has the length and SHA-256 of `geo.json` (no regression). Then click into the pane, `Ctrl+A`, `Ctrl+C` with the probe running: same length and SHA-256 as `geo.json`, stall < 1 s.
+  3. Limits check: store a 100,000-char single-line text (`'x' * 99990 + 'END-MARKER'` is not JSON) in another row and select it: the box draws text (capture, read the PNG; the start of the line is visible). Then a text of exactly 2,000 short lines: stall < 1 s. If either fails, lower the constant (halve until it passes), re-run, and write the final value and the measurements in the Done notes.
+  4. Show all and apply: back on the generated value, click `Tout afficher` with the probe running: the working bar shows, then the whole indented text; record the stall (expected close to the 19 s measured for the fill; not a failure, see Open points). Without typing, `Appliquer` is disabled (UIA `IsEnabled` false). Type one space after the first `{` and delete it: still disabled. Change the first `"zone` to `"Zone` in the box, `Appliquer`, commit, close the app; read the value back (`sqlite3 ... writefile(...)` as P20-40): it has no `\r`, and `ConvertFrom-Json` of it equals `ConvertFrom-Json` of `geo.json` except that one string (compare SHA-256 of `ConvertTo-Json -Compress -Depth 20` of both after applying the same one-string change to the original object).
+  5. Reopen: the row that was never applied still has the SHA-256 of `geo.json` (selecting and leaving the pane wrote nothing).
+- [ ] **Avalonia AOT exe**: steps 1 and 2 with the probe if the driver can select a cell; otherwise `not driven (<why>)` and rely on the headless tests. If the baseline showed no Avalonia freeze, write that: the shared cap still applies (same view-model), and raising the limits for Avalonia only is an open point, not part of this card.
+- [ ] Read every PNG; captures, probe scripts and generated data stay in the scratchpad. Close the apps, `dotnet build-server shutdown`.
+- [ ] Set the P20-43 row of `docs/tasks/README.md` to `done` and write the Done notes: baseline and after stalls per head and step, final constants, generator parameters, every length and SHA-256.
+
+## Acceptance criteria
+- Recipe 2 common acceptance (as P20-40) with `Squill.slnx` and `Squill.Windows.slnx`, the WinUI and Avalonia AOT publishes (`eng/check-aot-warnings.ps1`, baseline warnings only), both apps start, captures read.
+- WinUI AOT exe: selecting a cell holding a 1.7 MB single-line JSON (about 167k indented lines) keeps the UI thread responsive: **longest measured stall < 1 s** (baseline about 38 s). The pane shows the start of the value with the localized notice (EN and FR) and never shows a blank box for a long single line.
+- Grid `Ctrl+C` and pane `Ctrl+A` `Ctrl+C` give the whole stored value, byte-identical to the source (same length and SHA-256).
+- Selecting and leaving a truncated value never enables `Appliquer` and never writes; after `Show all`, P20-41 holds (stored text = shown text with `\n`, untouched text not dirty); P20-42 theme repaint holds (the notice follows the theme); the P20-34 / P20-35 paste popup is unchanged.
+- Avalonia: baseline measured (or `not driven` with the headless measurement), same view-model behaviour covered by the headless test.
+
+## Risks
+- `TextBox.CopyingToClipboard` may not fire for a read-only WinUI box or for the context-menu copy: check keyboard `Ctrl+C` first (main path); if it does not fire, handle `Ctrl+C` in the box's `PreviewKeyDown` while `IsTruncated` and say so. Same check on Avalonia.
+- `SelectionLength == Text.Length` on WinUI compares against the box text with `\r` line breaks: compare against `_text.Text.Length`, not `m.Text.Length`.
+- Pretty-printing a 1.7 MB value still allocates about 8 MB in the background on each select; acceptable (it is off the UI thread). If the probe shows a stall from a GC or from `Head` on the UI thread, move `Head` into the background part of `Refresh` (it already is on the long path) and say so.
+- A short non-JSON value just under `MaxShownChars` on a single line may still be drawn blank if WinUI's limit is lower than 100,000: step 3 is there to find that out.
+
+## Open points (defaults chosen; the owner can change them)
+- **Limits**: 2,000 lines and 100,000 chars, in `CellPreviewViewModel` only, lowered by step 3 if needed. No setting.
+- **Show all** reuses the `Format` button (label `Show all` / `Tout afficher` while truncated) instead of a third button. The explicit fill may freeze for the measured time with only the working bar as feedback; a popup for it (or an editor that virtualizes lines, for example LoomEditor) would be a follow-up card.
+- **Copy** returns the whole value only when the whole shown text is selected; a partial selection copies only what is selected.
+- **Truncated text is read-only**: pasting into the pane over a truncated value needs `Show all` first. Editing a huge value in place is better done in the grid's in-place editor (P20-40), which already stores it exactly.
+- **In-place editor blank box** for a 1.7 MB single line (WinUI): not fixed here; proposed follow-up: the editor's read-only one-line view (P20-40) shows `CellText.Preview` instead of the whole line.
+- **Avalonia**: same cap even if its `TextBox` turns out fast; per-head limits only if the baseline shows a large difference and the owner asks.
+
+## Suggested commit message
+Cap the text the preview pane shows so a very long value no longer freezes the UI thread
+
+## Done notes
