@@ -5,6 +5,7 @@ using Squill.Platform.Settings;
 using Squill.Platform.Storage;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Query;
+using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 using Xunit;
 
@@ -27,6 +28,8 @@ public sealed class CellPreviewTests : IAsyncLifetime
             "INSERT INTO t (short, doc) VALUES ('abc', '{\"a\":1,\"b\":[1,2]}'), ('x', NULL), ('y', 'line one' || char(10) || 'line two')",
             "INSERT INTO t (short, doc) VALUES ('z', '" + new string('q', 120) + "')",
             "INSERT INTO t (short, doc) VALUES ('one' || char(13) || char(10) || 'two', NULL)",
+            "INSERT INTO t (short, doc) VALUES ('big', '[' || (WITH RECURSIVE c(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM c WHERE n < 3000) SELECT group_concat('{\"i\":' || n || ',\"p\":\"' || replace(hex(zeroblob(16)), '0', 'x') || '\"}') FROM c) || ']')",
+            "INSERT INTO t (short, doc) VALUES (replace(hex(zeroblob(75000)), '0', 'k'), NULL)",
         })
             await (await _connection.ExecuteAsync(sql, [], CancellationToken.None)).DisposeAsync();
         var schema = await _connection.ReadSchemaAsync(CancellationToken.None);
@@ -129,6 +132,132 @@ public sealed class CellPreviewTests : IAsyncLifetime
 
         Assert.True(result.Preview!.IsOpen);
         Assert.False(result.Preview.CanEdit);
+    }
+
+    private static string BigRaw(IGridDataSource grid) => (string)grid.GetCell(5, 2)!;
+
+    [Fact]
+    public async Task Refresh_HugePrettyJson_ShowsHeadReadOnly()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+
+        result.Selection!.SelectCell(5, 2, false);
+        ui.Pump(preview.Pending);
+
+        var raw = BigRaw(result.DisplayGrid!);
+        CellPreviewViewModel.TryPretty(raw, out var pretty, out _);
+        Assert.True(preview.IsTruncated);
+        Assert.Equal(CellPreviewViewModel.Head(pretty), preview.Text);
+        Assert.True(preview.Text.Count(c => c == '\n') < CellPreviewViewModel.MaxShownLines);
+        Assert.NotNull(preview.Notice);
+        Assert.Equal(raw, preview.FullValue);
+        Assert.Null(preview.Error);
+    }
+
+    [Fact]
+    public async Task Refresh_ShortMinifiedJsonWithManyLines_ShowsHead()
+    {
+        var result = await RunAsync("SELECT '[' || (WITH RECURSIVE c(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM c WHERE n < 1500) SELECT group_concat('{\"i\":' || n || '}') FROM c) || ']' AS doc");
+
+        result.Selection!.SelectCell(0, 0, false);
+
+        var preview = result.Preview!;
+        Assert.True(preview.IsTruncated);
+        Assert.True(preview.IsOpen);
+        Assert.Equal(CellPreviewViewModel.MaxShownChars, preview.Text.Length);
+    }
+
+    [Fact]
+    public async Task Refresh_LongSingleLineText_ShowsHead()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+
+        result.Selection!.SelectCell(6, 1, false);
+
+        Assert.True(result.Preview!.IsTruncated);
+        Assert.Equal(CellPreviewViewModel.MaxShownChars, result.Preview.Text.Length);
+        Assert.Equal(75_000 * 2, result.Preview.FullValue!.Length);
+    }
+
+    [Fact]
+    public async Task Refresh_ShortValue_IsNotTruncated()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+
+        result.Selection!.SelectCell(0, 2, false);
+
+        Assert.False(result.Preview!.IsTruncated);
+        Assert.Null(result.Preview.FullValue);
+        Assert.Null(result.Preview.Notice);
+    }
+
+    [Fact]
+    public async Task Text_TruncatedHeadRoundTrip_IsNeverDirty()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+        result.Selection!.SelectCell(5, 2, false);
+        ui.Pump(preview.Pending);
+
+        preview.Text = preview.Text.Replace("\n", "\r");
+        preview.Text += "x";
+
+        Assert.False(preview.IsDirty);
+        Assert.False(preview.ApplyCommand.CanExecute(null));
+        Assert.False(preview.IsWorking);
+    }
+
+    [Fact]
+    public async Task Format_Truncated_ShowsWholeTextAndClearsNotice()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+        result.Selection!.SelectCell(5, 2, false);
+        ui.Pump(preview.Pending);
+
+        preview.FormatCommand.Execute(null);
+        ui.Pump(preview.Pending);
+
+        CellPreviewViewModel.TryPretty(BigRaw(result.DisplayGrid!), out var pretty, out _);
+        Assert.False(preview.IsTruncated);
+        Assert.Equal(pretty, preview.Text);
+        Assert.Null(preview.Notice);
+        Assert.Null(preview.FullValue);
+        Assert.False(preview.IsDirty);
+    }
+
+    [Fact]
+    public async Task Apply_AfterShowAll_StoresShownTextWithLf()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+        result.Selection!.SelectCell(5, 2, false);
+        ui.Pump(preview.Pending);
+        preview.FormatCommand.Execute(null);
+        ui.Pump(preview.Pending);
+
+        var edited = preview.Text.Replace("\"i\": 1,", "\"i\": 7,");
+        preview.Text = edited.Replace("\n", "\r");
+        ui.Pump(preview.Pending);
+        preview.ApplyCommand.Execute(null);
+
+        Assert.Equal(edited, result.Editor!.Grid.GetCell(5, 2));
+    }
+
+    [Fact]
+    public async Task FullValue_EqualsGridCopy()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(6, 1, false);
+
+        var copy = result.Selection.ToTsv(result.DisplayGrid!);
+
+        Assert.Equal(copy[..^1], result.Preview!.FullValue);
     }
 
     private sealed class History : IQueryHistoryStore

@@ -17,4 +17,12 @@ public class CellPreviewPanelTests
         Assert.DoesNotContain("Tokens.Brush(key)", text);
         Assert.DoesNotContain("Tokens.Brush(\"", text);
     }
+
+    [Fact]
+    public void Pane_caps_and_copies_whole_value()
+    {
+        var text = File.ReadAllText(Path.Combine("Xaml", "CellPreviewPanel.cs"));
+        foreach (var needle in new[] { "IsTruncated", "CopyingToClipboard", "FullValue", "Notice", "FormatLabel", "Tokens.Brush(this, \"SquillFg3Brush\")" })
+            Assert.Contains(needle, text);
+    }
 }

@@ -256,6 +256,8 @@ internal static class UiTextCatalogFr
         ("preview.close", "Fermer"),
         ("preview.format", "Formater le JSON"),
         ("preview.invalidJson", "JSON invalide : {0}"),
+        ("preview.truncated", "Seul le début de cette valeur est affiché ({0:N0} sur {1:N0} caractères). Tout afficher la charge en entier et peut prendre du temps ; copier tout le texte copie la valeur entière."),
+        ("preview.showAll", "Tout afficher"),
         ("results.exportLoading", "Le résultat est encore en cours de chargement et ne peut pas être exporté."),
         ("results.invalidValue", "\"{0}\" n'est pas une valeur valide pour le type {1}"),
         ("results.invalidInteger", "\"{0}\" n'est pas un entier valide"),

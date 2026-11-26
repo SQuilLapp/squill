@@ -27,6 +27,7 @@ public sealed partial class CellPreviewPanel : UserControl
     };
 
     private readonly TextBlock _error = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(12, 4, 12, 4) };
+    private readonly TextBlock _notice = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, MaxLines = 2, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(12, 4, 12, 4), Visibility = Visibility.Collapsed };
     private readonly Button _format = new() { Height = 26, MinHeight = 26, Content = UiText.Get("preview.format") };
     private readonly Button _apply = new() { Style = (Style)Application.Current.Resources["PrimaryButtonStyle"], Height = 26, MinHeight = 26, Content = UiText.Get("preview.apply") };
     private readonly Button _close = new() { Height = 26, MinHeight = 26, Content = UiText.Get("preview.close") };
@@ -54,15 +55,17 @@ public sealed partial class CellPreviewPanel : UserControl
         footer.Children.Add(_format);
         footer.Children.Add(_apply);
 
-        var root = new Grid { RowDefinitions = { new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Auto }, new RowDefinition(), new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Auto } } };
+        var root = new Grid { RowDefinitions = { new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Auto }, new RowDefinition(), new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Auto } } };
         AutomationProperties.SetName(_working, UiText.Get("preview.working"));
         Grid.SetRow(_working, 1);
         Grid.SetRow(_text, 2);
-        Grid.SetRow(_error, 3);
-        Grid.SetRow(footer, 4);
+        Grid.SetRow(_notice, 3);
+        Grid.SetRow(_error, 4);
+        Grid.SetRow(footer, 5);
         root.Children.Add(header);
         root.Children.Add(_working);
         root.Children.Add(_text);
+        root.Children.Add(_notice);
         root.Children.Add(_error);
         root.Children.Add(footer);
         _frame.Child = root;
@@ -75,6 +78,17 @@ public sealed partial class CellPreviewPanel : UserControl
         {
             if (_model is not null && !_syncing && _model.Text != _text.Text)
                 _model.Text = _text.Text;
+        };
+        // While only the start of a long value is shown, copying all the shown text copies the whole value.
+        _text.CopyingToClipboard += (_, e) =>
+        {
+            if (_model is { IsTruncated: true, FullValue: { } full } && _text.SelectionLength == _text.Text.Length)
+            {
+                e.Handled = true;
+                var package = new DataPackage();
+                package.SetText(full);
+                Clipboard.SetContent(package);
+            }
         };
         _text.Paste += (_, e) =>
         {
@@ -135,6 +149,7 @@ public sealed partial class CellPreviewPanel : UserControl
     {
         _title.Foreground = Tokens.Brush(this, "SquillFgBrush");
         _type.Foreground = Tokens.Brush(this, "SquillFg3Brush");
+        _notice.Foreground = Tokens.Brush(this, "SquillFg3Brush");
         _error.Foreground = Tokens.Brush(this, "SquillDangerBrush");
         _text.Background = Tokens.Brush(this, "SquillBgBaseBrush");
         _text.Foreground = Tokens.Brush(this, "SquillFgBrush");
@@ -166,11 +181,15 @@ public sealed partial class CellPreviewPanel : UserControl
                 _type.Text = m.TypeText;
                 if (CellPreviewViewModel.NormalizeLineBreaks(_text.Text) != CellPreviewViewModel.NormalizeLineBreaks(m.Text))
                     _text.Text = m.Text;
-                _text.IsReadOnly = !m.CanEdit;
+                _text.IsReadOnly = !m.CanEdit || m.IsTruncated;
+                _notice.Text = m.Notice ?? "";
+                ToolTipService.SetToolTip(_notice, m.Notice);
+                _notice.Visibility = m.Notice is null ? Visibility.Collapsed : Visibility.Visible;
                 _error.Text = m.Error ?? "";
                 _error.Visibility = m.HasError ? Visibility.Visible : Visibility.Collapsed;
                 _format.Visibility = m.ShowFormat ? Visibility.Visible : Visibility.Collapsed;
-                _format.IsEnabled = m.IsJson;
+                _format.Content = m.FormatLabel;
+                _format.IsEnabled = m.CanFormat;
                 _apply.Visibility = m.ShowApply ? Visibility.Visible : Visibility.Collapsed;
                 _apply.IsEnabled = m.ApplyCommand.CanExecute(null);
                 _working.Visibility = m.IsWorking ? Visibility.Visible : Visibility.Collapsed;

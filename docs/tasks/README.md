@@ -436,7 +436,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-40](phase-20/P20-40-grid-editor-keeps-multi-line-paste.md) | Grid: the in-place cell editor keeps a pasted multi-line text whole (both heads; read-only one-line preview, exact value) | P20-31 | done |
 | [P20-41](phase-20/P20-41-preview-pane-apply-stores-shown-text.md) | Preview pane: `Appliquer` stores the text shown with `\n` line breaks, an untouched text changes nothing (both heads) | P20-40, P20-33 | done |
 | [P20-42](phase-20/P20-42-winui-preview-pane-follows-theme.md) | WinUI: the preview pane follows the theme (light theme drew it dark), guard against unrepainted element-less brushes | P20-40 | done |
-| [P20-43](phase-20/P20-43-preview-pane-caps-long-text.md) | Preview pane: a very long value no longer freezes the UI thread (shown text capped, notice, `Show all`, copy and apply keep the whole value; both heads, measured AOT drive) | P20-33, P20-41, P20-42 | todo |
+| [P20-43](phase-20/P20-43-preview-pane-caps-long-text.md) | Preview pane: a very long value no longer freezes the UI thread (shown text capped, notice, `Show all`, copy and apply keep the whole value; both heads, measured AOT drive) | P20-33, P20-41, P20-42 | done |
 
 ### Phase 9 - Visual conformance
 
