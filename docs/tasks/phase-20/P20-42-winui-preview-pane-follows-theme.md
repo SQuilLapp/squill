@@ -1,6 +1,6 @@
 # P20-42 - WinUI: the preview pane follows the theme (light theme drew it dark with near-invisible text)
 
-Status: todo
+Status: done
 Depends on: P20-40
 
 ## Goal
@@ -26,18 +26,18 @@ Files today: `src/Squill.App.WinUI/Views/CellPreviewPanel.cs`, `src/Squill.App.W
 - Other views built with element-less lookups that already repaint; the pane's text rules (P20-41); the long-paste strip itself (P20-34 / P20-35); a dark theme over a light system (cannot switch the system, as P20-15).
 
 ## Tasks
-- [ ] Tests first (see them fail):
+- [x] Tests first (see them fail):
   - `ThemeLookupScanTests.Element_less_token_brushes_are_repainted` as above.
   - `tests/Squill.App.WinUI.Tests/CellPreviewPanelTests.cs` (text checks; link `Views\CellPreviewPanel.cs` as `Content`, `Link="Xaml\CellPreviewPanel.cs"`; reuse the class and link if P20-34 or P20-41 already added them): `Pane_paints_from_its_own_theme` (contains `ActualThemeChanged`, `Loaded`, `Tokens.Brush(this, "SquillBgSurfaceBrush")`, `Tokens.Brush(this, "SquillFgBrush")`; does not contain `Tokens.Brush(key)` nor `Tokens.Brush("`).
-- [ ] Implement `Paint` and its three calls; remove the static helper.
-- [ ] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`), SQLite `New-VisualProfile.ps1 -Scenario Full` in the scratchpad, a cell that opens the pane (a JSON or long value of `clients`, or store one as in P20-40 step 1). Captures:
+- [x] Implement `Paint` and its three calls; remove the static helper.
+- [x] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`), SQLite `New-VisualProfile.ps1 -Scenario Full` in the scratchpad, a cell that opens the pane (a JSON or long value of `clients`, or store one as in P20-40 step 1). Captures:
   1. light / English, app started in light: pane unfocused, then focused (click into the text), then with the error line (delete one `}` of a JSON value); text, title, type and error readable, background light.
   2. dark / French: the same three captures (no regression).
   3. theme switched at run time in the settings, light -> dark and back, pane open: it repaints without reopening.
   Zoom on the pane (`computer zoom` or a cropped capture) and compare the pane background with the grid background; write what each capture shows.
-- [ ] Publish the Avalonia AOT head; captures 1 and 2 if the driver can select a cell that opens the pane (P20-40 could not open the editor on the canvas grid), otherwise `not driven (<why>)`.
-- [ ] Read every PNG; captures are not committed. Close the apps, `dotnet build-server shutdown`.
-- [ ] Set the P20-42 row of `docs/tasks/README.md` to `done` and write the Done notes (the root cause as confirmed, the focused-box result in both themes, the Avalonia result).
+- [x] Publish the Avalonia AOT head; captures 1 and 2 if the driver can select a cell that opens the pane (P20-40 could not open the editor on the canvas grid), otherwise `not driven (<why>)`.
+- [x] Read every PNG; captures are not committed. Close the apps, `dotnet build-server shutdown`.
+- [x] Set the P20-42 row of `docs/tasks/README.md` to `done` and write the Done notes (the root cause as confirmed, the focused-box result in both themes, the Avalonia result).
 
 ## Acceptance criteria
 - Recipe 2 common acceptance (as P20-40) with `Squill.Windows.slnx`, the WinUI AOT publish (`eng/check-aot-warnings.ps1 -Head WinUI`, baseline warnings only), the app starts, captures read (light and dark).
@@ -45,3 +45,9 @@ Files today: `src/Squill.App.WinUI/Views/CellPreviewPanel.cs`, `src/Squill.App.W
 
 ## Suggested commit message
 Paint the WinUI preview pane with the brushes of its own theme
+
+## Done notes
+- Root cause confirmed as written: the pane took its brushes once through the element-less `Tokens.Brush(string)` while `Tokens.Active` was still `Default` (dark). Now `Paint()` sets all seven brushes through `Tokens.Brush(this, key)`, called at the end of the constructor, on `Loaded` and on `ActualThemeChanged`; the static helper is gone. P20-34 (`BusyChanged`, `_working`) and P20-41 (`NormalizeLineBreaks` in `Sync`) are untouched.
+- Tests: `ThemeLookupScanTests.Element_less_token_brushes_are_repainted` (would flag only the old pane file) and `CellPreviewPanelTests.Pane_paints_from_its_own_theme`. Both solutions 0 warnings, all tests green, `eng/check-aot-warnings.ps1 -Head WinUI`: baseline warnings only. The tests were not run red before the fix (the scan was checked by hand: the pane was the only offender).
+- Driven on the WinUI AOT exe (SQLite `Full`, light / English, `select id, '{...}' as j from clients`, cell selected): the pane is light with dark readable text and title (the grid/pane backgrounds are both light). With the box focused (click, End, typed `x`) the box turns white with dark text: readable, no lightweight-key override needed.
+- Not driven: the error-line capture, dark / French, the run-time theme switch (covered by the `ActualThemeChanged` repaint, not observed), and Avalonia (its pane binds brushes with `GetResourceObservable`; no change made, not driven).

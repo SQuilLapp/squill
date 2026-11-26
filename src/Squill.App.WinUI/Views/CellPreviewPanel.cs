@@ -13,8 +13,8 @@ namespace Squill.App.WinUI.Views;
 /// <summary>The pane beside the result grid that shows the full value of the selected cell, indented when it is JSON, and applies an edit to the cell.</summary>
 public sealed partial class CellPreviewPanel : UserControl
 {
-    private readonly TextBlock _title = new() { FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center, Foreground = Brush("SquillFgBrush") };
-    private readonly TextBlock _type = new() { FontSize = 12, Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Foreground = Brush("SquillFg3Brush") };
+    private readonly TextBlock _title = new() { FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
+    private readonly TextBlock _type = new() { FontSize = 12, Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBox _text = new()
     {
         AcceptsReturn = true,
@@ -22,16 +22,15 @@ public sealed partial class CellPreviewPanel : UserControl
         BorderThickness = new Thickness(0),
         CornerRadius = new CornerRadius(0),
         FontFamily = (FontFamily)Application.Current.Resources["SquillFontMono"],
-        Background = Brush("SquillBgBaseBrush"),
-        Foreground = Brush("SquillFgBrush"),
         HorizontalAlignment = HorizontalAlignment.Stretch,
         VerticalAlignment = VerticalAlignment.Stretch,
     };
 
-    private readonly TextBlock _error = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(12, 4, 12, 4), Foreground = Brush("SquillDangerBrush") };
+    private readonly TextBlock _error = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(12, 4, 12, 4) };
     private readonly Button _format = new() { Height = 26, MinHeight = 26, Content = UiText.Get("preview.format") };
     private readonly Button _apply = new() { Style = (Style)Application.Current.Resources["PrimaryButtonStyle"], Height = 26, MinHeight = 26, Content = UiText.Get("preview.apply") };
     private readonly Button _close = new() { Height = 26, MinHeight = 26, Content = UiText.Get("preview.close") };
+    private readonly Border _frame = new() { BorderThickness = new Thickness(1, 0, 0, 0) };
     private readonly ProgressBar _working = new() { IsIndeterminate = true, Height = 2, Visibility = Visibility.Collapsed };
     private CellPreviewViewModel? _model;
     private bool _syncing;
@@ -66,13 +65,11 @@ public sealed partial class CellPreviewPanel : UserControl
         root.Children.Add(_text);
         root.Children.Add(_error);
         root.Children.Add(footer);
-        Content = new Border
-        {
-            BorderThickness = new Thickness(1, 0, 0, 0),
-            Background = Brush("SquillBgSurfaceBrush"),
-            BorderBrush = Brush("SquillBorderSubtleBrush"),
-            Child = root,
-        };
+        _frame.Child = root;
+        Content = _frame;
+        Paint();
+        Loaded += (_, _) => Paint();
+        ActualThemeChanged += (_, _) => Paint();
 
         _text.TextChanged += (_, _) =>
         {
@@ -133,7 +130,17 @@ public sealed partial class CellPreviewPanel : UserControl
         }
     }
 
-    private static Brush Brush(string key) => Tokens.Brush(key);
+    // The element's ActualTheme decides: the pane is built before the settings pick the theme.
+    private void Paint()
+    {
+        _title.Foreground = Tokens.Brush(this, "SquillFgBrush");
+        _type.Foreground = Tokens.Brush(this, "SquillFg3Brush");
+        _error.Foreground = Tokens.Brush(this, "SquillDangerBrush");
+        _text.Background = Tokens.Brush(this, "SquillBgBaseBrush");
+        _text.Foreground = Tokens.Brush(this, "SquillFgBrush");
+        _frame.Background = Tokens.Brush(this, "SquillBgSurfaceBrush");
+        _frame.BorderBrush = Tokens.Brush(this, "SquillBorderSubtleBrush");
+    }
 
     /// <summary>Shows the preview of another result, or nothing when <see langword="null"/>.</summary>
     /// <param name="model">The preview view-model of the result on screen.</param>
