@@ -59,6 +59,28 @@ public sealed class GridSelection
         Raise();
     }
 
+    /// <summary>Copies another selection onto this one, clamped to a grid of the given size; cleared when the anchor row is past the new row count.</summary>
+    /// <param name="other">The selection to copy.</param>
+    /// <param name="rowCount">The number of loaded rows of this selection's grid.</param>
+    /// <param name="columnCount">The number of columns of this selection's grid.</param>
+    internal void CopyFrom(GridSelection other, long rowCount, int columnCount)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+        if (!other.HasSelection || columnCount == 0 || other._anchorRow >= rowCount)
+        {
+            Clear();
+            return;
+        }
+
+        _anchorRow = other._anchorRow;
+        _anchorColumn = Math.Min(other._anchorColumn, columnCount - 1);
+        ActiveRow = Math.Min(other.ActiveRow, rowCount - 1);
+        ActiveColumn = Math.Min(other.ActiveColumn, columnCount - 1);
+        WholeColumns = other.WholeColumns;
+        HasSelection = true;
+        Raise();
+    }
+
     /// <summary>Selects a single cell, or extends the rectangle from the anchor.</summary>
     /// <param name="row">The row index.</param>
     /// <param name="column">The column index.</param>

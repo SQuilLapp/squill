@@ -1,6 +1,6 @@
 # P20-36 - Presentation: refresh the last run of a query tab in place (same results, view kept)
 
-Status: todo
+Status: done
 Depends on: P20-33
 
 ## Goal
@@ -38,7 +38,7 @@ Files today: `src/Squill.Presentation/Query/QueryTabViewModel.cs` (`ExecuteAsync
 - The timer, the interval, `Custom...`, pausing rules visible to the user, the tab-visible rule and the keys (P20-37); the head buttons and the scroll / width restore (P20-38, P20-39). A manual `Refresh` button (pressing `Run` stays the manual refresh). Keeping the selection on the same database row. Refreshing a DML or a failed run.
 
 ## Tasks
-- [ ] Tests first, `tests/Squill.Presentation.Tests/Query/QueryTabRefreshTests.cs` (fakes of `QueryTabViewModelTests.cs` / `ViewStateFixture.cs`, `ImmediateDispatcher`, no sleeping: await the returned task):
+- [x] Tests first, `tests/Squill.Presentation.Tests/Query/QueryTabRefreshTests.cs` (fakes of `QueryTabViewModelTests.cs` / `ViewStateFixture.cs`, `ImmediateDispatcher`, no sleeping: await the returned task):
   - `CanRefresh_AfterSelectRun_True`; `CanRefresh_AfterInsertRun_False`; `CanRefresh_AfterFailedRun_False`; `CanRefresh_ProductionGuardRequired_False` (pick a read-only statement the guard flags if one exists, else drop this test and say why in the Done notes).
   - `Refresh_RerunsLastStatements_NotEditorText` (edit the editor text after the run; the fake connection receives the old SQL); `Refresh_NamedParameters_NoPrompt` (`IsParametersPanelOpen` never true, same values sent).
   - `Refresh_WritesNoHistory`; `Refresh_KeepsIsModified`.
@@ -48,8 +48,8 @@ Files today: `src/Squill.Presentation/Query/QueryTabViewModel.cs` (`ExecuteAsync
   - `Refresh_Skipped_WhenPendingChanges` / `_WhenEditing` / `_WhenRunning` / `_WhenTransactionFailed` (each returns `Skipped`, `Results` unchanged, no SQL sent).
   - `tests/Squill.Presentation.Tests/Results/GridSelectionTests.cs` (existing or new): `CopyFrom_ClampsToNewSize`, `CopyFrom_AnchorPastEnd_Clears`, `CopyFrom_WholeColumns_Kept`.
   - See them fail, then implement.
-- [ ] Implement `LastRun`, `RunMode`, the staged swap, `RefreshAsync`, `CopyFrom` / `WhenIdle`, the events.
-- [ ] XML doc grep on the new members.
+- [x] Implement `LastRun`, `RunMode`, the staged swap, `RefreshAsync`, `CopyFrom` / `WhenIdle`, the events.
+- [x] XML doc grep on the new members.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance of [verification-recipe.md](verification-recipe.md) with `Squill.slnx` and `Squill.Windows.slnx` (both build Presentation); no head code, no AOT publish.
@@ -62,3 +62,8 @@ Files today: `src/Squill.Presentation/Query/QueryTabViewModel.cs` (`ExecuteAsync
 
 ## Suggested commit message
 Refresh the last run of a query tab in place, keeping its results view
+
+## Done notes
+- `CanRefresh_ProductionGuardRequired_False` dropped: `ProductionGuard` only requires confirmation for statements that are not `ReadOnly` (or Commit / Call / Other), which already make a run non-refreshable; the guard check stays in `IsRefreshable` as a safety net.
+- A failed refresh keeps `LastRun` (the error result is swapped in); P20-37 decides whether the timer stops.
+- Code lives in `QueryTabViewModel.Refresh.cs`; the statement loop is shared through `RunStatementsAsync`.

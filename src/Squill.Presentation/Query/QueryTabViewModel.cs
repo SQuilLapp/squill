@@ -451,6 +451,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             old.Release();
         Results.Clear();
         SelectedResult = null;
+        SetLastRun(null);
         StatusText = UiText.Get("query.running");
         var clock = Stopwatch.StartNew();
         using var cts = new CancellationTokenSource();
@@ -465,17 +466,12 @@ public sealed partial class QueryTabViewModel : ViewModelBase
                 throw new OperationCanceledException();
             if (switchToManual)
                 await Transaction.SetModeAsync(TransactionMode.Manual, cts.Token);
-            var completed = 0;
-            foreach (var sql in statements)
-            {
-                if (!await RunStatementAsync(sql, maxRows, values, cts.Token))
-                    break;
-                completed++;
-            }
-
+            var completed = await RunStatementsAsync(statements, maxRows, values, RunMode.Run, cts.Token);
             StatusText = completed == statements.Count
                 ? UiText.FormatPlural("query.completed", completed, clock.Elapsed.TotalSeconds.ToString("0.###", UiText.Culture))
                 : UiText.FormatPlural("query.failedAfter", completed);
+            if (completed == statements.Count && IsRefreshable(statements))
+                SetLastRun(new LastRun(statements, new Dictionary<string, ParameterValue>(values)));
         }
         catch (OperationCanceledException)
         {
@@ -489,7 +485,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         }
     }
 
-    private async Task<bool> RunStatementAsync(string original, int maxRows, Dictionary<string, ParameterValue> values, CancellationToken ct)
+    private async Task<bool> RunStatementAsync(string original, int maxRows, Dictionary<string, ParameterValue> values, RunMode mode, CancellationToken ct)
     {
         var dialect = _session.Profile.Dialect;
         if (ParameterScanner.HasPositional(original, dialect))
@@ -591,7 +587,8 @@ public sealed partial class QueryTabViewModel : ViewModelBase
         }
         finally
         {
-            await _history.AppendAsync(new HistoryEntry(DateTimeOffset.UtcNow, _session.Profile.Id, original, succeeded, rows, clock.Elapsed), CancellationToken.None);
+            if (mode == RunMode.Run)
+                await _history.AppendAsync(new HistoryEntry(DateTimeOffset.UtcNow, _session.Profile.Id, original, succeeded, rows, clock.Elapsed), CancellationToken.None);
         }
     }
 
@@ -637,11 +634,17 @@ public sealed partial class QueryTabViewModel : ViewModelBase
 
     private void AddResult(ResultViewModel result)
     {
+        if (_staged is not null)
+        {
+            _staged.Add(result);
+            return;
+        }
+
         Results.Add(result);
         SelectedResult = result;
     }
 
-    private string NextTitle() => UiText.Format("results.result", Results.Count + 1);
+    private string NextTitle() => UiText.Format("results.result", (_staged?.Count ?? Results.Count) + 1);
 
     private static bool IsSchemaChange(string sql)
     {
