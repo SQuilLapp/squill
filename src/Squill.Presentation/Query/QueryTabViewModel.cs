@@ -482,6 +482,7 @@ public sealed partial class QueryTabViewModel : ViewModelBase
             Elapsed = clock.Elapsed;
             _cancel = null;
             IsRunning = false;
+            AutoRefreshAfterRun();
         }
     }
 

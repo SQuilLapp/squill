@@ -297,7 +297,7 @@ public sealed class QueryTabRefreshTests : IAsyncLifetime
         Assert.Empty(_gated.Executed);
     }
 
-    private sealed class GatedConnection : IDatabaseConnection
+    internal sealed class GatedConnection : IDatabaseConnection
     {
         public IDatabaseConnection Inner { get; set; } = null!;
         public Func<string, CancellationToken, Task>? Gate { get; set; }
@@ -321,7 +321,7 @@ public sealed class QueryTabRefreshTests : IAsyncLifetime
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 
-    private sealed class History : IQueryHistoryStore
+    internal sealed class History : IQueryHistoryStore
     {
         public List<HistoryEntry> Entries { get; } = [];
 
@@ -336,7 +336,7 @@ public sealed class QueryTabRefreshTests : IAsyncLifetime
         public ValueTask ClearAsync(CancellationToken ct) => ValueTask.CompletedTask;
     }
 
-    private sealed class Settings : ISettingsStore
+    internal sealed class Settings : ISettingsStore
     {
         public ValueTask<AppSettings> LoadAsync(CancellationToken ct) => ValueTask.FromResult(AppSettings.Default);
 

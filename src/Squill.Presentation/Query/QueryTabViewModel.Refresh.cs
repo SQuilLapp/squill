@@ -58,6 +58,7 @@ public sealed partial class QueryTabViewModel
     {
         _lastRun = value;
         OnPropertyChanged(nameof(CanRefresh));
+        OnPropertyChanged(nameof(AutoRefreshToolTip));
     }
 
     private bool IsRefreshable(IReadOnlyList<string> statements)

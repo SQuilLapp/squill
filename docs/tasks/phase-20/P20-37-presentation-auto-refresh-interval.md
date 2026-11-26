@@ -1,6 +1,6 @@
 # P20-37 - Presentation: the auto-refresh interval of a query tab (timer, pause rules, Custom...)
 
-Status: todo
+Status: done
 Depends on: P20-36
 
 ## Goal
@@ -37,7 +37,7 @@ Files today: `src/Squill.Presentation/Query/QueryTabViewModel.cs` (`_time` is al
 - The head buttons and menus (P20-38, P20-39). Saving the interval, a global default, refreshing a hidden tab, detecting a minimised window, retry with back-off, a countdown display.
 
 ## Tasks
-- [ ] Tests first, `tests/Squill.Presentation.Tests/Query/QueryTabAutoRefreshTests.cs`, with the manual `TimeProvider` of `SessionsMonitorViewModelTests` (move `ManualTime` to a shared `internal` test file if it is a private nested class; no `Task.Delay`, advance the clock and `await vm.Idle`), `ImmediateDispatcher`, the fakes of P20-36:
+- [x] Tests first, `tests/Squill.Presentation.Tests/Query/QueryTabAutoRefreshTests.cs`, with the manual `TimeProvider` of `SessionsMonitorViewModelTests` (move `ManualTime` to a shared `internal` test file if it is a private nested class; no `Task.Delay`, advance the clock and `await vm.Idle`), `ImmediateDispatcher`, the fakes of P20-36:
   - `Default_Disabled`; `SetAutoRefresh_ArmsTimer_NoImmediateRefresh`; `Tick_AfterInterval_Refreshes_AndRearms` (two refreshes after two intervals, none before); `SlowRefresh_NeverOverlaps` (refresh held on a `TaskCompletionSource`, advance three intervals: one refresh in flight, the next interval counted from its end);
   - `PendingChanges_Paused_NoSql_ReasonSet`, then discard -> next tick refreshes and the reason clears; `Editing_Paused`; `FailedTransaction_Paused`; `OpenManualTransaction_StillRefreshes`;
   - `Failed_StopsAndSetsStatus`; `CancelledDuringAutoRefresh_Disables`;
@@ -47,8 +47,8 @@ Files today: `src/Squill.Presentation/Query/QueryTabViewModel.cs` (`_time` is al
   - `FormatInterval_SecondsAndMinutes` (fr and en through `UiText.Override`: `5 s`, `90 s`, `1 m` / `1 min`, `5 m` / `5 min`); `ToolTip_ShowsIntervalAndPausedReason`.
   - Catalog parity and used-keys tests green with the new keys.
   - See them fail, then implement.
-- [ ] Implement the members, the timer, the workspace calls, the keys.
-- [ ] XML doc grep on the new members.
+- [x] Implement the members, the timer, the workspace calls, the keys.
+- [x] XML doc grep on the new members.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance of [verification-recipe.md](verification-recipe.md) with `Squill.slnx` and `Squill.Windows.slnx`; no head code, no AOT publish.
@@ -60,3 +60,9 @@ Files today: `src/Squill.Presentation/Query/QueryTabViewModel.cs` (`_time` is al
 
 ## Suggested commit message
 Add a per-tab auto-refresh interval that re-runs the last read-only query
+
+## Done notes
+- Code in `QueryTabViewModel.AutoRefresh.cs`; `ShowTab` calls `SetActive` on every query tab, both `Tabs.Remove` sites call `StopAutoRefresh`, and the workspace now passes its `TimeProvider` to the tabs it creates.
+- Tests use their own manual `TimeProvider` (the monitor's `ManualTime` returns one shared stub timer that cannot fire); only the timer created with the tab as state is manual, so the diagnostics debounce keeps a real timer. `FakeDialogService` gained `PromptCancelled`; `GatedConnection`, `History` and `Settings` of `QueryTabRefreshTests` became `internal` to be reused.
+- SQLite cannot open a manual transaction, so `FailedTransaction_Paused` / `OpenManualTransaction_StillRefreshes` use a PostgreSql-profile tab over the SQLite connection and drive the transaction with `ObserveSuccess` / `ObserveFailureAsync`. `Closed_StopsTimer` lives in `WorkspaceViewModelTests` (`CloseTab_StopsItsAutoRefresh`).
+- `query.autoRefresh.seconds` (`{0} s`) is on the catalog test's same-in-both-languages list.

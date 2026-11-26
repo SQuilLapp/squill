@@ -430,7 +430,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-34](phase-20/P20-34-winui-long-paste-progress.md) | WinUI: a `Pasting…` popup with an indeterminate bar during a long paste | P20-33, P20-40 | done |
 | [P20-35](phase-20/P20-35-avalonia-long-paste-progress.md) | Avalonia: a `Pasting…` popup with an indeterminate bar during a long paste | P20-32, P20-33, P20-34 | done |
 | [P20-36](phase-20/P20-36-presentation-refresh-last-run-in-place.md) | Presentation: refresh the last run of a query tab in place (no prompt, no history, results swapped with their view kept) | P20-33 | done |
-| [P20-37](phase-20/P20-37-presentation-auto-refresh-interval.md) | Presentation: the auto-refresh interval of a query tab (timer, pause rules, `Custom...`, keys) | P20-36 | todo |
+| [P20-37](phase-20/P20-37-presentation-auto-refresh-interval.md) | Presentation: the auto-refresh interval of a query tab (timer, pause rules, `Custom...`, keys) | P20-36 | done |
 | [P20-38](phase-20/P20-38-winui-auto-refresh-button.md) | WinUI: the auto-refresh clock button and its menu, scroll and widths kept across a refresh | P20-37 | todo |
 | [P20-39](phase-20/P20-39-avalonia-auto-refresh-button.md) | Avalonia: the auto-refresh clock button and its menu, README and changelog | P20-37, P20-38 | todo |
 | [P20-40](phase-20/P20-40-grid-editor-keeps-multi-line-paste.md) | Grid: the in-place cell editor keeps a pasted multi-line text whole (both heads; read-only one-line preview, exact value) | P20-31 | done |

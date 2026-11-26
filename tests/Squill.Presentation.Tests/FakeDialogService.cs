@@ -8,6 +8,9 @@ internal sealed class FakeDialogService : IDialogService
 {
     public bool ConfirmResult { get; set; } = true;
     public string? PromptResult { get; set; }
+
+    /// <summary>Gets or sets whether the prompt is cancelled (returns <see langword="null"/>).</summary>
+    public bool PromptCancelled { get; set; }
     public string? SavePathResult { get; set; }
     public List<(string Title, string Message)> Errors { get; } = [];
 
@@ -57,7 +60,7 @@ internal sealed class FakeDialogService : IDialogService
     private ValueTask<string?> Record(string title, string message, string? initial)
     {
         Prompts.Add((title, message));
-        return ValueTask.FromResult(PromptResult ?? initial);
+        return ValueTask.FromResult(PromptCancelled ? null : PromptResult ?? initial);
     }
 
     public ValueTask<string?> PickSaveFileAsync(string suggestedName, string extension) =>
