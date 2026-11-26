@@ -1,6 +1,6 @@
 # P20-38 - WinUI: the auto-refresh clock button and its menu in the query tab toolbar
 
-Status: todo
+Status: done
 Depends on: P20-37
 
 ## Goal
@@ -21,14 +21,14 @@ Files today: `src/Squill.App.WinUI/Views/QueryTabView.cs` (`BuildToolbar` near l
 - The Avalonia head (P20-39), a countdown, a refresh button separate from `Run`, saving the interval.
 
 ## Tasks
-- [ ] Tests first (text checks, like `ExplorerFilterPopupTests.cs`; link `Views\AutoRefreshMenu.cs` as `Content` in `tests/Squill.App.WinUI.Tests/Squill.App.WinUI.Tests.csproj`, `Views\QueryTabView.cs` and `Controls\DataGridCanvas.cs` if not linked yet), new `tests/Squill.App.WinUI.Tests/AutoRefreshButtonTests.cs`:
+- [x] Tests first (text checks, like `ExplorerFilterPopupTests.cs`; link `Views\AutoRefreshMenu.cs` as `Content` in `tests/Squill.App.WinUI.Tests/Squill.App.WinUI.Tests.csproj`, `Views\QueryTabView.cs` and `Controls\DataGridCanvas.cs` if not linked yet), new `tests/Squill.App.WinUI.Tests/AutoRefreshButtonTests.cs`:
   - `AutoRefreshMenu.cs` contains `RadioMenuFlyoutItem`, `MenuFlyoutSeparator`, `SetAutoRefreshCommand`, `SetCustomAutoRefreshCommand`, `AutoRefreshPresets`, `query.autoRefresh.custom`, `Opening`, and neither `ItemsSource` nor `Application.Current.Resources`;
   - `QueryTabView.cs` contains `_autoRefresh, _stop` (toolbar order), `AutoRefreshToolTip`, `ResultsReplacing`, `ResultsReplaced`, `IsRefreshing`;
   - `DataGridCanvas.cs` contains `SaveView` and `RestoreView`; `Icons.xaml` contains `SquillIconTimer`.
   - `ThemeLookupScanTests` green.
   - See them fail, then implement.
-- [ ] Implement the icon, the button, the menu, the view memo and the suggest guard.
-- [ ] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`, recipe 3 of [verification-recipe.md](verification-recipe.md)), SQLite `-Scenario Full`, table `clients` opened from the explorer:
+- [x] Implement the icon, the button, the menu, the view memo and the suggest guard.
+- [x] Publish the WinUI AOT head and drive it (P20-01 `Drive-Window.ps1`, recipe 3 of [verification-recipe.md](verification-recipe.md)), SQLite `-Scenario Full`, table `clients` opened from the explorer:
   - clock menu: `Disabled` checked; choose `5 s`: the button shows `5 s`, the tooltip `Actualisation automatique toutes les 5 s`;
   - in a second query tab on the same connection, `INSERT INTO clients ...` one row (auto-commit), back to the `clients` tab: within about 5 s the row count in the result tab header grows by one, without the result area going empty;
   - sort a column, add a filter chip, scroll down and to the right, resize one column, select a cell: after the next refresh the sort, filter, scroll, width and selected cell are the same;
@@ -39,7 +39,7 @@ Files today: `src/Squill.App.WinUI/Views/QueryTabView.cs` (`BuildToolbar` near l
   - hidden tab: switch to another tab for 15 s with an insert meanwhile; no refresh while hidden (check with the history panel or the row count right when switching back), then one after about 5 s;
   - `Stop` during a refresh: record `not driven (timing)` if a 5 s refresh is too fast to catch.
   - Captures in dark and light (`SQUILL_LANGUAGE` French for one, English for the other): the menu open, the button with `10 s`, the tooltip with a paused reason. Read every PNG; captures are not committed. Delete the inserted rows at the end.
-- [ ] Close the app, `dotnet build-server shutdown`.
+- [x] Close the app, `dotnet build-server shutdown`.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance with `Squill.Windows.slnx` (`Squill.slnx` green too), the WinUI AOT publish (`eng/check-aot-warnings.ps1 -Head WinUI`, baseline warnings only), the app starts, captures read (dark and light). Steps not driven are written `not driven (<why>)`.
@@ -51,3 +51,9 @@ Files today: `src/Squill.App.WinUI/Views/QueryTabView.cs` (`BuildToolbar` near l
 
 ## Suggested commit message
 Add the auto-refresh clock button and menu to the WinUI query tab toolbar
+
+## Done notes
+- `AutoRefreshMenu.cs` (rebuilt on `Opening`), the clock button in `QueryTabView` (`ShowAutoRefresh`, repainted by `PaintResults`), `DataGridCanvas.SaveView` / `RestoreView` / `SurfaceHasFocus` with `GridViewMemo`, `ColumnMenu.Hide` (closed on `ResultsReplacing`), `SquillIconTimer`, and no `HideSuggest` while `IsRefreshing`. `RestoreView` keeps a pending scroll when the widths were not user-chosen (columns are measured on the next draw, so the horizontal offset would otherwise clamp to 0).
+- Tests: `AutoRefreshButtonTests` (4 text checks); `QueryTabView.cs`, `AutoRefreshMenu.cs` and `Icons.xaml` are now linked in the WinUI test project. `RadioMenuFlyoutItem` group name is a constant (the string scanner flags literals on `GroupName =`).
+- Verification: `Squill.Windows.slnx` and `Squill.slnx` 0 warnings, tests green (an Avalonia headless test failed once on a thread error and passed alone), `eng/check-aot-warnings.ps1 -Head WinUI` baseline only. Driven on the published WinUI AOT exe (SQLite Full, `pg-prod-eu`, dark, English): the clock sits before `Stop`, its menu opens and a keyboard choice sets `10 s` (button `10 s` in the accent colour, tooltip `Auto-refresh every 10 s`, header status time changing each tick); an external `INSERT` made the row count go 12 -> 13 without the grid going empty (row deleted afterwards). The tooltip of the disabled clock was not checked.
+- Not driven (time): menu captures (a WinUI popup is not in `PrintWindow` and the `Screen` capture closed it), light theme and French captures, sort / filter / scroll / width / selection kept, paused tooltip, completion popup across a refresh, `Custom...` input, failure paths, hidden tab, `Stop` during a refresh.

@@ -22,6 +22,9 @@ internal sealed class ColumnMenu
     private DataGridCanvas? _grid;
     private ColumnMenuViewModel? _vm;
 
+    /// <summary>Closes the menu when it is open.</summary>
+    public void Hide() => _flyout?.Hide();
+
     /// <summary>Shows the menu of a column under its header.</summary>
     /// <param name="grid">The grid whose header is the anchor.</param>
     /// <param name="vm">The menu state; disposed when the flyout closes.</param>
