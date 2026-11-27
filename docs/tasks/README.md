@@ -437,6 +437,102 @@ Depends on: <card ids, ranges allowed>
 | [P20-41](phase-20/P20-41-preview-pane-apply-stores-shown-text.md) | Preview pane: `Appliquer` stores the text shown with `\n` line breaks, an untouched text changes nothing (both heads) | P20-40, P20-33 | done |
 | [P20-42](phase-20/P20-42-winui-preview-pane-follows-theme.md) | WinUI: the preview pane follows the theme (light theme drew it dark), guard against unrepainted element-less brushes | P20-40 | done |
 | [P20-43](phase-20/P20-43-preview-pane-caps-long-text.md) | Preview pane: a very long value no longer freezes the UI thread (shown text capped, notice, `Show all`, copy and apply keep the whole value; both heads, measured AOT drive) | P20-33, P20-41, P20-42 | done |
+| [P21-01](phase-21/P21-01-mariadb-container-verification.md) | MariaDB: container tests and the dialect differences | none | todo |
+| [P21-02](phase-21/P21-02-mariadb-plan-and-transactions.md) | MariaDB: execution plan, transaction probe and the support matrix | P21-01 | todo |
+| [P21-03](phase-21/P21-03-oracle-bridge-protocol.md) | Oracle bridge: cancel, transactions, several result sets and DBMS_OUTPUT | none | todo |
+| [P21-04](phase-21/P21-04-oracle-schema-objects.md) | Data.Oracle: indexes, foreign keys, defaults, routines, triggers and view definitions | P21-03 | todo |
+| [P21-05](phase-21/P21-05-sql-oracle-dialect.md) | Sql: Oracle dialect (tokenizer, splitter, keywords, quoting, types, functions) | none | todo |
+| [P21-06](phase-21/P21-06-sql-oracle-ddl-generator.md) | Sql: Oracle DDL generator (CREATE, ALTER, DROP) for the table designer | P21-04, P21-05 | todo |
+| [P21-07](phase-21/P21-07-oracle-grid-editing.md) | Oracle: grid editing, generated keys and column types | P21-03, P21-05 | todo |
+| [P21-08](phase-21/P21-08-oracle-plan-terminal-tls.md) | Oracle: execution plan, sqlplus terminal and TCPS | P21-03 | todo |
+| [P21-09](phase-21/P21-09-oracle-verification-and-docs.md) | Oracle: end-to-end verification in both heads and the support matrix | P21-03 ... P21-08 | todo |
+| [P21-10](phase-21/P21-10-informix-driver-poc.md) | Informix: driver proof of concept under Native AOT (decision card) | none | todo |
+| [P21-11](phase-21/P21-11-informix-provider.md) | Data.Informix: provider (connect, execute, stream, schema reading) | P21-10 | todo |
+| [P21-12](phase-21/P21-12-sql-informix-dialect.md) | Sql: Informix dialect (tokenizer, splitter, keywords, quoting, types, functions) | P21-11 | todo |
+| [P21-13](phase-21/P21-13-other-engines-feasibility.md) | Other engines: DB2, ClickHouse, Snowflake and BigQuery feasibility report | P21-10 | todo |
+| [P21-14](phase-21/P21-14-nosql-feasibility.md) | NoSQL: MongoDB and Redis feasibility report | none | todo |
+| [P21-15](phase-21/P21-15-adr-drivers-without-rebuild.md) | ADR: adding drivers without rebuilding, under Native AOT (feasibility) | P21-10 | todo |
+| [P21-16](phase-21/P21-16-tls-certificate-files.md) | Core and Data: TLS certificate files (CA, client certificate and key) | none | todo |
+| [P21-17](phase-21/P21-17-tls-certificate-files-ui.md) | Connection editor: TLS certificate file fields (Presentation, WinUI, Avalonia) | P21-16 | todo |
+| [P21-18](phase-21/P21-18-proxy-forwarder.md) | Core and Platform: SOCKS5 and HTTP CONNECT proxy for connections | none | todo |
+| [P21-19](phase-21/P21-19-proxy-ui.md) | Connection editor: proxy fields (Presentation, WinUI, Avalonia) | P21-18 | todo |
+| [P21-20](phase-21/P21-20-password-sources.md) | Platform and Presentation: password sources (stored, ask on connect, external command) | none | todo |
+| [P21-21](phase-21/P21-21-password-sources-ui.md) | Password sources in both heads (editor choice and the password prompt) | P21-20 | todo |
+| [P21-22](phase-21/P21-22-sql-symbol-resolver.md) | Sql: symbol resolution for go to definition and find usages | none | todo |
+| [P21-23](phase-21/P21-23-presentation-definition-and-usages.md) | Presentation: go to definition and find usages commands | P21-22 | todo |
+| [P21-24](phase-21/P21-24-winui-definition-and-usages.md) | WinUI: F12, Ctrl+click and usage highlights in the LoomEditor | P21-23 | todo |
+| [P21-25](phase-21/P21-25-avalonia-definition-and-usages.md) | Avalonia: F12, Ctrl+click and usage highlights | P21-23, P21-24 | todo |
+| [P21-26](phase-21/P21-26-sql-rename-plan.md) | Sql: rename plan for a table or a column in a script text | P21-22 | todo |
+| [P21-27](phase-21/P21-27-presentation-rename-refactoring.md) | Presentation: rename refactoring across open editors and snippets, with the DDL | P21-26 | todo |
+| [P21-28](phase-21/P21-28-heads-rename-preview.md) | WinUI and Avalonia: the rename dialog with its preview | P21-27 | todo |
+| [P21-29](phase-21/P21-29-template-variables.md) | Query parameters: `${name}` text variables and values kept across tabs | none | todo |
+| [P21-30](phase-21/P21-30-presentation-script-run-report.md) | Presentation: script run report, error position and stop / continue policy | none | todo |
+| [P21-31](phase-21/P21-31-winui-script-run-report.md) | WinUI: the script report result and the error policy menu | P21-30 | todo |
+| [P21-32](phase-21/P21-32-avalonia-script-run-report.md) | Avalonia: the script report result and the error policy menu | P21-30, P21-31 | todo |
+| [P21-33](phase-21/P21-33-script-files.md) | Platform and Presentation: open and save .sql script files, tabs bound to files, recent files | none | todo |
+| [P21-34](phase-21/P21-34-presentation-files-panel-bookmarks.md) | Presentation: Files panel (script folders, favorites) and line bookmarks | P21-33, P21-27 | todo |
+| [P21-35](phase-21/P21-35-winui-files-panel.md) | WinUI: the Files panel and bookmark gutter marks | P21-34 | todo |
+| [P21-36](phase-21/P21-36-avalonia-files-panel.md) | Avalonia: the Files panel and bookmark gutter marks | P21-34, P21-35 | todo |
+| [P21-37](phase-21/P21-37-git-status-diff-commit.md) | Platform and Presentation: small, optional Git support for script folders | P21-34 | todo |
+| [P21-38](phase-21/P21-38-heads-git.md) | WinUI and Avalonia: Git status marks, diff tab and commit dialog | P21-37, P21-35, P21-36 | todo |
+| [P21-39](phase-21/P21-39-presentation-copy-as-and-script-as.md) | Presentation: copy rows as INSERT / UPDATE / DELETE / CSV / JSON / Markdown, and script a table as SELECT / INSERT / UPDATE / DELETE | none | todo |
+| [P21-40](phase-21/P21-40-heads-copy-as-menus.md) | WinUI and Avalonia: Copy as submenu in the grid and Script as items in the explorer | P21-39 | todo |
+| [P21-41](phase-21/P21-41-presentation-foreign-key-navigation.md) | Presentation: follow a foreign key from a grid cell, and back to the referencing rows | none | todo |
+| [P21-42](phase-21/P21-42-heads-foreign-key-navigation.md) | WinUI and Avalonia: foreign key navigation from the grid | P21-41, P21-40 | todo |
+| [P21-43](phase-21/P21-43-core-data-comparer.md) | Core: row comparer for data compare (merge by primary key) | none | todo |
+| [P21-44](phase-21/P21-44-sql-data-sync-script.md) | Sql: data sync script from the row differences | P21-43 | todo |
+| [P21-45](phase-21/P21-45-presentation-data-compare-tab.md) | Presentation: the data compare tab | P21-43, P21-44 | todo |
+| [P21-46](phase-21/P21-46-winui-data-compare-view.md) | WinUI: the data compare view | P21-45 | todo |
+| [P21-47](phase-21/P21-47-avalonia-data-compare-view.md) | Avalonia: the data compare view | P21-45, P21-46 | todo |
+| [P21-48](phase-21/P21-48-presentation-ddl-export-and-sql-dump.md) | Presentation: export a schema's DDL and dump data as generated SQL | P21-44 | todo |
+| [P21-49](phase-21/P21-49-platform-native-dump-restore.md) | Platform and Presentation: backup and restore with the engine's own tools, and restore of a SQL file | P21-48, P21-30 | todo |
+| [P21-50](phase-21/P21-50-heads-dump-restore-dialog.md) | WinUI and Avalonia: export DDL, dump and restore dialogs | P21-48, P21-49 | todo |
+| [P21-51](phase-21/P21-51-presentation-json-tree.md) | Presentation: JSON value as a collapsible, searchable tree | none | todo |
+| [P21-52](phase-21/P21-52-winui-json-tree.md) | WinUI: the JSON tree in the preview pane | P21-51 | todo |
+| [P21-53](phase-21/P21-53-avalonia-json-tree.md) | Avalonia: the JSON tree in the preview pane | P21-51, P21-52 | todo |
+| [P21-54](phase-21/P21-54-presentation-binary-hex-image.md) | Presentation: binary values as a hex dump or an image | none | todo |
+| [P21-55](phase-21/P21-55-winui-hex-image-viewer.md) | WinUI: hex and image viewer in the preview pane | P21-54 | todo |
+| [P21-56](phase-21/P21-56-avalonia-hex-image-viewer.md) | Avalonia: hex and image viewer in the preview pane | P21-54, P21-55 | todo |
+| [P21-57](phase-21/P21-57-presentation-geometry-model.md) | Presentation: geometry and GeoJSON model for a map-like preview | P21-51 | todo |
+| [P21-58](phase-21/P21-58-winui-geometry-viewer.md) | WinUI: geometry viewer on a Win2D canvas | P21-57 | todo |
+| [P21-59](phase-21/P21-59-avalonia-geometry-viewer.md) | Avalonia: geometry viewer canvas | P21-57, P21-58 | todo |
+| [P21-60](phase-21/P21-60-presentation-chart-model.md) | Presentation: chart model from a result set | none | todo |
+| [P21-61](phase-21/P21-61-winui-chart-view.md) | WinUI: chart view of a result | P21-60 | todo |
+| [P21-62](phase-21/P21-62-avalonia-chart-view.md) | Avalonia: chart view of a result | P21-60, P21-61 | todo |
+| [P21-63](phase-21/P21-63-presentation-column-statistics.md) | Presentation: column statistics (count, nulls, distinct, min, max, mean, histogram) | none | todo |
+| [P21-64](phase-21/P21-64-heads-column-statistics.md) | WinUI and Avalonia: column statistics in the column menu | P21-63 | todo |
+| [P21-65](phase-21/P21-65-presentation-test-data-generator.md) | Presentation: test data generator for a table | none | todo |
+| [P21-66](phase-21/P21-66-heads-test-data-generator.md) | WinUI and Avalonia: the test data generator dialog | P21-65 | todo |
+| [P21-67](phase-21/P21-67-core-cross-engine-type-mapping.md) | Core: neutral column type model and the SQLite to PostgreSQL mapping | none | todo |
+| [P21-68](phase-21/P21-68-core-cross-engine-comparer.md) | Core: cross-engine comparer ("equivalent under mapping") | P21-67 | todo |
+| [P21-69](phase-21/P21-69-sql-cross-engine-migration-script.md) | Sql: PostgreSQL migration script from a SQLite comparison | P21-68 | todo |
+| [P21-70](phase-21/P21-70-presentation-cross-engine-compare.md) | Presentation: cross-engine mode of the schema compare tab (pair picker, mapping review) | P21-69 | todo |
+| [P21-71](phase-21/P21-71-winui-cross-engine-compare.md) | WinUI: mapping review step and equivalent rows in the schema compare view | P21-70 | todo |
+| [P21-72](phase-21/P21-72-avalonia-cross-engine-compare.md) | Avalonia: mapping review step and equivalent rows in the schema compare view | P21-70, P21-71 | todo |
+| [P21-73](phase-21/P21-73-sql-role-user-ddl.md) | Sql: create, alter and drop users and roles, and role membership, per dialect | none | todo |
+| [P21-74](phase-21/P21-74-data-security-readers-mysql-sqlserver.md) | Data: security readers for MySQL and SQL Server (roles, users, memberships) | P21-73 | todo |
+| [P21-75](phase-21/P21-75-presentation-role-management.md) | Presentation: user and role management in the security tab | P21-73, P21-74 | todo |
+| [P21-76](phase-21/P21-76-winui-role-management.md) | WinUI: user and role editor in the security view | P21-75 | todo |
+| [P21-77](phase-21/P21-77-avalonia-role-management.md) | Avalonia: user and role editor in the security view | P21-75, P21-76 | todo |
+| [P21-78](phase-21/P21-78-presentation-keymap.md) | Platform and Presentation: configurable keyboard shortcuts (keymap) | none | todo |
+| [P21-79](phase-21/P21-79-winui-keymap.md) | WinUI: keys through the keymap and the Keymap settings page | P21-78 | todo |
+| [P21-80](phase-21/P21-80-avalonia-keymap.md) | Avalonia: keys through the keymap and the Keymap settings page | P21-78, P21-79 | todo |
+| [P21-81](phase-21/P21-81-custom-themes-model.md) | Design system, Platform and Presentation: custom themes (token overrides) | none | todo |
+| [P21-82](phase-21/P21-82-winui-custom-themes.md) | WinUI: apply custom themes at runtime | P21-81 | todo |
+| [P21-83](phase-21/P21-83-avalonia-custom-themes.md) | Avalonia: apply custom themes at runtime | P21-81, P21-82 | todo |
+| [P21-84](phase-21/P21-84-winui-collapsible-properties-panel.md) | Presentation and WinUI: collapsible right properties panel with an icon rail | none | todo |
+| [P21-85](phase-21/P21-85-avalonia-collapsible-properties-panel.md) | Avalonia: collapsible right properties panel with an icon rail | P21-84 | todo |
+| [P21-86](phase-21/P21-86-linux-build-publish-first-run.md) | Linux: first build, Native AOT publish and start of the Avalonia head | none | todo |
+| [P21-87](phase-21/P21-87-linux-avalonia-drive.md) | Linux: verification pass of the Avalonia head | P21-86 | todo |
+| [P21-88](phase-21/P21-88-macos-build-publish-first-run.md) | macOS: first build, Native AOT publish and start of the Avalonia head | P21-86 | todo |
+| [P21-89](phase-21/P21-89-linux-macos-packaging-run.md) | Linux and macOS: run the packaging and the update flow once | P21-86, P21-88 | todo |
+| [P21-90](phase-21/P21-90-local-script-history.md) | Local history of script files and query tabs (undo across sessions) | P21-33 | todo |
+| [P21-91](phase-21/P21-91-issue-tracker-link.md) | Help menu: report an issue (link to the issue tracker) | none | todo |
+| [P21-92](phase-21/P21-92-ai-provider-contract.md) | AI assistant (1/5): provider contract, settings and key storage | none (last, owner request) | todo |
+| [P21-93](phase-21/P21-93-ai-context-and-privacy.md) | AI assistant (2/5): schema context, privacy filter and the payload preview | P21-92 | todo |
+| [P21-94](phase-21/P21-94-presentation-ai-assistant.md) | AI assistant (3/5): Presentation (generate SQL, explain, fix an error) | P21-93, P21-30 | todo |
+| [P21-95](phase-21/P21-95-winui-ai-assistant.md) | AI assistant (4/5): WinUI panel and settings | P21-94 | todo |
+| [P21-96](phase-21/P21-96-avalonia-ai-assistant.md) | AI assistant (5/5): Avalonia panel and settings, README and privacy notes | P21-94, P21-95 | todo |
 
 ### Phase 9 - Visual conformance
 
@@ -572,3 +668,22 @@ Today compare is structure only and between two databases of the same dialect ([
 6. The UI: a dialect pair picker, a mapping review step (accept or override each type mapping), with the production confirmation and the transaction rules unchanged.
 7. Tests: a round trip per ordered dialect pair on real engines (Docker-gated for three of them) with a golden set of tricky tables; about twelve pairs, so a first phase should take one pair (SQLite to PostgreSQL is the likeliest) and only tables, columns, primary and foreign keys, and indexes.
 8. Decisions to take first: one-way (source to target script) or two-way, whether lossy type changes need a blocking confirmation, and which pair comes first.
+
+The first phase of this list (one pair, SQLite to PostgreSQL, tables, columns, primary and foreign keys, indexes) is carded in phase 21: P21-67 ... P21-72.
+
+### Phase 21 - Competitive gaps (DBeaver / DataGrip)
+
+**Owner-requested ideas, not yet scheduled.** On 2026-11-27 the owner compared SQuilL with DBeaver and DataGrip and asked to turn every missing feature into cards, to be developed later. No card is started before the owner picks it; picking a subset is expected. Shared rules: [recipe.md](phase-21/recipe.md) (tests first, writes through the runner and the production confirmation, head drives on the published exe, the last head card of a feature writes the README and changelog lines: there is no separate docs card).
+
+Goal: close the gaps found in the comparison, each card scoped to what is really missing. Already there and only extended: MariaDB (a profile flag and a tile exist, never tested: P21-01, P21-02), Oracle (proof of concept through a bridge process: P21-03 ... P21-09), TLS modes and the OS keychain stores (`TlsMode`, DPAPI / libsecret / Keychain: P21-16 ... P21-21 add certificate files, a proxy and password sources), named parameters with the input panel (`:name`, `@name`, `$name`, P18-30: P21-29 adds `${name}` text variables and per-connection values), running a script (`Ctrl+Shift+Enter` stops at the first error, one result per statement: P21-30 ... P21-32 add the report, error positions and the policy), copy as TSV, CSV/JSON export and `Script as CREATE TABLE` (P21-39, P21-40 add the other formats and DML templates), the JSON preview capped by P20-43 (P21-51 ... P21-53 add a lazy tree over the whole value), column value counts of the column menu (P21-63, P21-64 add statistics), the PostgreSQL privileges screen (P21-73 ... P21-77 add user and role management and MySQL / SQL Server), the cross-engine compare analysis above (P21-67 ... P21-72 build its first pair) and the collapsible right panel of `docs/ideas.md` (P21-84, P21-85).
+
+- Order (groups are independent of each other unless a dependency says otherwise; inside a group: shared Core / Sql / Platform / Presentation card first, then WinUI, then Avalonia):
+  1. Engines and connections: MariaDB P21-01 -> P21-02; Oracle P21-03 -> P21-04, P21-05 (independent) -> P21-06, P21-07, P21-08 -> P21-09; Informix P21-10 (proof of concept, decides P21-11) -> P21-11 -> P21-12; reports P21-13 (after P21-10), P21-14, ADR P21-15 (after P21-10); TLS files P21-16 -> P21-17; proxy P21-18 -> P21-19; password sources P21-20 -> P21-21.
+  2. SQL editor: P21-22 -> P21-23 -> P21-24 -> P21-25 (definition and usages); P21-22 -> P21-26 -> P21-27 -> P21-28 (rename); P21-29 (template variables); P21-30 -> P21-31 -> P21-32 (script report); P21-33 -> P21-34 (also after P21-27) -> P21-35 -> P21-36 -> P21-37 -> P21-38 (files, bookmarks, Git); P21-39 -> P21-40 (copy as, script as).
+  3. Data: P21-41 -> P21-42 (foreign key navigation, after P21-40); P21-43 -> P21-44 -> P21-45 -> P21-46 -> P21-47 (data compare); P21-48 (after P21-44) -> P21-49 (after P21-30) -> P21-50 (dump, restore, DDL export); P21-51 -> P21-52 -> P21-53 (JSON tree); P21-54 -> P21-55 -> P21-56 (hex, image); P21-57 (after P21-51) -> P21-58 -> P21-59 (geometry); P21-60 -> P21-61 -> P21-62 (charts); P21-63 -> P21-64 (statistics); P21-65 -> P21-66 (test data).
+  4. Administration and project: P21-67 -> P21-68 -> P21-69 -> P21-70 -> P21-71 -> P21-72 (cross-engine compare, first pair); P21-73 -> P21-74 -> P21-75 -> P21-76 -> P21-77 (users and roles); P21-78 -> P21-79 -> P21-80 (keymap); P21-81 -> P21-82 -> P21-83 (custom themes); P21-84 -> P21-85 (collapsible right panel); P21-86 -> P21-87, P21-86 -> P21-88 -> P21-89 (Linux and macOS, never run so far).
+  5. Low priority: P21-90 (local history, after P21-33), P21-91 (issue tracker link).
+  6. **AI assistant last** (owner: "assistant IA en dernier"): P21-92 -> P21-93 -> P21-94 (also after P21-30) -> P21-95 -> P21-96, after every other card the owner picks. Bug cards found by any P21 card are numbered `P21-97` onwards but scheduled before the AI cards.
+- Decision cards that can rewrite later cards: P21-10 (Informix driver: if the verdict is the bridge or an own ODBC layer, P21-11 is rewritten first), P21-15 (drivers without rebuilding: an ADR only; adding a DLL at runtime is impossible in process under Native AOT), P21-13 and P21-14 (reports only).
+- Riskiest cards: P21-03 (two threads in the Oracle bridge), P21-10 (IBM driver under Native AOT, licence, native `clidriver`), P21-22 / P21-26 (a wrong resolution edits a script silently: skip rather than guess), P21-43 (ordering and collations in the merge), P21-49 (external tools, password only through the environment), P21-51 (large GeoJSON values, lazy nodes), P21-78 ... P21-80 (every hard-coded key moved), P21-82 / P21-83 (runtime brush mutation), P21-86 / P21-88 (first run ever on Linux and macOS), P21-93 (the preview must be exactly what is sent).
+- Not built (stays out even after phase 21): adding drivers at runtime in process, NoSQL in the SQL query tab, map tiles from online servers (privacy), Git push / branches, data compare across dialects or several tables in one run, cross-engine pairs other than SQLite to PostgreSQL, Vault over HTTP (an external command covers it), user-defined copy extractors, AI that runs statements on its own.
