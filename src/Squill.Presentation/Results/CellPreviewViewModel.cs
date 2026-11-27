@@ -160,6 +160,8 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
 
         async Task Run()
         {
+            // Yield first: a fast pool thread could finish the work before the await and run apply inline, hiding IsWorking from the caller.
+            await Task.Yield();
             var result = await Task.Run(work).ConfigureAwait(true);
             if (request != _request)
                 return;
