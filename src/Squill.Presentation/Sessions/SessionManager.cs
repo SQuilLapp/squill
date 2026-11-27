@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
+using Squill.Platform.Proxy;
 using Squill.Platform.Ssh;
 using Squill.Presentation.Localization;
 
@@ -12,7 +13,8 @@ namespace Squill.Presentation.Sessions;
 /// <param name="store">Source of the database password and the SSH secret.</param>
 /// <param name="tunnels">Opens the SSH tunnel of profiles that need one.</param>
 /// <param name="sshHostKeyPrompt">Asks whether to trust a host key seen for the first time; <see langword="null"/> refuses every unknown key.</param>
-public sealed class SessionManager(ProviderRegistry providers, IProfileStore store, ISshTunnelFactory tunnels, SshHostKeyPrompt? sshHostKeyPrompt = null)
+/// <param name="proxies">Opens the forwarder of profiles that go through a proxy without an SSH tunnel; <see langword="null"/> uses <see cref="ProxyTunnelFactory"/>.</param>
+public sealed class SessionManager(ProviderRegistry providers, IProfileStore store, ISshTunnelFactory tunnels, SshHostKeyPrompt? sshHostKeyPrompt = null, IProxyTunnelFactory? proxies = null)
 {
     /// <summary>Gets the open sessions.</summary>
     public ObservableCollection<ConnectionSession> Sessions { get; } = [];
@@ -32,10 +34,20 @@ public sealed class SessionManager(ProviderRegistry providers, IProfileStore sto
         try
         {
             var effective = profile;
-            if (profile.Ssh is { } ssh)
+            if (profile.Ssh is not null || profile.Proxy is not null)
             {
-                var secret = await store.GetSshSecretAsync(profile.Id, ct);
-                tunnel = await tunnels.OpenAsync(ssh, secret, profile.Host ?? "", profile.Port ?? 0, sshHostKeyPrompt, ct);
+                var proxySecret = profile.Proxy is null ? null : await store.GetProxySecretAsync(profile.Id, ct);
+                if (profile.Ssh is { } ssh)
+                {
+                    var secret = await store.GetSshSecretAsync(profile.Id, ct);
+                    tunnel = profile.Proxy is { } viaProxy
+                        ? await tunnels.OpenAsync(ssh, secret, viaProxy, proxySecret, profile.Host ?? "", profile.Port ?? 0, sshHostKeyPrompt, ct)
+                        : await tunnels.OpenAsync(ssh, secret, profile.Host ?? "", profile.Port ?? 0, sshHostKeyPrompt, ct);
+                }
+                else
+                {
+                    tunnel = await (proxies ?? new ProxyTunnelFactory()).OpenAsync(profile.Proxy!, proxySecret, profile.Host ?? "", profile.Port ?? 0, ct);
+                }
                 effective = profile with { Host = "127.0.0.1", Port = tunnel.LocalPort, TlsServerName = profile.TlsServerName ?? profile.Host }; // VerifyFull keeps checking the real host name
             }
             connection = await provider.OpenAsync(effective, password, ct);

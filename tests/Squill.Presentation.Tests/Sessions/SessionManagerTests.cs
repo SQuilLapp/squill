@@ -1,6 +1,7 @@
 using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
+using Squill.Platform.Proxy;
 using Squill.Platform.Ssh;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Sessions;
@@ -55,6 +56,37 @@ public sealed class SessionManagerTests
         Assert.Equal("127.0.0.1", _provider.OpenedWith!.Host);
         Assert.Equal(40123, _provider.OpenedWith.Port);
         Assert.Equal("db.internal", session.Profile.Host);
+    }
+
+    [Fact]
+    public async Task OpenAsync_Proxy_ForwardsThroughTheProxyWithItsSecret()
+    {
+        _store.ProxySecret = "px";
+        var proxies = new FakeProxies(_log);
+        var registry = new ProviderRegistry();
+        registry.Register(_provider);
+        var manager = new SessionManager(registry, _store, _tunnels, null, proxies);
+        var proxy = new ProxySettings(ProxyKind.Socks5, "proxy.corp", 1080, "me");
+
+        var session = await manager.OpenAsync(Profile() with { Proxy = proxy }, CancellationToken.None);
+
+        Assert.Equal((proxy, "px", "db.internal", 5432), (proxies.Proxy, proxies.Secret, proxies.Host, proxies.Port));
+        Assert.Equal(0, _tunnels.Opened);
+        Assert.Equal("127.0.0.1", _provider.OpenedWith!.Host);
+        Assert.Equal(40123, _provider.OpenedWith.Port);
+        Assert.Equal("db.internal", _provider.OpenedWith.TlsServerName);
+        Assert.Null(session.Profile.Ssh);
+    }
+
+    [Fact]
+    public async Task OpenAsync_SshAndProxy_CarriesTheSshConnectionThroughTheProxy()
+    {
+        _store.ProxySecret = "px";
+        var proxy = new ProxySettings(ProxyKind.HttpConnect, "proxy.corp", 3128);
+
+        await _manager.OpenAsync(Profile(Ssh) with { Proxy = proxy }, CancellationToken.None);
+
+        Assert.Equal((proxy, "px"), (_tunnels.Proxy, _tunnels.ProxySecret));
     }
 
     [Fact]
@@ -174,7 +206,9 @@ public sealed class SessionManagerTests
         public string? Password { get; set; }
         public string? SshSecret { get; set; }
         public string? TlsPassphrase { get; set; }
+        public string? ProxySecret { get; set; }
 
+        public ValueTask<string?> GetProxySecretAsync(Guid id, CancellationToken ct) => ValueTask.FromResult(ProxySecret);
         public ValueTask<string?> GetTlsKeyPassphraseAsync(Guid id, CancellationToken ct) => ValueTask.FromResult(TlsPassphrase);
         public ValueTask<IReadOnlyList<ConnectionProfile>> ListAsync(CancellationToken ct) => throw new NotSupportedException();
         public ValueTask SaveAsync(ConnectionProfile profile, string? password, string? sshSecret, CancellationToken ct) => throw new NotSupportedException();
@@ -190,6 +224,14 @@ public sealed class SessionManagerTests
         public int RemotePort { get; private set; }
         public string? Secret { get; private set; }
         public Func<SshHostKeyPrompt?, ValueTask>? OnOpen { get; set; }
+        public ProxySettings? Proxy { get; private set; }
+        public string? ProxySecret { get; private set; }
+
+        public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, ProxySettings proxy, string? proxySecret, string remoteHost, int remotePort, SshHostKeyPrompt? prompt, CancellationToken ct)
+        {
+            (Proxy, ProxySecret) = (proxy, proxySecret);
+            return OpenAsync(settings, secret, remoteHost, remotePort, prompt, ct);
+        }
 
         public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, string remoteHost, int remotePort, SshHostKeyPrompt? prompt, CancellationToken ct)
         {
@@ -198,6 +240,20 @@ public sealed class SessionManagerTests
                 onOpen(prompt).AsTask().GetAwaiter().GetResult();
             (RemoteHost, RemotePort, Secret) = (remoteHost, remotePort, secret);
             log.Add("tunnel opened");
+            return ValueTask.FromResult<ISshTunnel>(new FakeTunnel(log));
+        }
+    }
+
+    private sealed class FakeProxies(List<string> log) : IProxyTunnelFactory
+    {
+        public ProxySettings? Proxy { get; private set; }
+        public string? Secret { get; private set; }
+        public string? Host { get; private set; }
+        public int Port { get; private set; }
+
+        public ValueTask<ISshTunnel> OpenAsync(ProxySettings proxy, string? secret, string remoteHost, int remotePort, CancellationToken ct)
+        {
+            (Proxy, Secret, Host, Port) = (proxy, secret, remoteHost, remotePort);
             return ValueTask.FromResult<ISshTunnel>(new FakeTunnel(log));
         }
     }

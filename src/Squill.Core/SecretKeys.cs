@@ -17,4 +17,9 @@ public static class SecretKeys
     /// <param name="id">Identifier of the connection profile.</param>
     /// <returns>The secret store key.</returns>
     public static string TlsKeyPassphrase(Guid id) => $"profile:{id:N}:tlskey";
+
+    /// <summary>Gets the key of the proxy password of a profile.</summary>
+    /// <param name="id">Identifier of the connection profile.</param>
+    /// <returns>The secret store key.</returns>
+    public static string ProxySecret(Guid id) => $"profile:{id:N}:proxy";
 }

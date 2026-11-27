@@ -73,6 +73,8 @@ Done through phase 15 (transactions and production confirmation, see [ADR 0012](
 
 `Squill.Platform/Ssh` has `IKnownHostsStore` (`JsonKnownHostsStore`, `known-hosts.json`); `SshNetTunnelFactory` trusts a known key, refuses a changed one and asks through `IDialogService.ConfirmSshHostKeyAsync` for an unknown one. Decisions: [ADR 0013](adr/0013-ssh-host-keys.md).
 
+`Squill.Platform/Proxy` forwards a profile's connection through a SOCKS5 or HTTP CONNECT proxy (`ProxySettings`, hand-written handshakes over `Socket`, password in `SecretKeys.ProxySecret`); with SSH configured the proxy carries the SSH connection through SSH.NET instead.
+
 ## Grid filter and command palette (phase 17)
 
 `Squill.Presentation/Results` has `FilteredGridDataSource` (the view that `ResultViewModel.DisplayGrid` returns while a filter, search or sort is active), `ResultViewState`, `GridFilter`, `GridSort`, `ColumnValueCounts`, `ColumnMenuViewModel` and `FilterEditorViewModel`; `Squill.Presentation/Palette` has `PaletteViewModel`, `FuzzyMatcher`, `PaletteActionRegistry` and the object, history and line providers. Both heads draw them (`FilterBar`, `ColumnMenu`, `CommandPalette`). Decisions and limits: [ADR 0014](adr/0014-grid-filter-and-command-palette.md).

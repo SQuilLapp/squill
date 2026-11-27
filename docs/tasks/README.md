@@ -454,7 +454,7 @@ Depends on: <card ids, ranges allowed>
 | [P21-15](phase-21/P21-15-adr-drivers-without-rebuild.md) | ADR: adding drivers without rebuilding, under Native AOT (feasibility) | P21-10 | done |
 | [P21-16](phase-21/P21-16-tls-certificate-files.md) | Core and Data: TLS certificate files (CA, client certificate and key) | none | done |
 | [P21-17](phase-21/P21-17-tls-certificate-files-ui.md) | Connection editor: TLS certificate file fields (Presentation, WinUI, Avalonia) | P21-16 | done |
-| [P21-18](phase-21/P21-18-proxy-forwarder.md) | Core and Platform: SOCKS5 and HTTP CONNECT proxy for connections | none | todo |
+| [P21-18](phase-21/P21-18-proxy-forwarder.md) | Core and Platform: SOCKS5 and HTTP CONNECT proxy for connections | none | done |
 | [P21-19](phase-21/P21-19-proxy-ui.md) | Connection editor: proxy fields (Presentation, WinUI, Avalonia) | P21-18 | todo |
 | [P21-20](phase-21/P21-20-password-sources.md) | Platform and Presentation: password sources (stored, ask on connect, external command) | none | todo |
 | [P21-21](phase-21/P21-21-password-sources-ui.md) | Password sources in both heads (editor choice and the password prompt) | P21-20 | todo |

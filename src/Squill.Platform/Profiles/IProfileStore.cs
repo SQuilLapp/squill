@@ -46,4 +46,17 @@ public interface IProfileStore
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A task that completes once the secret is stored.</returns>
     ValueTask SaveTlsKeyPassphraseAsync(Guid id, string? passphrase, CancellationToken ct) => ValueTask.CompletedTask;
+
+    /// <summary>Reads the proxy password of a profile.</summary>
+    /// <param name="id">Profile identifier.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The password, or <see langword="null"/> when none is stored.</returns>
+    ValueTask<string?> GetProxySecretAsync(Guid id, CancellationToken ct) => ValueTask.FromResult<string?>(null);
+
+    /// <summary>Stores the proxy password of a profile; <see cref="SaveAsync"/> does not touch it.</summary>
+    /// <param name="id">Profile identifier.</param>
+    /// <param name="password">The password; <see langword="null"/> keeps the stored one and an empty string deletes it.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A task that completes once the secret is stored.</returns>
+    ValueTask SaveProxySecretAsync(Guid id, string? password, CancellationToken ct) => ValueTask.CompletedTask;
 }

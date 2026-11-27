@@ -114,6 +114,22 @@ public sealed class JsonProfileStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Proxy_RoundTripsInTheFile_AndItsPasswordOnlyInTheSecretStore()
+    {
+        var profile = Profile() with { Proxy = new ProxySettings(ProxyKind.HttpConnect, "proxy.corp", 3128, "me") };
+        var store = NewStore();
+        await store.SaveAsync(profile, null, null, _ct);
+        await store.SaveProxySecretAsync(profile.Id, "px-s3cret", _ct);
+
+        Assert.Equal([profile], await NewStore().ListAsync(_ct));
+        Assert.Equal("px-s3cret", await store.GetProxySecretAsync(profile.Id, _ct));
+        Assert.DoesNotContain("px-s3cret", await File.ReadAllTextAsync(Path.Combine(_dir, "profiles.json"), _ct));
+
+        await store.DeleteAsync(profile.Id, _ct);
+        Assert.Null(await store.GetProxySecretAsync(profile.Id, _ct));
+    }
+
+    [Fact]
     public void Combine_CreatesDirectory()
     {
         var path = new AppPaths(_dir).Combine("sub", "f.json");

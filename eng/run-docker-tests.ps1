@@ -3,14 +3,14 @@
 .SYNOPSIS
 Runs the Docker-gated driver tests (Testcontainers) on Podman.
 .PARAMETER Engine
-postgres, mysql, mariadb (the MySQL suites on mariadb:11.4, not part of all), sqlserver, ssh (the SSH tunnel tests of the Platform and Presentation projects, on PostgreSQL), oracle (a large image, so not part of all), informix (IBM developer image, not part of all; needs the IBM clidriver, see tests/Squill.Data.Informix.Tests/InformixFixture.cs) or all (default).
+postgres, mysql, mariadb (the MySQL suites on mariadb:11.4, not part of all), sqlserver, ssh (the SSH tunnel tests of the Platform and Presentation projects, on PostgreSQL), proxy (the SOCKS5 and HTTP CONNECT proxy tests of the Platform project, on PostgreSQL and an SSH server; not part of all), oracle (a large image, so not part of all), informix (IBM developer image, not part of all; needs the IBM clidriver, see tests/Squill.Data.Informix.Tests/InformixFixture.cs) or all (default).
 .PARAMETER Keep
 Instead of running tests, starts the container of one engine (postgres, mysql or sqlserver), loads tests/Shared/SampleSchema/<engine>.sql, prints host, port, user and password, and waits for Enter before removing it. For driving the app by hand.
 .PARAMETER Filter
 Extra arguments passed to the test application, split on spaces, for example '--filter-method *ConnectionString*'.
 #>
 param(
-    [ValidateSet('postgres', 'mysql', 'mariadb', 'sqlserver', 'ssh', 'oracle', 'informix', 'all')][string]$Engine = 'all',
+    [ValidateSet('postgres', 'mysql', 'mariadb', 'sqlserver', 'ssh', 'proxy', 'oracle', 'informix', 'all')][string]$Engine = 'all',
     [string]$Filter = '',
     [switch]$Keep
 )
@@ -87,7 +87,7 @@ $extra = $Filter ? ($Filter -split '\s+' | Where-Object { $_ }) : @()
 $exit = 0
 try {
     foreach ($e in $engines) {
-        $runs = $e -eq 'ssh' ? @(@('Squill.Platform.Tests', '--filter-class', '*SshJumpHostTests'), @('Squill.Presentation.Tests', '--filter-class', '*SshSessionTests')) : @(, @("Squill.Data.$($projects[$e]).Tests"))
+        $runs = $e -eq 'proxy' ? @(, @('Squill.Platform.Tests', '--filter-class', '*ProxyContainerTests')) : $e -eq 'ssh' ? @(@('Squill.Platform.Tests', '--filter-class', '*SshJumpHostTests'), @('Squill.Presentation.Tests', '--filter-class', '*SshSessionTests')) : @(, @("Squill.Data.$($projects[$e]).Tests"))
         foreach ($run in $runs) {
             dotnet test --project (Join-Path $root "tests/$($run[0])") -c Release @($run | Select-Object -Skip 1) @extra
             if ($LASTEXITCODE -ne 0) { $exit = $LASTEXITCODE }

@@ -21,7 +21,19 @@ public sealed class SshNetTunnelFactory(IKnownHostsStore store) : ISshTunnelFact
     }
 
     /// <inheritdoc/>
-    public async ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, string remoteHost, int remotePort, SshHostKeyPrompt? prompt, CancellationToken ct)
+    public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, string remoteHost, int remotePort, SshHostKeyPrompt? prompt, CancellationToken ct) =>
+        OpenCoreAsync(settings, secret, null, null, remoteHost, remotePort, prompt, ct);
+
+    /// <inheritdoc/>
+    public ValueTask<ISshTunnel> OpenAsync(SshTunnelSettings settings, string? secret, ProxySettings proxy, string? proxySecret, string remoteHost, int remotePort, SshHostKeyPrompt? prompt, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(proxy);
+        if (string.IsNullOrWhiteSpace(proxy.Host) || proxy.Port is < 1 or > 65535)
+            throw new ArgumentException("The proxy host or port is invalid.", nameof(proxy));
+        return OpenCoreAsync(settings, secret, proxy, proxySecret, remoteHost, remotePort, prompt, ct);
+    }
+
+    private async ValueTask<ISshTunnel> OpenCoreAsync(SshTunnelSettings settings, string? secret, ProxySettings? proxy, string? proxySecret, string remoteHost, int remotePort, SshHostKeyPrompt? prompt, CancellationToken ct)
     {
         Validate(settings, remoteHost, remotePort);
         ct.ThrowIfCancellationRequested();
@@ -32,7 +44,12 @@ public sealed class SshNetTunnelFactory(IKnownHostsStore store) : ISshTunnelFact
                 ? new PrivateKeyFile(settings.PrivateKeyPath!)
                 : new PrivateKeyFile(settings.PrivateKeyPath!, secret));
 
-        var client = new SshClient(new ConnectionInfo(settings.Host, settings.Port, settings.UserName, auth));
+        // SSH.NET speaks SOCKS5 and HTTP CONNECT itself: the proxy carries the SSH connection, no second forwarder.
+        var info = proxy is null
+            ? new ConnectionInfo(settings.Host, settings.Port, settings.UserName, auth)
+            : new ConnectionInfo(settings.Host, settings.Port, settings.UserName,
+                proxy.Kind == ProxyKind.Socks5 ? ProxyTypes.Socks5 : ProxyTypes.Http, proxy.Host, proxy.Port, proxy.UserName, proxySecret, auth);
+        var client = new SshClient(info);
         SshHostKeyRequest? presented = null;
         var verdict = HostKeyVerdict.Trusted;
         client.HostKeyReceived += (_, e) =>
