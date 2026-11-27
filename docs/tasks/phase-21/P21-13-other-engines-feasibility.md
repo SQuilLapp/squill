@@ -1,6 +1,6 @@
 # P21-13 - Other engines: DB2, ClickHouse, Snowflake and BigQuery feasibility report
 
-Status: todo
+Status: done
 Depends on: P21-10
 
 ## Goal
@@ -20,8 +20,8 @@ Exists today: five dialects (`DatabaseDialect`), the Oracle bridge pattern, the 
 - NoSQL (P21-14), any provider code.
 
 ## Tasks
-- [ ] Probe ClickHouse with a container (cheap); others on paper unless a probe is quick.
-- [ ] Write the report.
+- [x] Probe ClickHouse with a container (cheap); others on paper unless a probe is quick.
+- [x] Write the report.
 
 ## Acceptance criteria
 - Report committed; each claim measured or marked `not verified`.

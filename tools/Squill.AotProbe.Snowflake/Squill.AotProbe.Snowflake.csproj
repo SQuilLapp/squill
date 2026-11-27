@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <PublishAot>true</PublishAot>
+    <!-- Throw-away P21-13 probe, not part of any solution: third-party warnings are counted in docs/poc/other-engines.md, not fixed. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Snowflake.Data" Version="6.5.0" />
+  </ItemGroup>
+</Project>

@@ -449,7 +449,7 @@ Depends on: <card ids, ranges allowed>
 | [P21-10](phase-21/P21-10-informix-driver-poc.md) | Informix: driver proof of concept under Native AOT (decision card) | none | done |
 | [P21-11](phase-21/P21-11-informix-provider.md) | Data.Informix: own ODBC layer and provider (connect, execute, stream, schema reading) | P21-10 | todo |
 | [P21-12](phase-21/P21-12-sql-informix-dialect.md) | Sql: Informix dialect (tokenizer, splitter, keywords, quoting, types, functions) | P21-11 | todo |
-| [P21-13](phase-21/P21-13-other-engines-feasibility.md) | Other engines: DB2, ClickHouse, Snowflake and BigQuery feasibility report | P21-10 | todo |
+| [P21-13](phase-21/P21-13-other-engines-feasibility.md) | Other engines: DB2, ClickHouse, Snowflake and BigQuery feasibility report | P21-10 | done |
 | [P21-14](phase-21/P21-14-nosql-feasibility.md) | NoSQL: MongoDB and Redis feasibility report | none | todo |
 | [P21-15](phase-21/P21-15-adr-drivers-without-rebuild.md) | ADR: adding drivers without rebuilding, under Native AOT (feasibility) | P21-10 | todo |
 | [P21-16](phase-21/P21-16-tls-certificate-files.md) | Core and Data: TLS certificate files (CA, client certificate and key) | none | todo |
