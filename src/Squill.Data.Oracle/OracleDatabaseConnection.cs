@@ -59,13 +59,15 @@ internal sealed class OracleDatabaseConnection(BridgeClient client, string serve
         return OraclePlanParser.Parse(sql, rows, text);
     }
 
-    // Runs the (read-only) statement with row-source statistics on, then reads them back from the cursor the session ran last.
+    // Runs the (read-only) statement with row-source statistics on, then reads them back from its cursor, found by a marker comment: the bridge
+    // calls DBMS_OUTPUT after every statement, so "the cursor the session ran last" (V$SESSION.PREV_SQL_ID) is never the user's statement.
     private async ValueTask<QueryPlan> ActualAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken)
     {
         await (await ExecuteAsync("alter session set statistics_level = all", [], cancellationToken)).DisposeAsync();
+        var marker = "/* SQ" + Guid.NewGuid().ToString("N") + " */";
         try
         {
-            await using (var run = await ExecuteAsync(sql, parameters, cancellationToken))
+            await using (var run = await ExecuteAsync($"{marker} {sql}", parameters, cancellationToken))
             {
                 while (await run.ReadBatchAsync(1000, cancellationToken) is not null)
                 {
@@ -77,7 +79,7 @@ internal sealed class OracleDatabaseConnection(BridgeClient client, string serve
                 await using var plan = await ExecuteAsync(
                     "select id, parent_id, operation, options, object_owner, object_name, cardinality, cost, bytes, to_char(substr(access_predicates, 1, 1000)), to_char(substr(filter_predicates, 1, 1000)), " +
                     "last_output_rows, last_elapsed_time, last_starts from v$sql_plan_statistics_all " +
-                    "where (sql_id, child_number) = (select prev_sql_id, prev_child_number from v$session where sid = sys_context('USERENV', 'SID')) order by id", [], cancellationToken);
+                    $"where (sql_id, child_number) = (select sql_id, child_number from v$sql where sql_text like '{marker}%' order by last_active_time desc fetch first 1 row only) order by id", [], cancellationToken);
                 var rows = (await plan.ReadAllAsync(256, cancellationToken)).Select(r => new OraclePlanRow(
                     Convert.ToInt64(r[0], CultureInfo.InvariantCulture), r[1] is null ? null : Convert.ToInt64(r[1], CultureInfo.InvariantCulture),
                     Convert.ToString(r[2], CultureInfo.InvariantCulture) ?? "", r[3] as string, r[4] as string, r[5] as string,

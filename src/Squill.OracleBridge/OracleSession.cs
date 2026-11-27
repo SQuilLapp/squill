@@ -61,12 +61,18 @@ internal sealed class OracleSession : IAsyncDisposable
     {
         var builder = new OracleConnectionStringBuilder
         {
-            DataSource = $"{request.Host}:{request.Port}/{request.Service}",
+            DataSource = request.Descriptor ?? $"{request.Host}:{request.Port}/{request.Service}",
             UserID = request.User,
             Password = request.Password,
             ConnectionTimeout = request.ConnectTimeoutSeconds ?? 15,
         };
         _commandTimeout = request.CommandTimeoutSeconds ?? 0;
+        if (request.WalletPath is { Length: > 0 } wallet)
+        {
+            OracleConfiguration.TnsAdmin = wallet;
+            OracleConfiguration.WalletLocation = wallet;
+        }
+
         _connection = new OracleConnection(builder.ConnectionString);
         await _connection.OpenAsync();
         try

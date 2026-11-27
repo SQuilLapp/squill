@@ -40,6 +40,8 @@ Source: the automated sections of the four verification reports. `full` = covere
 | SSH tunnel | n/a | full (jump host test) | see [P11-35](../tasks/phase-11/P11-35-ssh-tunnel-containers.md) | see [P11-35](../tasks/phase-11/P11-35-ssh-tunnel-containers.md) | not verified |
 | Manual check in the WinUI window | pending | pending | pending | pending | pending |
 
+Oracle ([P21-08](../tasks/phase-21/P21-08-oracle-plan-terminal-tls.md)): estimated plans (`EXPLAIN PLAN` + `PLAN_TABLE`) and actual plans (`V$SQL_PLAN_STATISTICS_ALL`, needs `SELECT_CATALOG_ROLE`) run through the shared plan scenario; the terminal tab starts `sqlplus -L` with the password typed by the user (a wallet profile signs in with `/@` and `TNS_ADMIN`); `Require` / `VerifyFull` connect over TCPS (unit-tested descriptor, not run against a TCPS listener). The matrix row itself is updated by P21-09.
+
 MariaDB 11.4 column ([P21-01](../tasks/phase-21/P21-01-mariadb-container-verification.md), [P21-02](../tasks/phase-21/P21-02-mariadb-plan-and-transactions.md)): the MySQL suites run unchanged on a `mariadb:11.4` container (`eng/run-docker-tests.ps1 -Engine mariadb`). Execution plans work in both modes (`EXPLAIN FORMAT=JSON`, `ANALYZE FORMAT=JSON`, parsed by `MariaDbPlanParser`; MariaDB gives no cost on a single-row lookup and the cost of a table is not cumulative). The transaction probe reads `@@in_transaction` (MySQL stays unknown). Blocked statement text of the activity monitor is still wrong ([P21-97](../tasks/phase-21/P21-97-mariadb-activity-statement-text.md)).
 
 ## Not supported

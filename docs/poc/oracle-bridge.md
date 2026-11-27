@@ -63,9 +63,11 @@ The bridge keeps at most one open reader: `execute` closes the previous one; the
 
 Connect (host, port, service name, user, password, connect and command timeout), run a statement with named parameters (`:name`), stream the result set in batches, read columns (name, Oracle type name, CLR type), DML `RecordsAffected` (autocommit), cancel without killing, manual transactions with savepoints (`ITransactionProbe`), several result sets (implicit results) and `DBMS_OUTPUT` messages, list schemas (`ListDatabasesAsync` = non-Oracle-maintained users), read tables, views, columns with `NUMBER(p,s)` / `VARCHAR2(n)` types, nullability and primary key into the schema model (so the explorer shows them).
 
+TLS ([P21-08](../tasks/phase-21/P21-08-oracle-plan-terminal-tls.md)): `TlsMode.Require` and `VerifyFull` make the provider send a `(PROTOCOL=TCPS)` descriptor in the `open` request (`descriptor`; `SSL_SERVER_DN_MATCH` is `no` / `yes`), and a profile `WalletPath` (a `TNS_ADMIN` folder) is sent as `walletPath` and set as `OracleConfiguration.TnsAdmin` and `WalletLocation`. Not verified against a TCPS listener (the container has none).
+
 ## Not supported (follow-ups)
 
-TLS/TCPS and wallets, SSH tunnel (untested), `REF CURSOR` out parameters (the next result set is read like an implicit result, but nothing declares the parameter: `QueryParameter` has no direction), indexes, foreign keys, column defaults, routines, triggers, view definitions, Oracle dialect for the SQL layer (tokenizer, completion, formatter, DDL generators fall back to the generic ANSI behaviour), terminal (`sqlplus`) launch, CI job, bridge as a pool shared by several connections, Windows-only path of `ResolvePath` untested on Linux and macOS.
+SSH tunnel (untested), `REF CURSOR` out parameters (the next result set is read like an implicit result, but nothing declares the parameter: `QueryParameter` has no direction), indexes, foreign keys, column defaults, routines, triggers, view definitions, Oracle dialect for the SQL layer (tokenizer, completion, formatter, DDL generators fall back to the generic ANSI behaviour), CI job, bridge as a pool shared by several connections, Windows-only path of `ResolvePath` untested on Linux and macOS.
 
 ## Verification
 

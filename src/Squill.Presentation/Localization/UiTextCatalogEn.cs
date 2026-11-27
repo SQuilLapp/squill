@@ -310,6 +310,7 @@ internal static class UiTextCatalogEn
         ("terminal.install.mysql", "Install the MySQL client (mysql)."),
         ("terminal.install.sqlcmd", "Install the sqlcmd utility from Microsoft."),
         ("terminal.install.sqlite3", "Install the SQLite command-line shell (sqlite3)."),
+        ("terminal.install.sqlplus", "Install the Oracle SQL*Plus client (sqlplus), part of the Oracle Instant Client tools."),
         ("terminal.tunnelNotOpen", "Connect '{0}' first: its SSH tunnel must be open to start the terminal."),
 
         // SSH host keys

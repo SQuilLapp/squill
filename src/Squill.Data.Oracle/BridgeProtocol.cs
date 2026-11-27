@@ -15,7 +15,7 @@ internal sealed record WireOut(string Name, string Kind);
 internal sealed record WireColumn(string Name, string DataType, string Kind);
 
 /// <summary>
-/// A request line. <c>open</c> uses the connection fields, <c>execute</c> uses <see cref="Sql"/>, <see cref="Parameters"/> and optionally <see cref="OutParameters"/>, <c>fetch</c> uses
+/// A request line. <c>open</c> uses the connection fields (<see cref="Descriptor"/>, when set, replaces <see cref="Host"/>, <see cref="Port"/> and <see cref="Service"/> as the data source, and <see cref="WalletPath"/> names the wallet folder), <c>execute</c> uses <see cref="Sql"/>, <see cref="Parameters"/> and optionally <see cref="OutParameters"/>, <c>fetch</c> uses
 /// <see cref="MaxRows"/>, <c>savepoint</c> and <c>rollback</c> (to a savepoint) use <see cref="Name"/>; <c>begin</c>, <c>commit</c>, <c>nextResult</c>,
 /// <c>probe</c>, <c>cancel</c>, <c>closeReader</c> and <c>close</c> need nothing more.
 /// </summary>
@@ -33,7 +33,9 @@ internal sealed record BridgeRequest(
     WireParameter[]? Parameters = null,
     int? MaxRows = null,
     string? Name = null,
-    WireOut[]? OutParameters = null);
+    WireOut[]? OutParameters = null,
+    string? Descriptor = null,
+    string? WalletPath = null);
 
 /// <summary>
 /// A response line; <see cref="Id"/> echoes the request and <see cref="Error"/> is set when <see cref="Ok"/> is false. <see cref="Messages"/> carries the

@@ -22,6 +22,7 @@
     <Compile Include="../Shared/ColumnTypeEditScenario.cs" Link="ColumnTypeEditScenario.cs" />
     <Compile Include="../Shared/DropTablesScenario.cs" Link="DropTablesScenario.cs" />
     <Compile Include="../Shared/MultiResultScenario.cs" Link="MultiResultScenario.cs" />
+    <Compile Include="../Shared/PlanScenario.cs" Link="PlanScenario.cs" />
     <Compile Include="../Shared/SqlCorpusScenario.cs" Link="SqlCorpusScenario.cs" />
     <Compile Include="../Shared/SqlCorpus.cs" Link="SqlCorpus.cs" />
     <Content Include="../Shared/SqlCorpus/*.sql" Link="SqlCorpus/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

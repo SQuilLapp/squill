@@ -31,6 +31,63 @@ public sealed class TerminalLauncherTests
     }
 
     [Fact]
+    public void ForProfile_Oracle_PassesNoPasswordAnywhere()
+    {
+        var launch = TerminalLauncher.ForProfile(Profile(DatabaseDialect.Oracle), Secret, Everywhere, out var reason);
+
+        Assert.NotNull(launch);
+        Assert.Null(reason);
+        Assert.Equal("/bin/sqlplus", launch.FileName);
+        Assert.Equal("-L alice@//db.local:1234/shop", string.Join(' ', launch.Arguments));
+        Assert.Empty(launch.Environment);
+    }
+
+    [Fact]
+    public void ForProfile_OracleDefaultsPortAndService()
+    {
+        var profile = Profile(DatabaseDialect.Oracle) with { Port = null, Database = null };
+
+        var launch = TerminalLauncher.ForProfile(profile, null, Everywhere, out _);
+
+        Assert.NotNull(launch);
+        Assert.Equal("-L alice@//db.local:1521/FREEPDB1", string.Join(' ', launch.Arguments));
+    }
+
+    [Fact]
+    public void ForProfile_OracleTls_UsesATcpsEasyConnectString()
+    {
+        var launch = TerminalLauncher.ForProfile(Profile(DatabaseDialect.Oracle) with { Tls = TlsMode.VerifyFull }, null, Everywhere, out _);
+
+        Assert.NotNull(launch);
+        Assert.Equal("-L alice@tcps://db.local:1234/shop", string.Join(' ', launch.Arguments));
+    }
+
+    [Fact]
+    public void ForProfile_OracleWallet_SignsInThroughTheWalletAndNamesItsFolder()
+    {
+        var profile = Profile(DatabaseDialect.Oracle) with { WalletPath = "/opt/wallet" };
+
+        var launch = TerminalLauncher.ForProfile(profile, Secret, Everywhere, out _);
+
+        Assert.NotNull(launch);
+        Assert.Equal("-L /@//db.local:1234/shop", string.Join(' ', launch.Arguments));
+        Assert.Equal("/opt/wallet", Assert.Single(launch.Environment).Value);
+        Assert.Equal("TNS_ADMIN", Assert.Single(launch.Environment).Key);
+        Assert.DoesNotContain(launch.Arguments, a => a.Contains(Secret, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ForProfile_OracleWithoutSqlplus_ExplainsHowToInstallIt()
+    {
+        using var language = UiText.Override(UiLanguage.English);
+
+        var launch = TerminalLauncher.ForProfile(Profile(DatabaseDialect.Oracle), null, _ => null, out var reason);
+
+        Assert.Null(launch);
+        Assert.Contains("sqlplus", reason, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ForProfile_Sqlite_OpensFileWithoutEnvironment()
     {
         var launch = TerminalLauncher.ForProfile(Profile(DatabaseDialect.Sqlite, "/data/a.db"), Secret, Everywhere, out _);

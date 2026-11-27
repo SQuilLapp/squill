@@ -17,7 +17,8 @@ public sealed record ConnectionProfile(
     bool TrustServerCertificate = false,
     int ConnectTimeoutSeconds = 15,
     int CommandTimeoutSeconds = 0,
-    bool MariaDb = false)
+    bool MariaDb = false,
+    string? WalletPath = null)
 {
     /// <summary>Largest accepted timeout, in seconds (one day).</summary>
     public const int MaxTimeoutSeconds = 86400;

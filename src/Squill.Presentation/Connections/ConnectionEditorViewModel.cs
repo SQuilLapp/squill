@@ -39,6 +39,7 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         Name = existing.Name;
         Dialect = existing.Dialect;
         MariaDb = existing.MariaDb;
+        WalletPath = existing.WalletPath ?? "";
         Host = existing.Host ?? "";
         Port = existing.Port;
         Database = existing.Database ?? "";
@@ -76,6 +77,10 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     /// <summary>Gets or sets whether a <see cref="DatabaseDialect.MySql"/> profile targets MariaDB: same driver and SQL, a separate logo and a hook for later differences. Cleared when the engine changes.</summary>
     [ObservableProperty]
     public partial bool MariaDb { get; set; }
+
+    /// <summary>Gets or sets the Oracle wallet folder (the <c>TNS_ADMIN</c> directory holding <c>cwallet.sso</c>); blank for none. Only kept for Oracle profiles.</summary>
+    [ObservableProperty]
+    public partial string WalletPath { get; set; } = "";
 
     /// <summary>Gets or sets the server host name (unused for SQLite).</summary>
     [ObservableProperty]
@@ -304,7 +309,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             Dialect == DatabaseDialect.SqlServer && TrustServerCertificate,
             sqlite || !TryParseTimeout(ConnectTimeoutText, out var connect) ? _existing?.ConnectTimeoutSeconds ?? 15 : connect,
             TryParseTimeout(CommandTimeoutText, out var command) ? command : 0,
-            Dialect == DatabaseDialect.MySql && MariaDb);
+            Dialect == DatabaseDialect.MySql && MariaDb,
+            Dialect == DatabaseDialect.Oracle ? NullIfBlank(WalletPath) : null);
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]

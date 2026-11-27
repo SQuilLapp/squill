@@ -4,7 +4,7 @@ namespace Squill.Data.Oracle;
 
 /// <summary>
 /// Opens Oracle connections through a separate bridge process that hosts the (not Native AOT compatible) Oracle driver; see
-/// <c>docs/poc/oracle-bridge.md</c>. Proof of concept: no TLS, no multiple result sets, cancelling a statement kills the connection.
+/// <c>docs/poc/oracle-bridge.md</c>. Proof of concept: TLS only through a TCPS descriptor, no multiple result sets, cancelling a statement kills the connection.
 /// </summary>
 public sealed class OracleDatabaseProvider : IDatabaseProvider
 {
@@ -30,6 +30,7 @@ public sealed class OracleDatabaseProvider : IDatabaseProvider
         if (string.IsNullOrEmpty(profile.Host))
             throw new ArgumentException("An Oracle profile requires a host.", nameof(profile));
 
+        var service = string.IsNullOrEmpty(profile.Database) ? DefaultService : profile.Database;
         var client = _startBridge();
         try
         {
@@ -37,7 +38,9 @@ public sealed class OracleDatabaseProvider : IDatabaseProvider
                 0, "open",
                 Host: profile.Host,
                 Port: profile.Port ?? 1521,
-                Service: string.IsNullOrEmpty(profile.Database) ? DefaultService : profile.Database,
+                Service: service,
+                Descriptor: OracleDescriptor.Build(profile.Host, profile.Port ?? 1521, service, profile.Tls),
+                WalletPath: profile.WalletPath,
                 User: profile.UserName,
                 Password: password,
                 ConnectTimeoutSeconds: profile.ConnectTimeoutSeconds,

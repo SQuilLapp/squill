@@ -28,6 +28,32 @@ public sealed class OracleProviderTests
     }
 
     [Fact]
+    public async Task OpenAsync_NoTls_SendsNoDescriptor()
+    {
+        await using var bridge = new FakeBridge(FakeBridge.Scripted([]));
+        await using var connection = await OpenAsync(bridge, Profile() with { Tls = TlsMode.Disable });
+
+        var open = Assert.Single(bridge.Requests);
+        Assert.Null(open.Descriptor);
+        Assert.Null(open.WalletPath);
+    }
+
+    [Theory]
+    [InlineData(TlsMode.Require, "no")]
+    [InlineData(TlsMode.VerifyFull, "yes")]
+    public async Task OpenAsync_Tls_SendsATcpsDescriptorAndTheWallet(TlsMode tls, string dnMatch)
+    {
+        await using var bridge = new FakeBridge(FakeBridge.Scripted([]));
+        await using var connection = await OpenAsync(bridge, Profile() with { Tls = tls, Port = 2484, WalletPath = "/opt/wallet" });
+
+        var open = Assert.Single(bridge.Requests);
+        Assert.Equal(
+            $"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=db.example)(PORT=2484))(CONNECT_DATA=(SERVICE_NAME={OracleDatabaseProvider.DefaultService}))(SECURITY=(SSL_SERVER_DN_MATCH={dnMatch})))",
+            open.Descriptor);
+        Assert.Equal("/opt/wallet", open.WalletPath);
+    }
+
+    [Fact]
     public async Task OpenAsync_NoHost_Throws()
     {
         await using var bridge = new FakeBridge(FakeBridge.Scripted([]));

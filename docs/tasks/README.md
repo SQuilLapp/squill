@@ -444,7 +444,7 @@ Depends on: <card ids, ranges allowed>
 | [P21-05](phase-21/P21-05-sql-oracle-dialect.md) | Sql: Oracle dialect (tokenizer, splitter, keywords, quoting, types, functions) | none | done |
 | [P21-06](phase-21/P21-06-sql-oracle-ddl-generator.md) | Sql: Oracle DDL generator (CREATE, ALTER, DROP) for the table designer | P21-04, P21-05 | done |
 | [P21-07](phase-21/P21-07-oracle-grid-editing.md) | Oracle: grid editing, generated keys and column types | P21-03, P21-05 | done |
-| [P21-08](phase-21/P21-08-oracle-plan-terminal-tls.md) | Oracle: execution plan, sqlplus terminal and TCPS | P21-03 | todo |
+| [P21-08](phase-21/P21-08-oracle-plan-terminal-tls.md) | Oracle: execution plan, sqlplus terminal and TCPS | P21-03 | done |
 | [P21-09](phase-21/P21-09-oracle-verification-and-docs.md) | Oracle: end-to-end verification in both heads and the support matrix | P21-03 ... P21-08 | todo |
 | [P21-10](phase-21/P21-10-informix-driver-poc.md) | Informix: driver proof of concept under Native AOT (decision card) | none | todo |
 | [P21-11](phase-21/P21-11-informix-provider.md) | Data.Informix: provider (connect, execute, stream, schema reading) | P21-10 | todo |
@@ -535,6 +535,7 @@ Depends on: <card ids, ranges allowed>
 | [P21-96](phase-21/P21-96-avalonia-ai-assistant.md) | AI assistant (5/5): Avalonia panel and settings, README and privacy notes | P21-94, P21-95 | todo |
 | [P21-97](phase-21/P21-97-mariadb-activity-statement-text.md) | MariaDB: blocked statement text in the activity reader | P21-01 | todo |
 | [P21-98](phase-21/P21-98-mariadb-corpus-and-tls-tests.md) | MariaDB: SQL corpus JSON operators and the TLS test premise | P21-01 | todo |
+| [P21-99](phase-21/P21-99-oracle-wallet-editor-field.md) | Oracle: wallet folder in the connection editors | P21-08 | todo |
 
 ### Phase 9 - Visual conformance
 

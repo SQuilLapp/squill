@@ -17,9 +17,10 @@ namespace Squill.Data.RoundTrip;
 /// <param name="RolledBackOnActual">Expected <see cref="QueryPlan.RolledBack"/> of an actual plan.</param>
 /// <param name="ActualFoldsConstantLookup">An actual plan of a primary-key lookup names no table (MySQL prints <c>Rows fetched before execution</c>).</param>
 /// <param name="RootCostOptional">An estimated plan may lack a root cost (MariaDB gives none for a single-row lookup).</param>
+/// <param name="FetchFirst">The engine limits rows with <c>fetch first 5 rows only</c> (Oracle).</param>
 /// <param name="HasJoinNode">The plan of a two-table join has a <see cref="PlanNodeKind.Join"/> node (SQLite lists the nested loops as plain steps: exception as data).</param>
 internal sealed record PlanSpec(
-    DatabaseDialect Dialect, string Prefix, bool TopSyntax, string SlowSql, bool HasCost, bool HasActual, bool RolledBackOnActual, bool HasJoinNode = true, bool ActualFoldsConstantLookup = false, bool RootCostOptional = false);
+    DatabaseDialect Dialect, string Prefix, bool TopSyntax, string SlowSql, bool HasCost, bool HasActual, bool RolledBackOnActual, bool HasJoinNode = true, bool ActualFoldsConstantLookup = false, bool RootCostOptional = false, bool FetchFirst = false);
 
 /// <summary>Checks that a provider gives a usable <see cref="QueryPlan"/> for the same statements on the sample schema; shared by every driver test project.</summary>
 internal static class PlanScenario
@@ -39,9 +40,8 @@ internal static class PlanScenario
         var reader = Assert.IsAssignableFrom<IPlanReader>(connection);
         Assert.Equal(spec.HasActual, reader.SupportsActualPlan);
         var p = spec.Prefix;
-        var join = spec.TopSyntax
-            ? $"select top 5 customers.name, sum(orders.total) as t from {p}orders join {p}customers on customers.id = orders.customer_id where orders.total > 3 group by customers.name order by t desc"
-            : $"select customers.name, sum(orders.total) as t from {p}orders join {p}customers on customers.id = orders.customer_id where orders.total > 3 group by customers.name order by t desc limit 5";
+        var joinBody = $"customers.name, sum(orders.total) as t from {p}orders join {p}customers on customers.id = orders.customer_id where orders.total > 3 group by customers.name order by t desc";
+        var join = spec.TopSyntax ? $"select top 5 {joinBody}" : spec.FetchFirst ? $"select {joinBody} fetch first 5 rows only" : $"select {joinBody} limit 5";
         var lookup = $"select name from {p}customers where id = 1";
         var subquery = $"select name from {p}customers where id in (select customer_id from {p}orders where total > 3)";
         (string Sql, string[] Tables)[] statements = [(join, ["orders", "customers"]), (lookup, ["customers"]), (subquery, ["customers", "orders"])];

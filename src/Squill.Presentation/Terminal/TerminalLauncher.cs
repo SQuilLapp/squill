@@ -27,6 +27,7 @@ public static class TerminalLauncher
             DatabaseDialect.PostgreSql => ("psql", Args("-h", profile.Host, "-p", Port(profile), "-U", profile.UserName, "-d", profile.Database), "PGPASSWORD"),
             DatabaseDialect.MySql => ("mysql", Args("-h", profile.Host, "-P", Port(profile), "-u", profile.UserName, "-D", profile.Database, MySqlSsl(profile)), "MYSQL_PWD"),
             DatabaseDialect.SqlServer => ("sqlcmd", SqlCmdArgs(profile), "SQLCMDPASSWORD"),
+            DatabaseDialect.Oracle => ("sqlplus", Args("-L", OracleTarget(profile)), null),
             DatabaseDialect.Sqlite => ("sqlite3", Args(profile.FilePath), null),
             _ => throw new ArgumentOutOfRangeException(nameof(profile)),
         };
@@ -41,9 +42,11 @@ public static class TerminalLauncher
             return null;
         }
         reason = null;
-        var environment = passwordVariable is not null && !string.IsNullOrEmpty(password)
+        IReadOnlyDictionary<string, string> environment = passwordVariable is not null && !string.IsNullOrEmpty(password)
             ? new Dictionary<string, string> { [passwordVariable] = password }
             : NoEnvironment;
+        if (profile.Dialect == DatabaseDialect.Oracle && profile.WalletPath is { Length: > 0 } wallet)
+            environment = new Dictionary<string, string> { ["TNS_ADMIN"] = wallet };
         return new TerminalLaunch(path, args, null, environment);
     }
 
@@ -114,11 +117,23 @@ public static class TerminalLauncher
         "psql" => UiText.Get("terminal.install.psql"),
         "mysql" => UiText.Get("terminal.install.mysql"),
         "sqlcmd" => UiText.Get("terminal.install.sqlcmd"),
+        "sqlplus" => UiText.Get("terminal.install.sqlplus"),
         _ => UiText.Get("terminal.install.sqlite3"),
     };
 
     private static string Port(ConnectionProfile profile) =>
         profile.Port?.ToString(CultureInfo.InvariantCulture) ?? "";
+
+    // sqlplus has no password variable and a password on its command line or stdin would sit in the process listing, so the user types it
+    // in the terminal; a wallet profile signs in with "/@" and needs no password at all.
+    private static string OracleTarget(ConnectionProfile profile)
+    {
+        var port = profile.Port ?? 1521;
+        var service = string.IsNullOrEmpty(profile.Database) ? "FREEPDB1" : profile.Database;
+        var tcps = profile.Tls is TlsMode.Require or TlsMode.VerifyFull;
+        var user = profile.WalletPath is { Length: > 0 } ? "/" : profile.UserName;
+        return $"{user}@{(tcps ? "tcps:" : "")}//{profile.Host}:{port.ToString(CultureInfo.InvariantCulture)}/{service}";
+    }
 
     private static List<string> SqlCmdArgs(ConnectionProfile profile)
     {
