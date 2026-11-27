@@ -1,0 +1,27 @@
+<Project>
+  <!--
+    Imported by both heads: a Windows publish also copies IBM's clidriver (the redistributable part of the Net.IBM.Data.Db2 package, about 125 MB)
+    into clidriver/ next to the executable, where Squill.Data.Informix looks for it (SQUILL_CLIDRIVER overrides the folder). The package is only
+    downloaded, not referenced: its managed assembly is not Native AOT compatible and is not used. The IBM licence texts travel with the files
+    (clidriver/license). Nothing is installed globally: no registry entry, no PATH change (docs/poc/informix-driver.md).
+  -->
+  <PropertyGroup>
+    <IbmDb2PackageVersion>10.0.0.400</IbmDb2PackageVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageDownload Include="Net.IBM.Data.Db2" Version="[$(IbmDb2PackageVersion)]" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+  </ItemGroup>
+  <Target Name="PublishClidriver" AfterTargets="Publish" Condition="$(RuntimeIdentifier.StartsWith('win-x64'))">
+    <PropertyGroup>
+      <IbmDb2PackageDir>$(NuGetPackageRoot)net.ibm.data.db2/$(IbmDb2PackageVersion)/</IbmDb2PackageDir>
+      <ClidriverTarget>$([MSBuild]::EnsureTrailingSlash('$(PublishDir)'))clidriver/</ClidriverTarget>
+    </PropertyGroup>
+    <ItemGroup>
+      <ClidriverFile Include="$(IbmDb2PackageDir)buildTransitive/clidriver/**" />
+      <ClidriverLicense Include="$(IbmDb2PackageDir)Lic_en.txt;$(IbmDb2PackageDir)REDIST.txt" />
+    </ItemGroup>
+    <Error Condition="'@(ClidriverFile)' == ''" Text="The IBM clidriver was not found in '$(IbmDb2PackageDir)': restore the solution first." />
+    <Copy SourceFiles="@(ClidriverFile)" DestinationFiles="@(ClidriverFile->'$(ClidriverTarget)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(ClidriverLicense)" DestinationFolder="$(ClidriverTarget)license/" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

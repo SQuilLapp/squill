@@ -426,7 +426,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     /// <summary>Gets why the schema comparison cannot be opened (the tooltip of the disabled menu item and palette action), empty when it can.</summary>
     public string SchemaCompareDisabledReason =>
         CanOpenSchemaCompare() ? ""
-        : UiText.Get(AllSessions().Any() && AllSessions().All(s => s.Profile.Dialect == DatabaseDialect.Oracle) ? "compare.disabled.oracle" : "compare.disabled.sessions");
+        : UiText.Get(!AllSessions().Any() ? "compare.disabled.sessions" : AllSessions().All(s => s.Profile.Dialect == DatabaseDialect.Oracle) ? "compare.disabled.oracle" : AllSessions().All(s => s.Profile.Dialect == DatabaseDialect.Informix) ? "compare.disabled.informix" : "compare.disabled.sessions");
 
     private void RaiseSchemaCompareAvailability()
     {
@@ -713,6 +713,12 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
 
     private void AddDesigner(ConnectionSession session, TableInfo? table)
     {
+        if (!DdlGenerators.CanDesign(session.Profile.Dialect))
+        {
+            _ = _dialogs.ShowErrorAsync(UiText.Get("designer.title.new"), UiText.Get("designer.notAvailableInformix")).AsTask();
+            return;
+        }
+
         var designer = new TableDesignerViewModel(session, table, _dialogs, _dispatcher);
         designer.ScriptRequested += script => AddTab(session, script);
         Designers.Add(designer);

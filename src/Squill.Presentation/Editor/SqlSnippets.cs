@@ -20,6 +20,7 @@ public static class SqlSnippets
         {
             DatabaseDialect.SqlServer => $"SELECT TOP {n} * FROM {name}",
             DatabaseDialect.Oracle => $"SELECT * FROM {name} WHERE ROWNUM <= {n}",
+            DatabaseDialect.Informix => $"SELECT FIRST {n} * FROM {name}",
             _ => $"SELECT * FROM {name} LIMIT {n}",
         };
     }

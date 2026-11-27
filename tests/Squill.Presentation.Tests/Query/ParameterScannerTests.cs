@@ -18,6 +18,13 @@ public sealed class ParameterScannerTests
         Assert.Equal(["a", "b", "c"], names);
     }
 
+    [Fact]
+    public void Scan_Informix_ReadsColonNamesAndLeavesBraceCommentsAlone()
+    {
+        Assert.Equal(["a", "b"], ParameterScanner.Scan("SELECT :a, :b, :a { :c }", DatabaseDialect.Informix));
+        Assert.Equal("SELECT @a { :c }", ParameterScanner.Rewrite("SELECT :a { :c }", DatabaseDialect.Informix));
+    }
+
     [Theory]
     [InlineData(DatabaseDialect.Sqlite, "SELECT ':a' -- :b\n, \":c\" /* :d */")]
     [InlineData(DatabaseDialect.SqlServer, "SELECT '@a' -- @b\n/* @d */")]

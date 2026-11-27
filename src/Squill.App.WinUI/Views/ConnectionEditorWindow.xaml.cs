@@ -159,7 +159,8 @@ public sealed partial class ConnectionEditorWindow : Window
             tile.Height = 52;
             tile.MinHeight = 52;
             tile.Padding = new Thickness(6, 0, 6, 0);
-            Grid.SetColumn(tile, i);
+            Grid.SetColumn(tile, i % 4);
+            Grid.SetRow(tile, i / 4);
             EngineHost.Children.Add(tile);
             _engineTiles[engine] = tile;
         }

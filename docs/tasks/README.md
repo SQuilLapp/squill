@@ -448,7 +448,7 @@ Depends on: <card ids, ranges allowed>
 | [P21-09](phase-21/P21-09-oracle-verification-and-docs.md) | Oracle: end-to-end verification in both heads and the support matrix | P21-03 ... P21-08 | done |
 | [P21-10](phase-21/P21-10-informix-driver-poc.md) | Informix: driver proof of concept under Native AOT (decision card) | none | done |
 | [P21-11](phase-21/P21-11-informix-provider.md) | Data.Informix: own ODBC layer and provider (connect, execute, stream, schema reading) | P21-10 | split into P21-103 ... P21-106 |
-| [P21-12](phase-21/P21-12-sql-informix-dialect.md) | Sql: Informix dialect (tokenizer, splitter, keywords, quoting, types, functions) | P21-106 | todo |
+| [P21-12](phase-21/P21-12-sql-informix-dialect.md) | Sql: Informix dialect (tokenizer, splitter, keywords, quoting, types, functions; the tokenizer exists since P21-106) | P21-106 | todo |
 | [P21-13](phase-21/P21-13-other-engines-feasibility.md) | Other engines: DB2, ClickHouse, Snowflake and BigQuery feasibility report | P21-10 | done |
 | [P21-14](phase-21/P21-14-nosql-feasibility.md) | NoSQL: MongoDB and Redis feasibility report | none | done |
 | [P21-15](phase-21/P21-15-adr-drivers-without-rebuild.md) | ADR: adding drivers without rebuilding, under Native AOT (feasibility) | P21-10 | todo |
@@ -542,7 +542,9 @@ Depends on: <card ids, ranges allowed>
 | [P21-103](phase-21/P21-103-informix-odbc-layer.md) | Data.Informix: own ODBC layer (handles, connect, execute, text fetch, diagnostics) | P21-10 | done |
 | [P21-104](phase-21/P21-104-informix-odbc-values-cancel-transactions.md) | Data.Informix: typed values, parameters, cancel, transactions and the database connection | P21-103 | done |
 | [P21-105](phase-21/P21-105-informix-schema-reading.md) | Data.Informix: schema reading (tables, columns, keys, indexes, routines, triggers, views) | P21-104 | done |
-| [P21-106](phase-21/P21-106-informix-provider-registration.md) | Informix: DatabaseDialect, provider registration, connection editor tile, clidriver packaging, AOT check and docs | P21-105 | todo |
+| [P21-106](phase-21/P21-106-informix-provider-registration.md) | Informix: DatabaseDialect, provider registration, connection editor tile, clidriver packaging, AOT check and docs | P21-105 | done |
+| [P21-110](phase-21/P21-110-installer-ibm-eula-screen.md) | Installer: a real EULA screen for the IBM clidriver licence | P21-106 | todo |
+| [P21-111](phase-21/P21-111-informix-clidriver-linux-macos.md) | Informix: clidriver for Linux and macOS | P21-106 | todo |
 
 ### Phase 9 - Visual conformance
 

@@ -48,6 +48,7 @@ public static class CompareFormat
         DatabaseDialect.SqlServer => "MS",
         DatabaseDialect.Sqlite => "SL",
         DatabaseDialect.Oracle => "OR",
+        DatabaseDialect.Informix => "IF",
         _ => "DB",
     };
 

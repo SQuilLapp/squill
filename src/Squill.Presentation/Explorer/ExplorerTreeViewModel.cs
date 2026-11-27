@@ -271,7 +271,7 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
     [RelayCommand]
     private void ScriptCreateTable(ExplorerNode? node)
     {
-        if (node is { Kind: ExplorerNodeKind.Table, Table: { } table, Session: { } session })
+        if (node is { Kind: ExplorerNodeKind.Table, Table: { } table, Session: { } session } && Squill.Sql.Ddl.DdlGenerators.CanDesign(session.Profile.Dialect))
             ScriptRequested?.Invoke(this, new ScriptRequest(session, DefinitionScript.CreateTable(session.Profile.Dialect, table)));
     }
 

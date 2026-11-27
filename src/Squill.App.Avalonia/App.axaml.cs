@@ -6,6 +6,7 @@ using Squill.App.Avalonia.Bench;
 using Squill.App.Avalonia.Services;
 using Squill.Data;
 using Squill.Data.MySql;
+using Squill.Data.Informix;
 using Squill.Data.Oracle;
 using Squill.Data.Postgres;
 using Squill.Data.Sqlite;
@@ -42,6 +43,7 @@ public sealed partial class App : Application
             providers.Register(new MySqlDatabaseProvider());
             providers.Register(new SqlServerDatabaseProvider());
             providers.Register(new OracleDatabaseProvider());
+            providers.Register(new InformixDatabaseProvider());
             var platform = new AvaloniaPlatformServices(providers, () => new Editors.AvaloniaSqlEditor());
             // SQUILL_DATA_DIR redirects profiles, settings and history (used to run against a throwaway data directory).
             var dataDir = Environment.GetEnvironmentVariable("SQUILL_DATA_DIR");

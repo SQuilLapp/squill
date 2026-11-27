@@ -106,6 +106,9 @@
               <Button Name="TileOracle" Classes="tile" Tag="{x:Static core:DatabaseDialect.Oracle}" Click="OnEngineTile">
                 <StackPanel Spacing="2"><controls:EngineIcon Dialect="Oracle" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="Oracle" HorizontalAlignment="Center" /></StackPanel>
               </Button>
+              <Button Name="TileInformix" Classes="tile" Tag="{x:Static core:DatabaseDialect.Informix}" Click="OnEngineTile">
+                <StackPanel Spacing="2"><controls:EngineIcon Dialect="Informix" Width="20" Height="20" HorizontalAlignment="Center" /><TextBlock Text="Informix" HorizontalAlignment="Center" /></StackPanel>
+              </Button>
             </UniformGrid>
           </StackPanel>
 

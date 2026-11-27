@@ -16,6 +16,22 @@
       </Setter.Value>
     </Setter>
   </Style>
+  <Style x:Key="EngineIconInformixStyle" TargetType="ContentControl">
+    <Setter Property="Width" Value="18" />
+    <Setter Property="Height" Value="18" />
+    <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ContentControl">
+          <Viewbox>
+            <Canvas Width="16" Height="16">
+              <Path Fill="#0F62FE" Data="F0 M8 1C4.7 1 2 2.1 2 3.5v9C2 13.9 4.7 15 8 15s6-1.1 6-2.5v-9C14 2.1 11.3 1 8 1zm0 1.5c2.5 0 4.5.7 4.5 1s-2 1-4.5 1-4.5-.7-4.5-1 2-1 4.5-1zM3.5 6.2C4.8 6.9 6.3 7.2 8 7.2s3.2-.3 4.5-1v2.3c0 .3-2 1-4.5 1s-4.5-.7-4.5-1zm0 4.2c1.3.7 2.8 1 4.5 1s3.2-.3 4.5-1v2.1c0 .3-2 1-4.5 1s-4.5-.7-4.5-1z" />
+            </Canvas>
+          </Viewbox>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
   <Style x:Key="EngineIconSqliteStyle" TargetType="ContentControl">
     <Setter Property="Width" Value="18" />
     <Setter Property="Height" Value="18" />

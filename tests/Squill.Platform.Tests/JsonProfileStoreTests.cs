@@ -37,6 +37,15 @@ public sealed class JsonProfileStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveAsync_InformixProfile_RoundTrips()
+    {
+        var profile = new ConnectionProfile(Guid.NewGuid(), "ifx", DatabaseDialect.Informix, "localhost", 9089, "sysmaster", "informix", null, null);
+        await NewStore().SaveAsync(profile, "pw", null, _ct);
+
+        Assert.Equal([profile], await NewStore().ListAsync(_ct));
+    }
+
+    [Fact]
     public async Task ListAsync_FileFromPreviousVersion_LoadsWithDefaults()
     {
         Directory.CreateDirectory(_dir);

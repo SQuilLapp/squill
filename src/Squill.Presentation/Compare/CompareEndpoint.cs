@@ -22,11 +22,11 @@ public sealed record CompareEndpoint(ConnectionSession Session, string? Database
 
     /// <summary>Lists what can be compared among the open sessions.</summary>
     /// <param name="sessions">Every open session, including those opened on other databases of a server.</param>
-    /// <returns>The sessions themselves, then the other databases of the servers that list several; Oracle is left out.</returns>
+    /// <returns>The sessions themselves, then the other databases of the servers that list several; Oracle and Informix are left out.</returns>
     public static IReadOnlyList<CompareEndpoint> List(IEnumerable<ConnectionSession> sessions)
     {
         ArgumentNullException.ThrowIfNull(sessions);
-        var all = sessions.Where(s => s.Profile.Dialect != DatabaseDialect.Oracle).ToList();
+        var all = sessions.Where(s => s.Profile.Dialect is not (DatabaseDialect.Oracle or DatabaseDialect.Informix)).ToList();
         var result = all.Select(s => new CompareEndpoint(s, null)).ToList();
         foreach (var root in all.Where(s => s.Parent is null && s.Databases.Count > 1))
         {

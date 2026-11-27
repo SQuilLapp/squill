@@ -133,7 +133,7 @@ public sealed partial class ConnectionEditorWindow : Window
         SetClasses(HeaderEnv, envClass, "env-prod", "env-staging", "env-dev", "env-local");
         ProductionHint.IsVisible = editor.Environment == ConnectionEnvironment.Production;
 
-        foreach (var tile in new[] { TilePostgres, TileMySql, TileMariaDb, TileSqlServer, TileSqlite, TileOracle })
+        foreach (var tile in new[] { TilePostgres, TileMySql, TileMariaDb, TileSqlServer, TileSqlite, TileOracle, TileInformix })
             tile.Classes.Set("selected", tile.Tag is DatabaseDialect d && d == editor.Dialect && (d != DatabaseDialect.MySql || ReferenceEquals(tile, TileMariaDb) == editor.MariaDb));
         foreach (var tile in new[] { EnvProduction, EnvStaging, EnvDevelopment, EnvLocal })
             tile.Classes.Set("selected", tile.Tag is ConnectionEnvironment env && env == editor.Environment);

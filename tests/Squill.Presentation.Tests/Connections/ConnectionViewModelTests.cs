@@ -31,6 +31,8 @@ public sealed class ConnectionViewModelTests
         Assert.Equal(3306, editor.Port);
         editor.Dialect = DatabaseDialect.SqlServer;
         Assert.Equal(1433, editor.Port);
+        editor.Dialect = DatabaseDialect.Informix;
+        Assert.Equal(9089, editor.Port);
         editor.Dialect = DatabaseDialect.Sqlite;
         Assert.Null(editor.Port);
     }

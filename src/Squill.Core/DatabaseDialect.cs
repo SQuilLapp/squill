@@ -13,4 +13,6 @@ public enum DatabaseDialect
     Sqlite,
     /// <summary>Oracle Database, reached through the out-of-process bridge (proof of concept).</summary>
     Oracle,
+    /// <summary>IBM Informix, reached through IBM's <c>clidriver</c> over ODBC and the DRDA listener.</summary>
+    Informix,
 }

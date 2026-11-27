@@ -31,6 +31,13 @@ public sealed class TerminalLauncherTests
     }
 
     [Fact]
+    public void ForProfile_Informix_HasNoTerminalYet()
+    {
+        Assert.Null(TerminalLauncher.ForProfile(Profile(DatabaseDialect.Informix), Secret, Everywhere, out var reason));
+        Assert.False(string.IsNullOrEmpty(reason));
+    }
+
+    [Fact]
     public void ForProfile_Oracle_PassesNoPasswordAnywhere()
     {
         var launch = TerminalLauncher.ForProfile(Profile(DatabaseDialect.Oracle), Secret, Everywhere, out var reason);

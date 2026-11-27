@@ -22,6 +22,12 @@ public static class TerminalLauncher
         ArgumentNullException.ThrowIfNull(findOnPath);
         if (tunnelPort is { } local)
             profile = profile with { Host = "127.0.0.1", Port = local };
+        if (profile.Dialect == DatabaseDialect.Informix)
+        {
+            reason = UiText.Get("terminal.notAvailableInformix");
+            return null;
+        }
+
         var (exe, args, passwordVariable) = profile.Dialect switch
         {
             DatabaseDialect.PostgreSql => ("psql", Args("-h", profile.Host, "-p", Port(profile), "-U", profile.UserName, "-d", profile.Database), "PGPASSWORD"),

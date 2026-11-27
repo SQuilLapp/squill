@@ -17,6 +17,7 @@
     <PackageReference Include="LoomEditor.Avalonia" />
     <ProjectReference Include="..\Squill.Presentation\Squill.Presentation.csproj" />
     <ProjectReference Include="..\Squill.Data.MySql\Squill.Data.MySql.csproj" />
+    <ProjectReference Include="..\Squill.Data.Informix\Squill.Data.Informix.csproj" />
     <ProjectReference Include="..\Squill.Data.Oracle\Squill.Data.Oracle.csproj" />
     <ProjectReference Include="..\Squill.Data.Postgres\Squill.Data.Postgres.csproj" />
     <ProjectReference Include="..\Squill.Data.SqlServer\Squill.Data.SqlServer.csproj" />
@@ -40,4 +41,5 @@
     <DefineConstants>$(DefineConstants);SQUILL_LOOMEDITOR</DefineConstants>
   </PropertyGroup>
   <Import Project="..\..\eng\OracleBridge.targets" />
+  <Import Project="..\..\eng\Clidriver.targets" />
 </Project>

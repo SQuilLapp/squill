@@ -11,6 +11,7 @@ public static class SqlTokenizers
     private static readonly MySqlTokenizer MySql = new();
     private static readonly TSqlTokenizer TSql = new();
     private static readonly OracleTokenizer Oracle = new();
+    private static readonly InformixTokenizer Informix = new();
 
     /// <summary>Gets the tokenizer for a dialect.</summary>
     /// <param name="dialect">The database engine.</param>
@@ -22,6 +23,7 @@ public static class SqlTokenizers
         DatabaseDialect.MySql => MySql,
         DatabaseDialect.SqlServer => TSql,
         DatabaseDialect.Oracle => Oracle,
+        DatabaseDialect.Informix => Informix,
         _ => Ansi,
     };
 }

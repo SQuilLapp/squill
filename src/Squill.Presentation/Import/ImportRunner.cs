@@ -29,7 +29,7 @@ public sealed class ImportRunner(IDialogService dialogs, TimeProvider? time = nu
         {
             DatabaseDialect.SqlServer => (2100, 1000), // 2,100 parameters and 1,000 VALUES rows
             DatabaseDialect.Sqlite => (32766, int.MaxValue),
-            DatabaseDialect.Oracle => (65535, 1), // no multi-row VALUES: one statement per row
+            DatabaseDialect.Oracle or DatabaseDialect.Informix => (65535, 1), // no multi-row VALUES: one statement per row
             _ => (65535, int.MaxValue),
         };
         return Math.Max(1, Math.Min(Math.Min(requested, rows), parameters / Math.Max(1, columns)));

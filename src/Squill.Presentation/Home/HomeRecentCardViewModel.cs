@@ -21,6 +21,7 @@ public sealed class HomeRecentCardViewModel : ViewModelBase
             DatabaseDialect.SqlServer => "MS",
             DatabaseDialect.Sqlite => "SL",
             DatabaseDialect.Oracle => "OR",
+            DatabaseDialect.Informix => "IF",
             _ => "",
         };
         EngineName = profile.Dialect switch
@@ -30,6 +31,7 @@ public sealed class HomeRecentCardViewModel : ViewModelBase
             DatabaseDialect.SqlServer => "SQL Server",
             DatabaseDialect.Sqlite => "SQLite",
             DatabaseDialect.Oracle => "Oracle",
+            DatabaseDialect.Informix => "Informix",
             _ => "",
         };
         Environment = profile.Environment;

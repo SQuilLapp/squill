@@ -12,7 +12,7 @@ public sealed class EngineIconTests
     public static TheoryData<DatabaseDialect, bool> Engines => new()
     {
         { DatabaseDialect.PostgreSql, false }, { DatabaseDialect.MySql, false }, { DatabaseDialect.MySql, true },
-        { DatabaseDialect.SqlServer, false }, { DatabaseDialect.Sqlite, false }, { DatabaseDialect.Oracle, false },
+        { DatabaseDialect.SqlServer, false }, { DatabaseDialect.Sqlite, false }, { DatabaseDialect.Oracle, false }, { DatabaseDialect.Informix, false },
     };
 
     [Theory]

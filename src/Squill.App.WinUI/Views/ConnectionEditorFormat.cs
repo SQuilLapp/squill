@@ -9,7 +9,7 @@ internal static class ConnectionEditorFormat
 {
     /// <summary>Gets the engine tiles, in the order drawn.</summary>
     public static Engine[] Engines { get; } =
-        [new(DatabaseDialect.PostgreSql), new(DatabaseDialect.MySql), new(DatabaseDialect.MySql, true), new(DatabaseDialect.SqlServer), new(DatabaseDialect.Sqlite), new(DatabaseDialect.Oracle)];
+        [new(DatabaseDialect.PostgreSql), new(DatabaseDialect.MySql), new(DatabaseDialect.MySql, true), new(DatabaseDialect.SqlServer), new(DatabaseDialect.Sqlite), new(DatabaseDialect.Oracle), new(DatabaseDialect.Informix)];
 
     /// <summary>An engine tile: a dialect, and for MySQL whether the profile targets MariaDB.</summary>
     /// <param name="Dialect">The dialect.</param>
@@ -31,6 +31,7 @@ internal static class ConnectionEditorFormat
         DatabaseDialect.MySql => ("My", "Mysql"),
         DatabaseDialect.SqlServer => ("MS", "Sqlserver"),
         DatabaseDialect.Oracle => ("OR", "Oracle"),
+        DatabaseDialect.Informix => ("IF", "Informix"),
         _ => ("SL", "Sqlite"),
     };
 
@@ -45,6 +46,7 @@ internal static class ConnectionEditorFormat
         DatabaseDialect.MySql => "MySQL",
         DatabaseDialect.SqlServer => "SQL Server",
         DatabaseDialect.Oracle => "Oracle",
+        DatabaseDialect.Informix => "Informix",
         _ => "SQLite",
     };
 

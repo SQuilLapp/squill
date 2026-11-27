@@ -10,6 +10,7 @@ public static class DdlGenerators
     private static readonly SqlServerDdlGenerator SqlServer = new();
     private static readonly SqliteDdlGenerator Sqlite = new();
     private static readonly OracleDdlGenerator Oracle = new();
+    private static readonly InformixDdlGenerator Informix = new();
 
     /// <summary>Returns the generator for an engine.</summary>
     /// <param name="d">The database engine.</param>
@@ -21,6 +22,7 @@ public static class DdlGenerators
         DatabaseDialect.SqlServer => SqlServer,
         DatabaseDialect.Sqlite => Sqlite,
         DatabaseDialect.Oracle => Oracle,
+        DatabaseDialect.Informix => Informix,
         _ => throw new ArgumentOutOfRangeException(nameof(d)),
     };
 
@@ -28,6 +30,11 @@ public static class DdlGenerators
     /// <param name="d">The database engine.</param>
     /// <returns><see langword="false"/> for MySQL and Oracle, which commit implicitly on DDL.</returns>
     public static bool UsesTransactionalDdl(DatabaseDialect d) => d is not (DatabaseDialect.MySql or DatabaseDialect.Oracle);
+
+    /// <summary>Tells whether the table designer and the <c>CREATE TABLE</c> script work for the engine.</summary>
+    /// <param name="d">The database engine.</param>
+    /// <returns><see langword="false"/> for Informix, whose generator only drops tables so far.</returns>
+    public static bool CanDesign(DatabaseDialect d) => d != DatabaseDialect.Informix;
 
     /// <summary>Joins statements into one script for display and copy.</summary>
     /// <param name="statements">The statements, without trailing semicolons.</param>

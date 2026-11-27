@@ -81,6 +81,7 @@ public static class ExplorerGlyphs
         DatabaseDialect.SqlServer => "EngineIconSqlserverStyle",
         DatabaseDialect.Sqlite => "EngineIconSqliteStyle",
         DatabaseDialect.Oracle => "EngineIconOracleStyle",
+        DatabaseDialect.Informix => "EngineIconInformixStyle",
         _ => "EngineBadgeStyle",
     });
 

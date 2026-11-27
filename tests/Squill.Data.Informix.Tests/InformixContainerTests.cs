@@ -1,13 +1,27 @@
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace Squill.Data.Informix.Tests;
 
 /// <summary>The layer against a real Informix developer server through IBM's <c>clidriver</c>; runs only with <c>SQUILL_DOCKER_TESTS=1</c> and the driver on disk.</summary>
-public sealed class InformixContainerTests(InformixFixture server) : IClassFixture<InformixFixture>
+public sealed partial class InformixContainerTests(InformixFixture server) : IClassFixture<InformixFixture>
 {
     private static void RequireDriver() =>
         Assert.SkipWhen(InformixFixture.FindClidriver() is null,
             "IBM clidriver not found: set SQUILL_CLIDRIVER or restore the Net.IBM.Data.Db2 package (see InformixFixture).");
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task Open_LeavesTheProcessCRuntimeLocaleUntouched()
+    {
+        RequireDriver();
+        // The driver calls setlocale(LC_ALL, "") while connecting; left alone, WinUI formats geometry with the user's decimal comma and crashes.
+        using var connection = await OdbcConnection.OpenAsync(server.ConnectionString(), TestContext.Current.CancellationToken);
+
+        Assert.Equal("C", Marshal.PtrToStringAnsi(QueryLocale(0, 0)));
+    }
+
+    [LibraryImport("ucrtbase.dll", EntryPoint = "setlocale")]
+    private static partial nint QueryLocale(int category, nint locale);
 
     [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
     public async Task Execute_SelectFirstRows_ReadsTextAndColumns()

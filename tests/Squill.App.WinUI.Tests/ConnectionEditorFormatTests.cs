@@ -21,6 +21,7 @@ public class ConnectionEditorFormatTests
     [InlineData(DatabaseDialect.SqlServer, "MS", "Sqlserver", "SQL Server")]
     [InlineData(DatabaseDialect.Sqlite, "SL", "Sqlite", "SQLite")]
     [InlineData(DatabaseDialect.Oracle, "OR", "Oracle", "Oracle")]
+    [InlineData(DatabaseDialect.Informix, "IF", "Informix", "Informix")]
     public void Engine_badge_and_name(DatabaseDialect dialect, string letters, string suffix, string name)
     {
         Assert.Equal((letters, suffix), ConnectionEditorFormat.Badge(dialect));

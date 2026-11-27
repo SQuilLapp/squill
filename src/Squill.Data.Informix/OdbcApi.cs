@@ -19,8 +19,18 @@ internal sealed unsafe class OdbcApi : IOdbcApi
     public short SetEnvAttr(nint env, int attribute, nint value) => OdbcNative.SQLSetEnvAttr(env, attribute, value, 0);
 
     /// <inheritdoc/>
-    public short DriverConnect(nint connection, string connectionString) =>
-        OdbcNative.SQLDriverConnectW(connection, 0, connectionString, SqlNts, 0, 0, 0, 0);
+    /// <remarks>The driver calls <c>setlocale(LC_ALL, "")</c> while connecting, which switches the whole process to the user locale; WinUI's native code then formats geometry paths with decimal commas on a French machine and the first tab selection crashes with a <c>XamlParseException</c>. The "C" locale is restored as soon as the call returns.</remarks>
+    public short DriverConnect(nint connection, string connectionString)
+    {
+        try
+        {
+            return OdbcNative.SQLDriverConnectW(connection, 0, connectionString, SqlNts, 0, 0, 0, 0);
+        }
+        finally
+        {
+            OdbcNative.RestoreCLocale();
+        }
+    }
 
     /// <inheritdoc/>
     public short Disconnect(nint connection) => OdbcNative.SQLDisconnect(connection);

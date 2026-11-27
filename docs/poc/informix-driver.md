@@ -124,3 +124,11 @@ Open for the owner: accept shipping `clidriver` (size, IBM licence text in the i
 ## Cleanup
 
 The container `squill-informix` was removed after the run. The two probe projects are not in any solution and are `TreatWarningsAsErrors=false` on purpose (third-party warnings counted above); they use `ManagePackageVersionsCentrally=false` so that `Directory.Packages.props` does not carry IBM or ODBC package versions.
+
+## Outcome (P21-106)
+
+Option D shipped: the provider is registered in both heads ([P21-103](../tasks/phase-21/P21-103-informix-odbc-layer.md) to [P21-106](../tasks/phase-21/P21-106-informix-provider-registration.md)). `eng/Clidriver.targets` copies the package's whole `buildTransitive/clidriver` folder to `clidriver/` beside the published exe, because `REDIST.txt` does not name `db2clio.dll`, `icc64` or the MSVC runtimes that the driver needs anyway.
+
+**Licence note.** The files are redistributed under IBM's terms: `clidriver/license/` carries `Lic_en.txt`, `REDIST.txt`, `odbc_REDIST.txt` and the notices. Velopack `vpk pack` has no EULA screen outside `--msi`, so the licence text ships as files and is not shown to the user at install time ([P21-110](../tasks/phase-21/P21-110-installer-ibm-eula-screen.md)). Linux and macOS (`Net.IBM.Data.Db2-lnx` / `-osx`) are not done ([P21-111](../tasks/phase-21/P21-111-informix-clidriver-linux-macos.md)).
+
+**Locale pitfall.** `SQLDriverConnectW` calls the C runtime `setlocale(LC_ALL, "")`; see [the architecture note](../architecture.md). It is the only driver call that changes it (measured after execute, fetch, cancel, a SQL error, transactions and disconnect).

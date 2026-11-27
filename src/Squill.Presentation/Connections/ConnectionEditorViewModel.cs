@@ -191,6 +191,7 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         DatabaseDialect.MySql => 3306,
         DatabaseDialect.SqlServer => 1433,
         DatabaseDialect.Oracle => 1521,
+        DatabaseDialect.Informix => 9089, // the DRDA listener (drsoctcp), not the onsoctcp one on 9088
         _ => null,
     };
 
@@ -340,10 +341,11 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            TestStatus = UiText.Format("connections.testStatusFailed", ex.Message);
+            var detail = Dialect == DatabaseDialect.Informix ? ex.Message + "\n" + UiText.Get("connections.informixHint") : ex.Message;
+            TestStatus = UiText.Format("connections.testStatusFailed", detail);
             TestServerVersion = null;
             TestSucceeded = false;
-            await _dialogs.ShowErrorAsync(UiText.Get("connections.testFailedTitle"), ex.Message);
+            await _dialogs.ShowErrorAsync(UiText.Get("connections.testFailedTitle"), detail);
         }
     }
 }

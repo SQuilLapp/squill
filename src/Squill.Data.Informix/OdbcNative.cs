@@ -36,4 +36,17 @@ internal static partial class OdbcNative
     [LibraryImport(Library)] internal static partial short SQLCloseCursor(nint statement);
     [LibraryImport(Library)]
     internal static unsafe partial short SQLGetDiagRecW(short handleType, nint handle, short record, char* state, int* native, char* message, short messageMax, short* length);
+
+    private const int LcAll = 0;
+
+    [LibraryImport("ucrtbase.dll", EntryPoint = "setlocale", StringMarshalling = StringMarshalling.Utf8)]
+    private static partial nint SetLocale(int category, string locale);
+
+    /// <summary>Puts the C runtime back to the "C" locale after the driver changed it (see <see cref="OdbcApi.DriverConnect"/>).</summary>
+    /// <remarks>
+    /// The setting is process-global, so another thread formatting during the connect window (a few milliseconds, the restore runs on the calling thread right after the call) could still see the user locale.
+    /// That is acceptable: "C" is the default locale of a .NET and WinUI process, nothing in the app relies on any other C runtime locale, and the managed code uses its own culture data.
+    /// Measured against the Informix developer server: connect is the only driver call that changes it; execute, fetch, cancel, a SQL error, transactions and disconnect leave it at "C".
+    /// </remarks>
+    internal static void RestoreCLocale() => SetLocale(LcAll, "C");
 }

@@ -22,6 +22,7 @@ public static class SqlGrammarGenerator
             DatabaseDialect.MySql => "mysql",
             DatabaseDialect.SqlServer => "tsql",
             DatabaseDialect.Oracle => "oracle",
+            DatabaseDialect.Informix => "informix",
             _ => "sqlite",
         };
 
