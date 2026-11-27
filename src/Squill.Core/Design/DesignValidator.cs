@@ -157,6 +157,12 @@ public static class DesignValidator
                     f.Name, f.Columns.Count.ToString(CultureInfo.InvariantCulture), f.ReferencedColumns.Count.ToString(CultureInfo.InvariantCulture));
             }
 
+            if (dialect == DatabaseDialect.Oracle
+                && (f.OnUpdate != ReferentialAction.NoAction || f.OnDelete is ReferentialAction.Restrict or ReferentialAction.SetDefault))
+            {
+                Error(CoreMessageCodes.DesignOracleForeignKeyAction, $"The foreign key '{f.Name}' uses an action Oracle does not support: only ON DELETE CASCADE and SET NULL exist.", f.Name, f.Name);
+            }
+
             if (string.IsNullOrWhiteSpace(f.ReferencedTable))
             {
                 Error(CoreMessageCodes.DesignForeignKeyNoTable, $"The foreign key '{f.Name}' has no referenced table.", f.Name, f.Name);

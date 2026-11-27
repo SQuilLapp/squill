@@ -306,12 +306,12 @@ public sealed class TableDesignerViewModelTests
         await f.Vm.ApplyCommand.ExecuteAsync(null);
 
         Assert.DoesNotContain("ROLLBACK", f.Connection.Executed);
-        Assert.Contains("MySQL n'annule pas le DDL", Assert.Single(f.Dialogs.Errors).Message, StringComparison.Ordinal);
+        Assert.Contains("MySQL et Oracle n'annulent pas le DDL", Assert.Single(f.Dialogs.Errors).Message, StringComparison.Ordinal);
     }
 
     [Theory]
-    [InlineData(UiLanguage.French, "Échec de l'application", "MySQL n'annule pas le DDL", "boom failed")]
-    [InlineData(UiLanguage.English, "Apply failed", "MySQL does not roll back DDL", "boom failed")]
+    [InlineData(UiLanguage.French, "Échec de l'application", "MySQL et Oracle n'annulent pas le DDL", "boom failed")]
+    [InlineData(UiLanguage.English, "Apply failed", "MySQL and Oracle do not roll back DDL", "boom failed")]
     public async Task Apply_Failure_HasTranslatedHeadingAndRawEngineMessage(UiLanguage language, string heading, string note, string raw)
     {
         using var _ = UiText.Override(language);

@@ -21,7 +21,6 @@ internal static class DropTablesScenario
         await reader.ReadAllAsync(100, CancellationToken.None);
     }
 
-    private static string Qualify(string? schema, string name) => schema is null ? name : $"{schema}.{name}";
 
     private static async Task<bool> ExistsAsync(IDatabaseConnection connection, string? schema, string name)
     {
@@ -35,7 +34,13 @@ internal static class DropTablesScenario
     // Creates a table with an integer key, and a nullable ref_id column referencing the parent when one is given.
     private static async Task CreateAsync(IDatabaseConnection connection, DatabaseDialect dialect, string? schema, string name, string? parent)
     {
-        var integer = dialect == DatabaseDialect.PostgreSql ? "integer" : dialect == DatabaseDialect.Sqlite ? "INTEGER" : "int";
+        var integer = dialect switch
+        {
+            DatabaseDialect.PostgreSql => "integer",
+            DatabaseDialect.Sqlite => "INTEGER",
+            DatabaseDialect.Oracle => "NUMBER(10)",
+            _ => "int",
+        };
         List<ColumnDesign> columns = [new(null, "id", integer, false, null, false)];
         List<ForeignKeyDesign> keys = [];
         if (parent is not null)
@@ -126,8 +131,9 @@ internal static class DropTablesScenario
             await CreateAsync(connection, dialect, schema, c, b);
 
             // SQLite refuses the parent drop only when child rows would be orphaned.
-            foreach (var (table, columns) in new[] { (a, "id) VALUES (1"), (b, "id, ref_id) VALUES (1, 1"), (c, "id, ref_id) VALUES (1, 1") })
-                await RunAsync(connection, $"INSERT INTO {Qualify(schema, table)} ({columns})");
+            string Q(string identifier) => SqlQuoting.Quote(identifier, dialect);
+            foreach (var (table, columns, values) in new[] { (a, "id", "1"), (b, "id, ref_id", "1, 1"), (c, "id, ref_id", "1, 1") })
+                await RunAsync(connection, $"INSERT INTO {SqlQuoting.QualifiedName(schema, table, dialect)} ({string.Join(", ", columns.Split(", ").Select(Q))}) VALUES ({values})");
 
             await Assert.ThrowsAnyAsync<Exception>(() => DropAsync(connection, dialect, schema, a));
 

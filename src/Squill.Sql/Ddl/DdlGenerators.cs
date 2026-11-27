@@ -9,6 +9,7 @@ public static class DdlGenerators
     private static readonly MySqlDdlGenerator MySql = new();
     private static readonly SqlServerDdlGenerator SqlServer = new();
     private static readonly SqliteDdlGenerator Sqlite = new();
+    private static readonly OracleDdlGenerator Oracle = new();
 
     /// <summary>Returns the generator for an engine.</summary>
     /// <param name="d">The database engine.</param>
@@ -19,6 +20,7 @@ public static class DdlGenerators
         DatabaseDialect.MySql => MySql,
         DatabaseDialect.SqlServer => SqlServer,
         DatabaseDialect.Sqlite => Sqlite,
+        DatabaseDialect.Oracle => Oracle,
         _ => throw new ArgumentOutOfRangeException(nameof(d)),
     };
 

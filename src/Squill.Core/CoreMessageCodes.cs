@@ -72,6 +72,9 @@ public static class CoreMessageCodes
     /// <summary>The <c>design.indexNeedsLength</c> message.</summary>
     public const string DesignIndexNeedsLength = "design.indexNeedsLength";
 
+    /// <summary>The <c>design.oracleForeignKeyAction</c> message.</summary>
+    public const string DesignOracleForeignKeyAction = "design.oracleForeignKeyAction";
+
     /// <summary>The <c>design.schemaMove</c> message.</summary>
     public const string DesignSchemaMove = "design.schemaMove";
 
@@ -137,6 +140,7 @@ public static class CoreMessageCodes
         DesignForeignKeyColumnCount,
         DesignForeignKeyNoTable,
         DesignIndexNeedsLength,
+        DesignOracleForeignKeyAction,
         DesignSchemaMove,
         DesignSqliteSchema,
         DesignDropColumnDataLoss,

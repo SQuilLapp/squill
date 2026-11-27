@@ -442,7 +442,7 @@ Depends on: <card ids, ranges allowed>
 | [P21-03](phase-21/P21-03-oracle-bridge-protocol.md) | Oracle bridge: cancel, transactions, several result sets and DBMS_OUTPUT | none | done |
 | [P21-04](phase-21/P21-04-oracle-schema-objects.md) | Data.Oracle: indexes, foreign keys, defaults, routines, triggers and view definitions | P21-03 | done |
 | [P21-05](phase-21/P21-05-sql-oracle-dialect.md) | Sql: Oracle dialect (tokenizer, splitter, keywords, quoting, types, functions) | none | done |
-| [P21-06](phase-21/P21-06-sql-oracle-ddl-generator.md) | Sql: Oracle DDL generator (CREATE, ALTER, DROP) for the table designer | P21-04, P21-05 | todo |
+| [P21-06](phase-21/P21-06-sql-oracle-ddl-generator.md) | Sql: Oracle DDL generator (CREATE, ALTER, DROP) for the table designer | P21-04, P21-05 | done |
 | [P21-07](phase-21/P21-07-oracle-grid-editing.md) | Oracle: grid editing, generated keys and column types | P21-03, P21-05 | todo |
 | [P21-08](phase-21/P21-08-oracle-plan-terminal-tls.md) | Oracle: execution plan, sqlplus terminal and TCPS | P21-03 | todo |
 | [P21-09](phase-21/P21-09-oracle-verification-and-docs.md) | Oracle: end-to-end verification in both heads and the support matrix | P21-03 ... P21-08 | todo |

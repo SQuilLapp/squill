@@ -1,6 +1,6 @@
 # P21-06 - Sql: Oracle DDL generator (CREATE, ALTER, DROP) for the table designer
 
-Status: todo
+Status: done
 Depends on: P21-04, P21-05
 
 ## Goal
@@ -16,8 +16,8 @@ Exists today: `IDdlGenerator` with PostgreSQL, MySQL, SQL Server and SQLite gene
 - Partitioning, tablespaces, storage clauses.
 
 ## Tasks
-- [ ] Golden-text tests per operation.
-- [ ] Docker-gated create and alter matrix on Oracle (P11-30 pattern), multi-table drop proof (P20-09 pattern).
+- [x] Golden-text tests per operation.
+- [x] Docker-gated create and alter matrix on Oracle (P11-30 pattern), multi-table drop proof (P20-09 pattern).
 
 ## Acceptance criteria
 - Recipe 2 common acceptance; `-Engine oracle` green.
@@ -30,3 +30,10 @@ Exists today: `IDdlGenerator` with PostgreSQL, MySQL, SQL Server and SQLite gene
 
 ## Suggested commit message
 Generate Oracle DDL for the table designer and the table drop
+
+## Done notes
+- `OracleDdlGenerator` (`DdlGenerators.For(Oracle)`): identity and `DEFAULT` come before `NOT NULL` (Oracle order); `ALTER ... MODIFY` restates only the changed aspects (type, `DEFAULT`/`DEFAULT NULL`, `NULL`/`NOT NULL`) because Oracle raises ORA-01442/01451 when a constraint is repeated; `DROP PRIMARY KEY`, `RENAME COLUMN`, `RENAME TO`; indexes are schema-qualified (index names are schema-level); `DROP TABLE` has no `CASCADE CONSTRAINTS`.
+- Foreign keys write `ON DELETE CASCADE|SET NULL` only. `DesignValidator` now reports `design.oracleForeignKeyAction` (both catalogs) for `ON UPDATE` other than `NO ACTION`, `RESTRICT` and `SET DEFAULT` on Oracle (the card said P7-08 already did; it did not).
+- The "does not roll back DDL" texts (`designer.mySqlNoRollback`, `workspace.dropNotAtomicNote`) now name MySQL and Oracle.
+- Docker: `DesignerScenarios` and `DropTablesScenario` run on Oracle (`DesignerMatrixTests`, `DropTablesTests`). Oracle-specific adjustments in the matrix: `NUMBER(10)`/`VARCHAR2`, no widening to CLOB, type changes only widen text, second unique index on another column (ORA-01408), no RESTRICT/SET DEFAULT/ON UPDATE cases. A populated VARCHAR2 column turned into NUMBER is refused by the server and the data is intact (engine error surfaced, no rebuild). The Oracle test assembly now runs its classes one at a time (parallel fixtures raced on `SQUILL_ORACLE_BRIDGE`). Shared scenarios now quote column names; re-run on MySQL and PostgreSQL containers (DesignerMatrix and DropTables), green; SQL Server containers not re-run.
+- Not changed: the support matrix of ADR 0008 has no Oracle column yet.

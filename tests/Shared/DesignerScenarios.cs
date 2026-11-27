@@ -21,12 +21,21 @@ internal static class DesignerScenarios
         return data;
     }
 
-    private static string Int(DatabaseDialect d) => d == DatabaseDialect.PostgreSql ? "integer" : "int";
+    private static string Int(DatabaseDialect d) => d switch
+    {
+        DatabaseDialect.PostgreSql => "integer",
+        DatabaseDialect.Oracle => "NUMBER(10)",
+        _ => "int",
+    };
+
+    // Oracle refuses to turn a populated VARCHAR2 column into a number or a CLOB, so its type-change cases widen the text instead.
+    private static string ChangedType(DatabaseDialect d) => d == DatabaseDialect.Oracle ? Str(d, 40) : Int(d);
 
     private static string Str(DatabaseDialect d, int n) => d switch
     {
         DatabaseDialect.SqlServer => $"nvarchar({n})",
         DatabaseDialect.PostgreSql => $"character varying({n})",
+        DatabaseDialect.Oracle => $"VARCHAR2({n})",
         _ => $"varchar({n})",
     };
 
@@ -56,7 +65,7 @@ internal static class DesignerScenarios
             ["drop column in a foreign key"] = new(t => Without(t, "p") with { Indexes = [.. t.Indexes.Where(i => i.Name != "ix_p")], ForeignKeys = [] }, "a"),
             ["rename column"] = new(t => Map(t, "b", c => c with { Name = "b2" }) with { Indexes = [.. t.Indexes.Select(i => i.Name == "ix_b" ? i with { Columns = ["b2"] } : i)] }, "b"),
             ["rename column with default"] = new(t => Map(t, "c", c => c with { Name = "c2" }), "c"),
-            ["change type"] = new(t => Map(t, "n", c => c with { DataType = Int(d) }), "n"),
+            ["change type"] = new(t => Map(t, "n", c => c with { DataType = ChangedType(d) }), "n"),
             ["widen indexed column"] = new(t => Map(t, "b", c => c with { DataType = Str(d, 100) }), "b"),
             ["widen to long text"] = new(t => Map(t, "s", c => c with { DataType = LongText(d) }), "s"),
             ["change type keeps not null and default"] = new(t => Map(t, "c", c => c with { DataType = Str(d, 30) }), "c"),
@@ -66,22 +75,29 @@ internal static class DesignerScenarios
             ["drop default"] = new(t => Map(t, "c", c => c with { DefaultExpression = null }), "c"),
             ["composite primary key"] = new(t => Map(t, "q", c => c with { IsNullable = false }) with { PrimaryKey = ["id", "q"] }, "b"),
             ["drop primary key"] = new(t => t with { PrimaryKey = [] }, "a"),
-            ["add unique index"] = new(t => t with { Indexes = [.. t.Indexes, new IndexDesign(null, "ux_b", true, ["b"])] }, "a"),
+            // Oracle refuses a second index on the same column list (ORA-01408), so its unique index is on another column.
+            ["add unique index"] = new(t => t with { Indexes = [.. t.Indexes, new IndexDesign(null, "ux_b", true, [d == DatabaseDialect.Oracle ? "s" : "b"])] }, "a"),
             ["drop unique index"] = new(t => t with { Indexes = [.. t.Indexes.Where(i => i.Name != "ux_a")] }, "a"),
             ["rename index"] = new(t => t with { Indexes = [.. t.Indexes.Select(i => i.Name == "ix_b" ? i with { Name = "ix_b2" } : i)] }, "a"),
             ["change index columns"] = new(t => t with { Indexes = [.. t.Indexes.Select(i => i.Name == "ix_b" ? i with { Columns = ["b", "q"] } : i)] }, "a"),
             ["drop foreign key"] = new(t => t with { ForeignKeys = [] }, "a"),
             ["rename table"] = new(t => t with { Name = "dm_t2" }, "a"),
-            ["rename table and change type"] = new(t => Map(t, "n", c => c with { DataType = Int(d) }) with { Name = "dm_t2" }, "n"),
+            ["rename table and change type"] = new(t => Map(t, "n", c => c with { DataType = ChangedType(d) }) with { Name = "dm_t2" }, "n"),
         };
+
+        if (d == DatabaseDialect.Oracle)
+            cases.Remove("widen to long text");
 
         foreach (var action in Actions)
         {
+            // Oracle has no RESTRICT, SET DEFAULT or ON UPDATE: the validator refuses them (OracleDdlTests).
+            if (d == DatabaseDialect.Oracle && action is ReferentialAction.Restrict or ReferentialAction.SetDefault)
+                continue;
             // InnoDB parses SET DEFAULT but refuses to create the key.
             if (d == DatabaseDialect.MySql && action == ReferentialAction.SetDefault)
                 continue;
             var a = action;
-            cases[$"add foreign key {a}"] = new(t => t with { ForeignKeys = [.. t.ForeignKeys, new ForeignKeyDesign(null, "fk_q", ["q"], schema, "dm_parent", ["id"], a, a)] }, "a");
+            cases[$"add foreign key {a}"] = new(t => t with { ForeignKeys = [.. t.ForeignKeys, new ForeignKeyDesign(null, "fk_q", ["q"], schema, "dm_parent", ["id"], a, d == DatabaseDialect.Oracle ? ReferentialAction.NoAction : a)] }, "a");
         }
 
         if (d == DatabaseDialect.PostgreSql)
@@ -132,9 +148,10 @@ internal static class DesignerScenarios
             await RunAsync(c, sql);
 
         var q = (string name) => SqlQuoting.QualifiedName(schema, name, d);
-        await RunAsync(c, $"INSERT INTO {q("dm_parent")} (id) VALUES (1), (2)");
+        var cols = (string names) => string.Join(", ", names.Split(',').Select(n => SqlQuoting.Quote(n.Trim(), d)));
+        await RunAsync(c, $"INSERT INTO {q("dm_parent")} ({cols("id")}) VALUES (1), (2)");
         var rows = Enumerable.Range(1, 100).Select(i => $"({i}, {i * 3}, 'v{i}', {i % 2 + 1}, {i % 2 + 1}, '{i}', 's{i}')");
-        await RunAsync(c, $"INSERT INTO {q("dm_t")} (id, a, b, p, q, n, s) VALUES {string.Join(", ", rows)}");
+        await RunAsync(c, $"INSERT INTO {q("dm_t")} ({cols("id, a, b, p, q, n, s")}) VALUES {string.Join(", ", rows)}");
     }
 
     private static async Task<string> ColumnDataAsync(IDatabaseConnection c, DatabaseDialect d, string? schema, string table, string column)
@@ -192,9 +209,24 @@ internal static class DesignerScenarios
     {
         await SeedAsync(c, d, schema);
         var table = SqlQuoting.QualifiedName(schema, "dm_t", d);
-        var keyword = d == DatabaseDialect.SqlServer ? "ADD" : "ADD COLUMN";
+        var keyword = d is DatabaseDialect.SqlServer or DatabaseDialect.Oracle ? "ADD" : "ADD COLUMN";
         await RunAsync(c, $"ALTER TABLE {table} {keyword} {SqlQuoting.Quote("first", d)} {Int(d)} NULL");
         await Assert.ThrowsAnyAsync<Exception>(() => RunAsync(c, $"ALTER TABLE {table} DROP COLUMN {SqlQuoting.Quote("missing", d)}"));
         return (await c.ReadSchemaAsync(Ct)).FindTable(schema, "dm_t")!.Columns.Any(x => x.Name == "first");
+    }
+
+    /// <summary>Checks that the server, not the generator, refuses to turn a populated text column into a number, and that the data survives.</summary>
+    public static async Task<bool> TypeChangeOfPopulatedColumnIsRefusedAsync(IDatabaseConnection c, DatabaseDialect d, string? schema)
+    {
+        await SeedAsync(c, d, schema);
+        var original = TableDesign.FromTable((await c.ReadSchemaAsync(Ct)).FindTable(schema, "dm_t")!);
+        var edited = Map(original, "n", x => x with { DataType = Int(d) });
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            foreach (var sql in DdlGenerators.For(d).Alter(original, edited))
+                await RunAsync(c, sql);
+        });
+        return Convert.ToInt64(
+            (await RunAsync(c, $"SELECT count(*) FROM {SqlQuoting.QualifiedName(schema, "dm_t", d)}"))[0][0], System.Globalization.CultureInfo.InvariantCulture) == 100L;
     }
 }

@@ -11,11 +11,14 @@
     <PackageReference Include="Testcontainers.Oracle" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
     <ProjectReference Include="..\..\src\Squill.Data.Oracle\Squill.Data.Oracle.csproj" />
+    <ProjectReference Include="..\..\src\Squill.Sql\Squill.Sql.csproj" />
     <ProjectReference Include="..\..\src\Squill.Presentation\Squill.Presentation.csproj" />
     <!-- The real bridge, started as "dotnet Squill.OracleBridge.dll" by the Docker-gated tests. -->
     <ProjectReference Include="..\..\src\Squill.OracleBridge\Squill.OracleBridge.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="../Shared/DesignerScenarios.cs" Link="DesignerScenarios.cs" />
+    <Compile Include="../Shared/DropTablesScenario.cs" Link="DropTablesScenario.cs" />
     <Compile Include="../Shared/MultiResultScenario.cs" Link="MultiResultScenario.cs" />
     <Compile Include="../Shared/SqlCorpusScenario.cs" Link="SqlCorpusScenario.cs" />
     <Compile Include="../Shared/SqlCorpus.cs" Link="SqlCorpus.cs" />
