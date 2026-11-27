@@ -1,7 +1,17 @@
 # P21-11 - Data.Informix: own ODBC layer and provider (connect, execute, stream, schema reading)
 
-Status: todo
+Status: split
 Depends on: P21-10
+
+## Split (2026-11-27)
+Too large for one session (own ODBC layer, typed values, cancel, transactions, schema reader, two heads, packaging, AOT, docs: the PoC estimated 1,200 to 1,800 lines). Replaced by four cards, implemented in this order; the design decisions below stay valid and are distributed among them:
+
+1. [P21-103](P21-103-informix-odbc-layer.md): project, `OdbcNative`, `IOdbcApi`, library resolution, connect, execute, text fetch, diagnostics, Docker fixture.
+2. [P21-104](P21-104-informix-odbc-values-cancel-transactions.md): typed values, parameters (`ParameterScanner` mode), cancel, transactions, the database connection.
+3. [P21-105](P21-105-informix-schema-reading.md): schema reader and column type decoding.
+4. [P21-106](P21-106-informix-provider-registration.md): `DatabaseDialect.Informix`, registration, tiles in both heads, `clidriver` packaging, AOT check, docs.
+
+Owner decision 2026-11-27: shipping `clidriver` is accepted (IBM licence text in the installer, object code only, notices kept); registry writes and global installs are not.
 
 ## Goal
 A `DatabaseDialect.Informix` profile opens, runs statements, streams results and fills the explorer, through a small own ODBC layer over IBM's `clidriver`.

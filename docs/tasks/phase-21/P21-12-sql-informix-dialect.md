@@ -1,7 +1,7 @@
 # P21-12 - Sql: Informix dialect (tokenizer, splitter, keywords, quoting, types, functions)
 
 Status: todo
-Depends on: P21-11
+Depends on: P21-106
 
 ## Goal
 Highlighting, splitting, completion and hover for Informix instead of the generic fallback.

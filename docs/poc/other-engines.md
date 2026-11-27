@@ -6,7 +6,7 @@ Card [P21-13](../tasks/phase-21/P21-13-other-engines-feasibility.md), measured o
 
 | Engine | Driver | Native AOT in process | Server for tests | Verdict |
 |---|---|---|---|---|
-| DB2 LUW | `Net.IBM.Data.Db2` / own ODBC layer on `clidriver` | package: no (P21-10); own ODBC layer: yes against Informix, DB2 itself not verified | `icr.io/db2_community/db2` (not pulled, not verified) | **go through the ODBC layer of P21-11** (after the owner decision on `clidriver`) |
+| DB2 LUW | `Net.IBM.Data.Db2` / own ODBC layer on `clidriver` | package: no (P21-10); own ODBC layer: yes against Informix, DB2 itself not verified | `icr.io/db2_community/db2` (not pulled, not verified) | **go through the ODBC layer (P21-103, P21-104)** (after the owner decision on `clidriver`) |
 | ClickHouse | `ClickHouse.Client` 7.14.0 (HTTP) | **yes, measured** | `clickhouse/clickhouse-server`, works on Podman | **go**, read-mostly (no grid editing) |
 | Snowflake | `Snowflake.Data` 6.5.0 | **no, measured**: the native link step fails | none (trial account only) | **no go in process**; bridge or REST, not verified |
 | BigQuery | `Google.Cloud.BigQuery.V2` 3.12.0 (client library, no ADO.NET) | publishes (5 x IL3002 plus trim warnings) and starts; calls not verified | none (cloud only; an emulator exists, not tried) | **go through a custom connection**, low priority, not verified end to end |
@@ -22,7 +22,7 @@ Card [P21-13](../tasks/phase-21/P21-13-other-engines-feasibility.md), measured o
 | SQL distance | Own tokenizer needed: `FETCH FIRST n ROWS ONLY`, `SYSCAT.*` catalog (not `information_schema`), upper-case identifiers by default, `VALUES` statements, `WITH UR` (desk research). Catalog reading is the main work |
 | Does not fit | Db2 for z/OS and IBM i may need a Db2 Connect entitlement (`not verified`); `clidriver` size and licence |
 
-Verdict: `go` once P21-11 exists, because Db2 LUW reuses the ODBC layer (connect, execute, fetch, errors) and only needs its own provider (schema reading from `SYSCAT`) and dialect. Not before the owner's `clidriver` decision.
+Verdict: `go` once P21-103 and P21-104 exist, because Db2 LUW reuses the ODBC layer (connect, execute, fetch, errors) and only needs its own provider (schema reading from `SYSCAT`) and dialect. Not before the owner's `clidriver` decision.
 
 ## ClickHouse
 
@@ -70,7 +70,7 @@ Verdict: `go through a custom connection`, low priority, not verified end to end
 | Order | Card | Size | Condition |
 |---|---|---|---|
 | 1 | `Data.ClickHouse` provider (read-only capability, schema from `system.*`), dialect, Docker engine value `clickhouse` and ADR 0008 row | L + M + S | none, measured; check first how the session model expresses "no transactions, no editing" |
-| 2 | Db2 LUW provider and dialect on the ODBC layer, preceded by a probe against `icr.io/db2_community/db2` | S + L + M | after P21-11 and the `clidriver` decision |
+| 2 | Db2 LUW provider and dialect on the ODBC layer, preceded by a probe against `icr.io/db2_community/db2` | S + L + M | after P21-104 (clidriver accepted by the owner on 2026-11-27) |
 | 3 | BigQuery REST connection with dry-run bytes in the confirmation | L | owner has a project |
 | 4 | Snowflake (bridge or REST) | L | owner has a trial account |
 
