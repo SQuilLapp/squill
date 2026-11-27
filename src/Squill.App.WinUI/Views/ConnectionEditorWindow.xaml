@@ -192,6 +192,34 @@
                 <PasswordBox x:Name="SshSecretInput" MinHeight="30" PasswordChanged="OnSshSecretChanged" />
               </StackPanel>
             </StackPanel>
+            <Expander x:Name="ProxyExpander" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" loc:Loc.HeaderKey="connections.proxy">
+              <StackPanel Spacing="14">
+                <StackPanel Spacing="6">
+                  <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.proxyKind" />
+                  <ComboBox x:Name="ProxyKindBox" HorizontalAlignment="Stretch" MinHeight="30" SelectionChanged="OnProxyKindChanged" />
+                </StackPanel>
+                <StackPanel x:Name="ProxyFields" Spacing="14">
+                  <Grid ColumnDefinitions="*,12,100">
+                    <StackPanel Spacing="6">
+                      <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.proxyHost" />
+                      <TextBox x:Name="ProxyHostBox" Style="{StaticResource FieldBoxStyle}" TextChanged="OnProxyHostChanged" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="6">
+                      <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.proxyPort" />
+                      <TextBox x:Name="ProxyPortBox" Style="{StaticResource FieldBoxStyle}" TextChanged="OnProxyPortChanged" />
+                    </StackPanel>
+                  </Grid>
+                  <StackPanel Spacing="6">
+                    <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.proxyUser" />
+                    <TextBox x:Name="ProxyUserBox" Style="{StaticResource FieldBoxStyle}" TextChanged="OnProxyUserChanged" />
+                  </StackPanel>
+                  <StackPanel Spacing="6">
+                    <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.proxyPassword" />
+                    <PasswordBox x:Name="ProxyPassInput" MinHeight="30" PasswordChanged="OnProxyPassChanged" />
+                  </StackPanel>
+                </StackPanel>
+              </StackPanel>
+            </Expander>
           </StackPanel>
 
           <Border x:Name="SshCard" Grid.Row="5" Grid.Column="2" Margin="0,16,0,0" VerticalAlignment="Top" Padding="14" CornerRadius="{StaticResource SquillRadiusLg}"

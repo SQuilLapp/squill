@@ -1,6 +1,8 @@
 using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
+using Squill.Platform.Proxy;
+using Squill.Platform.Ssh;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Localization;
 using Xunit;
@@ -13,10 +15,11 @@ public sealed class ConnectionViewModelTests
     private readonly FakeDialogService _dialogs = new();
     private readonly FakeProvider _provider = new();
     private readonly ProviderRegistry _registry = new();
+    private readonly FakeProxies _proxies = new();
 
     public ConnectionViewModelTests() => _registry.Register(_provider);
 
-    private ConnectionEditorViewModel NewEditor(ConnectionProfile? existing = null) => new(existing, _store, _registry, _dialogs);
+    private ConnectionEditorViewModel NewEditor(ConnectionProfile? existing = null) => new(existing, _store, _registry, _dialogs, _proxies);
 
     private static ConnectionProfile Existing() =>
         new(Guid.NewGuid(), "Prod", DatabaseDialect.PostgreSql, "db", 5432, "app", "me", null, null);
@@ -371,6 +374,95 @@ public sealed class ConnectionViewModelTests
     }
 
     [Fact]
+    public void Proxy_KindChange_SwitchesTheDefaultPort_AndSqliteHasNone()
+    {
+        var editor = NewEditor(Existing());
+
+        Assert.False(editor.UseProxy);
+        editor.ProxyKindIndex = 1;
+        Assert.Equal(1080, editor.ProxyPort);
+        editor.ProxyKindIndex = 2;
+        Assert.Equal(3128, editor.ProxyPort);
+        editor.ProxyPort = 8080;
+        editor.ProxyKindIndex = 1;
+        Assert.Equal(8080, editor.ProxyPort);
+        Assert.True(editor.UseProxy);
+        editor.Dialect = DatabaseDialect.Sqlite;
+        Assert.False(editor.SupportsProxy);
+        Assert.False(editor.UseProxy);
+    }
+
+    [Fact]
+    public void Validate_Proxy_NeedsHostAndPort_OnlyWhenSelected()
+    {
+        var editor = NewEditor(Existing());
+        Assert.Empty(editor.Validate());
+
+        editor.ProxyKindIndex = 1;
+        editor.ProxyPort = 70000;
+
+        Assert.Equal([UiText.Get("connections.errProxyHost"), UiText.Get("connections.errProxyPort")], editor.Validate());
+        editor.ProxyHost = "proxy";
+        editor.ProxyPort = 1080;
+        Assert.Empty(editor.Validate());
+    }
+
+    [Fact]
+    public async Task Save_Proxy_KeepsThePasswordOutOfTheProfile()
+    {
+        var editor = NewEditor(Existing());
+        editor.ProxyKindIndex = 2;
+        editor.ProxyHost = " proxy ";
+        editor.ProxyUserName = "bob";
+        editor.ProxyPassword = "s3cret";
+
+        await editor.SaveCommand.ExecuteAsync(null);
+
+        var profile = Assert.Single(_store.Saved).Profile;
+        Assert.Equal(new ProxySettings(ProxyKind.HttpConnect, "proxy", 3128, "bob"), profile.Proxy);
+        Assert.Equal(["s3cret"], _store.SavedProxySecrets);
+    }
+
+    [Fact]
+    public async Task Save_ProxyPasswordUnchangedOrProxyRemoved_KeepsOrDeletesTheSecret()
+    {
+        _store.ProxySecret = "old";
+        var existing = Existing() with { Proxy = new ProxySettings(ProxyKind.Socks5, "p", 1080, "bob") };
+        var editor = NewEditor(existing);
+        await editor.LoadSecretsAsync(CancellationToken.None);
+        Assert.Equal((1, "old"), (editor.ProxyKindIndex, editor.ProxyPassword));
+
+        await editor.SaveCommand.ExecuteAsync(null);
+        editor.ProxyKindIndex = 0;
+        await editor.SaveCommand.ExecuteAsync(null);
+
+        Assert.Equal([null, ""], _store.SavedProxySecrets);
+        Assert.Null(_store.Saved[1].Profile.Proxy);
+    }
+
+    [Fact]
+    public async Task Test_GoesThroughTheProxy_AndFailureNeverShowsThePassword()
+    {
+        var editor = NewEditor(Existing());
+        editor.ProxyKindIndex = 1;
+        editor.ProxyHost = "proxy";
+        editor.ProxyUserName = "bob";
+        editor.ProxyPassword = "s3cret";
+
+        await editor.TestCommand.ExecuteAsync(null);
+
+        Assert.Equal(("db", 5432, "s3cret"), (_proxies.RemoteHost, _proxies.RemotePort, _proxies.Secret));
+        Assert.Equal(("127.0.0.1", 4242, "db"), (_provider.LastProfile?.Host, _provider.LastProfile?.Port, _provider.LastProfile?.TlsServerName));
+        Assert.True(_proxies.Disposed);
+        Assert.True(editor.TestSucceeded);
+
+        _proxies.Failure = new IOException("proxy refused");
+        await editor.TestCommand.ExecuteAsync(null);
+        Assert.False(editor.TestSucceeded);
+        Assert.DoesNotContain("s3cret", editor.TestStatus);
+    }
+
+    [Fact]
     public async Task Save_PasswordChanged_PassesNewValue()
     {
         _store.Password = "secret";
@@ -589,10 +681,47 @@ public sealed class ConnectionViewModelTests
 
         public ValueTask<string?> GetTlsKeyPassphraseAsync(Guid id, CancellationToken ct) => ValueTask.FromResult(TlsPassphrase);
 
+        public string? ProxySecret { get; set; }
+        public List<string?> SavedProxySecrets { get; } = [];
+
+        public ValueTask<string?> GetProxySecretAsync(Guid id, CancellationToken ct) => ValueTask.FromResult(ProxySecret);
+
+        public ValueTask SaveProxySecretAsync(Guid id, string? password, CancellationToken ct)
+        {
+            SavedProxySecrets.Add(password);
+            return ValueTask.CompletedTask;
+        }
+
         public ValueTask SaveTlsKeyPassphraseAsync(Guid id, string? passphrase, CancellationToken ct)
         {
             SavedPassphrases.Add(passphrase);
             return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class FakeProxies : IProxyTunnelFactory
+    {
+        public string? RemoteHost { get; private set; }
+        public int RemotePort { get; private set; }
+        public string? Secret { get; private set; }
+        public bool Disposed { get; private set; }
+        public Exception? Failure { get; set; }
+
+        public ValueTask<ISshTunnel> OpenAsync(ProxySettings proxy, string? secret, string remoteHost, int remotePort, CancellationToken ct)
+        {
+            (RemoteHost, RemotePort, Secret) = (remoteHost, remotePort, secret);
+            return Failure is { } failure ? throw failure : ValueTask.FromResult<ISshTunnel>(new FakeTunnel(this));
+        }
+
+        private sealed class FakeTunnel(FakeProxies owner) : ISshTunnel
+        {
+            public int LocalPort => 4242;
+
+            public ValueTask DisposeAsync()
+            {
+                owner.Disposed = true;
+                return ValueTask.CompletedTask;
+            }
         }
     }
 

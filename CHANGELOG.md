@@ -8,6 +8,7 @@
 
 ### Added
 
+- Proxy in the connection editor (`SSH` tab > `Proxy`): SOCKS5 or HTTP CONNECT with host, port, user and password (stored in the OS secret store), used by the connection test, by sessions and by the SSH tunnel.
 - TLS certificate files in the connection editor (`Advanced` > `Advanced TLS`): CA file, client certificate and key with `Browse...` buttons, server name and key passphrase (stored in the OS secret store), enabled per engine.
 - Informix is a supported engine (Windows x64): connect over the DRDA listener, explorer from the system catalogue, queries, grid, cancel and transactions, through IBM's `clidriver`, which the app ships in `clidriver/` with its licence text (`clidriver/license`). Grid editing, the designer, plans and the terminal are not done yet.
 - Oracle is a supported engine through a bridge process (the .NET runtime is required): several result sets, manual transactions, cancel, grid editing with generated keys, table designer, execution plans, `sqlplus` terminal and TCPS, verified end to end on an Oracle Free container.

@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
+using Squill.Platform.Proxy;
 using Squill.Presentation.Localization;
 
 namespace Squill.Presentation.Connections;
@@ -18,15 +19,19 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     private readonly IDialogService _dialogs;
     private string? _loadedPassword;
     private string? _loadedSshSecret;
+    private readonly IProxyTunnelFactory _proxies;
     private string? _loadedTlsPassphrase;
+    private string? _loadedProxySecret;
 
     /// <summary>Creates an editor for a new profile, or for <paramref name="existing"/> when it is not <see langword="null"/>.</summary>
     /// <param name="existing">Profile to edit, or <see langword="null"/> to create one.</param>
     /// <param name="store">Where the profile is saved.</param>
     /// <param name="providers">Used by the connection test.</param>
     /// <param name="dialogs">Used to report test failures.</param>
-    public ConnectionEditorViewModel(ConnectionProfile? existing, IProfileStore store, ProviderRegistry providers, IDialogService dialogs)
+    /// <param name="proxies">Opens the proxy forwarder of the connection test; <see langword="null"/> uses <see cref="ProxyTunnelFactory"/>.</param>
+    public ConnectionEditorViewModel(ConnectionProfile? existing, IProfileStore store, ProviderRegistry providers, IDialogService dialogs, IProxyTunnelFactory? proxies = null)
     {
+        _proxies = proxies ?? new ProxyTunnelFactory();
         _existing = existing;
         _store = store;
         _providers = providers;
@@ -64,6 +69,14 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         TlsClientCertFile = existing.TlsClientCertFile ?? "";
         TlsClientKeyFile = existing.TlsClientKeyFile ?? "";
         TlsServerName = existing.TlsServerName ?? "";
+        if (existing.Proxy is { } proxy)
+        {
+            ProxyKindIndex = proxy.Kind == ProxyKind.Socks5 ? 1 : 2;
+            ProxyHost = proxy.Host;
+            ProxyPort = proxy.Port;
+            ProxyUserName = proxy.UserName ?? "";
+        }
+
         ConnectTimeoutText = existing.ConnectTimeoutSeconds.ToString(CultureInfo.InvariantCulture);
         CommandTimeoutText = existing.CommandTimeoutSeconds.ToString(CultureInfo.InvariantCulture);
     }
@@ -175,6 +188,32 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     [ObservableProperty]
     public partial string TlsKeyPassphrase { get; set; } = "";
 
+    /// <summary>Gets or sets the proxy kind as a combo index: 0 none, 1 SOCKS5, 2 HTTP CONNECT.</summary>
+    [ObservableProperty]
+    public partial int ProxyKindIndex { get; set; }
+
+    /// <summary>Gets or sets the proxy host name or address.</summary>
+    [ObservableProperty]
+    public partial string ProxyHost { get; set; } = "";
+
+    /// <summary>Gets or sets the proxy port.</summary>
+    [ObservableProperty]
+    public partial int? ProxyPort { get; set; } = DefaultProxyPort(1);
+
+    /// <summary>Gets or sets the proxy account; blank for an open proxy.</summary>
+    [ObservableProperty]
+    public partial string ProxyUserName { get; set; } = "";
+
+    /// <summary>Gets or sets the proxy password; kept in the secret store, saved as <see langword="null"/> (kept) while it equals the loaded value.</summary>
+    [ObservableProperty]
+    public partial string ProxyPassword { get; set; } = "";
+
+    /// <summary>Gets whether a proxy is selected and applies to the selected engine.</summary>
+    public bool UseProxy => SupportsProxy && ProxyKindIndex is 1 or 2;
+
+    /// <summary>Gets whether a proxy applies to the selected engine (every engine except SQLite, which has no network).</summary>
+    public bool SupportsProxy => Dialect != DatabaseDialect.Sqlite;
+
     /// <summary>Gets or sets the connect timeout in seconds as typed; 0 means no timeout.</summary>
     [ObservableProperty]
     public partial string ConnectTimeoutText { get; set; } = "15";
@@ -246,6 +285,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         _loadedSshSecret = await _store.GetSshSecretAsync(_existing.Id, ct);
         _loadedTlsPassphrase = await _store.GetTlsKeyPassphraseAsync(_existing.Id, ct);
         TlsKeyPassphrase = _loadedTlsPassphrase ?? "";
+        _loadedProxySecret = await _store.GetProxySecretAsync(_existing.Id, ct);
+        ProxyPassword = _loadedProxySecret ?? "";
         Password = _loadedPassword ?? "";
         SshSecret = _loadedSshSecret ?? "";
     }
@@ -276,6 +317,14 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         AddTimeoutErrors(errors);
         AddTlsErrors(errors);
 
+        if (UseProxy)
+        {
+            if (string.IsNullOrWhiteSpace(ProxyHost))
+                errors.Add(UiText.Get("connections.errProxyHost"));
+            if (ProxyPort is not (>= 1 and <= 65535))
+                errors.Add(UiText.Get("connections.errProxyPort"));
+        }
+
         if (UseSsh)
         {
             if (string.IsNullOrWhiteSpace(SshHost))
@@ -304,6 +353,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         OnPropertyChanged(nameof(SupportsTrustCertificate));
         OnPropertyChanged(nameof(SupportsTimeouts));
         OnPropertyChanged(nameof(SupportsTlsFiles));
+        OnPropertyChanged(nameof(SupportsProxy));
+        OnPropertyChanged(nameof(UseProxy));
         OnPropertyChanged(nameof(SupportsTlsClientFiles));
         OnPropertyChanged(nameof(SupportsTlsServerName));
         OnPropertyChanged(nameof(SupportsTlsKeyPassphrase));
@@ -342,6 +393,15 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
                      .Where(i => i.Code is CoreMessageCodes.ConnectionTlsFileMissing or CoreMessageCodes.ConnectionTlsKeyWithoutCertificate))
             errors.Add(IssueText.Format(issue.Code, issue.Args, issue.Message));
     }
+
+    partial void OnProxyKindIndexChanged(int oldValue, int newValue)
+    {
+        OnPropertyChanged(nameof(UseProxy));
+        if (newValue is 1 or 2 && (ProxyPort is null || ProxyPort == DefaultProxyPort(oldValue)))
+            ProxyPort = DefaultProxyPort(newValue);
+    }
+
+    private static int DefaultProxyPort(int kindIndex) => kindIndex == 2 ? 3128 : 1080;
 
     [RelayCommand]
     private Task BrowseTlsCaAsync() => PickAsync("connections.pickTlsCa", ["pem", "crt", "cer"], path => TlsCaFile = path);
@@ -386,7 +446,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             SupportsTlsFiles ? NullIfBlank(TlsCaFile) : null,
             SupportsTlsClientFiles ? NullIfBlank(TlsClientCertFile) : null,
             SupportsTlsClientFiles ? NullIfBlank(TlsClientKeyFile) : null,
-            SupportsTlsServerName ? NullIfBlank(TlsServerName) : null)
+            SupportsTlsServerName ? NullIfBlank(TlsServerName) : null,
+            UseProxy ? new ProxySettings(ProxyKindIndex == 1 ? ProxyKind.Socks5 : ProxyKind.HttpConnect, ProxyHost.Trim(), ProxyPort ?? 0, NullIfBlank(ProxyUserName)) : null)
         {
             TlsKeyPassphrase = SupportsTlsKeyPassphrase ? NullIfBlank(TlsKeyPassphrase) : null,
         };
@@ -401,6 +462,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         await _store.SaveAsync(profile with { TlsKeyPassphrase = null }, password, sshSecret, ct);
         var passphrase = !SupportsTlsKeyPassphrase ? "" : TlsKeyPassphrase == (_loadedTlsPassphrase ?? "") ? null : TlsKeyPassphrase;
         await _store.SaveTlsKeyPassphraseAsync(profile.Id, passphrase, ct);
+        var proxySecret = !UseProxy || string.IsNullOrWhiteSpace(ProxyUserName) ? "" : ProxyPassword == (_loadedProxySecret ?? "") ? null : ProxyPassword;
+        await _store.SaveProxySecretAsync(profile.Id, proxySecret, ct);
         Saved?.Invoke(this, EventArgs.Empty);
     }
 
@@ -410,6 +473,12 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         try
         {
             var profile = BuildProfile(withSsh: false);
+            // The test ignores SSH, and with SSH the proxy carries the SSH connection, so it is only tried for a direct connection.
+            await using var tunnel = profile.Proxy is { } proxy && !UseSsh
+                ? await _proxies.OpenAsync(proxy, proxy.UserName is null ? null : NullIfBlank(ProxyPassword), profile.Host ?? "", profile.Port ?? 0, ct)
+                : null;
+            if (tunnel is not null)
+                profile = profile with { Host = "127.0.0.1", Port = tunnel.LocalPort, TlsServerName = profile.TlsServerName ?? profile.Host };
             await using var connection = await _providers.Get(Dialect).OpenAsync(profile, NullIfBlank(Password), ct);
             TestStatus = UiText.Format("connections.testStatusOk", connection.ServerVersion);
             TestServerVersion = connection.ServerVersion;

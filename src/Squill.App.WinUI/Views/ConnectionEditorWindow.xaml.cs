@@ -52,6 +52,7 @@ public sealed partial class ConnectionEditorWindow : Window
             UiText.Get("connections.tlsDefault"), UiText.Get("connections.tlsDisable"),
             UiText.Get("connections.tlsRequire"), UiText.Get("connections.tlsVerifyFull"),
         };
+        ProxyKindBox.ItemsSource = new[] { UiText.Get("connections.proxyNone"), UiText.Get("connections.proxySocks5"), UiText.Get("connections.proxyHttp") };
         BuildTiles();
         PlaceModal(owner);
 
@@ -238,6 +239,12 @@ public sealed partial class ConnectionEditorWindow : Window
             SyncText(TlsNameBox, editor.TlsServerName);
             if (TlsPassInput.Password != editor.TlsKeyPassphrase)
                 TlsPassInput.Password = editor.TlsKeyPassphrase;
+            ProxyKindBox.SelectedIndex = editor.ProxyKindIndex;
+            SyncText(ProxyHostBox, editor.ProxyHost);
+            SyncText(ProxyPortBox, ConnectionEditorFormat.PortText(editor.ProxyPort));
+            SyncText(ProxyUserBox, editor.ProxyUserName);
+            if (ProxyPassInput.Password != editor.ProxyPassword)
+                ProxyPassInput.Password = editor.ProxyPassword;
             UseSshBox.IsChecked = editor.UseSsh;
             SshAuthBox.SelectedIndex = editor.SshAuthMethod == SshAuthMethod.PrivateKey ? 1 : 0;
         }
@@ -260,6 +267,8 @@ public sealed partial class ConnectionEditorWindow : Window
             ToolTipService.SetToolTip(input, editor.TlsClientFilesDisabledReason);
         }
         ConnectTimeoutFields.Visibility = editor.SupportsTimeouts ? Visibility.Visible : Visibility.Collapsed;
+        ProxyExpander.Visibility = editor.SupportsProxy ? Visibility.Visible : Visibility.Collapsed;
+        ProxyFields.Visibility = editor.UseProxy ? Visibility.Visible : Visibility.Collapsed;
         SshFields.Visibility = editor.UseSsh ? Visibility.Visible : Visibility.Collapsed;
         SshCard.Visibility = editor.UseSsh ? Visibility.Visible : Visibility.Collapsed;
         SshKeyFields.Visibility = editor.SshAuthMethod == SshAuthMethod.PrivateKey ? Visibility.Visible : Visibility.Collapsed;
@@ -437,6 +446,17 @@ public sealed partial class ConnectionEditorWindow : Window
 
     private void OnTlsChanged(object sender, SelectionChangedEventArgs e) =>
         Edit(editor => editor.Tls = TlsBox.SelectedIndex is >= 0 and <= 3 ? (TlsMode)TlsBox.SelectedIndex : TlsMode.Default);
+
+    private void OnProxyKindChanged(object sender, SelectionChangedEventArgs e) =>
+        Edit(editor => editor.ProxyKindIndex = ProxyKindBox.SelectedIndex is >= 0 and <= 2 ? ProxyKindBox.SelectedIndex : 0);
+
+    private void OnProxyHostChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.ProxyHost = ProxyHostBox.Text);
+
+    private void OnProxyPortChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.ProxyPort = ConnectionEditorFormat.ParsePort(ProxyPortBox.Text));
+
+    private void OnProxyUserChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.ProxyUserName = ProxyUserBox.Text);
+
+    private void OnProxyPassChanged(object sender, RoutedEventArgs e) => Edit(editor => editor.ProxyPassword = ProxyPassInput.Password);
 
     private void OnTlsCaChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.TlsCaFile = TlsCaBox.Text);
 

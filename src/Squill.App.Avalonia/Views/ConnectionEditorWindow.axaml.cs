@@ -30,6 +30,7 @@ public sealed partial class ConnectionEditorWindow : Window
             UiText.Get("connections.tlsDefault"), UiText.Get("connections.tlsDisable"),
             UiText.Get("connections.tlsRequire"), UiText.Get("connections.tlsVerifyFull"),
         };
+        ProxyKindBox.ItemsSource = new[] { UiText.Get("connections.proxyNone"), UiText.Get("connections.proxySocks5"), UiText.Get("connections.proxyHttp") };
         DataContextChanged += (_, _) => Attach();
         Opened += (_, _) => RebuildList();
     }

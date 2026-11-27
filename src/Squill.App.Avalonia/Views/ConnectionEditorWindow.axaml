@@ -272,6 +272,34 @@
                     <TextBox PasswordChar="&#x25CF;" Text="{Binding SshSecret, Mode=TwoWay}" />
                   </StackPanel>
                 </StackPanel>
+                <Expander Name="ProxyExpander" Header="{loc:Text connections.proxy}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" IsVisible="{Binding SupportsProxy}">
+                  <StackPanel Spacing="14">
+                    <StackPanel Spacing="6">
+                      <TextBlock Text="{loc:Text connections.proxyKind}" Classes="lbl" />
+                      <ComboBox Name="ProxyKindBox" HorizontalAlignment="Stretch" SelectedIndex="{Binding ProxyKindIndex, Mode=TwoWay}" />
+                    </StackPanel>
+                    <StackPanel Name="ProxyFields" Spacing="14" IsVisible="{Binding UseProxy}">
+                      <Grid ColumnDefinitions="*,12,100">
+                        <StackPanel Spacing="6">
+                          <TextBlock Text="{loc:Text connections.proxyHost}" Classes="lbl" />
+                          <TextBox Name="ProxyHostBox" Text="{Binding ProxyHost, Mode=TwoWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="6">
+                          <TextBlock Text="{loc:Text connections.proxyPort}" Classes="lbl" />
+                          <TextBox Name="ProxyPortBox" Text="{Binding ProxyPort, Mode=TwoWay}" />
+                        </StackPanel>
+                      </Grid>
+                      <StackPanel Spacing="6">
+                        <TextBlock Text="{loc:Text connections.proxyUser}" Classes="lbl" />
+                        <TextBox Name="ProxyUserBox" Text="{Binding ProxyUserName, Mode=TwoWay}" />
+                      </StackPanel>
+                      <StackPanel Spacing="6">
+                        <TextBlock Text="{loc:Text connections.proxyPassword}" Classes="lbl" />
+                        <TextBox Name="ProxyPassBox" PasswordChar="&#x25CF;" Text="{Binding ProxyPassword, Mode=TwoWay}" />
+                      </StackPanel>
+                    </StackPanel>
+                  </StackPanel>
+                </Expander>
               </StackPanel>
             </TabItem>
           </TabControl>

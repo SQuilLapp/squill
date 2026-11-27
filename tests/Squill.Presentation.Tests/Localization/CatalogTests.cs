@@ -78,6 +78,9 @@ public sealed partial class CatalogTests
         "connections.envLocal", // same word
         "connections.tabSsh", // acronym
         "connections.port", // same word
+        "connections.proxy", // same word
+        "connections.proxySocks5", // protocol name
+        "connections.proxyHttp", // protocol name
         "designer.colPk", // acronym
         "designer.colType", // same word
         "designer.colNull", // SQL keyword
