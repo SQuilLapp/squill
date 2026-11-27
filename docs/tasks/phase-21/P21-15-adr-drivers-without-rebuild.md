@@ -1,6 +1,6 @@
 # P21-15 - ADR: adding drivers without rebuilding, under Native AOT (feasibility)
 
-Status: todo
+Status: done
 Depends on: P21-10
 
 ## Goal
@@ -20,7 +20,7 @@ Exists today: providers are compiled in and registered in each head's compositio
 - Implementation (cards proposed by the ADR, added to this index only when the owner picks one).
 
 ## Tasks
-- [ ] Write the ADR; link it from `docs/architecture.md` risks table (new row R10).
+- [x] Write the ADR; link it from `docs/architecture.md` risks table (new row R10).
 
 ## Acceptance criteria
 - ADR committed; the "not possible in process under Native AOT" statement is explicit.
@@ -33,3 +33,6 @@ Exists today: providers are compiled in and registered in each head's compositio
 
 ## Suggested commit message
 Add ADR 0018 on adding database drivers without rebuilding under Native AOT
+
+## Done notes
+ADR: [0018](../../adr/0018-drivers-without-rebuild.md); risk R10 added to `docs/architecture.md`. Recommendation: generic ODBC first (driver manager and driver-by-path modes), no generic bridge now, native plugins rejected, rebuild-only for official engines. Checked against the code: `DatabaseDialect` is a closed enum and `ProviderRegistry` is filled at start (a new engine needs a rebuild); registration is in `AppComposition` and the heads, not only in each head; the ODBC layer is `internal` to `Squill.Data.Informix` (extraction needed). No new measurement: the ADR relies on the P21-10 measurements and labels the Linux/macOS driver manager, other vendors' drivers by path, a generic bridge and native plugins as not measured. Proposed cards P21-113 to P21-116 are sketched in the ADR only, not in the index (the owner picks).

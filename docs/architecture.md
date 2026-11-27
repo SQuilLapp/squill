@@ -36,6 +36,7 @@
 | R7 | SSH tunnel under AOT | Medium | SSH.NET compatible (publish and startup only) ([AOT driver report](poc/aot-drivers.md)) |
 | R8 | Mockups (15 screens M01-M15) in WinUI 3 and Avalonia | Medium | Workspace shell, connections, results, history, snippets and settings implemented on both heads (tasks P5-04 to P5-11 in the [task index](tasks/README.md)) |
 | R9 | Installer and automatic updates (Velopack under Native AOT) | High | Met: `UpdateManager` publishes with 0 IL2xxx/IL3xxx warnings and installs, updates (delta) and uninstalls from a local feed without touching `%APPDATA%\SQuilL`; closed by phase 12: the end-to-end run (pack, silent install, update through a local feed, uninstall) passes with the data directory byte-identical ([verification](verification/release.md)); arm64 is built on CI only and untested locally ([Velopack report](poc/velopack-aot.md), [ADR 0009](adr/0009-release-and-auto-update.md)) |
+| R10 | Adding drivers without rebuilding (DBeaver-style) under Native AOT | Medium | A .NET driver cannot be loaded at runtime in a Native AOT process, so no "drop a DLL" route exists. Recommended, owner decides: a generic ODBC provider (driver manager or driver file path, measured in the Informix layer), no generic bridge, no native plugins; third-party code runs with the user's rights, so a confirmation and a source list are required ([ADR 0018](adr/0018-drivers-without-rebuild.md), [P21-15](tasks/phase-21/P21-15-adr-drivers-without-rebuild.md)) |
 
 ## Order of work
 

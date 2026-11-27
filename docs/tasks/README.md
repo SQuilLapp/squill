@@ -451,7 +451,7 @@ Depends on: <card ids, ranges allowed>
 | [P21-12](phase-21/P21-12-sql-informix-dialect.md) | Sql: Informix dialect (tokenizer, splitter, keywords, quoting, types, functions; the tokenizer exists since P21-106) | P21-106 | done |
 | [P21-13](phase-21/P21-13-other-engines-feasibility.md) | Other engines: DB2, ClickHouse, Snowflake and BigQuery feasibility report | P21-10 | done |
 | [P21-14](phase-21/P21-14-nosql-feasibility.md) | NoSQL: MongoDB and Redis feasibility report | none | done |
-| [P21-15](phase-21/P21-15-adr-drivers-without-rebuild.md) | ADR: adding drivers without rebuilding, under Native AOT (feasibility) | P21-10 | todo |
+| [P21-15](phase-21/P21-15-adr-drivers-without-rebuild.md) | ADR: adding drivers without rebuilding, under Native AOT (feasibility) | P21-10 | done |
 | [P21-16](phase-21/P21-16-tls-certificate-files.md) | Core and Data: TLS certificate files (CA, client certificate and key) | none | todo |
 | [P21-17](phase-21/P21-17-tls-certificate-files-ui.md) | Connection editor: TLS certificate file fields (Presentation, WinUI, Avalonia) | P21-16 | todo |
 | [P21-18](phase-21/P21-18-proxy-forwarder.md) | Core and Platform: SOCKS5 and HTTP CONNECT proxy for connections | none | todo |
