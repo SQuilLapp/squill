@@ -130,6 +130,40 @@ public sealed partial class ExplorerTreeViewModel : ViewModelBase
         DropSelectedTablesCommand.NotifyCanExecuteChanged();
     }
 
+    /// <summary>Expands the tree down to a table or view of a session and selects its node.</summary>
+    /// <param name="session">The session that owns the table.</param>
+    /// <param name="table">The table or view.</param>
+    /// <returns><see langword="true"/> when the node was found (the filter may hide it).</returns>
+    public bool RevealTable(ConnectionSession session, TableInfo table)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        ArgumentNullException.ThrowIfNull(table);
+        var path = PathTo(Roots, n => n.Session == session && n.Table is { } t
+            && string.Equals(t.Name, table.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(t.Schema, table.Schema, StringComparison.OrdinalIgnoreCase));
+        if (path is null)
+            return false;
+        foreach (var node in path.SkipLast(1))
+            node.IsExpanded = true;
+        SelectedNode = path[^1];
+        return true;
+    }
+
+    private static List<ExplorerNode>? PathTo(IEnumerable<ExplorerNode> nodes, Func<ExplorerNode, bool> match)
+    {
+        foreach (var node in nodes)
+        {
+            if (match(node))
+                return [node];
+            if (PathTo(node.Children, match) is { } below)
+            {
+                below.Insert(0, node);
+                return below;
+            }
+        }
+
+        return null;
+    }
+
     private static IEnumerable<ExplorerNode> Walk(IEnumerable<ExplorerNode> nodes) =>
         nodes.SelectMany(n => Walk(n.Children).Prepend(n));
 

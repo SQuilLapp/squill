@@ -1,6 +1,6 @@
 # P21-23 - Presentation: go to definition and find usages commands
 
-Status: todo
+Status: done
 Depends on: P21-22
 
 ## Goal
@@ -18,7 +18,7 @@ Exists today: `ISqlEditor` (text, caret, selection, diagnostics, completion and 
 - Head bindings (P21-24, P21-25).
 
 ## Tasks
-- [ ] Tests with `StubSqlEditor`: caret moves, explorer selection requested, usages result content, highlights cleared.
+- [x] Tests with `StubSqlEditor`: caret moves, explorer selection requested, usages result content, highlights cleared.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance.
@@ -31,3 +31,10 @@ Exists today: `ISqlEditor` (text, caret, selection, diagnostics, completion and 
 
 ## Suggested commit message
 Add go to definition and find usages commands to the query tab
+
+## Done notes
+- Premise checked: `ISqlEditor` (text, caret, selection, hover/completion providers, focus), `DefinitionScript`, the explorer selection and `PaletteActionRegistry` exist. Deviations: there is no properties panel (the explorer only exposes `ExplorerNode.DefinitionText` for one), so go to definition selects the node and expands its parents (`ExplorerTreeViewModel.RevealTable`), nothing opens; `SqlSymbol` has no routine kind (P21-22), so routines are not resolved and a routine name gives the `editor.definition.none` status; the results area is the tab's `Results` collection, so the usages are one message result (`line:column  text`, one per line) rather than a list control.
+- `QueryTabViewModel` (new file `QueryTabViewModel.Navigation.cs`): `GoToDefinitionCommand`, `GoToDefinitionInDesignerCommand` (the `Ctrl+Shift+B` variant), `FindUsagesCommand`, `ClearHighlightsCommand` (Esc) and the event `TableDefinitionRequested(TableInfo, bool inDesigner)`; `WorkspaceViewModel.AddTab` turns it into an explorer reveal or `DesignTableOn`. A column of a schema table selects its table. In-script definitions (alias, CTE, derived column) move the caret and select the declaration.
+- `ISqlEditor.SetHighlights` has a default empty implementation; `StubSqlEditor.Highlights` records it. Palette actions `query.goToDefinition`, `query.goToDefinitionInDesigner`, `query.findUsages` without shortcut (heads bind them in P21-24/25). Keys `editor.definition.none`, `editor.usages.*`, `palette.action.query.*` in both catalogs.
+- Tests: `QueryTabNavigationTests` (alias caret and selection, table and designer requests, column, unknown name, usages list and highlights, Esc clears, no symbol), `WorkspaceDesignerTests.GoToDefinition_...` (explorer selection, designer opened).
+- Verification: both solutions build with 0 warnings; `dotnet test --solution Squill.slnx`: every project green except one random `Squill.App.Avalonia.Tests` UI test per run (thread-affinity exception, also on the stashed baseline; recorded in P21-113). No AOT publish (Presentation only).

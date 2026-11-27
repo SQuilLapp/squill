@@ -77,6 +77,9 @@ public sealed class PaletteActionRegistry
         OnTab("query.format", "Ctrl+Shift+F", "action", _ => true, t => t.FormatDocumentCommand.ExecuteAsync(null));
         OnTab("query.explain", null, "action", t => t.CanExplain, t => t.ExplainCommand.ExecuteAsync(null));
         OnTab("query.analyze", null, "action", t => t.CanAnalyze, t => t.AnalyzeCommand.ExecuteAsync(null));
+        OnTab("query.goToDefinition", null, "action", _ => true, t => Do(() => t.GoToDefinitionCommand.Execute(null)));
+        OnTab("query.goToDefinitionInDesigner", null, "action", _ => true, t => Do(() => t.GoToDefinitionInDesignerCommand.Execute(null)));
+        OnTab("query.findUsages", null, "action", _ => true, t => Do(() => t.FindUsagesCommand.Execute(null)));
         OnTab("query.commit", null, "check", t => t.CanCommit, t => t.CommitCommand.ExecuteAsync(null));
         OnTab("query.rollback", null, "action", t => t.CanRollback, t => t.RollbackCommand.ExecuteAsync(null));
         registry.Add(new PaletteAction(

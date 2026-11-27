@@ -38,6 +38,12 @@ public interface ISqlEditor
     /// <param name="provider">A function returning the description at the request offset, or <see langword="null"/>.</param>
     void SetHoverProvider(Func<SqlRequest, HoverInfo?> provider);
 
+    /// <summary>Marks ranges of the script as usages of a name; an empty list clears them. The default does nothing, so heads that draw no highlight still compile.</summary>
+    /// <param name="ranges">The ranges to highlight, in source order.</param>
+    void SetHighlights(IReadOnlyList<TextRange> ranges)
+    {
+    }
+
     /// <summary>Moves keyboard focus to the editor.</summary>
     void FocusEditor();
 }

@@ -12,5 +12,7 @@ Depends on: none
 - Ruled out: the new `PasswordPromptWindow` test (passes alone and with `ForeignKeyTab_BindsTheRows`, every `TransactionDialogTests` method paired with it passes), the `AvaloniaDialogService.Owner` change (the Designer path raises no dialog), CPU load (4 parallel full runs), machine-wide state in the product (no mutex, pipe or shared folder: `AppPaths` is given a temp directory).
 - Suspect that remains: an external factor during the hung window (another process using the machine or a stale testhost of an earlier hung run) or a rare race in the `Session.Dispatch` helper. Needs a process dump of a hung run (`createdump` on the test exe) to name the blocked thread.
 
+- 2026-11-27 (P21-23): no hang, but a different failure on the same project: 3 consecutive runs each failed exactly one UI test with `InvalidOperationException: The calling thread cannot access this object because a different thread owns it` (`EditBarUiTests.PreviewSql_RequestsTheGeneratedScript`, then `WindowChromeTests.StatusBar_EnvironmentBlock_ShowsEnvironmentBrush` Local and Development variants); the baseline without the P21-23 changes (stashed) failed once the same way (`ExplorerAndTabsTests.ContextMenu_OffersDefinitionAndScriptCommands_ForTheRightNodes`). A UI-thread affinity flake, unrelated to the card.
+
 ## Done notes
 Open: reproduce, capture a dump, fix.

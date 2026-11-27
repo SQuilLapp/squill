@@ -999,6 +999,13 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         };
         tab.ScriptRequested += script => AddTab(session, script);
         tab.PlanReady += OpenPlan;
+        tab.TableDefinitionRequested += (table, inDesigner) =>
+        {
+            if (inDesigner)
+                DesignTableOn(session, table);
+            else
+                Explorer.RevealTable(session, table);
+        };
         Tabs.Add(tab);
         ActiveTab = tab;
         return tab;

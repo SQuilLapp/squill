@@ -98,6 +98,25 @@ public sealed class WorkspaceDesignerTests : IDisposable
     }
 
     [Fact]
+    public async Task GoToDefinition_OnATableName_SelectsItInTheExplorer_AndTheDesignerVariantOpensTheDesigner()
+    {
+        _provider.Schema = new SchemaSnapshot(null, [Users]);
+        await ConnectAsync();
+        var tab = _workspace.ActiveTab!;
+        tab.Editor.Text = "select * from users";
+        tab.Editor.CaretOffset = 16;
+
+        tab.GoToDefinitionCommand.Execute(null);
+
+        Assert.Same(Users, _workspace.Explorer.SelectedNode?.Table);
+        Assert.Empty(_workspace.Designers);
+
+        tab.GoToDefinitionInDesignerCommand.Execute(null);
+
+        Assert.Single(_workspace.Designers);
+    }
+
+    [Fact]
     public async Task DesignTable_View_IsIgnored()
     {
         await ConnectAsync();

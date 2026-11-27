@@ -64,6 +64,9 @@ public sealed class StubSqlEditor : ISqlEditor
     /// <summary>Gets the last provider passed to <see cref="SetHoverProvider"/>.</summary>
     public Func<SqlRequest, HoverInfo?>? HoverProvider { get; private set; }
 
+    /// <summary>Gets the ranges last passed to <see cref="SetHighlights"/>.</summary>
+    public IReadOnlyList<TextRange> Highlights { get; private set; } = [];
+
     /// <summary>Gets how many times <see cref="FocusEditor"/> was called.</summary>
     public int FocusCount { get; private set; }
 
@@ -78,6 +81,9 @@ public sealed class StubSqlEditor : ISqlEditor
 
     /// <inheritdoc/>
     public void SetHoverProvider(Func<SqlRequest, HoverInfo?> provider) => HoverProvider = provider;
+
+    /// <inheritdoc/>
+    public void SetHighlights(IReadOnlyList<TextRange> ranges) => Highlights = ranges;
 
     /// <inheritdoc/>
     public void FocusEditor() => FocusCount++;
