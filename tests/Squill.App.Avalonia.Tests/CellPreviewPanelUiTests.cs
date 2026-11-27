@@ -73,23 +73,4 @@ public sealed class CellPreviewPanelUiTests
         {
         }
     }
-
-    [Fact]
-    public async Task TextBox_Set167kLines_Characterization()
-    {
-        var text = string.Join('\n', Enumerable.Range(0, 167_000).Select(i => "  \"k" + i + "\": 1,"));
-        TimeSpan elapsed = default;
-        await Headless.Session.Dispatch(() =>
-        {
-            var box = new TextBox { AcceptsReturn = true, TextWrapping = global::Avalonia.Media.TextWrapping.NoWrap };
-            var window = new Window { Width = 600, Height = 400, Content = box };
-            window.Show();
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            box.Text = text;
-            window.UpdateLayout();
-            elapsed = watch.Elapsed;
-            window.Close();
-        }, TestContext.Current.CancellationToken);
-        File.WriteAllText(Path.Combine(Path.GetTempPath(), "squill-avalonia-textbox-167k.txt"), elapsed.TotalSeconds.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
-    }
 }
