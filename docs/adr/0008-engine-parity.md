@@ -19,33 +19,33 @@ Before phase 11 only SQLite had been exercised end to end. The three server engi
 ## Support matrix
 Source: the automated sections of the four verification reports. `full` = covered by tests that ran against the engine (server engines: a real container) through the view models. The manual window checklists are **not done yet**, so nothing below has been checked by hand in a window.
 
-| Feature | SQLite | PostgreSQL | MySQL | SQL Server | MariaDB 11.4 |
-|---|---|---|---|---|---|
-| Connect, TLS options, timeouts, cancel | full (TLS n/a) | full | full | full | full (verify-full not run: the container has no TLS, [P21-98](../tasks/phase-21/P21-98-mariadb-corpus-and-tls-tests.md)) |
-| Run statements, run under caret, parameters | full (`:name`; `?` refused) | full (`@name`; `$1` refused) | full (`@name`; `?` refused) | full (`@name`) | full (`@name`; `?` refused) |
-| Several result sets and messages | partial (one set per statement) | full | full | full | full |
-| Result grid, 100,000 rows, CSV and JSON export | full | full | full | full | full |
-| Grid editing and commit | full | full | partial (no transaction on engines without them) | full (identity read-back through `OUTPUT`) | partial (as MySQL) |
-| Table designer: create | full | full | full | full | full |
-| Table designer: alter | full (by table rebuild) | full | partial (DDL cannot be rolled back) | partial (adding an identity to a column is refused) | partial (DDL cannot be rolled back) |
-| ER diagram | full | full | full | full | full |
-| Explorer: tables, views, indexes, foreign keys | full | full | full | full | full |
-| Routines | no (SQLite has none) | full | full | full | full |
-| Triggers and view definitions | full | full | full | full | full |
-| Materialized views | no (none in SQLite) | full | no (none in MySQL) | no (not listed apart) | no (none in MariaDB) |
-| Browse other databases | partial (a file is one database) | full | full | full | full |
-| Completion, hover, diagnostics, formatter | full | full | full | full | partial (JSON arrow operators, [P21-98](../tasks/phase-21/P21-98-mariadb-corpus-and-tls-tests.md)) |
-| Column types read and written | full | partial (enum and interval with months unreadable, see column types) | full | full (`rowversion` read-only) | full (integer display width and quoted defaults handled) |
-| Native terminal client | full (`sqlite3`) | full (`psql`) | full (`mysql`) | full (`sqlcmd`) | not verified |
-| SSH tunnel | n/a | full (jump host test) | see [P11-35](../tasks/phase-11/P11-35-ssh-tunnel-containers.md) | see [P11-35](../tasks/phase-11/P11-35-ssh-tunnel-containers.md) | not verified |
-| Manual check in the WinUI window | pending | pending | pending | pending | pending |
+| Feature | SQLite | PostgreSQL | MySQL | SQL Server | MariaDB 11.4 | Oracle 23ai |
+|---|---|---|---|---|---|---|
+| Connect, TLS options, timeouts, cancel | full (TLS n/a) | full | full | full | full (verify-full not run: the container has no TLS, [P21-98](../tasks/phase-21/P21-98-mariadb-corpus-and-tls-tests.md)) | full (TCPS descriptor unit-tested, not run against a TLS listener; `DBMS_SESSION.SLEEP` cannot be cancelled: the bridge is killed, [P21-100](../tasks/phase-21/P21-100-oracle-session-after-killed-bridge.md)) |
+| Run statements, run under caret, parameters | full (`:name`; `?` refused) | full (`@name`; `$1` refused) | full (`@name`; `?` refused) | full (`@name`) | full (`@name`; `?` refused) | full (`:name`) |
+| Several result sets and messages | partial (one set per statement) | full | full | full | full | full (implicit results, `DBMS_OUTPUT`) |
+| Result grid, 100,000 rows, CSV and JSON export | full | full | full | full | full | partial (100,000 rows tested; export not run on Oracle) |
+| Grid editing and commit | full | full | partial (no transaction on engines without them) | full (identity read-back through `OUTPUT`) | partial (as MySQL) | full (generated key read-back) |
+| Table designer: create | full | full | full | full | full | full |
+| Table designer: alter | full (by table rebuild) | full | partial (DDL cannot be rolled back) | partial (adding an identity to a column is refused) | partial (DDL cannot be rolled back) | partial (DDL commits implicitly) |
+| ER diagram | full | full | full | full | full | full |
+| Explorer: tables, views, indexes, foreign keys | full | full | full | full | full | full |
+| Routines | no (SQLite has none) | full | full | full | full | full |
+| Triggers and view definitions | full | full | full | full | full | full |
+| Materialized views | no (none in SQLite) | full | no (none in MySQL) | no (not listed apart) | no (none in MariaDB) | no (not listed apart) |
+| Browse other databases | partial (a file is one database) | full | full | full | full | full (a schema is a database) |
+| Completion, hover, diagnostics, formatter | full | full | full | full | partial (JSON arrow operators, [P21-98](../tasks/phase-21/P21-98-mariadb-corpus-and-tls-tests.md)) | partial (no `CONNECT BY`, no `DATE '...'` literal in the parser) |
+| Column types read and written | full | partial (enum and interval with months unreadable, see column types) | full | full (`rowversion` read-only) | full (integer display width and quoted defaults handled) | full |
+| Native terminal client | full (`sqlite3`) | full (`psql`) | full (`mysql`) | full (`sqlcmd`) | not verified | full (`sqlplus`, not installed on the verification machine) |
+| SSH tunnel | n/a | full (jump host test) | see [P11-35](../tasks/phase-11/P11-35-ssh-tunnel-containers.md) | see [P11-35](../tasks/phase-11/P11-35-ssh-tunnel-containers.md) | not verified | not verified |
+| Manual check in the WinUI window | pending | pending | pending | pending | pending | agent drive done, owner checklist pending |
 
-Oracle ([P21-08](../tasks/phase-21/P21-08-oracle-plan-terminal-tls.md)): estimated plans (`EXPLAIN PLAN` + `PLAN_TABLE`) and actual plans (`V$SQL_PLAN_STATISTICS_ALL`, needs `SELECT_CATALOG_ROLE`) run through the shared plan scenario; the terminal tab starts `sqlplus -L` with the password typed by the user (a wallet profile signs in with `/@` and `TNS_ADMIN`); `Require` / `VerifyFull` connect over TCPS (unit-tested descriptor, not run against a TCPS listener). The matrix row itself is updated by P21-09.
+Oracle ([P21-08](../tasks/phase-21/P21-08-oracle-plan-terminal-tls.md)): estimated plans (`EXPLAIN PLAN` + `PLAN_TABLE`) and actual plans (`V$SQL_PLAN_STATISTICS_ALL`, needs `SELECT_CATALOG_ROLE`) run through the shared plan scenario; the terminal tab starts `sqlplus -L` with the password typed by the user (a wallet profile signs in with `/@` and `TNS_ADMIN`); `Require` / `VerifyFull` connect over TCPS (unit-tested descriptor, not run against a TCPS listener). The Oracle column was filled by [P21-09](../tasks/phase-21/P21-09-oracle-verification-and-docs.md) from [docs/verification/oracle.md](../verification/oracle.md).
 
 MariaDB 11.4 column ([P21-01](../tasks/phase-21/P21-01-mariadb-container-verification.md), [P21-02](../tasks/phase-21/P21-02-mariadb-plan-and-transactions.md)): the MySQL suites run unchanged on a `mariadb:11.4` container (`eng/run-docker-tests.ps1 -Engine mariadb`). Execution plans work in both modes (`EXPLAIN FORMAT=JSON`, `ANALYZE FORMAT=JSON`, parsed by `MariaDbPlanParser`; MariaDB gives no cost on a single-row lookup and the cost of a table is not cumulative). The transaction probe reads `@@in_transaction` (MySQL stays unknown). Blocked statement text of the activity monitor is still wrong ([P21-97](../tasks/phase-21/P21-97-mariadb-activity-statement-text.md)).
 
 ## Not supported
-Sequences, user-defined types, synonyms, events (MySQL), spatial types, Windows authentication (SQL Server), Azure SQL. Oracle exists only as a proof of concept through a bridge process ([docs/poc/oracle-bridge.md](../poc/oracle-bridge.md)).
+Sequences, user-defined types, synonyms, events (MySQL), spatial types, Windows authentication (SQL Server), Azure SQL. Oracle runs through a bridge process ([docs/poc/oracle-bridge.md](../poc/oracle-bridge.md)) and needs the .NET runtime; its own gaps are in the matrix.
 
 ## Avalonia head
 Still on AvaloniaEdit as its editor, see [ADR 0002](0002-editor-and-terminal-components.md). Phase 11 added the same features to both heads (connection options, result tabs, explorer objects), but the checklists give Avalonia only a smoke pass and **nothing of it has been driven by hand yet**.

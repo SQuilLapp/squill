@@ -8,6 +8,7 @@
 
 ### Added
 
+- Oracle is a supported engine through a bridge process (the .NET runtime is required): several result sets, manual transactions, cancel, grid editing with generated keys, table designer, execution plans, `sqlplus` terminal and TCPS, verified end to end on an Oracle Free container.
 - MariaDB: `Explain` and `Analyze` show the execution plan (`EXPLAIN FORMAT=JSON` and `ANALYZE FORMAT=JSON`), the manual transaction state is read from the server, and MariaDB 11.4 joins the support matrix of the engine-parity record.
 - Explorer filter popup, opened from an `n of m` badge on connection, database and schema rows or from the context menu: choose which databases, schemas and tables are shown, with wildcard patterns. It replaces the "Tables to show" dialog, is saved per connection, and filters saved by earlier versions are kept.
 - Auto-refresh of a query tab: a clock menu before `Stop` re-runs the last read-only query every 5 s, 10 s, 30 s, 1 m, 5 m or a custom interval; it keeps the sort, filters, scroll and column widths, pauses on pending edits and stops on error.

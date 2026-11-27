@@ -22,11 +22,12 @@ To add a UI string, add the same key to `UiTextCatalogFr` and `UiTextCatalogEn` 
 | PostgreSQL | `Npgsql` (`NpgsqlSlimDataSourceBuilder`) | compatible (publish only, not run against a server) |
 | MySQL | `MySqlConnector` | compatible (publish only, not run against a server) |
 | MariaDB | `MySqlConnector` (same driver as MySQL) | compatible as MySQL; run against `mariadb:11.4` in the tests |
+| Oracle | `Oracle.ManagedDataAccess.Core` through `Squill.OracleBridge` | bridge process (the driver is not AOT compatible), .NET runtime required; run against `gvenzl/oracle-free:23-slim-faststart` in the tests |
 | SQL Server | `Microsoft.Data.SqlClient` | compatible (publish and startup only); the package raises IL2104/IL3053 itself |
 
 SSH tunnels (`SSH.NET`) are compatible under the same conditions (publish and startup only). The jump host key is checked against `known-hosts.json` (`IKnownHostsStore`): the first key is shown with its fingerprint and remembered on your yes, a changed key is refused ([ADR 0013](docs/adr/0013-ssh-host-keys.md)).
 
-Oracle exists only as a proof of concept through a separate bridge process ([docs/poc/oracle-bridge.md](docs/poc/oracle-bridge.md)). Informix, DB2, ClickHouse, Snowflake and BigQuery are not supported; they are future candidates carded (not scheduled) in phase 21 of [the task index](docs/tasks/README.md), Informix first with a driver proof of concept. Phase 11 ran the four engines against real servers (Testcontainers). The feature-by-engine support matrix, what is not supported (Azure SQL, sequences, user-defined types, ...) and the manual window checks still pending are in [ADR 0008](docs/adr/0008-engine-parity.md). Tests and how to run them: [docs/testing.md](docs/testing.md).
+Oracle runs through a separate bridge process that hosts the driver ([docs/poc/oracle-bridge.md](docs/poc/oracle-bridge.md)); the published app ships it in `oracle-bridge/` and needs the .NET runtime on the machine. Informix, DB2, ClickHouse, Snowflake and BigQuery are not supported; they are future candidates carded (not scheduled) in phase 21 of [the task index](docs/tasks/README.md), Informix first with a driver proof of concept. Phase 11 ran the four engines against real servers (Testcontainers). The feature-by-engine support matrix, what is not supported (Azure SQL, sequences, user-defined types, ...) and the manual window checks still pending are in [ADR 0008](docs/adr/0008-engine-parity.md). Tests and how to run them: [docs/testing.md](docs/testing.md).
 
 SQL completion (phase 14): after `JOIN` the popup offers each table with its alias and the `ON` condition built from the foreign keys, inserts schema-qualified names where needed, follows the keyword-case setting, and has statement snippets (`sel`, `ins`, `upd`, `del`, `cte`, `crt`). Decisions and limits: [ADR 0011](docs/adr/0011-sql-completion.md).
 
@@ -42,7 +43,7 @@ SQL completion (phase 14): after `JOIN` the popup offers each table with its ali
 | MariaDB 11.x | yes | yes (`ANALYZE FORMAT=JSON`, no wrapper) | cost and estimate (estimated), timing (actual) |
 | SQL Server | yes (not with bound parameters) | yes, rolled-back transaction | cost, estimate, timing, missing index |
 
-Oracle is not supported for plans, and plan comparison and export do not exist. See [ADR 0010](docs/adr/0010-execution-plan.md) for the design and known limits; the screens still need the owner's checks of [docs/verification/plan.md](docs/verification/plan.md).
+Oracle gives estimated plans (`EXPLAIN PLAN`) and actual plans (`V$SQL_PLAN_STATISTICS_ALL`, needs `SELECT_CATALOG_ROLE`); plan comparison and export do not exist. See [ADR 0010](docs/adr/0010-execution-plan.md) for the design and known limits; the screens still need the owner's checks of [docs/verification/plan.md](docs/verification/plan.md).
 
 ## Transactions and production confirmation
 
@@ -54,8 +55,9 @@ The query toolbar has an `Auto-commit | Manuel` toggle. In `Manuel` the first st
 | PostgreSQL | yes (an error puts the transaction in the `Failed` state until `Annuler`) | transactional | yes |
 | MySQL 8.x | yes | **commits implicitly**: the app asks first | yes |
 | SQL Server | yes | transactional | yes |
+| Oracle | yes | **commits implicitly**: the app asks first | no |
 
-Oracle keeps auto-commit. See [ADR 0012](docs/adr/0012-transactions-and-production-confirmation.md) for the design and known limits; the windows still need the owner's checks of [docs/verification/transactions.md](docs/verification/transactions.md).
+Oracle has manual transactions and commits implicitly on DDL. See [ADR 0012](docs/adr/0012-transactions-and-production-confirmation.md) for the design and known limits; the windows still need the owner's checks of [docs/verification/transactions.md](docs/verification/transactions.md).
 
 ## Auto-refresh of a query tab
 

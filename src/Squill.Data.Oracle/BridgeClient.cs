@@ -25,6 +25,9 @@ internal sealed class BridgeClient : IAsyncDisposable
     private long _active;
     private volatile bool _broken;
 
+    /// <summary>Gets what the bridge process wrote on its error output (for example a missing .NET runtime), added to the error raised when it exits.</summary>
+    internal Func<string>? ExitDetail { get; init; }
+
     /// <summary>Wraps the two ends of a bridge.</summary>
     /// <param name="toBridge">The bridge's stdin.</param>
     /// <param name="fromBridge">The bridge's stdout.</param>
@@ -46,12 +49,24 @@ internal sealed class BridgeClient : IAsyncDisposable
         {
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
+            RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
         };
         if (info.FileName == "dotnet")
             info.ArgumentList.Add(path);
         var process = Process.Start(info) ?? throw new OracleBridgeException("The Oracle bridge process did not start.");
+        var errors = new StringBuilder();
+        process.ErrorDataReceived += (_, e) =>
+        {
+            // The .NET host explains a missing runtime on stderr; keep the first lines only.
+            lock (errors)
+            {
+                if (e.Data is not null && errors.Length < 600)
+                    errors.AppendLine(e.Data);
+            }
+        };
+        process.BeginErrorReadLine();
         return new BridgeClient(process.StandardInput.BaseStream, process.StandardOutput.BaseStream, graceful =>
         {
             try
@@ -116,7 +131,7 @@ internal sealed class BridgeClient : IAsyncDisposable
             {
                 Break();
                 cancellationToken.ThrowIfCancellationRequested();
-                throw new OracleBridgeException("The Oracle bridge exited unexpectedly.");
+                throw new OracleBridgeException("The Oracle bridge exited unexpectedly (it needs the .NET runtime installed)." + (ExitDetail?.Invoke() is { Length: > 0 } detail ? " " + detail : ""));
             }
             if (response.Id != request.Id)
             {

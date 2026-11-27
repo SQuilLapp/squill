@@ -1,4 +1,4 @@
-# Oracle through a bridge process (proof of concept)
+# Oracle through a bridge process
 
 Problem: the app is Native AOT, `Oracle.ManagedDataAccess.Core` (ODP.NET managed) is not trim or AOT compatible (reflection, dynamic loading). It cannot be loaded in-process.
 

@@ -85,12 +85,12 @@ internal sealed class OracleDatabaseConnection(BridgeClient client, string serve
                     Convert.ToString(r[2], CultureInfo.InvariantCulture) ?? "", r[3] as string, r[4] as string, r[5] as string,
                     Number(r[6]), Number(r[7]), Number(r[8]), r[9] as string, r[10] as string, Number(r[11]) ?? 0, Number(r[12]), Number(r[13]))).ToList();
                 if (rows.Count == 0)
-                    throw new PlanUnavailableException("engine", "Oracle kept no execution statistics for this statement.");
+                    throw new PlanUnavailableException("detail", "Oracle kept no execution statistics for this statement.");
                 return OraclePlanParser.Parse(sql, rows, null, PlanMode.Actual);
             }
             catch (OracleBridgeException ex)
             {
-                throw new PlanUnavailableException("engine", "Reading V$SQL_PLAN_STATISTICS_ALL needs the SELECT_CATALOG_ROLE role: " + ex.Message);
+                throw new PlanUnavailableException("detail", "Reading V$SQL_PLAN_STATISTICS_ALL needs the SELECT_CATALOG_ROLE role: " + ex.Message);
             }
         }
         finally
