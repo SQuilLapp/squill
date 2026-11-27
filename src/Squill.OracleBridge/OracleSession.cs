@@ -97,9 +97,18 @@ internal sealed class OracleSession : IAsyncDisposable
         _command.Transaction = _transaction;
         foreach (var p in request.Parameters ?? [])
         {
-            var value = WireValue.Decode(p.Value);
-            // ODP.NET has no BOOLEAN bind before 23ai: send 1/0.
-            _command.Parameters.Add(new OracleParameter(p.Name.TrimStart(':', '@'), value is bool b ? (b ? 1 : 0) : value ?? DBNull.Value));
+            _command.Parameters.Add(Bind(p.Name.TrimStart(':', '@'), WireValue.Decode(p.Value)));
+        }
+
+        var outs = request.OutParameters ?? [];
+        if (outs.Length > 0)
+        {
+            foreach (var o in outs)
+                _command.Parameters.Add(new OracleParameter(o.Name, o.Kind == "s" ? OracleDbType.Varchar2 : o.Kind == "x" ? OracleDbType.Raw : OracleDbType.Decimal) { Direction = ParameterDirection.Output, Size = o.Kind == "x" ? 2000 : 4000 });
+            var changed = await _command.ExecuteNonQueryAsync();
+            var values = outs.Select(o => OutCell(_command.Parameters[o.Name].Value)).ToArray();
+            await ReleaseReaderAsync();
+            return new BridgeResponse(request.Id, true, Columns: [], Done: true, RecordsAffected: changed, Messages: await DrainMessagesAsync(), OutValues: values);
         }
 
         _reader = (OracleDataReader)await _command.ExecuteReaderAsync();
@@ -112,8 +121,29 @@ internal sealed class OracleSession : IAsyncDisposable
         return new BridgeResponse(request.Id, true, Columns: columns, Done: true, RecordsAffected: affected, Messages: await DrainMessagesAsync());
     }
 
+    // ODP.NET has no BOOLEAN bind before 23ai (1/0 is sent); a DateTime keeps its fraction as a TIMESTAMP; a DateTimeOffset keeps its offset as TIMESTAMP WITH TIME ZONE.
+    private static OracleParameter Bind(string name, object? value) => value switch
+    {
+        bool b => new OracleParameter(name, b ? 1 : 0),
+        DateTime t => new OracleParameter(name, OracleDbType.TimeStamp) { Value = t },
+        DateTimeOffset o => new OracleParameter(name, OracleDbType.TimeStampTZ) { Value = new OracleTimeStampTZ(o.DateTime, o.ToString("zzz", System.Globalization.CultureInfo.InvariantCulture)) },
+        _ => new OracleParameter(name, value ?? DBNull.Value),
+    };
+
+    // The value of an output parameter: a NUMBER the decimal type cannot hold travels as its text.
+    private static WireCell? OutCell(object? value) => value switch
+    {
+        OracleDecimal { IsNull: true } or OracleString { IsNull: true } or OracleBinary { IsNull: true } => null,
+        OracleDecimal d => d.CompareTo(new OracleDecimal(decimal.MaxValue)) > 0 || d.CompareTo(new OracleDecimal(decimal.MinValue)) < 0 ? new WireCell("s", d.ToString()) : WireValue.Encode(d.Value),
+        OracleString s => WireValue.Encode(s.Value),
+        OracleBinary b => WireValue.Encode(b.Value),
+        _ => WireValue.Encode(value),
+    };
+
+    private static bool IsTimeStampTz(OracleDataReader reader, int i) => reader.GetDataTypeName(i) == "TimeStampTZ";
+
     private static WireColumn[] ColumnsOf(OracleDataReader reader) =>
-        [.. Enumerable.Range(0, reader.FieldCount).Select(i => new WireColumn(reader.GetName(i), reader.GetDataTypeName(i), WireValue.KindOf(reader.GetFieldType(i))))];
+        [.. Enumerable.Range(0, reader.FieldCount).Select(i => new WireColumn(reader.GetName(i), reader.GetDataTypeName(i), IsTimeStampTz(reader, i) ? "o" : WireValue.KindOf(reader.GetFieldType(i))))];
 
     // The reader stays open after its last row: implicit results (DBMS_SQL.RETURN_RESULT) and REF CURSORs follow through nextResult.
     private async Task<BridgeResponse> NextResultAsync(BridgeRequest request)
@@ -225,6 +255,11 @@ internal sealed class OracleSession : IAsyncDisposable
     {
         try
         {
+            if (IsTimeStampTz(_reader!, i))
+            {
+                var stamp = _reader!.GetOracleTimeStampTZ(i);
+                return WireValue.Encode(new DateTimeOffset(DateTime.SpecifyKind(stamp.Value, DateTimeKind.Unspecified), stamp.GetTimeZoneOffset()));
+            }
             return WireValue.Encode(_reader!.GetValue(i));
         }
         catch (Exception e) when (e is OverflowException or InvalidCastException)

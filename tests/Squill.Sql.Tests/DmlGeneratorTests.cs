@@ -148,6 +148,18 @@ public sealed class DmlGeneratorTests
     }
 
     [Fact]
+    public void Oracle_BindsByColonName_AndQuotesTheCatalogCase()
+    {
+        var target = Target("APP", "EMP", ["ID"], "ID", "NAME", "AGE");
+        var update = DmlGenerator.Generate(new UpdateRow([V("ID", 7)], [V("NAME", "x"), V("AGE", SqlDefault.Value)]), target, DatabaseDialect.Oracle);
+        Assert.Equal("UPDATE \"APP\".\"EMP\" SET \"NAME\" = :p0, \"AGE\" = DEFAULT WHERE \"ID\" = :p1", update.Sql);
+        Assert.Equal([new DmlParameter("p0", "x"), new DmlParameter("p1", 7)], update.Parameters);
+        Assert.Equal("DELETE FROM \"APP\".\"EMP\" WHERE \"ID\" = :p0", DmlGenerator.Generate(new DeleteRow([V("ID", 7)]), target, DatabaseDialect.Oracle).Sql);
+        Assert.Equal("INSERT INTO \"APP\".\"EMP\" (\"NAME\") VALUES (:p0)", DmlGenerator.Generate(new InsertRow([V("NAME", "x")]), target, DatabaseDialect.Oracle).Sql);
+        Assert.Equal("INSERT INTO \"APP\".\"EMP\" (\"ID\") VALUES (DEFAULT)", DmlGenerator.Generate(new InsertRow([]), target, DatabaseDialect.Oracle).Sql);
+    }
+
+    [Fact]
     public void Invalid_Edits_Throw()
     {
         const DatabaseDialect d = DatabaseDialect.Sqlite;

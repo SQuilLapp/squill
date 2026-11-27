@@ -19,7 +19,7 @@ public enum ReadOnlyReason
 /// <summary>Decides from the declared column type whether a value can be written back.</summary>
 public static class ColumnEditability
 {
-    private static readonly string[] UnsupportedTypes = ["sql_variant", "hierarchyid", "geography", "geometry"];
+    private static readonly string[] UnsupportedTypes = ["sql_variant", "hierarchyid", "geography", "geometry", "LONG", "LONG RAW", "BFILE", "XMLTYPE", "ROWID", "UROWID"];
 
     /// <summary>Gets the reason a mapped table column is read-only.</summary>
     /// <param name="column">The table column.</param>
@@ -31,6 +31,9 @@ public static class ColumnEditability
             return ReadOnlyReason.Generated;
         var type = column.DataType.Trim();
         if (UnsupportedTypes.Contains(type, StringComparer.OrdinalIgnoreCase)
+            || type.StartsWith("INTERVAL YEAR", StringComparison.OrdinalIgnoreCase)
+            || type.StartsWith("INTERVAL DAY", StringComparison.OrdinalIgnoreCase)
+            || type.EndsWith("LOCAL TIME ZONE", StringComparison.OrdinalIgnoreCase)
             || type.EndsWith("range", StringComparison.OrdinalIgnoreCase)
             || type.EndsWith("multirange", StringComparison.OrdinalIgnoreCase)
             || (type.EndsWith("[]", StringComparison.Ordinal) && !type.Equals("integer[]", StringComparison.OrdinalIgnoreCase) && !type.Equals("text[]", StringComparison.OrdinalIgnoreCase)))

@@ -16,11 +16,13 @@ internal sealed class OracleDatabaseConnection(BridgeClient client, string serve
     {
         if (parameters.Count == 0 && OracleTransactionStatement.TryParse(sql, out var op, out var name))
             return new OracleResultReader(client, await client.SendAsync(new BridgeRequest(0, op, Name: name), cancellationToken));
+        var outs = OracleReturning.OutParameters(sql, parameters);
         var response = await client.SendAsync(new BridgeRequest(
             0, "execute",
             Sql: sql,
-            Parameters: [.. parameters.Select(p => new WireParameter(p.Name, WireValue.Encode(p.Value)))]), cancellationToken);
-        return new OracleResultReader(client, response);
+            Parameters: [.. parameters.Select(p => new WireParameter(p.Name, WireValue.Encode(p.Value)))],
+            OutParameters: outs), cancellationToken);
+        return new OracleResultReader(client, response, outs);
     }
 
     /// <inheritdoc />

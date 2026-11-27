@@ -11,7 +11,7 @@ public static class DmlGenerator
     /// <param name="edit">The edit to apply.</param>
     /// <param name="target">The table the edit applies to.</param>
     /// <param name="dialect">The target engine.</param>
-    /// <returns>The statement; values are bound as <c>@p0</c>, <c>@p1</c>, ... and never inlined.</returns>
+    /// <returns>The statement; values are bound as <c>@p0</c>, <c>@p1</c>, ... (<c>:p0</c> on Oracle) and never inlined.</returns>
     /// <exception cref="ArgumentException">The edit does not match the target (key, empty changes, unknown column).</exception>
     public static DmlStatement Generate(RowEdit edit, EditTarget target, DatabaseDialect dialect) =>
         Generate(edit, target, dialect, null);
@@ -42,7 +42,7 @@ public static class DmlGenerator
 
     /// <summary>Whether the engine returns the generated key from the INSERT itself rather than a follow-up query.</summary>
     /// <param name="d">The target engine.</param>
-    /// <returns>True for PostgreSQL, SQLite and SQL Server; false for MySQL.</returns>
+    /// <returns>True for PostgreSQL, SQLite, SQL Server and Oracle; false for MySQL.</returns>
     public static bool ReturnsKeyFromInsert(DatabaseDialect d) => d != DatabaseDialect.MySql;
 
     private static DmlStatement Generate(RowEdit edit, EditTarget target, DatabaseDialect dialect, string? returnedKey)
@@ -56,7 +56,7 @@ public static class DmlGenerator
         {
             var name = "p" + ps.Count;
             ps.Add(new DmlParameter(name, value));
-            return "@" + name;
+            return (dialect == DatabaseDialect.Oracle ? ":" : "@") + name;
         }
 
         // Typed text parameters need an explicit cast on PostgreSQL (json/jsonb); MySQL json and SQL Server xml accept a string.
@@ -90,11 +90,23 @@ public static class DmlGenerator
                 // A column left to its default is simply not listed.
                 var given = ins.Values.Where(v => v.Value is not SqlDefault).ToList();
                 sql = given.Count == 0
-                    ? dialect == DatabaseDialect.MySql ? $"INSERT INTO {table} () VALUES ()" : $"INSERT INTO {table} DEFAULT VALUES"
+                    ? dialect switch
+                    {
+                        DatabaseDialect.MySql => $"INSERT INTO {table} () VALUES ()",
+                        // Oracle has no DEFAULT VALUES: the first column is set to its default (an identity column accepts that too).
+                        DatabaseDialect.Oracle => $"INSERT INTO {table} ({Col(target.Columns[0].Definition.Name)}) VALUES (DEFAULT)",
+                        _ => $"INSERT INTO {table} DEFAULT VALUES",
+                    }
                     : $"INSERT INTO {table} ({string.Join(", ", given.Select(v => Col(v.Column)))}) VALUES ({string.Join(", ", given.Select(v => BindFor(v.Column, v.Value)))})";
                 // SQL Server refuses OUTPUT without INTO on a table with a trigger (error 334): SCOPE_IDENTITY() ignores the trigger's own inserts.
                 if (returnedKey is not null)
-                    sql += dialect == DatabaseDialect.SqlServer ? "; SELECT SCOPE_IDENTITY()" : $" RETURNING {returnedKey}";
+                    sql += dialect switch
+                    {
+                        DatabaseDialect.SqlServer => "; SELECT SCOPE_IDENTITY()",
+                        // The connection turns the INTO variable into an output parameter and hands its value back as a one-row result.
+                        DatabaseDialect.Oracle => $" RETURNING {returnedKey} INTO :out0",
+                        _ => $" RETURNING {returnedKey}",
+                    };
                 break;
             case UpdateRow upd:
                 if (upd.Changes.Count == 0)

@@ -83,6 +83,32 @@ public sealed class OracleProviderTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_ReturningInto_DeclaresTheOutputParameterAndReadsItBackAsARow()
+    {
+        await using var bridge = new FakeBridge(r => r.Op == "execute"
+            ? new BridgeResponse(0, true, Columns: [], Done: true, RecordsAffected: 1, OutValues: [new WireCell("d", "42")])
+            : new BridgeResponse(0, true, ServerVersion: "v"));
+        await using var connection = await OpenAsync(bridge);
+
+        await using var reader = await connection.ExecuteAsync("INSERT INTO \"T\" (\"A\") VALUES (:p0) RETURNING \"ID\" INTO :out0", [new("p0", "x")], CancellationToken.None);
+
+        var execute = bridge.Requests.Single(r => r.Op == "execute");
+        Assert.Equal([new WireOut("out0", "d")], execute.OutParameters!);
+        Assert.Equal(["out0"], reader.Columns.Select(c => c.Name));
+        Assert.Equal([42m], Assert.Single((await reader.ReadAllAsync(10, CancellationToken.None))));
+        Assert.False(await reader.NextResultAsync(CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("insert into t values (1)", 0)]
+    [InlineData("insert into t values (1) returning id into :k", 1)]
+    [InlineData("update t set a = 1 returning a, b into :x, :y;", 2)]
+    [InlineData("insert into t values (:z) returning id into :z", 0)]
+    [InlineData("select 1 from dual where 'returning into :k' is null", 0)]
+    public void OutParameters_AreTheBindVariablesAfterReturningInto(string sql, int expected) =>
+        Assert.Equal(expected, OracleReturning.OutParameters(sql, [new QueryParameter("z", 1L)])?.Length ?? 0);
+
+    [Fact]
     public async Task ExecuteAsync_StatementWithoutResultSet_ReportsRecordsAffected()
     {
         await using var bridge = new FakeBridge(r => r.Op == "execute"

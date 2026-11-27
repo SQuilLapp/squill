@@ -24,6 +24,7 @@ public sealed class InsertPlanTests
     [InlineData(DatabaseDialect.PostgreSql, "INSERT INTO \"main\".\"T\" (\"Name\") VALUES (@p0) RETURNING \"Id\"", null)]
     [InlineData(DatabaseDialect.SqlServer, "INSERT INTO [main].[T] ([Name]) VALUES (@p0); SELECT SCOPE_IDENTITY()", null)]
     [InlineData(DatabaseDialect.MySql, "INSERT INTO `main`.`T` (`Name`) VALUES (@p0)", "SELECT LAST_INSERT_ID()")]
+    [InlineData(DatabaseDialect.Oracle, "INSERT INTO \"main\".\"T\" (\"Name\") VALUES (:p0) RETURNING \"Id\" INTO :out0", null)]
     public void GeneratedKey(DatabaseDialect d, string sql, string? keyQuery)
     {
         var plan = DmlGenerator.PlanInsert(new InsertRow([V("Name", "a")]), Target("Id"), d);
@@ -37,6 +38,7 @@ public sealed class InsertPlanTests
     [InlineData(DatabaseDialect.PostgreSql)]
     [InlineData(DatabaseDialect.MySql)]
     [InlineData(DatabaseDialect.SqlServer)]
+    [InlineData(DatabaseDialect.Oracle)]
     public void ExplicitKey_NoReadBack(DatabaseDialect d)
     {
         var edit = new InsertRow([V("Id", 5), V("Name", "a")]);
@@ -50,6 +52,13 @@ public sealed class InsertPlanTests
     {
         var plan = DmlGenerator.PlanInsert(new InsertRow([]), Target("Id"), DatabaseDialect.SqlServer);
         Assert.Equal("INSERT INTO [main].[T] DEFAULT VALUES; SELECT SCOPE_IDENTITY()", plan.Insert.Sql);
+    }
+
+    [Fact]
+    public void NoValues_OracleSetsTheFirstColumnToDefault()
+    {
+        var plan = DmlGenerator.PlanInsert(new InsertRow([]), Target("Id"), DatabaseDialect.Oracle);
+        Assert.Equal("INSERT INTO \"main\".\"T\" (\"Id\") VALUES (DEFAULT) RETURNING \"Id\" INTO :out0", plan.Insert.Sql);
     }
 
     [Fact]

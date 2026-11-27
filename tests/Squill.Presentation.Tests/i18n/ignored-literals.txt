@@ -139,9 +139,6 @@ src/Squill.Presentation/Results/GridFilterText.cs|STARTS WITH|invariant SQL keyw
 src/Squill.Presentation/Results/JsonResultExporter.cs|The result is still loading and cannot be exported.|developer guard, the view-model checks first
 src/Squill.Presentation/Results/SyntheticGridSource.cs|value {row}-{column}|synthetic benchmark data
 src/Squill.Presentation/Sessions/ConnectionSession.cs|This session cannot open other databases.|programmer-error exception message
-src/Squill.Presentation/Sessions/SqlRunner.cs|BEGIN TRANSACTION|SQL statement
-src/Squill.Presentation/Sessions/SqlRunner.cs|COMMIT TRANSACTION|SQL statement
-src/Squill.Presentation/Sessions/SqlRunner.cs|ROLLBACK TRANSACTION|SQL statement
 src/Squill.Presentation/Terminal/TerminalLauncher.cs|Client SDK|install folder name, not display text
 src/Squill.Presentation/Terminal/TerminalLauncher.cs|Microsoft SQL Server|install folder name, not display text
 src/Squill.Presentation/Updates/ChangelogSection.cs|_Nothing yet._|changelog placeholder marker, not UI text

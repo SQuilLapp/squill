@@ -16,10 +16,11 @@ internal static class DmlScenario
     /// <summary>Runs the key, default-value, update, delete and composite-key steps.</summary>
     public static async Task RunAsync(IDatabaseConnection c, DatabaseDialect d, string? schema)
     {
-        var text = d switch { DatabaseDialect.Sqlite => "TEXT", DatabaseDialect.SqlServer => "nvarchar(100)", _ => "varchar(100)" };
-        var integer = d == DatabaseDialect.Sqlite ? "INTEGER" : "int";
+        var text = d switch { DatabaseDialect.Sqlite => "TEXT", DatabaseDialect.SqlServer => "nvarchar(100)", DatabaseDialect.Oracle => "VARCHAR2(100)", _ => "varchar(100)" };
+        var integer = d switch { DatabaseDialect.Sqlite => "INTEGER", DatabaseDialect.Oracle => "NUMBER(10)", _ => "int" };
+        var money = d == DatabaseDialect.Oracle ? "NUMBER(10,2)" : "decimal(10,2)";
         var items = new TableDesign(schema, "dml_items",
-            [Col("id", integer, false, auto: true), Col("name", text, false), Col("qty", integer, true), Col("price", "decimal(10,2)", true)],
+            [Col("id", integer, false, auto: true), Col("name", text, false), Col("qty", integer, true), Col("price", money, true)],
             ["id"], null, [], []);
         var defaults = new TableDesign(schema, "dml_defaults_only",
             [Col("id", integer, false, auto: true), Col("note", text, true, "'x'"), Col("qty", integer, true, "7")],
@@ -80,19 +81,19 @@ internal static class DmlScenario
     /// <summary>Binds one value of every CLR type the grid can edit and reads it back.</summary>
     public static async Task RunTypedAsync(IDatabaseConnection c, DatabaseDialect d, string? schema)
     {
-        var integer = d == DatabaseDialect.Sqlite ? "INTEGER" : "int";
-        var text = d switch { DatabaseDialect.Sqlite => "TEXT", DatabaseDialect.SqlServer => "nvarchar(100)", _ => "varchar(100)" };
+        var integer = d switch { DatabaseDialect.Sqlite => "INTEGER", DatabaseDialect.Oracle => "NUMBER(10)", _ => "int" };
+        var text = d switch { DatabaseDialect.Sqlite => "TEXT", DatabaseDialect.SqlServer => "nvarchar(100)", DatabaseDialect.Oracle => "VARCHAR2(100)", _ => "varchar(100)" };
         var typed = new TableDesign(schema, "dml_typed",
             [
                 Col("id", integer, false),
                 Col("i", integer, true),
-                Col("l", "bigint", true),
-                Col("m", "decimal(10,2)", true),
+                Col("l", d == DatabaseDialect.Oracle ? "NUMBER(19)" : "bigint", true),
+                Col("m", d == DatabaseDialect.Oracle ? "NUMBER(10,2)" : "decimal(10,2)", true),
                 Col("s", text, true),
-                Col("b", d switch { DatabaseDialect.Sqlite => "INTEGER", DatabaseDialect.SqlServer => "bit", _ => "boolean" }, true),
-                Col("t", d switch { DatabaseDialect.Sqlite => "TEXT", DatabaseDialect.PostgreSql => "timestamp", DatabaseDialect.MySql => "datetime", _ => "datetime2" }, true),
+                Col("b", d switch { DatabaseDialect.Sqlite => "INTEGER", DatabaseDialect.SqlServer => "bit", DatabaseDialect.Oracle => "NUMBER(1)", _ => "boolean" }, true),
+                Col("t", d switch { DatabaseDialect.Sqlite => "TEXT", DatabaseDialect.PostgreSql => "timestamp", DatabaseDialect.MySql => "datetime", DatabaseDialect.Oracle => "TIMESTAMP", _ => "datetime2" }, true),
                 Col("bin", d switch { DatabaseDialect.PostgreSql => "bytea", DatabaseDialect.SqlServer => "varbinary(max)", _ => "blob" }, true),
-                Col("g", d switch { DatabaseDialect.PostgreSql => "uuid", DatabaseDialect.SqlServer => "uniqueidentifier", DatabaseDialect.MySql => "char(36)", _ => "TEXT" }, true),
+                Col("g", d switch { DatabaseDialect.PostgreSql => "uuid", DatabaseDialect.SqlServer => "uniqueidentifier", DatabaseDialect.MySql => "char(36)", DatabaseDialect.Oracle => "CHAR(36)", _ => "TEXT" }, true),
             ],
             ["id"], null, [], []);
         await CreateAsync(c, d, typed);

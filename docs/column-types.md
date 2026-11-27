@@ -51,6 +51,13 @@ Written from `ColumnTypeReadTests` (one per driver test project, against `all_ty
 | SQL Server | time | `TimeSpan` | `07:08:09.123` |
 | SQL Server | uniqueidentifier | `Guid` | `a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11` |
 | SQL Server | sql_variant | the inner type (`Decimal`) | `1.5` |
+| Oracle | NUMBER, FLOAT | `Decimal` (beyond decimal's range: `String`) | `1234.5` |
+| Oracle | VARCHAR2, CHAR, NVARCHAR2 | `String` | `héllo` |
+| Oracle | CLOB, NCLOB | `String` (whole value) | `a long text` |
+| Oracle | BLOB, RAW | `Byte[]` | `0xcafe` |
+| Oracle | DATE (has a time part) | `DateTime` | `2024-05-06 07:08:09`, `2024-05-06` at midnight |
+| Oracle | TIMESTAMP(n) | `DateTime` | `2024-05-06 07:08:09.123` |
+| Oracle | TIMESTAMP(n) WITH TIME ZONE | `DateTimeOffset` | `2024-05-06 07:08:09.123+02:00` |
 | SQL Server | hierarchyid, geography, geometry | `Byte[]` (serialized form; `Microsoft.SqlServer.Types` is not AOT-safe) | `0x5b40` |
 
 ## Limits
@@ -63,7 +70,7 @@ Written from `ColumnTypeReadTests` (one per driver test project, against `all_ty
 
 `CellValueParser` turns the displayed text back into the CLR value; the round trip is checked by `ColumnTypeEditTests` (SQLite always, the others with Docker). `integer[]`/`text[]` parse as `int[]`/`string[]`; `timestamptz` text is read as UTC; `0000-00-00` becomes `DateTime.MinValue`. `DmlGenerator` appends `::json`/`::jsonb` to the parameter of a PostgreSQL json column (MySQL json and SQL Server xml take a string).
 
-Read-only columns, with the reason shown when the user tries to edit: generated or computed (`ColumnDefinition.IsGenerated`: PostgreSQL `GENERATED` columns and identity `ALWAYS`, MySQL `VIRTUAL`/`STORED GENERATED`, SQL Server computed columns and `rowversion`); types without a safe text form (`sql_variant`, `hierarchyid`, `geography`, `geometry`, ranges, arrays other than `integer[]`/`text[]`, and results typed as composites, `inet`, `cidr`, `macaddr`). SQLite generated columns are not listed in the table schema, so they show the generic "read-only" reason.
+Read-only columns, with the reason shown when the user tries to edit: generated or computed (`ColumnDefinition.IsGenerated`: PostgreSQL `GENERATED` columns and identity `ALWAYS`, MySQL `VIRTUAL`/`STORED GENERATED`, SQL Server computed columns and `rowversion`); types without a safe text form (`sql_variant`, `hierarchyid`, `geography`, `geometry`, ranges, arrays other than `integer[]`/`text[]`, and results typed as composites, `inet`, `cidr`, `macaddr`). Oracle: `NUMBER`, `VARCHAR2`, `CLOB`, `BLOB`, `DATE`, `TIMESTAMP`, `TIMESTAMP WITH TIME ZONE` and `RAW` are editable (`DmlGenerator` binds `:p0`, `:p1`, ...; a `DateTime` is bound as `TIMESTAMP` so the time part and fraction survive; a `DateTimeOffset` keeps its offset); `LONG`, `LONG RAW`, `BFILE`, `XMLTYPE`, `ROWID`, `UROWID`, `INTERVAL` and `TIMESTAMP WITH LOCAL TIME ZONE` are read-only. The generated key comes back through `INSERT ... RETURNING "ID" INTO :out0`: the bridge `execute` request carries `outParameters` and the response `outValues`, which the connection hands back as a one-row result. SQLite generated columns are not listed in the table schema, so they show the generic "read-only" reason.
 
 ## Export
 

@@ -97,14 +97,14 @@ internal static class SqlRunner
     /// <param name="d">The dialect that picks the statement text.</param>
     /// <param name="ct">Cancels the execution.</param>
     public static async ValueTask BeginAsync(IDatabaseConnection c, DatabaseDialect d, CancellationToken ct) =>
-        await ExecuteAsync(c, d == DatabaseDialect.SqlServer ? "BEGIN TRANSACTION" : "BEGIN", [], ct);
+        await ExecuteAsync(c, TransactionSql.Begin(d) ?? "BEGIN", [], ct);
 
     /// <summary>Commits the open transaction.</summary>
     /// <param name="c">The connection to run on.</param>
     /// <param name="d">The dialect that picks the statement text.</param>
     /// <param name="ct">Cancels the execution.</param>
     public static async ValueTask CommitAsync(IDatabaseConnection c, DatabaseDialect d, CancellationToken ct) =>
-        await ExecuteAsync(c, d == DatabaseDialect.SqlServer ? "COMMIT TRANSACTION" : "COMMIT", [], ct);
+        await ExecuteAsync(c, TransactionSql.Commit(d), [], ct);
 
     /// <summary>Rolls the open transaction back; a failing rollback is ignored so the original error stays the one reported.</summary>
     /// <param name="c">The connection to run on.</param>
@@ -114,7 +114,7 @@ internal static class SqlRunner
     {
         try
         {
-            await ExecuteAsync(c, d == DatabaseDialect.SqlServer ? "ROLLBACK TRANSACTION" : "ROLLBACK", [], ct);
+            await ExecuteAsync(c, TransactionSql.Rollback(d), [], ct);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
