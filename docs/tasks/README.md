@@ -539,7 +539,7 @@ Depends on: <card ids, ranges allowed>
 | [P21-100](phase-21/P21-100-oracle-session-after-killed-bridge.md) | Oracle: a killed bridge leaves the session looking connected | P21-03 | todo |
 | [P21-101](phase-21/P21-101-oracle-missing-password-message.md) | Oracle: an empty password gives "Value cannot be null" | P21-03 | todo |
 | [P21-102](phase-21/P21-102-presentation-tests-hang.md) | Presentation tests hang intermittently (SchemaCompareViewModelTests) | none | done |
-| [P21-103](phase-21/P21-103-informix-odbc-layer.md) | Data.Informix: own ODBC layer (handles, connect, execute, text fetch, diagnostics) | P21-10 | todo |
+| [P21-103](phase-21/P21-103-informix-odbc-layer.md) | Data.Informix: own ODBC layer (handles, connect, execute, text fetch, diagnostics) | P21-10 | done |
 | [P21-104](phase-21/P21-104-informix-odbc-values-cancel-transactions.md) | Data.Informix: typed values, parameters, cancel, transactions and the database connection | P21-103 | todo |
 | [P21-105](phase-21/P21-105-informix-schema-reading.md) | Data.Informix: schema reading (tables, columns, keys, indexes, routines, triggers, views) | P21-104 | todo |
 | [P21-106](phase-21/P21-106-informix-provider-registration.md) | Informix: DatabaseDialect, provider registration, connection editor tile, clidriver packaging, AOT check and docs | P21-105 | todo |

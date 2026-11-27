@@ -1,6 +1,6 @@
 # P21-103 - Data.Informix: own ODBC layer (handles, connect, execute, text fetch, diagnostics)
 
-Status: todo
+Status: done
 Depends on: P21-10
 
 ## Goal
@@ -21,10 +21,10 @@ Exists today: nothing under `src/`. The throw-away probe `tools/Squill.AotProbe.
 - Prepared statements, parameters, `BYTE` / long data, cancel, transactions (P21-104); `IDatabaseConnection`, `DatabaseDialect.Informix`, composition roots, UI (P21-106); schema reading (P21-105).
 
 ## Tasks
-- [ ] Unit tests first (fake `IOdbcApi`): success path, several result sets, `SQL_NO_DATA`, a value longer than the buffer (2 chunks), `SQL_NULL_DATA`, an error with two diagnostic records, `SQL_SUCCESS_WITH_INFO`, handle release order on failure of each step, connection string escaping and "password not in any message", the resolver choosing `SQUILL_CLIDRIVER` then the app folder and the error text when absent.
-- [ ] Docker fixture and tests (`pwsh eng/run-docker-tests.ps1 -Engine informix`; image `icr.io/informix/informix-developer-database:latest`, `LICENSE=accept`, ports 9088 and 9089, login `informix` / `in4mix`, database created with `dbaccess` as in the P21-10 report; the harness waits for readiness): connect, `select first 3 tabname from systables`, a wrong password gives `SQL30082N`, `SQUILL_CLIDRIVER` pointing to the `clidriver` of the `Net.IBM.Data.Db2` package files in the NuGet cache (the test never downloads: skip with a clear message when absent, a skipped test is never reported as verified).
-- [ ] `rtk dotnet build -warnaserror` and the analyzers: 0 warnings. The AOT publish of the layer is checked with the WinUI head in P21-106.
-- [ ] Done notes: the `clidriver` files used and how the test finds them.
+- [x] Unit tests first (fake `IOdbcApi`): success path, several result sets, `SQL_NO_DATA`, a value longer than the buffer (2 chunks), `SQL_NULL_DATA`, an error with two diagnostic records, `SQL_SUCCESS_WITH_INFO`, handle release order on failure of each step, connection string escaping and "password not in any message", the resolver choosing `SQUILL_CLIDRIVER` then the app folder and the error text when absent.
+- [x] Docker fixture and tests (`pwsh eng/run-docker-tests.ps1 -Engine informix`; image `icr.io/informix/informix-developer-database:latest`, `LICENSE=accept`, ports 9088 and 9089, login `informix` / `in4mix`, database created with `dbaccess` as in the P21-10 report; the harness waits for readiness): connect, `select first 3 tabname from systables`, a wrong password gives `SQL30082N`, `SQUILL_CLIDRIVER` pointing to the `clidriver` of the `Net.IBM.Data.Db2` package files in the NuGet cache (the test never downloads: skip with a clear message when absent, a skipped test is never reported as verified).
+- [x] `rtk dotnet build -warnaserror` and the analyzers: 0 warnings. The AOT publish of the layer is checked with the WinUI head in P21-106.
+- [x] Done notes: the `clidriver` files used and how the test finds them.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance; `-Engine informix` green (the connect and read tests); no `NoWarn`, no pragma.
@@ -35,3 +35,10 @@ Exists today: nothing under `src/`. The throw-away probe `tools/Squill.AotProbe.
 
 ## Suggested commit message
 Add the Informix ODBC layer with connect, execute and text fetch
+
+## Done notes
+- Shipped: `src/Squill.Data.Informix` (`OdbcNative` LibraryImport, `IOdbcApi`/`OdbcApi`, `ClidriverLocator`, `OdbcConnection`, `OdbcTextReader`, `OdbcException`, `OdbcConnectionString`) and `tests/Squill.Data.Informix.Tests` (19 unit tests on a fake driver, 4 Docker tests); both added to `Squill.slnx` and `Squill.Windows.slnx`. `eng/run-docker-tests.ps1 -Engine informix` no longer stops (the "test project missing" guard is removed).
+- Deviations: (1) `SQUILL_CLIDRIVER` is the `clidriver` root folder (the one containing `bin`), the default is `<app folder>/clidriver`; the DLL is `<folder>/bin/db2cli64.dll`, loaded by absolute path through `NativeLibrary.SetDllImportResolver` (registered in the static constructor of `OdbcNative`, because a module initializer is forbidden by CA2255): siblings in `bin` resolve without `PATH`. (2) `ReadAsync` reads every column of the row as text inside the same off-thread call (the `SQLGetData` loop included), so `GetText(i)` only returns the cached value. (3) The tests connect to the existing `sysmaster` database, not a created one: nothing needed `dbaccess`; readiness is a retry of a real connect (up to 4 min) in the fixture. (4) Premise check: nothing existed under `src/`, the probe matched the card.
+- Where the driver comes from for tests: `InformixFixture.FindClidriver()` uses `SQUILL_CLIDRIVER`, else the `buildTransitive/clidriver` folder of the `net.ibm.data.db2` package in the NuGet cache (`NUGET_PACKAGES` or `~/.nuget/packages`); it never downloads. With no driver, or without `SQUILL_DOCKER_TESTS=1`, the 4 container tests are reported as skipped, never as passed. The 125 MB binaries are not in the repository.
+- Verified on the Informix 15 developer container (Podman): connect, `select first 3 tabname ... from systables`, NULL and a 1500-character value (two `SQLGetData` chunks), wrong password gives `SQL30082N`, SQL error gives SQLSTATE and native code. Not run here: the Native AOT publish of the layer (P21-106 does it with the WinUI head).
+- Note for the harness: if `podman machine` reports `running` but `\.\pipe\podman-machine-default` does not exist (no `gvproxy`), `podman machine stop` then `start` recreates the API pipe.
