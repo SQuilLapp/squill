@@ -131,6 +131,30 @@ public sealed class TransactionDialogTests
         return Task.CompletedTask;
     }, TestContext.Current.CancellationToken);
 
+    [Fact]
+    public Task PasswordPrompt_MasksTheBox_EnterReturnsTheText_EscapeAndCloseReturnNothing() => Headless.Session.Dispatch(() =>
+    {
+        var typed = new PasswordPromptWindow("Prod");
+        typed.Show();
+        Assert.Equal('\u25CF', typed.Box.PasswordChar);
+        typed.Box.Text = "s3cret";
+        Press(typed.Box, Key.Enter);
+        Assert.Equal("s3cret", typed.Password);
+        Assert.False(typed.IsVisible);
+
+        var escaped = new PasswordPromptWindow("Prod");
+        escaped.Show();
+        escaped.Box.Text = "s3cret";
+        Press(escaped.Box, Key.Escape);
+        Assert.Null(escaped.Password);
+
+        var closed = new PasswordPromptWindow("Prod");
+        closed.Show();
+        closed.Close();
+        Assert.Null(closed.Password);
+        return Task.CompletedTask;
+    }, TestContext.Current.CancellationToken);
+
     private static TransactionCloseRequest Ask(TransactionState state) =>
         new("c", ConnectionEnvironment.Production, "db", state, 2, ["INSERT INTO t VALUES (1)"], "Title", "Message");
 

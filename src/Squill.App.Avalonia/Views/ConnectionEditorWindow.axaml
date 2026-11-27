@@ -175,8 +175,19 @@
                     <TextBox Text="{Binding UserName, Mode=TwoWay}" />
                   </StackPanel>
                   <StackPanel Spacing="6">
+                    <TextBlock Text="{loc:Text connections.passwordSource}" Classes="lbl" />
+                    <ComboBox Name="PasswordSourceBox" HorizontalAlignment="Stretch" SelectedIndex="{Binding PasswordSourceIndex, Mode=TwoWay}" />
+                  </StackPanel>
+                  <StackPanel Name="PasswordFields" Spacing="6" IsVisible="{Binding PasswordIsStored}">
                     <TextBlock Text="{loc:Text connections.password}" Classes="lbl" />
                     <TextBox PasswordChar="&#x25CF;" Text="{Binding Password, Mode=TwoWay}" />
+                  </StackPanel>
+                  <StackPanel Name="PasswordCommandFields" Spacing="6" IsVisible="{Binding PasswordIsCommand}">
+                    <TextBlock Text="{loc:Text connections.passwordCommand}" Classes="lbl" />
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBox Name="PasswordCommandBox" Text="{Binding PasswordCommand, Mode=TwoWay}" />
+                      <Button Name="PasswordCommandTest" Grid.Column="1" Content="{loc:Text connections.passwordCommandTest}" Margin="6,0,0,0" Command="{Binding TestPasswordCommandCommand}" />
+                    </Grid>
                   </StackPanel>
                 </StackPanel>
 

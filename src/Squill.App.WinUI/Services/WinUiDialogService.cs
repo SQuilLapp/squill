@@ -11,6 +11,7 @@ namespace Squill.App.WinUI.Services;
 /// <summary>Modal dialogs built from <see cref="ContentDialog"/>, shown over the main window.</summary>
 internal sealed class WinUiDialogService : IDialogService
 {
+    private static readonly SemaphoreSlim Gate = new(1, 1); // WinUI shows one ContentDialog at a time, so a second request waits here
     private Window? _window;
 
     /// <summary>Sets the window whose content hosts the dialogs.</summary>
@@ -42,6 +43,15 @@ internal sealed class WinUiDialogService : IDialogService
     {
         var box = new TextBox { Text = initial ?? "" };
         return await ShowAsync(title, message, box, UiText.Get("dialog.ok"), UiText.Get("dialog.cancel")) == ContentDialogResult.Primary ? box.Text : null;
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<string?> PromptPasswordAsync(string profileName)
+    {
+        // Masked box; Enter takes the default (primary) button, Escape closes the dialog without a password.
+        var box = new PasswordBox { MinHeight = 30 };
+        var result = await ShowAsync(UiText.Get("password.prompt.title"), UiText.Format("password.prompt", profileName), box, UiText.Get("password.prompt.connect"), UiText.Get("dialog.cancel"), box);
+        return result == ContentDialogResult.Primary ? box.Password : null;
     }
 
     /// <inheritdoc />
@@ -89,7 +99,7 @@ internal sealed class WinUiDialogService : IDialogService
             ? null
             : new ContentDialog { XamlRoot = root, Title = title, Content = content, PrimaryButtonText = primary, CloseButtonText = close, DefaultButton = ContentDialogButton.Primary };
 
-    private async Task<ContentDialogResult> ShowAsync(string title, string message, UIElement? input, string primary, string? close)
+    private async Task<ContentDialogResult> ShowAsync(string title, string message, UIElement? input, string primary, string? close, Control? focus = null)
     {
         if (_window?.Content?.XamlRoot is not { } root)
             return ContentDialogResult.None;
@@ -107,6 +117,16 @@ internal sealed class WinUiDialogService : IDialogService
             DefaultButton = ContentDialogButton.Primary,
             RequestedTheme = ((FrameworkElement)_window.Content).ActualTheme, // the popup layer does not inherit the app theme
         };
-        return await dialog.ShowAsync();
+        if (focus is not null)
+            dialog.Opened += (_, _) => focus.Focus(FocusState.Programmatic);
+        await Gate.WaitAsync();
+        try
+        {
+            return await dialog.ShowAsync();
+        }
+        finally
+        {
+            Gate.Release();
+        }
     }
 }

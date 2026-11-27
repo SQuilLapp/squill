@@ -48,6 +48,17 @@ internal sealed class FakeDialogService : IDialogService
         return ValueTask.FromResult(TransactionChoices.Count > 0 ? TransactionChoices.Dequeue() : TransactionChoice.Cancel);
     }
 
+    /// <summary>Gets or sets what the password prompt returns; <see langword="null"/> cancels it.</summary>
+    public string? PasswordResult { get; set; }
+
+    public List<string> PasswordPrompts { get; } = [];
+
+    public ValueTask<string?> PromptPasswordAsync(string profileName)
+    {
+        PasswordPrompts.Add(profileName);
+        return ValueTask.FromResult(PasswordResult);
+    }
+
     public ValueTask<bool> ConfirmAsync(string title, string message)
     {
         Confirms.Add((title, message));

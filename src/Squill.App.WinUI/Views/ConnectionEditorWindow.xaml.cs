@@ -53,6 +53,10 @@ public sealed partial class ConnectionEditorWindow : Window
             UiText.Get("connections.tlsRequire"), UiText.Get("connections.tlsVerifyFull"),
         };
         ProxyKindBox.ItemsSource = new[] { UiText.Get("connections.proxyNone"), UiText.Get("connections.proxySocks5"), UiText.Get("connections.proxyHttp") };
+        PasswordSourceBox.ItemsSource = new[]
+        {
+            UiText.Get("connections.passwordSourceStored"), UiText.Get("connections.passwordSourceAsk"), UiText.Get("connections.passwordSourceCommand"),
+        };
         BuildTiles();
         PlaceModal(owner);
 
@@ -78,6 +82,7 @@ public sealed partial class ConnectionEditorWindow : Window
         editor.Saved += OnSaved;
         TestButton.Command = editor.TestCommand;
         SaveButton.Command = editor.SaveCommand;
+        PasswordCommandTest.Command = editor.TestPasswordCommandCommand;
         GeneralTabItem.IsSelected = true;
         Refresh();
     }
@@ -218,6 +223,8 @@ public sealed partial class ConnectionEditorWindow : Window
             SyncText(PortBox, ConnectionEditorFormat.PortText(editor.Port));
             SyncText(DatabaseBox, editor.Database);
             SyncText(UserBox, editor.UserName);
+            PasswordSourceBox.SelectedIndex = editor.PasswordSourceIndex;
+            SyncText(PasswordCommandBox, editor.PasswordCommand);
             SyncText(SshHostBox, editor.SshHost);
             SyncText(SshPortBox, ConnectionEditorFormat.PortText(editor.SshPort));
             SyncText(SshUserBox, editor.SshUserName);
@@ -256,6 +263,8 @@ public sealed partial class ConnectionEditorWindow : Window
         var sqlite = editor.Dialect == DatabaseDialect.Sqlite;
         SqliteFields.Visibility = sqlite ? Visibility.Visible : Visibility.Collapsed;
         ServerFields.Visibility = sqlite ? Visibility.Collapsed : Visibility.Visible;
+        PasswordFields.Visibility = editor.PasswordIsStored ? Visibility.Visible : Visibility.Collapsed;
+        PasswordCommandFields.Visibility = editor.PasswordIsCommand ? Visibility.Visible : Visibility.Collapsed;
         TlsFields.Visibility = editor.SupportsTls ? Visibility.Visible : Visibility.Collapsed;
         TrustBox.Visibility = editor.SupportsTrustCertificate ? Visibility.Visible : Visibility.Collapsed;
         TlsFilesExpander.Visibility = editor.SupportsTlsFiles ? Visibility.Visible : Visibility.Collapsed;
@@ -309,7 +318,7 @@ public sealed partial class ConnectionEditorWindow : Window
         var ok = editor.TestSucceeded == true;
         ResultBar.Background = Token(ok ? "SquillSuccessSoftBrush" : "SquillDangerSoftBrush");
         ResultText.Foreground = Token(ok ? "SquillSuccessBrush" : "SquillDangerBrush");
-        ResultText.Text = ok ? UiText.Get("connections.testSucceeded") : editor.TestStatus ?? "";
+        ResultText.Text = editor.TestHeadline;
         ResultDetail.Text = ok ? editor.TestServerVersion ?? "" : "";
 
         RebuildList();
@@ -479,6 +488,11 @@ public sealed partial class ConnectionEditorWindow : Window
     private void OnConnectTimeoutChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.ConnectTimeoutText = ConnectTimeoutBox.Text);
 
     private void OnCommandTimeoutChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.CommandTimeoutText = CommandTimeoutBox.Text);
+
+    private void OnPasswordSourceChanged(object sender, SelectionChangedEventArgs e) =>
+        Edit(editor => editor.PasswordSourceIndex = PasswordSourceBox.SelectedIndex is >= 0 and <= 2 ? PasswordSourceBox.SelectedIndex : 0);
+
+    private void OnPasswordCommandChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.PasswordCommand = PasswordCommandBox.Text);
 
     private void OnPasswordChanged(object sender, RoutedEventArgs e) => Edit(editor => editor.Password = PasswordInput.Password);
 

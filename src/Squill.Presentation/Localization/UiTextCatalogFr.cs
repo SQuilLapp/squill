@@ -321,6 +321,17 @@ internal static class UiTextCatalogFr
         ("password.command.confirm.title", "Exécuter la commande du mot de passe"),
         ("password.command.confirm", "La connexion {0} obtient son mot de passe de cette commande, exécutée avec vos droits et sans shell :\n\n{1}\n\nNe l'exécutez que si vous lui faites confiance."),
         ("password.command.failed", "La commande du mot de passe a échoué ({0} {1}). {2}"),
+        ("password.prompt.title", "Mot de passe de la base"),
+        ("password.prompt", "Saisissez le mot de passe de la connexion {0}. Il reste en mémoire pour cette session seulement et n'est jamais enregistré."),
+        ("password.prompt.connect", "Se connecter"),
+        ("connections.passwordSource", "Origine du mot de passe"),
+        ("connections.passwordSourceStored", "Enregistré dans le trousseau du système"),
+        ("connections.passwordSourceAsk", "Demander à la connexion"),
+        ("connections.passwordSourceCommand", "Depuis une commande"),
+        ("connections.passwordCommand", "Commande qui affiche le mot de passe"),
+        ("connections.passwordCommandTest", "Tester la commande"),
+        ("connections.passwordCommandOk", "La commande a affiché un mot de passe."),
+        ("connections.errPasswordCommand", "Saisissez la commande du mot de passe, avec tous les guillemets fermés."),
         ("ssh.hostkey.changed", "L'identité du serveur SSH {0}:{1} diffère de celle mémorisée : la connexion a été refusée. Mémorisée : {2}. Présentée : {3}. Uniquement si le serveur a été réinstallé légitimement, supprimez l'entrée de {0}:{1} du fichier des hôtes connus ({4}) puis reconnectez-vous."),
 
         // Connections window

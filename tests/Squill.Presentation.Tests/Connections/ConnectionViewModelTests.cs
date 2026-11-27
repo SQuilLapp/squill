@@ -2,6 +2,7 @@ using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
 using Squill.Platform.Proxy;
+using Squill.Platform.Secrets;
 using Squill.Platform.Ssh;
 using Squill.Presentation.Connections;
 using Squill.Presentation.Localization;
@@ -16,10 +17,11 @@ public sealed class ConnectionViewModelTests
     private readonly FakeProvider _provider = new();
     private readonly ProviderRegistry _registry = new();
     private readonly FakeProxies _proxies = new();
+    private readonly FakeRunner _runner = new();
 
     public ConnectionViewModelTests() => _registry.Register(_provider);
 
-    private ConnectionEditorViewModel NewEditor(ConnectionProfile? existing = null) => new(existing, _store, _registry, _dialogs, _proxies);
+    private ConnectionEditorViewModel NewEditor(ConnectionProfile? existing = null) => new(existing, _store, _registry, _dialogs, _proxies, _runner);
 
     private static ConnectionProfile Existing() =>
         new(Guid.NewGuid(), "Prod", DatabaseDialect.PostgreSql, "db", 5432, "app", "me", null, null);
@@ -463,6 +465,131 @@ public sealed class ConnectionViewModelTests
     }
 
     [Fact]
+    public void PasswordSource_FollowsTheCombo_AndSqliteIsAlwaysStored()
+    {
+        var editor = NewEditor();
+        Assert.True(editor.PasswordIsStored);
+        editor.PasswordSourceIndex = 1;
+        Assert.Equal((PasswordSource.Ask, false, false), (editor.EffectivePasswordSource, editor.PasswordIsStored, editor.PasswordIsCommand));
+        editor.PasswordSourceIndex = 2;
+        Assert.True(editor.PasswordIsCommand);
+        editor.Dialect = DatabaseDialect.Sqlite;
+        Assert.Equal((PasswordSource.Stored, true, false), (editor.EffectivePasswordSource, editor.PasswordIsStored, editor.PasswordIsCommand));
+    }
+
+    [Fact]
+    public void Validate_PasswordCommand_IsRequiredAndWellQuoted_OnlyForTheCommandSource()
+    {
+        var editor = NewEditor(Existing());
+        editor.PasswordCommand = "\"unclosed";
+        Assert.Empty(editor.Validate());
+        editor.PasswordSourceIndex = 2;
+        Assert.Equal([UiText.Get("connections.errPasswordCommand")], editor.Validate());
+        editor.PasswordCommand = "   ";
+        Assert.Single(editor.Validate());
+        editor.PasswordCommand = "op read \"op://v/i\"";
+        Assert.Empty(editor.Validate());
+    }
+
+    [Fact]
+    public async Task Save_AskOrCommand_KeepsNoPassword_AndStoresTheCommandInTheProfile()
+    {
+        _store.Password = "old";
+        var editor = NewEditor(Existing());
+        await editor.LoadSecretsAsync(CancellationToken.None);
+        editor.PasswordSourceIndex = 2;
+        editor.PasswordCommand = "  op read x  ";
+        await editor.SaveCommand.ExecuteAsync(null);
+        editor.PasswordSourceIndex = 1;
+        await editor.SaveCommand.ExecuteAsync(null);
+        editor.PasswordSourceIndex = 0;
+        await editor.SaveCommand.ExecuteAsync(null);
+
+        Assert.Equal((PasswordSource.Command, "op read x"), (_store.Saved[0].Profile.PasswordSource, _store.Saved[0].Profile.PasswordCommand));
+        Assert.Equal((PasswordSource.Ask, (string?)null), (_store.Saved[1].Profile.PasswordSource, _store.Saved[1].Profile.PasswordCommand));
+        Assert.Equal(["", "", null], _store.Saved.Select(s => s.Password));
+        Assert.Equal(PasswordSource.Stored, _store.Saved[2].Profile.PasswordSource);
+    }
+
+    [Fact]
+    public void Existing_ProfileLoadsItsPasswordSource()
+    {
+        var editor = NewEditor(Existing() with { PasswordSource = PasswordSource.Command, PasswordCommand = "pass show db" });
+
+        Assert.Equal((2, "pass show db"), (editor.PasswordSourceIndex, editor.PasswordCommand));
+    }
+
+    [Fact]
+    public async Task TestPasswordCommand_ConfirmsShowingTheExactCommand_ThenReportsWithoutShowingTheOutput()
+    {
+        _runner.Output = "hunter2";
+        var editor = NewEditor(Existing());
+        editor.PasswordSourceIndex = 2;
+        editor.PasswordCommand = "op read \"op://v/i\"";
+
+        await editor.TestPasswordCommandCommand.ExecuteAsync(null);
+
+        var confirm = Assert.Single(_dialogs.Confirms);
+        Assert.Contains("op read \"op://v/i\"", confirm.Message);
+        Assert.Equal("op read \"op://v/i\"", _runner.Line);
+        Assert.True(editor.TestSucceeded);
+        Assert.Equal(UiText.Get("connections.passwordCommandOk"), editor.TestHeadline);
+        Assert.DoesNotContain("hunter2", editor.TestStatus);
+    }
+
+    [Fact]
+    public async Task TestPasswordCommand_DeclinedRunsNothing_FailureNeverShowsTheOutput()
+    {
+        var editor = NewEditor(Existing());
+        editor.PasswordSourceIndex = 2;
+        editor.PasswordCommand = "tool";
+        _dialogs.ConfirmResult = false;
+        await editor.TestPasswordCommandCommand.ExecuteAsync(null);
+        Assert.Null(_runner.Line);
+        Assert.Null(editor.TestSucceeded);
+
+        _dialogs.ConfirmResult = true;
+        _runner.Failure = new PasswordCommandException(PasswordCommandFailure.ExitCode, "3", "denied");
+        _runner.Output = "hunter2";
+        await editor.TestPasswordCommandCommand.ExecuteAsync(null);
+        Assert.False(editor.TestSucceeded);
+        Assert.Contains("denied", Assert.Single(_dialogs.Errors).Message);
+        Assert.DoesNotContain("hunter2", editor.TestStatus);
+    }
+
+    [Fact]
+    public async Task Test_WithAsk_UsesThePromptedPassword_AndCancelStopsTheTest()
+    {
+        var editor = NewEditor(Existing());
+        editor.PasswordSourceIndex = 1;
+        _dialogs.PasswordResult = "typed";
+
+        await editor.TestCommand.ExecuteAsync(null);
+
+        Assert.Equal(("typed", "Prod", true), (_provider.LastPassword, Assert.Single(_dialogs.PasswordPrompts), editor.TestSucceeded));
+
+        // Cancelling the prompt is not an error: nothing is tried and the result bar does not change.
+        _dialogs.PasswordResult = null;
+        _provider.LastPassword = "untouched";
+        await editor.TestCommand.ExecuteAsync(null);
+        Assert.Equal("untouched", _provider.LastPassword);
+        Assert.Equal(2, _dialogs.PasswordPrompts.Count);
+    }
+
+    [Fact]
+    public async Task Test_WithCommand_ConnectsWithTheCommandOutput()
+    {
+        _runner.Output = "from-cmd";
+        var editor = NewEditor(Existing());
+        editor.PasswordSourceIndex = 2;
+        editor.PasswordCommand = "tool";
+
+        await editor.TestCommand.ExecuteAsync(null);
+
+        Assert.Equal("from-cmd", _provider.LastPassword);
+    }
+
+    [Fact]
     public async Task Save_PasswordChanged_PassesNewValue()
     {
         _store.Password = "secret";
@@ -725,6 +852,19 @@ public sealed class ConnectionViewModelTests
         }
     }
 
+    private sealed class FakeRunner : IPasswordCommandRunner
+    {
+        public string Output { get; set; } = "pw";
+        public string? Line { get; private set; }
+        public Exception? Failure { get; set; }
+
+        public ValueTask<string> RunAsync(string commandLine, CancellationToken ct)
+        {
+            Line = commandLine;
+            return Failure is { } failure ? throw failure : ValueTask.FromResult(Output);
+        }
+    }
+
     private sealed class FakeProvider : IDatabaseProvider
     {
         public DatabaseDialect Dialect => DatabaseDialect.PostgreSql;
@@ -733,9 +873,12 @@ public sealed class ConnectionViewModelTests
 
         public ConnectionProfile? LastProfile { get; private set; }
 
+        public string? LastPassword { get; set; }
+
         public ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken)
         {
             LastProfile = profile;
+            LastPassword = password;
             return Failure is { } failure ? throw failure : ValueTask.FromResult<IDatabaseConnection>(Connection);
         }
     }

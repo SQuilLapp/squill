@@ -8,6 +8,7 @@
 
 ### Added
 
+- Password source in the connection editor: saved in the system keychain, asked at each connect (masked prompt, kept in memory only) or read from an external command (confirmation showing the exact command line, `Test command`), in both heads.
 - Proxy in the connection editor (`SSH` tab > `Proxy`): SOCKS5 or HTTP CONNECT with host, port, user and password (stored in the OS secret store), used by the connection test, by sessions and by the SSH tunnel.
 - TLS certificate files in the connection editor (`Advanced` > `Advanced TLS`): CA file, client certificate and key with `Browse...` buttons, server name and key passphrase (stored in the OS secret store), enabled per engine.
 - Informix is a supported engine (Windows x64): connect over the DRDA listener, explorer from the system catalogue, queries, grid, cancel and transactions, through IBM's `clidriver`, which the app ships in `clidriver/` with its licence text (`clidriver/license`). Grid editing, the designer, plans and the terminal are not done yet.

@@ -12,8 +12,11 @@ namespace Squill.App.Avalonia.Services;
 /// <summary>Modal dialogs built from plain Avalonia windows, owned by the main window.</summary>
 internal sealed class AvaloniaDialogService : IDialogService
 {
+    // The window in front owns the dialog: with the connection editor open (modal over the main window), a dialog it raises must not open under it.
     private static Window? Owner =>
-        (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            ? desktop.Windows.LastOrDefault(w => w.IsVisible && w.IsActive) ?? desktop.MainWindow
+            : null;
 
     /// <inheritdoc />
     public async ValueTask<bool> ConfirmAsync(string title, string message) =>
@@ -37,6 +40,10 @@ internal sealed class AvaloniaDialogService : IDialogService
         var box = new TextBox { Text = initial };
         return await ShowAsync(title, message, box, (UiText.Get("dialog.ok"), true), (UiText.Get("dialog.cancel"), false)) is true ? box.Text ?? "" : null;
     }
+
+    /// <inheritdoc />
+    public async ValueTask<string?> PromptPasswordAsync(string profileName) =>
+        Owner is { } owner ? await Views.PasswordPromptWindow.ShowAsync(owner, profileName) : null;
 
     /// <inheritdoc />
     public async ValueTask<string?> PickSaveFileAsync(string suggestedName, string extension)

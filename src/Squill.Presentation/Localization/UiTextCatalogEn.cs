@@ -321,6 +321,17 @@ internal static class UiTextCatalogEn
         ("password.command.confirm.title", "Run password command"),
         ("password.command.confirm", "The connection {0} gets its password from this command, run with your user rights and without a shell:\n\n{1}\n\nRun it only if you trust it."),
         ("password.command.failed", "The password command failed ({0} {1}). {2}"),
+        ("password.prompt.title", "Database password"),
+        ("password.prompt", "Enter the password of the connection {0}. It is kept in memory for this session only and never saved."),
+        ("password.prompt.connect", "Connect"),
+        ("connections.passwordSource", "Password source"),
+        ("connections.passwordSourceStored", "Saved in the system keychain"),
+        ("connections.passwordSourceAsk", "Ask on connect"),
+        ("connections.passwordSourceCommand", "From a command"),
+        ("connections.passwordCommand", "Command that prints the password"),
+        ("connections.passwordCommandTest", "Test command"),
+        ("connections.passwordCommandOk", "The command printed a password."),
+        ("connections.errPasswordCommand", "Enter the password command, with every quote closed."),
         ("ssh.hostkey.changed", "The identity of the SSH server {0}:{1} differs from the one remembered, so the connection was refused. Remembered: {2}. Presented: {3}. Only if the server was legitimately reinstalled, remove the entry for {0}:{1} from the known-hosts file ({4}) and connect again."),
 
         // Connections window

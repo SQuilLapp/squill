@@ -6,6 +6,7 @@ using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
 using Squill.Platform.Proxy;
+using Squill.Platform.Secrets;
 using Squill.Presentation.Localization;
 
 namespace Squill.Presentation.Connections;
@@ -22,6 +23,7 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     private readonly IProxyTunnelFactory _proxies;
     private string? _loadedTlsPassphrase;
     private string? _loadedProxySecret;
+    private readonly IPasswordCommandRunner _commandRunner;
 
     /// <summary>Creates an editor for a new profile, or for <paramref name="existing"/> when it is not <see langword="null"/>.</summary>
     /// <param name="existing">Profile to edit, or <see langword="null"/> to create one.</param>
@@ -29,8 +31,10 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     /// <param name="providers">Used by the connection test.</param>
     /// <param name="dialogs">Used to report test failures.</param>
     /// <param name="proxies">Opens the proxy forwarder of the connection test; <see langword="null"/> uses <see cref="ProxyTunnelFactory"/>.</param>
-    public ConnectionEditorViewModel(ConnectionProfile? existing, IProfileStore store, ProviderRegistry providers, IDialogService dialogs, IProxyTunnelFactory? proxies = null)
+    /// <param name="commandRunner">Runs the password command of the connection test; <see langword="null"/> uses <see cref="PasswordCommandRunner"/>.</param>
+    public ConnectionEditorViewModel(ConnectionProfile? existing, IProfileStore store, ProviderRegistry providers, IDialogService dialogs, IProxyTunnelFactory? proxies = null, IPasswordCommandRunner? commandRunner = null)
     {
+        _commandRunner = commandRunner ?? new PasswordCommandRunner();
         _proxies = proxies ?? new ProxyTunnelFactory();
         _existing = existing;
         _store = store;
@@ -77,6 +81,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             ProxyUserName = proxy.UserName ?? "";
         }
 
+        PasswordSourceIndex = (int)existing.PasswordSource;
+        PasswordCommand = existing.PasswordCommand ?? "";
         ConnectTimeoutText = existing.ConnectTimeoutSeconds.ToString(CultureInfo.InvariantCulture);
         CommandTimeoutText = existing.CommandTimeoutSeconds.ToString(CultureInfo.InvariantCulture);
     }
@@ -119,6 +125,23 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     /// <summary>Gets or sets the database password; saved as <see langword="null"/> (kept) while it equals the loaded value.</summary>
     [ObservableProperty]
     public partial string Password { get; set; } = "";
+
+    /// <summary>Gets or sets where the password comes from as a combo index: 0 the system secret store, 1 asked at each connect, 2 an external command.</summary>
+    [ObservableProperty]
+    public partial int PasswordSourceIndex { get; set; }
+
+    /// <summary>Gets or sets the command line that prints the password (run without a shell); it is stored in the profile, so it must not contain the password itself.</summary>
+    [ObservableProperty]
+    public partial string PasswordCommand { get; set; } = "";
+
+    /// <summary>Gets the password source that applies to the selected engine (SQLite has no password, so it is always stored).</summary>
+    public PasswordSource EffectivePasswordSource => Dialect != DatabaseDialect.Sqlite && PasswordSourceIndex is 1 or 2 ? (PasswordSource)PasswordSourceIndex : PasswordSource.Stored;
+
+    /// <summary>Gets whether the password box is shown (source "stored").</summary>
+    public bool PasswordIsStored => EffectivePasswordSource == PasswordSource.Stored;
+
+    /// <summary>Gets whether the command box and its test button are shown (source "command").</summary>
+    public bool PasswordIsCommand => EffectivePasswordSource == PasswordSource.Command;
 
     /// <summary>Gets or sets the SQLite database file path.</summary>
     [ObservableProperty]
@@ -246,6 +269,9 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     /// <summary>Gets whether the connect timeout applies to the selected engine; the command timeout always does.</summary>
     public bool SupportsTimeouts => Dialect != DatabaseDialect.Sqlite;
 
+    /// <summary>Gets the headline of the result bar: the success text of a connection test, or the status of the last test.</summary>
+    public string TestHeadline => TestSucceeded == true && TestServerVersion is not null ? UiText.Get("connections.testSucceeded") : TestStatus ?? "";
+
     /// <summary>Gets the outcome of the last connection test, or <see langword="null"/> before any test.</summary>
     [ObservableProperty]
     public partial string? TestStatus { get; private set; }
@@ -317,6 +343,9 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         AddTimeoutErrors(errors);
         AddTlsErrors(errors);
 
+        if (PasswordIsCommand && !IsValidCommand(PasswordCommand))
+            errors.Add(UiText.Get("connections.errPasswordCommand"));
+
         if (UseProxy)
         {
             if (string.IsNullOrWhiteSpace(ProxyHost))
@@ -355,6 +384,9 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         OnPropertyChanged(nameof(SupportsTlsFiles));
         OnPropertyChanged(nameof(SupportsProxy));
         OnPropertyChanged(nameof(UseProxy));
+        OnPropertyChanged(nameof(EffectivePasswordSource));
+        OnPropertyChanged(nameof(PasswordIsStored));
+        OnPropertyChanged(nameof(PasswordIsCommand));
         OnPropertyChanged(nameof(SupportsTlsClientFiles));
         OnPropertyChanged(nameof(SupportsTlsServerName));
         OnPropertyChanged(nameof(SupportsTlsKeyPassphrase));
@@ -392,6 +424,26 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         foreach (var issue in BuildProfile(withSsh: false).ValidateOptions()
                      .Where(i => i.Code is CoreMessageCodes.ConnectionTlsFileMissing or CoreMessageCodes.ConnectionTlsKeyWithoutCertificate))
             errors.Add(IssueText.Format(issue.Code, issue.Args, issue.Message));
+    }
+
+    partial void OnPasswordSourceIndexChanged(int oldValue, int newValue)
+    {
+        OnPropertyChanged(nameof(EffectivePasswordSource));
+        OnPropertyChanged(nameof(PasswordIsStored));
+        OnPropertyChanged(nameof(PasswordIsCommand));
+    }
+
+    private static bool IsValidCommand(string commandLine)
+    {
+        try
+        {
+            PasswordCommandRunner.Split(commandLine);
+            return true;
+        }
+        catch (PasswordCommandException)
+        {
+            return false;
+        }
     }
 
     partial void OnProxyKindIndexChanged(int oldValue, int newValue)
@@ -447,7 +499,9 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             SupportsTlsClientFiles ? NullIfBlank(TlsClientCertFile) : null,
             SupportsTlsClientFiles ? NullIfBlank(TlsClientKeyFile) : null,
             SupportsTlsServerName ? NullIfBlank(TlsServerName) : null,
-            UseProxy ? new ProxySettings(ProxyKindIndex == 1 ? ProxyKind.Socks5 : ProxyKind.HttpConnect, ProxyHost.Trim(), ProxyPort ?? 0, NullIfBlank(ProxyUserName)) : null)
+            UseProxy ? new ProxySettings(ProxyKindIndex == 1 ? ProxyKind.Socks5 : ProxyKind.HttpConnect, ProxyHost.Trim(), ProxyPort ?? 0, NullIfBlank(ProxyUserName)) : null,
+            EffectivePasswordSource,
+            PasswordIsCommand ? PasswordCommand.Trim() : null)
         {
             TlsKeyPassphrase = SupportsTlsKeyPassphrase ? NullIfBlank(TlsKeyPassphrase) : null,
         };
@@ -457,7 +511,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     private async Task SaveAsync(CancellationToken ct)
     {
         var profile = BuildProfile(withSsh: true);
-        var password = Password == (_loadedPassword ?? "") ? null : Password;
+        // A profile that asks or runs a command keeps no stored password: the leftover is deleted.
+        var password = !PasswordIsStored ? "" : Password == (_loadedPassword ?? "") ? null : Password;
         var sshSecret = SshSecret == (_loadedSshSecret ?? "") ? null : SshSecret;
         await _store.SaveAsync(profile with { TlsKeyPassphrase = null }, password, sshSecret, ct);
         var passphrase = !SupportsTlsKeyPassphrase ? "" : TlsKeyPassphrase == (_loadedTlsPassphrase ?? "") ? null : TlsKeyPassphrase;
@@ -472,6 +527,14 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     {
         try
         {
+            var password = EffectivePasswordSource switch
+            {
+                PasswordSource.Ask => await _dialogs.PromptPasswordAsync(Name),
+                PasswordSource.Command => await RunPasswordCommandAsync(ct),
+                _ => NullIfBlank(Password),
+            };
+            if (password is null && EffectivePasswordSource != PasswordSource.Stored)
+                return; // the user cancelled the prompt or declined the command: nothing was tried, nothing to report
             var profile = BuildProfile(withSsh: false);
             // The test ignores SSH, and with SSH the proxy carries the SSH connection, so it is only tried for a direct connection.
             await using var tunnel = profile.Proxy is { } proxy && !UseSsh
@@ -479,7 +542,7 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
                 : null;
             if (tunnel is not null)
                 profile = profile with { Host = "127.0.0.1", Port = tunnel.LocalPort, TlsServerName = profile.TlsServerName ?? profile.Host };
-            await using var connection = await _providers.Get(Dialect).OpenAsync(profile, NullIfBlank(Password), ct);
+            await using var connection = await _providers.Get(Dialect).OpenAsync(profile, password, ct);
             TestStatus = UiText.Format("connections.testStatusOk", connection.ServerVersion);
             TestServerVersion = connection.ServerVersion;
             TestSucceeded = true;
@@ -495,6 +558,53 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             TestServerVersion = null;
             TestSucceeded = false;
             await _dialogs.ShowErrorAsync(UiText.Get("connections.testFailedTitle"), detail);
+        }
+    }
+
+    [RelayCommand]
+    private async Task TestPasswordCommandAsync(CancellationToken ct)
+    {
+        try
+        {
+            if (await RunPasswordCommandAsync(ct) is null) // the password itself is never shown
+                return;
+            TestStatus = UiText.Get("connections.passwordCommandOk");
+            TestServerVersion = null;
+            TestSucceeded = true;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            TestStatus = ex.Message;
+            TestServerVersion = null;
+            TestSucceeded = false;
+            await _dialogs.ShowErrorAsync(UiText.Get("connections.testFailedTitle"), ex.Message);
+        }
+    }
+
+    /// <summary>Runs the typed command after the user saw it (once per profile and command line), as a session does.</summary>
+    /// <returns>The password, or <see langword="null"/> when the user declined to run the command.</returns>
+    private async Task<string?> RunPasswordCommandAsync(CancellationToken ct)
+    {
+        var command = PasswordCommand.Trim();
+        if (_existing is null || !await _store.IsCommandTrustedAsync(_existing.Id, command, ct))
+        {
+            if (!await _dialogs.ConfirmAsync(UiText.Get("password.command.confirm.title"), UiText.Format("password.command.confirm", Name, command)))
+                return null;
+            if (_existing is not null)
+                await _store.TrustCommandAsync(_existing.Id, command, ct);
+        }
+
+        try
+        {
+            return await _commandRunner.RunAsync(command, ct);
+        }
+        catch (PasswordCommandException ex)
+        {
+            throw new InvalidOperationException(UiText.Format("password.command.failed", ex.Failure.ToString(), ex.Detail ?? "", ex.StandardError ?? ""));
         }
     }
 }

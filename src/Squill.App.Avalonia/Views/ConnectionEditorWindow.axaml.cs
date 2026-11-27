@@ -30,6 +30,10 @@ public sealed partial class ConnectionEditorWindow : Window
             UiText.Get("connections.tlsDefault"), UiText.Get("connections.tlsDisable"),
             UiText.Get("connections.tlsRequire"), UiText.Get("connections.tlsVerifyFull"),
         };
+        PasswordSourceBox.ItemsSource = new[]
+        {
+            UiText.Get("connections.passwordSourceStored"), UiText.Get("connections.passwordSourceAsk"), UiText.Get("connections.passwordSourceCommand"),
+        };
         ProxyKindBox.ItemsSource = new[] { UiText.Get("connections.proxyNone"), UiText.Get("connections.proxySocks5"), UiText.Get("connections.proxyHttp") };
         DataContextChanged += (_, _) => Attach();
         Opened += (_, _) => RebuildList();
@@ -150,7 +154,7 @@ public sealed partial class ConnectionEditorWindow : Window
         ResultBar.IsVisible = editor.TestSucceeded is not null;
         var ok = editor.TestSucceeded == true;
         SetClasses(ResultBar, ok ? "success" : "danger", "success", "danger");
-        ResultText.Text = ok ? UiText.Get("connections.testSucceeded") : editor.TestStatus;
+        ResultText.Text = editor.TestHeadline;
         ResultDetail.Text = ok ? editor.TestServerVersion : "";
 
         FolderBox.ItemsSource = _list?.Groups.Where(g => g.Folder is not null).Select(g => g.Folder!).ToArray() ?? [];

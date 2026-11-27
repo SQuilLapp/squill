@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Squill.App.WinUI.Controls;
+using Squill.App.WinUI.Services;
 using Squill.App.WinUI.Views;
 using Squill.Platform.Settings;
 using Squill.Presentation;
@@ -31,6 +32,7 @@ public sealed partial class MainWindow : Window
     private AppServices? _services;
     private AboutWindow? _aboutWindow;
     private ConnectionEditorWindow? _editorWindow;
+    private IDialogService? _dialogs;
     private SettingsWindow? _settingsWindow;
     private Splitter? _sidebarSplitter;
     private bool _syncing;
@@ -74,6 +76,7 @@ public sealed partial class MainWindow : Window
     public void Attach(AppServices services, string dataDirectory, IDialogService dialogs)
     {
         ActiveTabView.Dialogs = dialogs;
+        _dialogs = dialogs;
         _workspace = services.Workspace;
         _settings = services.Settings;
         _services = services;
@@ -159,7 +162,14 @@ public sealed partial class MainWindow : Window
 
         var window = new ConnectionEditorWindow(this, Workspace.ConnectionList, editor);
         _editorWindow = window;
-        window.Closed += (_, _) => _editorWindow = null;
+        // The editor is modal over this window: dialogs raised from it (password prompt, command confirmation, errors) must open over the editor, not hidden under it.
+        if (_dialogs is WinUiDialogService host)
+            host.Attach(window);
+        window.Closed += (_, _) =>
+        {
+            _editorWindow = null;
+            (_dialogs as WinUiDialogService)?.Attach(this);
+        };
         window.Activate();
     }
 

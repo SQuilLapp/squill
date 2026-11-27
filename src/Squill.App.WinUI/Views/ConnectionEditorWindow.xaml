@@ -100,8 +100,19 @@
                 <TextBox x:Name="UserBox" Style="{StaticResource FieldBoxStyle}" TextChanged="OnUserChanged" />
               </StackPanel>
               <StackPanel Spacing="6">
+                <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.passwordSource" />
+                <ComboBox x:Name="PasswordSourceBox" HorizontalAlignment="Stretch" MinHeight="30" SelectionChanged="OnPasswordSourceChanged" />
+              </StackPanel>
+              <StackPanel x:Name="PasswordFields" Spacing="6">
                 <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.password" />
                 <PasswordBox x:Name="PasswordInput" MinHeight="30" PasswordChanged="OnPasswordChanged" />
+              </StackPanel>
+              <StackPanel x:Name="PasswordCommandFields" Spacing="6">
+                <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.passwordCommand" />
+                <Grid ColumnDefinitions="*,8,Auto">
+                  <TextBox x:Name="PasswordCommandBox" Style="{StaticResource FieldBoxStyle}" TextChanged="OnPasswordCommandChanged" />
+                  <Button x:Name="PasswordCommandTest" Grid.Column="2" Height="30" MinHeight="30" loc:Loc.Key="connections.passwordCommandTest" />
+                </Grid>
               </StackPanel>
             </StackPanel>
 
