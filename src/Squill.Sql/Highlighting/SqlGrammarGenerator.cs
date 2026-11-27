@@ -21,6 +21,7 @@ public static class SqlGrammarGenerator
             DatabaseDialect.PostgreSql => "postgresql",
             DatabaseDialect.MySql => "mysql",
             DatabaseDialect.SqlServer => "tsql",
+            DatabaseDialect.Oracle => "oracle",
             _ => "sqlite",
         };
 
@@ -29,6 +30,7 @@ public static class SqlGrammarGenerator
             DatabaseDialect.PostgreSql => PostgresKeywords.Words,
             DatabaseDialect.MySql => MySqlKeywords.Words,
             DatabaseDialect.SqlServer => TSqlKeywords.Words,
+            DatabaseDialect.Oracle => OracleKeywords.Words,
             _ => SqliteKeywords.Words,
         };
 
@@ -74,6 +76,14 @@ public static class SqlGrammarGenerator
                     Range(w, "variable.other.quoted.sql", "\"", "\"", "\"\"");
                     Range(w, "variable.other.quoted.sql", "\\[", "\\]", "\\]\\]");
                     break;
+                case DatabaseDialect.Oracle:
+                    Range(w, "string.quoted.other.sql", "[Nn]?[Qq]'\\[", "\\]'");
+                    Range(w, "string.quoted.other.sql", "[Nn]?[Qq]'\\(", "\\)'");
+                    Range(w, "string.quoted.other.sql", "[Nn]?[Qq]'\\{", "\\}'");
+                    Range(w, "string.quoted.other.sql", "[Nn]?[Qq]'<", ">'");
+                    Range(w, "string.quoted.single.sql", "[Nn]?'", "'", "''");
+                    Range(w, "variable.other.quoted.sql", "\"", "\"", "\"\"");
+                    break;
                 default:
                     Range(w, "string.quoted.single.sql", "'", "'", "''");
                     Range(w, "variable.other.quoted.sql", "\"", "\"", "\"\"");
@@ -87,6 +97,7 @@ public static class SqlGrammarGenerator
                 DatabaseDialect.PostgreSql => "\\$\\d+",
                 DatabaseDialect.MySql => "\\?|@@?[A-Za-z_][A-Za-z0-9_$]*",
                 DatabaseDialect.SqlServer => "@[A-Za-z_][A-Za-z0-9_$#]*",
+                DatabaseDialect.Oracle => ":[A-Za-z0-9_][A-Za-z0-9_$#]*",
                 _ => "\\?\\d*|[:@$][A-Za-z_][A-Za-z0-9_]*",
             };
             Match(w, "variable.parameter.sql", parameter);

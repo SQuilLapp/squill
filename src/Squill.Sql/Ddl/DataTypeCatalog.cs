@@ -23,6 +23,12 @@ public static class DataTypeCatalog
         "nchar(1)", "date", "time", "datetime2", "datetimeoffset", "uniqueidentifier", "varbinary(max)",
     ];
 
+    private static readonly string[] Oracle =
+    [
+        "NUMBER(10)", "NUMBER(18,2)", "FLOAT", "BINARY_FLOAT", "BINARY_DOUBLE", "VARCHAR2(255)", "NVARCHAR2(255)", "CHAR(1)",
+        "CLOB", "BLOB", "RAW(16)", "DATE", "TIMESTAMP", "TIMESTAMP WITH TIME ZONE", "TIMESTAMP WITH LOCAL TIME ZONE", "JSON",
+    ];
+
     private static readonly string[] Sqlite = ["INTEGER", "REAL", "TEXT", "BLOB", "NUMERIC"];
 
     /// <summary>Gets the ordered type suggestions of a dialect.</summary>
@@ -33,6 +39,7 @@ public static class DataTypeCatalog
         DatabaseDialect.PostgreSql => PostgreSql,
         DatabaseDialect.MySql => MySql,
         DatabaseDialect.SqlServer => SqlServer,
+        DatabaseDialect.Oracle => Oracle,
         _ => Sqlite,
     };
 }

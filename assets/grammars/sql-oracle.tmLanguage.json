@@ -1,0 +1,77 @@
+{
+  "name": "SQL (oracle)",
+  "scopeName": "source.sql.oracle",
+  "patterns": [
+    {
+      "name": "comment.line.double-dash.sql",
+      "match": "--.*$"
+    },
+    {
+      "name": "comment.block.sql",
+      "begin": "/\\*",
+      "end": "\\*/"
+    },
+    {
+      "name": "string.quoted.other.sql",
+      "begin": "[Nn]?[Qq]'\\[",
+      "end": "\\]'"
+    },
+    {
+      "name": "string.quoted.other.sql",
+      "begin": "[Nn]?[Qq]'\\(",
+      "end": "\\)'"
+    },
+    {
+      "name": "string.quoted.other.sql",
+      "begin": "[Nn]?[Qq]'\\{",
+      "end": "\\}'"
+    },
+    {
+      "name": "string.quoted.other.sql",
+      "begin": "[Nn]?[Qq]'<",
+      "end": ">'"
+    },
+    {
+      "name": "string.quoted.single.sql",
+      "begin": "[Nn]?'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql",
+          "match": "''"
+        }
+      ]
+    },
+    {
+      "name": "variable.other.quoted.sql",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql",
+          "match": "\"\""
+        }
+      ]
+    },
+    {
+      "name": "variable.parameter.sql",
+      "match": ":[A-Za-z0-9_][A-Za-z0-9_$#]*"
+    },
+    {
+      "name": "constant.numeric.sql",
+      "match": "\\b\\d+(\\.\\d*)?([eE][+-]?\\d+)?\\b|\\.\\d+([eE][+-]?\\d+)?\\b"
+    },
+    {
+      "name": "support.function.sql",
+      "match": "(?i)\\b(ABS|ADD_MONTHS|CEIL|COALESCE|DECODE|FLOOR|GREATEST|INITCAP|INSTR|LAG|LAST_DAY|LEAD|LEAST|LENGTH|LISTAGG|LOWER|LPAD|LTRIM|MOD|MONTHS_BETWEEN|NULLIF|NVL|NVL2|RANK|REGEXP_LIKE|REGEXP_REPLACE|REGEXP_SUBSTR|ROUND|ROW_NUMBER|RPAD|RTRIM|SUBSTR|SYS_GUID|TO_CHAR|TO_DATE|TO_NUMBER|TO_TIMESTAMP|TRUNC|UPPER)\\b(?=\\s*\\()"
+    },
+    {
+      "name": "keyword.control.sql",
+      "match": "(?i)\\b(ACCESS|ADD|ALL|ALTER|AND|ANY|AS|ASC|AUDIT|AVG|BEGIN|BETWEEN|BIGINT|BODY|BOOLEAN|BOTH|BY|CASCADE|CASE|CAST|CHAR|CHECK|CLUSTER|COLLATE|COLUMN|COMMENT|COMMIT|COMPRESS|CONNECT|CONNECT_BY_ROOT|CONSTRAINT|COUNT|CREATE|CROSS|CURRENT|CURRENT_DATE|CURRENT_TIME|CURRENT_TIMESTAMP|CURSOR|DATE|DAY|DECIMAL|DECLARE|DEFAULT|DELETE|DESC|DISTINCT|DOUBLE|DROP|DUAL|ELSE|ELSIF|END|ESCAPE|EXCEPT|EXCEPTION|EXCLUSIVE|EXEC|EXECUTE|EXISTS|EXTRACT|FALSE|FETCH|FILTER|FLOAT|FOLLOWING|FOR|FOREIGN|FROM|FULL|FUNCTION|GRANT|GROUP|HAVING|HOUR|IDENTIFIED|IF|IMMEDIATE|IN|INCREMENT|INDEX|INITIAL|INNER|INSERT|INT|INTEGER|INTERSECT|INTERVAL|INTO|IS|JOIN|KEY|LEADING|LEFT|LEVEL|LIKE|LIMIT|LOCAL|LOCK|LONG|LOOP|MATCHED|MAX|MAXEXTENTS|MERGE|MIN|MINUS|MINUTE|MODE|MODIFY|MONTH|NATURAL|NEXT|NO|NOCYCLE|NOT|NOWAIT|NULL|NUMBER|NUMERIC|OFFLINE|OFFSET|ON|ONLINE|ONLY|OPTION|OR|ORDER|OUTER|OVER|PACKAGE|PARTITION|PCTFREE|PRECEDING|PRECISION|PRIMARY|PRIOR|PROCEDURE|RANGE|RAW|REAL|RECURSIVE|REFERENCES|RENAME|REPLACE|RESOURCE|RESTRICT|RETURN|RETURNING|REVOKE|RIGHT|ROLLBACK|ROW|ROWID|ROWNUM|ROWS|SECOND|SELECT|SESSION|SET|SHARE|SIZE|SMALLINT|SOME|START|SUBSTRING|SUM|SYNONYM|SYSDATE|SYSTIMESTAMP|TABLE|THEN|TIME|TIMESTAMP|TO|TOP|TRAILING|TRIGGER|TRIM|TRUE|UID|UNBOUNDED|UNION|UNIQUE|UPDATE|USER|USING|VALIDATE|VALUES|VARCHAR|VARCHAR2|VIEW|WHEN|WHERE|WHILE|WINDOW|WITH|YEAR|ZONE)\\b"
+    },
+    {
+      "name": "keyword.operator.sql",
+      "match": "<=|>=|<>|!=|\\|\\||[-+*/%=<>]"
+    }
+  ]
+}

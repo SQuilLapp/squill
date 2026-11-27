@@ -107,6 +107,7 @@ public sealed class KeywordCompletionProvider : ISqlCompletionProvider
                 DatabaseDialect.PostgreSql => ["EXPLAIN", "TRUNCATE", "VALUES"],
                 DatabaseDialect.MySql => ["REPLACE", "SHOW", "USE", "TRUNCATE"],
                 DatabaseDialect.SqlServer => ["EXEC", "MERGE", "USE", "DECLARE", "TRUNCATE"],
+                DatabaseDialect.Oracle => ["MERGE", "DECLARE", "TRUNCATE", "EXPLAIN PLAN FOR", "GRANT"],
                 _ => ["REPLACE", "PRAGMA", "VACUUM"],
             });
             return words;
@@ -115,7 +116,7 @@ public sealed class KeywordCompletionProvider : ISqlCompletionProvider
         // a source (table, alias, closing parenthesis) just ended, so the next word continues the clause
         var afterSource = previous.Value.Kind is TokenKind.Identifier or TokenKind.QuotedIdentifier
             || previous.Value.Text == ")";
-        var limit = dialect == DatabaseDialect.SqlServer ? "OFFSET" : "LIMIT";
+        var limit = dialect switch { DatabaseDialect.SqlServer => "OFFSET", DatabaseDialect.Oracle => "FETCH FIRST", _ => "LIMIT" };
         switch (clause)
         {
             case ClauseKind.Select:

@@ -6,7 +6,7 @@ namespace Squill.Sql.Statements;
 /// <summary>Splits a script into statements and finds the statement under a caret.</summary>
 public static class SqlStatementSplitter
 {
-    /// <summary>Splits a script on <c>;</c> tokens, honouring T-SQL <c>GO</c>, MySQL <c>DELIMITER</c> and compound bodies.</summary>
+    /// <summary>Splits a script on <c>;</c> tokens, honouring T-SQL <c>GO</c>, MySQL <c>DELIMITER</c>, compound bodies and Oracle PL/SQL blocks ended by a lone <c>/</c> line.</summary>
     /// <param name="text">The script.</param>
     /// <param name="dialect">The database engine, which selects the tokenizer and the batch directives.</param>
     /// <returns>Non-empty statement spans in text order; comment-only and empty statements are dropped.</returns>
@@ -17,7 +17,8 @@ public static class SqlStatementSplitter
         var result = new List<SqlStatementSpan>();
         var delimiter = ";";
         int start = -1, end = 0, count = 0, depth = 0;
-        bool isCreate = false, sawObject = false, bodyStarted = false;
+        bool isCreate = false, sawObject = false, bodyStarted = false, plsql = false, kindKnown = false;
+        var oracle = dialect == DatabaseDialect.Oracle;
 
         void Flush()
         {
@@ -29,7 +30,7 @@ public static class SqlStatementSplitter
             start = -1;
             count = 0;
             depth = 0;
-            isCreate = sawObject = bodyStarted = false;
+            isCreate = sawObject = bodyStarted = plsql = kindKnown = false;
         }
 
         for (var i = 0; i < tokens.Count; i++)
@@ -56,9 +57,16 @@ public static class SqlStatementSplitter
                 continue;
             }
 
+            // Oracle: a line holding only "/" runs the buffer; it ends a PL/SQL block, which keeps its inner semicolons
+            if (oracle && IsSlashLine(text, token))
+            {
+                Flush();
+                continue;
+            }
+
             if (delimiter == ";")
             {
-                if (token.Kind == TokenKind.Punctuation && text[token.Start] == ';' && depth == 0)
+                if (token.Kind == TokenKind.Punctuation && text[token.Start] == ';' && depth == 0 && !plsql)
                 {
                     if (count > 0)
                     {
@@ -101,7 +109,22 @@ public static class SqlStatementSplitter
                 continue;
             }
 
-            if (count == 1)
+            if (oracle)
+            {
+                if (count == 1)
+                {
+                    isCreate = WordIs(text, token, "CREATE");
+                    plsql = WordIs(text, token, "BEGIN") || WordIs(text, token, "DECLARE");
+                }
+                else if (isCreate && !kindKnown && !WordIs(text, token, "OR") && !WordIs(text, token, "REPLACE")
+                    && !WordIs(text, token, "EDITIONABLE") && !WordIs(text, token, "NONEDITIONABLE"))
+                {
+                    kindKnown = true;
+                    plsql = WordIs(text, token, "FUNCTION") || WordIs(text, token, "PROCEDURE") || WordIs(text, token, "PACKAGE")
+                        || WordIs(text, token, "TRIGGER") || WordIs(text, token, "TYPE");
+                }
+            }
+            else if (count == 1)
             {
                 isCreate = WordIs(text, token, "CREATE");
             }
@@ -184,6 +207,32 @@ public static class SqlStatementSplitter
 
         var inside = text.AsSpan(token.Start, token.Length).IndexOf(delimiter, StringComparison.Ordinal);
         return inside < 0 ? -1 : token.Start + inside;
+    }
+
+    private static bool IsSlashLine(string text, Token token)
+    {
+        if (token.Kind != TokenKind.Operator || token.Length != 1 || text[token.Start] != '/')
+        {
+            return false;
+        }
+
+        for (var p = token.Start - 1; p >= 0 && text[p] != '\n'; p--)
+        {
+            if (!char.IsWhiteSpace(text[p]))
+            {
+                return false;
+            }
+        }
+
+        for (var p = token.End; p < text.Length && text[p] != '\n'; p++)
+        {
+            if (!char.IsWhiteSpace(text[p]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool IsTrivia(Token token) =>

@@ -14,6 +14,12 @@ internal static class IdentifierQuoting
     public static string Quote(string name, DatabaseDialect dialect)
     {
         // PostgreSQL folds an unquoted name to lower case, so a name with capitals only resolves when quoted.
+        // Oracle folds an unquoted name to upper case, so only [A-Z][A-Z0-9_$#]* resolves bare.
+        if (dialect == DatabaseDialect.Oracle)
+        {
+            return IsOraclePlain(name) && !OracleKeywords.Words.Contains(name) ? name : "\"" + name.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
+        }
+
         if (IsPlain(name) && !KeywordsOf(dialect).Contains(name) && !(dialect == DatabaseDialect.PostgreSql && name.Any(char.IsUpper)))
         {
             return name;
@@ -33,8 +39,12 @@ internal static class IdentifierQuoting
         DatabaseDialect.MySql => MySqlKeywords.Words,
         DatabaseDialect.SqlServer => TSqlKeywords.Words,
         DatabaseDialect.Sqlite => SqliteKeywords.Words,
+        DatabaseDialect.Oracle => OracleKeywords.Words,
         _ => AnsiKeywords.Words,
     };
+
+    private static bool IsOraclePlain(string name) =>
+        name.Length > 0 && name[0] is >= 'A' and <= 'Z' && name.All(c => c is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_' or '$' or '#');
 
     private static bool IsPlain(string name)
     {

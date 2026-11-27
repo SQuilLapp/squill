@@ -136,6 +136,46 @@ public static class FunctionCatalog
         F("LEAD", "expr, offset, default", "any", "Value of a following row of the partition."),
     ];
 
+    private static readonly FunctionSignature[] Oracle =
+    [
+        F("LENGTH", "text", "number", "Number of characters."),
+        F("NVL", "expr, fallback", "any", "Fallback when the expression is NULL."),
+        F("NVL2", "expr, if_not_null, if_null", "any", "Second argument when the expression is not NULL, third otherwise."),
+        F("DECODE", "expr, search, result, ..., default", "any", "Compares the expression with each search value."),
+        F("TO_CHAR", "value, format", "text", "Formats a number or date as text."),
+        F("TO_DATE", "text, format", "date", "Parses text into a date."),
+        F("TO_NUMBER", "text, format", "number", "Parses text into a number."),
+        F("TO_TIMESTAMP", "text, format", "timestamp", "Parses text into a timestamp."),
+        F("SYSDATE", "", "date", "Current date and time of the database server."),
+        F("SYSTIMESTAMP", "", "timestamp", "Current timestamp with time zone of the database server."),
+        F("LISTAGG", "expr, delimiter", "text", "Concatenates the values of a group with a delimiter."),
+        F("SUBSTR", "text, start, length", "text", "Extracts part of a string."),
+        F("INSTR", "text, needle, start, occurrence", "number", "Position of a substring."),
+        F("LPAD", "text, length, pad", "text", "Pads on the left."),
+        F("RPAD", "text, length, pad", "text", "Pads on the right."),
+        F("LTRIM", "text, chars", "text", "Removes leading characters."),
+        F("RTRIM", "text, chars", "text", "Removes trailing characters."),
+        F("INITCAP", "text", "text", "Upper-cases the first letter of each word."),
+        F("TRUNC", "value, precision", "any", "Truncates a number or a date."),
+        F("MOD", "a, b", "number", "Remainder of a division."),
+        F("CEIL", "number", "number", "Smallest integer not below the value."),
+        F("FLOOR", "number", "number", "Largest integer not above the value."),
+        F("ADD_MONTHS", "date, months", "date", "Adds months to a date."),
+        F("MONTHS_BETWEEN", "date1, date2", "number", "Number of months between two dates."),
+        F("LAST_DAY", "date", "date", "Last day of the month."),
+        F("EXTRACT", "field FROM source", "number", "Extracts a date/time field."),
+        F("GREATEST", "value...", "any", "Largest argument."),
+        F("LEAST", "value...", "any", "Smallest argument."),
+        F("REGEXP_LIKE", "text, pattern, flags", "boolean", "Tests a regular expression."),
+        F("REGEXP_REPLACE", "text, pattern, replacement", "text", "Replaces by regular expression."),
+        F("REGEXP_SUBSTR", "text, pattern, start, occurrence", "text", "Extracts by regular expression."),
+        F("SYS_GUID", "", "raw", "New globally unique identifier."),
+        F("ROW_NUMBER", "", "number", "Sequential number of the row within its window partition."),
+        F("RANK", "", "number", "Rank of the row within its partition, with gaps after ties."),
+        F("LAG", "expr, offset, default", "any", "Value of a previous row of the partition."),
+        F("LEAD", "expr, offset, default", "any", "Value of a following row of the partition."),
+    ];
+
     private static readonly FunctionSignature[] Sqlite =
     [
         F("LENGTH", "text", "int", "Number of characters."),
@@ -173,6 +213,7 @@ public static class FunctionCatalog
         [DatabaseDialect.MySql] = [.. Common, .. MySql],
         [DatabaseDialect.SqlServer] = [.. Common, .. TSql],
         [DatabaseDialect.Sqlite] = [.. Common, .. Sqlite],
+        [DatabaseDialect.Oracle] = [.. Common, .. Oracle],
     };
 
     /// <summary>Lists the functions of a dialect: the common ones, then those specific to the engine.</summary>

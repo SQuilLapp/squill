@@ -37,7 +37,7 @@ public static class SqlDiagnosticsProvider
             {
                 switch (r.Node)
                 {
-                    case TableRef { IsOpaque: false } t when IsUnknownTable(schema, t, r.Ctes):
+                    case TableRef { IsOpaque: false } t when IsUnknownTable(schema, t, r.Ctes, request.Dialect):
                         result.Add(new SqlDiagnostic(
                             NameRange(text, t, t.Name, t.Schema?.Length ?? 0, last: false), DiagnosticSeverity.Error,
                             $"Unknown table '{t.Name}'", "SQL1001", SqlMessageCodes.UnknownTable, [t.Name]));
@@ -54,8 +54,14 @@ public static class SqlDiagnosticsProvider
         return [.. result.OrderBy(d => d.Range.Start)];
     }
 
-    private static bool IsUnknownTable(SchemaSnapshot schema, TableRef t, IReadOnlyList<string> ctes)
+    private static bool IsUnknownTable(SchemaSnapshot schema, TableRef t, IReadOnlyList<string> ctes, DatabaseDialect dialect)
     {
+        // DUAL is the Oracle one-row table every schema can read
+        if (dialect == DatabaseDialect.Oracle && t.Schema is null && string.Equals(t.Name, "DUAL", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
         if (t.Schema is null && ctes.Any(c => string.Equals(c, t.Name, StringComparison.OrdinalIgnoreCase)))
         {
             return false;

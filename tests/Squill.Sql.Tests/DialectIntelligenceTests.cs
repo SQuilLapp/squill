@@ -263,7 +263,7 @@ public sealed class DialectIntelligenceTests
     // ---- formatter over the valid statements of the P11-27 corpus ----
 
     private static readonly (string File, DatabaseDialect Dialect)[] CorpusFiles =
-        [("postgres", DatabaseDialect.PostgreSql), ("mysql", DatabaseDialect.MySql), ("sqlserver", DatabaseDialect.SqlServer), ("sqlite", DatabaseDialect.Sqlite)];
+        [("postgres", DatabaseDialect.PostgreSql), ("mysql", DatabaseDialect.MySql), ("sqlserver", DatabaseDialect.SqlServer), ("sqlite", DatabaseDialect.Sqlite), ("oracle", DatabaseDialect.Oracle)];
 
     public static TheoryData<string, int> CorpusEntries()
     {

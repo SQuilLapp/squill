@@ -7,7 +7,7 @@ Directory.CreateDirectory(args[0]);
 foreach (var (dialect, file) in new[]
 {
     (DatabaseDialect.PostgreSql, "postgresql"), (DatabaseDialect.MySql, "mysql"),
-    (DatabaseDialect.SqlServer, "tsql"), (DatabaseDialect.Sqlite, "sqlite"),
+    (DatabaseDialect.SqlServer, "tsql"), (DatabaseDialect.Sqlite, "sqlite"), (DatabaseDialect.Oracle, "oracle"),
 })
 {
     await File.WriteAllTextAsync(Path.Combine(args[0], $"sql-{file}.tmLanguage.json"), SqlGrammarGenerator.Generate(dialect));

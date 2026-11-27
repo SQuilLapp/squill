@@ -24,7 +24,7 @@ internal static class SqlCorpusScenario
                 continue;
 
             // GO and DELIMITER are client directives: the pieces the splitter finds are sent one by one, anything else as one batch (a T-SQL DECLARE must reach its SELECT).
-            var pieces = HasDirective(entry.Sql)
+            var pieces = HasDirective(entry.Sql) || (dialect == DatabaseDialect.Oracle && entry.Statements > 1)
                 ? SqlStatementSplitter.Split(entry.Sql, dialect).Select(s => entry.Sql.Substring(s.Start, s.Length)).ToList()
                 : [entry.Sql];
             await RunQuietlyAsync(connection, begin);
@@ -47,7 +47,7 @@ internal static class SqlCorpusScenario
     }
 
     private static bool HasDirective(string sql) =>
-        sql.ReplaceLineEndings("\n").Split('\n').Any(l => l.Trim().Equals("go", StringComparison.OrdinalIgnoreCase) || l.TrimStart().StartsWith("delimiter ", StringComparison.OrdinalIgnoreCase));
+        sql.ReplaceLineEndings("\n").Split('\n').Any(l => l.Trim().Equals("go", StringComparison.OrdinalIgnoreCase) || l.Trim() == "/" || l.TrimStart().StartsWith("delimiter ", StringComparison.OrdinalIgnoreCase));
 
     private static async Task RunQuietlyAsync(IDatabaseConnection connection, string sql)
     {

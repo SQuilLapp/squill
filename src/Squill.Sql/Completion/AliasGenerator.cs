@@ -91,6 +91,7 @@ internal static class AliasGenerator
         DatabaseDialect.MySql => MySqlKeywords.Words,
         DatabaseDialect.SqlServer => TSqlKeywords.Words,
         DatabaseDialect.Sqlite => SqliteKeywords.Words,
+        DatabaseDialect.Oracle => OracleKeywords.Words,
         _ => AnsiKeywords.Words,
     };
 

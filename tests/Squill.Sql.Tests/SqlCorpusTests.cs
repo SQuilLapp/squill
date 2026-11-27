@@ -17,6 +17,7 @@ public sealed class SqlCorpusTests
         ("mysql", DatabaseDialect.MySql, null),
         ("sqlserver", DatabaseDialect.SqlServer, "sample"),
         ("sqlite", DatabaseDialect.Sqlite, null),
+        ("oracle", DatabaseDialect.Oracle, null),
     ];
 
     private static ColumnDefinition Col(string name, string type = "int") => new(name, type, true, false, null);
@@ -67,6 +68,9 @@ public sealed class SqlCorpusTests
         {
             // the statement starts at its first token and ends at its last one (a trailing ; may or may not be part of it); comments around it are not
             var tokens = SqlTokenizers.For(dialect).Tokenize(entry.Sql).Where(t => t.Kind is not (TokenKind.Whitespace or TokenKind.LineComment or TokenKind.BlockComment)).ToList();
+            // an Oracle script may end with a "/" line, which is no part of the statement
+            if (dialect == DatabaseDialect.Oracle && tokens.Count > 1 && entry.Sql[tokens[^1].Start] == '/')
+                tokens.RemoveAt(tokens.Count - 1);
             var last = tokens[^1].Length == 1 && entry.Sql[tokens[^1].Start] == ';' && tokens.Count > 1 ? tokens[^2] : tokens[^1];
             // a DELIMITER script is delimited by its own directives: only the statement count is checked
             if (!entry.Sql.StartsWith("delimiter ", StringComparison.OrdinalIgnoreCase))
