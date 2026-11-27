@@ -168,11 +168,13 @@ public sealed class SchemaCompareViewModelTests
     public async Task StaleScriptBuild_NeverWins()
     {
         using var gate = new ManualResetEventSlim();
+        using var firstStarted = new ManualResetEventSlim();
         var calls = 0;
         MigrationScript Build(DatabaseDialect d, SchemaSnapshot s, SchemaSnapshot t, SchemaComparison c, IReadOnlySet<ObjectKey> included, MigrationOptions o)
         {
             if (Interlocked.Increment(ref calls) == 1)
             {
+                firstStarted.Set();
                 gate.Wait();
                 return new MigrationScript("first", 1, []);
             }
@@ -183,6 +185,8 @@ public sealed class SchemaCompareViewModelTests
         var f = new Fixture(build: Build);
         await f.Vm.CompareCommand.ExecuteAsync(null);
         var first = f.Vm.ScriptTask;
+        // Both builds run on the pool: without this the second could take call number 1 and block on the gate forever.
+        Assert.True(firstStarted.Wait(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken));
         f.Vm.Groups[0].Items[2].IsIncluded = true;
         await f.Vm.ScriptTask;
         Assert.Equal("second", f.Vm.Script);

@@ -538,6 +538,7 @@ Depends on: <card ids, ranges allowed>
 | [P21-99](phase-21/P21-99-oracle-wallet-editor-field.md) | Oracle: wallet folder in the connection editors | P21-08 | todo |
 | [P21-100](phase-21/P21-100-oracle-session-after-killed-bridge.md) | Oracle: a killed bridge leaves the session looking connected | P21-03 | todo |
 | [P21-101](phase-21/P21-101-oracle-missing-password-message.md) | Oracle: an empty password gives "Value cannot be null" | P21-03 | todo |
+| [P21-102](phase-21/P21-102-presentation-tests-hang.md) | Presentation tests hang intermittently (SchemaCompareViewModelTests) | none | done |
 
 ### Phase 9 - Visual conformance
 
