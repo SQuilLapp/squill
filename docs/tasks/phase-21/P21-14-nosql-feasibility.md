@@ -1,6 +1,6 @@
 # P21-14 - NoSQL: MongoDB and Redis feasibility report
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -19,8 +19,8 @@ Exists today: everything in SQuilL assumes tables, columns, SQL text and a schem
 - Any code beyond a throw-away probe.
 
 ## Tasks
-- [ ] Probe both drivers with Native AOT against containers (`mongo:8`, `redis:7`), record warnings.
-- [ ] Write the report.
+- [x] Probe both drivers with Native AOT against containers (`mongo:8`, `redis:7`), record warnings.
+- [x] Write the report.
 
 ## Acceptance criteria
 - Report committed with measured probe results.
@@ -33,3 +33,6 @@ Exists today: everything in SQuilL assumes tables, columns, SQL text and a schem
 
 ## Suggested commit message
 Report whether MongoDB and Redis fit SQuilL
+
+## Done notes
+Report: [docs/poc/nosql.md](../../poc/nosql.md). Measured: MongoDB.Driver 3.14.1 publishes under AOT but fails at the first handshake (MissingMethodException in the BSON serializer registry; JIT control works); StackExchange.Redis 3.4.35 publishes with 0 IL warnings and runs every call tried. Verdict: Redis go technically, MongoDB no go in process; both only as separate tab kinds and only if the owner wants NoSQL.
