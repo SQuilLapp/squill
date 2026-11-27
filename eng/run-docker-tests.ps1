@@ -3,21 +3,21 @@
 .SYNOPSIS
 Runs the Docker-gated driver tests (Testcontainers) on Podman.
 .PARAMETER Engine
-postgres, mysql, sqlserver, ssh (the SSH tunnel tests of the Platform and Presentation projects, on PostgreSQL), oracle (a large image, so not part of all) or all (default).
+postgres, mysql, mariadb (the MySQL suites on mariadb:11.4, not part of all), sqlserver, ssh (the SSH tunnel tests of the Platform and Presentation projects, on PostgreSQL), oracle (a large image, so not part of all) or all (default).
 .PARAMETER Keep
 Instead of running tests, starts the container of one engine (postgres, mysql or sqlserver), loads tests/Shared/SampleSchema/<engine>.sql, prints host, port, user and password, and waits for Enter before removing it. For driving the app by hand.
 .PARAMETER Filter
 Extra arguments passed to the test application, split on spaces, for example '--filter-method *ConnectionString*'.
 #>
 param(
-    [ValidateSet('postgres', 'mysql', 'sqlserver', 'ssh', 'oracle', 'all')][string]$Engine = 'all',
+    [ValidateSet('postgres', 'mysql', 'mariadb', 'sqlserver', 'ssh', 'oracle', 'all')][string]$Engine = 'all',
     [string]$Filter = '',
     [switch]$Keep
 )
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$projects = @{ postgres = 'Postgres'; mysql = 'MySql'; sqlserver = 'SqlServer'; oracle = 'Oracle' }
+$projects = @{ postgres = 'Postgres'; mysql = 'MySql'; mariadb = 'MySql'; sqlserver = 'SqlServer'; oracle = 'Oracle' }
 $engines = $Engine -eq 'all' ? @('postgres', 'mysql', 'sqlserver', 'ssh') : @($Engine)
 
 if (-not (Get-Command podman -ErrorAction SilentlyContinue)) {
@@ -47,6 +47,7 @@ if (-not $env:DOCKER_HOST) {
 }
 $env:TESTCONTAINERS_RYUK_DISABLED = 'true'
 $env:SQUILL_DOCKER_TESTS = '1'
+if ($Engine -eq 'mariadb') { $env:SQUILL_MYSQL_IMAGE = 'mariadb:11.4' }
 
 if ($Keep) {
     # Fixed throw-away credentials, same as the test fixtures; the port is published on 127.0.0.1 only.

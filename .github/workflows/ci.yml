@@ -30,6 +30,7 @@ jobs:
         run: |
           docker pull postgres:17-alpine
           docker pull mysql:8.4
+          docker pull mariadb:11.4
           docker pull mcr.microsoft.com/mssql/server:2022-latest
           docker pull lscr.io/linuxserver/openssh-server:latest
       - name: Docker-gated driver tests
@@ -38,6 +39,7 @@ jobs:
         run: |
           dotnet test --project tests/Squill.Data.Postgres.Tests -c Release
           dotnet test --project tests/Squill.Data.MySql.Tests -c Release
+          SQUILL_MYSQL_IMAGE=mariadb:11.4 dotnet test --project tests/Squill.Data.MySql.Tests -c Release
           dotnet test --project tests/Squill.Data.SqlServer.Tests -c Release
           dotnet test --project tests/Squill.Platform.Tests -c Release --filter-class '*SshJumpHostTests'
           dotnet test --project tests/Squill.Presentation.Tests -c Release --filter-class '*SshSessionTests'

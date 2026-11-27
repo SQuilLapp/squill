@@ -1,6 +1,6 @@
 # P21-01 - MariaDB: container tests and the dialect differences
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -18,9 +18,9 @@ Exists today: `ConnectionProfile.MariaDb` (bool, MySQL dialect through `MySqlCon
 - Plans and the transaction probe (P21-02). Galera, MaxScale, MariaDB-only types (`INET6`, `UUID`) beyond reading them as text.
 
 ## Tasks
-- [ ] Add the MariaDB fixture variant and the `-Engine mariadb` option; run the MySQL suites on it.
-- [ ] Fix or record each failure (column defaults, JSON column kind, schema reading, DML round trip, designer DDL, grid commit, completion corpus).
-- [ ] Update `docs/column-types.md` with a MariaDB column where it differs, `docs/testing.md` with the engine.
+- [x] Add the MariaDB fixture variant and the `-Engine mariadb` option; run the MySQL suites on it.
+- [x] Fix or record each failure (column defaults, JSON column kind, schema reading, DML round trip, designer DDL, grid commit, completion corpus).
+- [x] Update `docs/column-types.md` with a MariaDB column where it differs, `docs/testing.md` with the engine.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance; `rtk pwsh eng/run-docker-tests.ps1 -Engine mariadb` green (or each remaining failure turned into a `P21-97+` card).
@@ -33,3 +33,11 @@ Exists today: `ConnectionProfile.MariaDb` (bool, MySQL dialect through `MySqlCon
 
 ## Suggested commit message
 Run the MySQL engine suites on a MariaDB container and fix the differences
+
+## Done notes
+- `SQUILL_MYSQL_IMAGE` makes `MySqlFixture` start a generic `mariadb:11.4` container (the MySQL module cannot wait on it: no `mysql` client); `eng/run-docker-tests.ps1 -Engine mariadb` and a CI step run the unchanged MySQL suites on it. 26 failures at first run, 12 left.
+- Fixed in `MySqlSchemaReader`: integer display width (`int(11)`, also in routine signatures), MariaDB column defaults (already quoted, `NULL` text means none). That cleared the designer matrix, alter, migration and compare failures.
+- Test side: `cte_max_recursion_depth` / `SET_VAR` replaced by the container option `--max-recursive-iterations`.
+- Remaining, not fixed here: plans and the ANALYZE steps of the transaction scenarios (7 plan tests, `TransactionTests`, `TransactionFlowTests`) belong to P21-02; blocked-statement text of the activity reader -> P21-97; JSON arrow operators in `SqlCorpusTests` and the TLS verify-full test (the container has no TLS) -> P21-98.
+- Recorded only: `RETURNING` and sequences are not used by SQuilL; `ServerVersion` is read in `MySqlPlanReader` only (already MariaDB-aware) and now in the schema reader.
+- Not run: `dotnet test` of the whole solution is in the verification below.

@@ -437,7 +437,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-41](phase-20/P20-41-preview-pane-apply-stores-shown-text.md) | Preview pane: `Appliquer` stores the text shown with `\n` line breaks, an untouched text changes nothing (both heads) | P20-40, P20-33 | done |
 | [P20-42](phase-20/P20-42-winui-preview-pane-follows-theme.md) | WinUI: the preview pane follows the theme (light theme drew it dark), guard against unrepainted element-less brushes | P20-40 | done |
 | [P20-43](phase-20/P20-43-preview-pane-caps-long-text.md) | Preview pane: a very long value no longer freezes the UI thread (shown text capped, notice, `Show all`, copy and apply keep the whole value; both heads, measured AOT drive) | P20-33, P20-41, P20-42 | done |
-| [P21-01](phase-21/P21-01-mariadb-container-verification.md) | MariaDB: container tests and the dialect differences | none | todo |
+| [P21-01](phase-21/P21-01-mariadb-container-verification.md) | MariaDB: container tests and the dialect differences | none | done |
 | [P21-02](phase-21/P21-02-mariadb-plan-and-transactions.md) | MariaDB: execution plan, transaction probe and the support matrix | P21-01 | todo |
 | [P21-03](phase-21/P21-03-oracle-bridge-protocol.md) | Oracle bridge: cancel, transactions, several result sets and DBMS_OUTPUT | none | todo |
 | [P21-04](phase-21/P21-04-oracle-schema-objects.md) | Data.Oracle: indexes, foreign keys, defaults, routines, triggers and view definitions | P21-03 | todo |
@@ -533,6 +533,8 @@ Depends on: <card ids, ranges allowed>
 | [P21-94](phase-21/P21-94-presentation-ai-assistant.md) | AI assistant (3/5): Presentation (generate SQL, explain, fix an error) | P21-93, P21-30 | todo |
 | [P21-95](phase-21/P21-95-winui-ai-assistant.md) | AI assistant (4/5): WinUI panel and settings | P21-94 | todo |
 | [P21-96](phase-21/P21-96-avalonia-ai-assistant.md) | AI assistant (5/5): Avalonia panel and settings, README and privacy notes | P21-94, P21-95 | todo |
+| [P21-97](phase-21/P21-97-mariadb-activity-statement-text.md) | MariaDB: blocked statement text in the activity reader | P21-01 | todo |
+| [P21-98](phase-21/P21-98-mariadb-corpus-and-tls-tests.md) | MariaDB: SQL corpus JSON operators and the TLS test premise | P21-01 | todo |
 
 ### Phase 9 - Visual conformance
 

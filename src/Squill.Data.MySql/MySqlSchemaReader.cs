@@ -68,10 +68,11 @@ internal static class MySqlSchemaReader
     public static async ValueTask<SchemaSnapshot> ReadAsync(MySqlConnection connection, CancellationToken cancellationToken)
     {
         var database = (await ReadAsync(connection, "select database()", r => r.IsDBNull(0) ? null : r.GetString(0), cancellationToken))[0];
+        var mariaDb = connection.ServerVersion.Contains("MariaDB", StringComparison.OrdinalIgnoreCase);
         var columns = (await ReadAsync(connection, ColumnsSql, r => (
             Table: r.GetString(0), Kind: r.GetString(1) == "VIEW" ? TableKind.View : TableKind.Table,
             Definition: r.IsDBNull(8) ? null : r.GetString(8),
-            Column: new ColumnDefinition(r.GetString(2), r.GetString(3), r.GetString(4) == "YES", r.GetString(6) == "PRI", r.IsDBNull(5) ? null : DefaultLiteral(r.GetString(5), r.GetString(3), r.GetString(7)),
+            Column: new ColumnDefinition(r.GetString(2), StripIntegerWidth(r.GetString(3)), r.GetString(4) == "YES", r.GetString(6) == "PRI", r.IsDBNull(5) ? null : DefaultLiteral(r.GetString(5), r.GetString(3), r.GetString(7), mariaDb),
                 r.GetString(7).Contains("auto_increment", StringComparison.OrdinalIgnoreCase),
                 r.GetString(7).Contains(" GENERATED", StringComparison.OrdinalIgnoreCase))), cancellationToken))
             .GroupBy(c => (c.Table, c.Kind, c.Definition))
@@ -93,12 +94,12 @@ internal static class MySqlSchemaReader
                 g.Select(c => c.Column).ToList(), indexes[g.Key.Table].ToList(), foreignKeys[g.Key.Table].ToList(), null, g.Key.Definition))
             .ToList();
         var parameters = (await ReadAsync(connection, ParametersSql, r => (
-            Routine: r.GetString(0), Mode: r.IsDBNull(1) ? null : r.GetString(1), Name: r.GetString(2), Type: r.GetString(3)), cancellationToken))
+            Routine: r.GetString(0), Mode: r.IsDBNull(1) ? null : r.GetString(1), Name: r.GetString(2), Type: StripIntegerWidth(r.GetString(3))), cancellationToken))
             .ToLookup(p => p.Routine, p => (p.Mode is "OUT" or "INOUT" ? p.Mode + " " : "") + p.Name + " " + p.Type);
         var routines = await ReadAsync(connection, RoutinesSql, r => new RoutineInfo(
             database!, r.GetString(0), r.GetString(2) == "PROCEDURE" ? RoutineKind.Procedure : RoutineKind.Function,
             $"{r.GetString(0)}({string.Join(", ", parameters[r.GetString(1)])})",
-            r.IsDBNull(3) ? null : r.GetString(3), r.IsDBNull(4) ? null : r.GetString(4)), cancellationToken);
+            r.IsDBNull(3) ? null : StripIntegerWidth(r.GetString(3)), r.IsDBNull(4) ? null : r.GetString(4)), cancellationToken);
         var triggers = await ReadAsync(connection, TriggersSql, r => new TriggerInfo(
             database!, r.GetString(1), r.GetString(0), r.GetString(2), r.GetString(3), r.GetString(4)), cancellationToken);
         return new SchemaSnapshot(database, tables) { Routines = routines, Triggers = triggers };
@@ -107,10 +108,28 @@ internal static class MySqlSchemaReader
     private static readonly string[] NumericTypes = ["tinyint", "smallint", "mediumint", "int", "bigint", "decimal", "numeric", "float", "double", "bit"];
 
     // information_schema shows a literal default without its quotes (an expression default is flagged DEFAULT_GENERATED); the designer re-emits it into DDL, so quote it.
-    private static string DefaultLiteral(string value, string columnType, string extra)
+    // MariaDB already quotes string literals, and returns the text NULL for "no default".
+    private static string? DefaultLiteral(string value, string columnType, string extra, bool mariaDb)
     {
+        if (mariaDb)
+            return value == "NULL" ? null : value;
         var numeric = NumericTypes.Any(t => columnType.StartsWith(t, StringComparison.OrdinalIgnoreCase));
         return numeric || extra.Contains("DEFAULT_GENERATED", StringComparison.OrdinalIgnoreCase) ? value : "'" + value.Replace("'", "''", StringComparison.Ordinal) + "'";
+    }
+
+    private static readonly string[] IntegerTypes = ["tinyint", "smallint", "mediumint", "bigint", "int"];
+
+    // MariaDB (and MySQL before 8.0.19) keep the display width, "int(11) unsigned"; MySQL 8.4 does not. tinyint(1) is kept: it is the boolean idiom on both.
+    private static string StripIntegerWidth(string type)
+    {
+        foreach (var name in IntegerTypes)
+        {
+            if (!type.StartsWith(name + "(", StringComparison.OrdinalIgnoreCase))
+                continue;
+            var close = type.IndexOf(')', StringComparison.Ordinal);
+            return close < 0 || type.AsSpan(0, close + 1).Equals(name + "(1)", StringComparison.OrdinalIgnoreCase) ? type : name + type[(close + 1)..];
+        }
+        return type;
     }
 
     private static async Task<List<T>> ReadAsync<T>(MySqlConnection connection, string sql, Func<MySqlDataReader, T> map, CancellationToken cancellationToken)

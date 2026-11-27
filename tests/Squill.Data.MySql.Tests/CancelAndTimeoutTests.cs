@@ -34,8 +34,9 @@ public sealed class CancelAndTimeoutTests(MySqlFixture server) : IClassFixture<M
     public async Task CancelWhileReading_DisposesQuickly()
     {
         await using var connection = await OpenAsync();
-        await using (var setup = await connection.ExecuteAsync("set session cte_max_recursion_depth = 100000000", [], CancellationToken.None))
-            await setup.ReadBatchAsync(1, CancellationToken.None);
+        if (!MySqlFixture.IsMariaDb) // the MariaDB container starts with --max-recursive-iterations instead
+            await using (var setup = await connection.ExecuteAsync("set session cte_max_recursion_depth = 100000000", [], CancellationToken.None))
+                await setup.ReadBatchAsync(1, CancellationToken.None);
         await CancelScenario.CancelWhileReadingAsync(connection, Huge);
     }
 }

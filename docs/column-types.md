@@ -37,6 +37,7 @@ Written from `ColumnTypeReadTests` (one per driver test project, against `all_ty
 | MySQL | datetime(3), timestamp | `DateTime` | `2024-05-06 07:08:09.123` |
 | MySQL | time | `TimeSpan` | `-12:03:04` |
 | MySQL | year | `Int32` | `2024` |
+| MariaDB | same as MySQL; `json` is an alias of `longtext` (read as `String`); `COLUMN_TYPE` keeps the integer display width (`int(11)`), which the schema reader strips (`tinyint(1)` kept) | | |
 | MySQL | zero date / datetime | `DateTime.MinValue` (`ConvertZeroDateTime=true`) | `0000-00-00` / `0000-00-00 00:00:00` |
 | SQL Server | tinyint / smallint / int / bigint | `Byte` / `Int16` / `Int32` / `Int64` | `7` |
 | SQL Server | decimal, money | `Decimal` | `1234.5000`, `12.3456` |

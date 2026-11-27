@@ -17,6 +17,7 @@ podman machine stop; podman machine set --memory 4096; podman machine start
 ```bash
 pwsh eng/run-docker-tests.ps1 -Engine postgres
 pwsh eng/run-docker-tests.ps1 -Engine mysql
+pwsh eng/run-docker-tests.ps1 -Engine mariadb   # the MySQL suites on mariadb:11.4; not part of all
 pwsh eng/run-docker-tests.ps1 -Engine sqlserver
 pwsh eng/run-docker-tests.ps1 -Engine ssh           # SSH tunnel and SessionManager against an OpenSSH container (PostgreSQL behind it)
 pwsh eng/run-docker-tests.ps1                      # postgres, mysql, sqlserver and ssh
@@ -52,7 +53,7 @@ No test runs. The script starts the engine's container (`postgres:17-alpine`, `m
 
 ## CI
 
-CI runs on Linux with real Docker and keeps Ryuk enabled. In the `linux` job of `.github/workflows/ci.yml`, the full-solution test step runs with the gate off; a later step pulls the three images, then runs the PostgreSQL, MySQL and SQL Server test projects and the SSH tunnel test classes with `SQUILL_DOCKER_TESTS=1`. This script is only for Podman workstations.
+CI runs on Linux with real Docker and keeps Ryuk enabled. In the `linux` job of `.github/workflows/ci.yml`, the full-solution test step runs with the gate off; a later step pulls the images (`mariadb:11.4` included), then runs the PostgreSQL, MySQL, MySQL again on MariaDB (`SQUILL_MYSQL_IMAGE=mariadb:11.4`) and SQL Server test projects and the SSH tunnel test classes with `SQUILL_DOCKER_TESTS=1`. This script is only for Podman workstations.
 
 ## AOT warning check
 
@@ -68,3 +69,7 @@ Self-test on the fixture logs (no publish): the first exits 0, the second exits 
 pwsh eng/check-aot-warnings.ps1 -LogFile eng/testdata/aot-clean.log
 pwsh eng/check-aot-warnings.ps1 -LogFile eng/testdata/aot-new-warning.log
 ```
+
+## MariaDB
+
+`-Engine mariadb` runs `Squill.Data.MySql.Tests` with `SQUILL_MYSQL_IMAGE=mariadb:11.4` (a plain container, because the Testcontainers MySQL module waits with the `mysql` client that mariadb:11 does not ship; the container starts with `--max-recursive-iterations` as MariaDB has no `cte_max_recursion_depth` nor the `SET_VAR` hint). Status at P21-01: 150 of 162 pass; the 12 failures are the query plans and the transaction scenarios that run an ANALYZE (P21-02, `MySqlPlanReader` refuses MariaDB), the JSON `->`/`->>` operators of the SQL corpus and the container having no TLS (P21-98), and the blocked-statement text of the activity reader (P21-97).
