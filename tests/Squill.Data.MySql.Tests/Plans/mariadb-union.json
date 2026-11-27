@@ -1,0 +1,55 @@
+{
+  "query_block": {
+    "union_result": {
+      "table_name": "<union1,2>",
+      "access_type": "ALL",
+      "query_specifications": [
+        {
+          "query_block": {
+            "select_id": 1,
+            "cost": 0.00693929,
+            "nested_loop": [
+              {
+                "table": {
+                  "table_name": "customers",
+                  "access_type": "index",
+                  "key": "email",
+                  "key_length": "803",
+                  "used_key_parts": ["email"],
+                  "loops": 1,
+                  "rows": 2,
+                  "cost": 0.00693929,
+                  "filtered": 100,
+                  "using_index": true
+                }
+              }
+            ]
+          }
+        },
+        {
+          "query_block": {
+            "select_id": 2,
+            "operation": "UNION",
+            "cost": 0.00693929,
+            "nested_loop": [
+              {
+                "table": {
+                  "table_name": "orders",
+                  "access_type": "index",
+                  "key": "orders_customer_placed",
+                  "key_length": "7",
+                  "used_key_parts": ["customer_id", "placed_on"],
+                  "loops": 1,
+                  "rows": 2,
+                  "cost": 0.00693929,
+                  "filtered": 100,
+                  "using_index": true
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

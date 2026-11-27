@@ -19,7 +19,7 @@ public sealed class PlanScenarioTests(MySqlFixture server) : IClassFixture<MySql
         var script = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "SampleSchema", "mysql.sql"), TestContext.Current.CancellationToken);
         await using (var load = await connection.ExecuteAsync(script, [], CancellationToken.None))
             Assert.Null(await load.ReadBatchAsync(1, CancellationToken.None));
-        var spec = new PlanSpec(DatabaseDialect.MySql, "", false, Slow, HasCost: true, HasActual: true, RolledBackOnActual: false, ActualFoldsConstantLookup: true);
+        var spec = new PlanSpec(DatabaseDialect.MySql, "", false, Slow, HasCost: true, HasActual: true, RolledBackOnActual: false, ActualFoldsConstantLookup: !MySqlFixture.IsMariaDb, RootCostOptional: MySqlFixture.IsMariaDb);
         await PlanScenario.SeedAsync(connection, spec);
         await PlanScenario.RunAsync(connection, spec);
     }

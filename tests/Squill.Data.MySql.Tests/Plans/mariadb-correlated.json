@@ -1,0 +1,92 @@
+{
+  "query_block": {
+    "select_id": 1,
+    "cost": 0.014494776,
+    "nested_loop": [
+      {
+        "table": {
+          "table_name": "c",
+          "access_type": "ALL",
+          "loops": 1,
+          "rows": 2,
+          "cost": 0.0111808,
+          "filtered": 100,
+          "attached_condition": "<in_optimizer>(1,exists(subquery#4))"
+        }
+      },
+      {
+        "block-nl-join": {
+          "table": {
+            "table_name": "customers",
+            "access_type": "range",
+            "possible_keys": ["PRIMARY"],
+            "key": "PRIMARY",
+            "key_length": "4",
+            "used_key_parts": ["id"],
+            "loops": 2,
+            "rows": 2,
+            "cost": 0.003313976,
+            "filtered": 50,
+            "attached_condition": "customers.`id` > 0",
+            "first_match": "c"
+          },
+          "buffer_type": "flat",
+          "buffer_size": "4KiB",
+          "join_type": "BNL",
+          "attached_condition": "customers.`name` = c.`name`"
+        }
+      }
+    ],
+    "subqueries": [
+      {
+        "subquery_cache": {
+          "state": "uninitialized",
+          "query_block": {
+            "select_id": 4,
+            "cost": 0.0111808,
+            "nested_loop": [
+              {
+                "table": {
+                  "table_name": "orders",
+                  "access_type": "ALL",
+                  "loops": 1,
+                  "rows": 2,
+                  "cost": 0.0111808,
+                  "filtered": 100,
+                  "attached_condition": "orders.total > c.`id`"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "subquery_cache": {
+          "state": "uninitialized",
+          "query_block": {
+            "select_id": 2,
+            "cost": 0.001792605,
+            "nested_loop": [
+              {
+                "table": {
+                  "table_name": "o",
+                  "access_type": "ref",
+                  "possible_keys": ["orders_customer_placed"],
+                  "key": "orders_customer_placed",
+                  "key_length": "4",
+                  "used_key_parts": ["customer_id"],
+                  "ref": ["squill.c.id"],
+                  "loops": 1,
+                  "rows": 1,
+                  "cost": 0.001792605,
+                  "filtered": 100,
+                  "using_index": true
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "query_optimization": {
+    "r_total_time_ms": 0.129079123
+  },
+  "query_block": {
+    "select_id": 1,
+    "cost": 0.01378888,
+    "r_loops": 1,
+    "r_total_time_ms": 0.089633977,
+    "filesort": {
+      "sort_key": "sum(o.total) desc",
+      "r_loops": 1,
+      "r_total_time_ms": 0.018517027,
+      "r_limit": 5,
+      "r_used_priority_queue": true,
+      "r_output_rows": 2,
+      "r_sort_mode": "sort_key,rowid",
+      "temporary_table": {
+        "nested_loop": [
+          {
+            "table": {
+              "table_name": "o",
+              "access_type": "ALL",
+              "possible_keys": ["orders_customer_placed"],
+              "loops": 1,
+              "r_loops": 1,
+              "rows": 2,
+              "r_rows": 2,
+              "cost": 0.0111808,
+              "r_table_time_ms": 0.015580949,
+              "r_other_time_ms": 0.013104062,
+              "r_engine_stats": {
+                "pages_accessed": 1
+              },
+              "filtered": 100,
+              "r_filtered": 100,
+              "attached_condition": "o.total > 0"
+            }
+          },
+          {
+            "table": {
+              "table_name": "c",
+              "access_type": "eq_ref",
+              "possible_keys": ["PRIMARY"],
+              "key": "PRIMARY",
+              "key_length": "4",
+              "used_key_parts": ["id"],
+              "ref": ["squill.o.customer_id"],
+              "loops": 2,
+              "r_loops": 2,
+              "rows": 1,
+              "r_rows": 1,
+              "cost": 0.00260808,
+              "r_table_time_ms": 0.006451283,
+              "r_other_time_ms": 0.023139087,
+              "r_engine_stats": {
+                "pages_accessed": 2
+              },
+              "filtered": 100,
+              "r_filtered": 100
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -89,18 +89,21 @@ internal static class MySqlPlanParser
         return joined ?? Node("Nested Loop", PlanNodeKind.Join, null, null, null, null, [], []);
     }
 
+    /// <summary>Maps an <c>access_type</c> to the operator name and kind shown in the plan; shared with the MariaDB parser.</summary>
+    internal static (string Operation, PlanNodeKind Kind) Access(string? access) => access switch
+    {
+        "ALL" => ("Table scan", PlanNodeKind.TableScan),
+        "index" => ("Index scan", PlanNodeKind.IndexScan),
+        "range" => ("Index range scan", PlanNodeKind.IndexSeek),
+        "ref" or "eq_ref" or "ref_or_null" or "fulltext" or "index_merge" => ("Index lookup", PlanNodeKind.IndexSeek),
+        "const" or "system" => ("Single-row lookup", PlanNodeKind.IndexSeek),
+        _ => (access ?? "Table", PlanNodeKind.Other),
+    };
+
     private static PlanNode Table(JsonElement table)
     {
         var access = Text(table, "access_type");
-        var (operation, kind) = access switch
-        {
-            "ALL" => ("Table scan", PlanNodeKind.TableScan),
-            "index" => ("Index scan", PlanNodeKind.IndexScan),
-            "range" => ("Index range scan", PlanNodeKind.IndexSeek),
-            "ref" or "eq_ref" or "ref_or_null" or "fulltext" or "index_merge" => ("Index lookup", PlanNodeKind.IndexSeek),
-            "const" or "system" => ("Single-row lookup", PlanNodeKind.IndexSeek),
-            _ => (access ?? "Table", PlanNodeKind.Other),
-        };
+        var (operation, kind) = Access(access);
         var name = Text(table, "table_name");
         var key = Text(table, "key");
         var target = name is null ? key : key is null ? name : name + " · " + key;
@@ -155,20 +158,20 @@ internal static class MySqlPlanParser
     private static PlanNode One(List<PlanNode> nodes, JsonElement block) =>
         nodes.Count == 1 ? nodes[0] : Node("Query", PlanNodeKind.Result, null, null, Number(Cost(block), "query_cost"), null, [], nodes);
 
-    private static PlanNode Node(string operation, PlanNodeKind kind, string? target, string? detail, double? cost, double? rows, IReadOnlyList<PlanProperty> properties, IReadOnlyList<PlanNode> children) =>
+    internal static PlanNode Node(string operation, PlanNodeKind kind, string? target, string? detail, double? cost, double? rows, IReadOnlyList<PlanProperty> properties, IReadOnlyList<PlanNode> children) =>
         new(0, operation, kind, target, detail, rows, cost, null, null, null, null, null, properties, [], false, children);
 
     private static JsonElement Cost(JsonElement element) =>
         element.ValueKind == JsonValueKind.Object && element.TryGetProperty("cost_info", out var cost) ? cost : default;
 
-    private static List<PlanProperty> Props(JsonElement element, HashSet<string> skip) =>
+    internal static List<PlanProperty> Props(JsonElement element, HashSet<string> skip) =>
         [.. element.EnumerateObject().Where(p => !skip.Contains(p.Name)).Select(p => new PlanProperty(p.Name, Format(p.Value)))];
 
-    private static string? Text(JsonElement element, string name) =>
+    internal static string? Text(JsonElement element, string name) =>
         element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
 
     // MySQL prints costs as strings ("12.50") and row counts as numbers; both parse with the invariant culture.
-    private static double? Number(JsonElement element, string name)
+    internal static double? Number(JsonElement element, string name)
     {
         if (element.ValueKind != JsonValueKind.Object || !element.TryGetProperty(name, out var value))
             return null;
@@ -180,7 +183,7 @@ internal static class MySqlPlanParser
         };
     }
 
-    private static string Format(JsonElement value) => value.ValueKind switch
+    internal static string Format(JsonElement value) => value.ValueKind switch
     {
         JsonValueKind.String => value.GetString() ?? "",
         JsonValueKind.Array when value.EnumerateArray().All(e => e.ValueKind is JsonValueKind.String or JsonValueKind.Number) =>

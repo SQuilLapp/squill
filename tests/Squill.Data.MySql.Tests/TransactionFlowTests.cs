@@ -12,5 +12,5 @@ public sealed class TransactionFlowTests(MySqlFixture server) : IClassFixture<My
             new MySqlDatabaseProvider(),
             new ConnectionProfile(Guid.NewGuid(), "my", DatabaseDialect.MySql, server.Host, server.Port, MySqlFixture.Database, MySqlFixture.UserName, null, null),
             MySqlFixture.Password,
-            new TransactionFlowSpec("begin", null, false, true, true, true, MySqlFixture.Database));
+            new TransactionFlowSpec("begin", null, false, true, !MySqlFixture.IsMariaDb, true, MySqlFixture.Database));
 }

@@ -69,13 +69,15 @@ internal sealed class MySqlDatabaseConnection(MySqlConnection connection, int co
 
     /// <inheritdoc />
     /// <remarks>
-    /// Always unknown: MySQL 8.4 has no "am I in a transaction" variable (<c>@@in_transaction</c> is MariaDB), <c>performance_schema.events_transactions_current</c>
-    /// needs a SELECT grant that ordinary users lack and <c>information_schema.innodb_trx</c> needs PROCESS and misses read-only transactions (proven in the tests).
+    /// MariaDB answers from <c>@@in_transaction</c>. MySQL 8.4 has no "am I in a transaction" variable, <c>performance_schema.events_transactions_current</c>
+    /// needs a SELECT grant that ordinary users lack and <c>information_schema.innodb_trx</c> needs PROCESS and misses read-only transactions (proven in the tests), so MySQL is always unknown.
     /// </remarks>
-    public ValueTask<TransactionProbeResult> ProbeAsync(CancellationToken cancellationToken)
+    public async ValueTask<TransactionProbeResult> ProbeAsync(CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        return ValueTask.FromResult(TransactionProbeResult.Unknown);
+        if (!MySqlPlanReader.IsMariaDb(connection))
+            return TransactionProbeResult.Unknown;
+        await using var command = new MySqlCommand("SELECT @@in_transaction", connection) { CommandTimeout = commandTimeoutSeconds };
+        return new TransactionProbeResult(Convert.ToInt64(await command.ExecuteScalarAsync(cancellationToken), System.Globalization.CultureInfo.InvariantCulture) != 0, false);
     }
 
     /// <inheritdoc />

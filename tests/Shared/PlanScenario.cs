@@ -16,9 +16,10 @@ namespace Squill.Data.RoundTrip;
 /// <param name="HasActual">The engine gives actual plans.</param>
 /// <param name="RolledBackOnActual">Expected <see cref="QueryPlan.RolledBack"/> of an actual plan.</param>
 /// <param name="ActualFoldsConstantLookup">An actual plan of a primary-key lookup names no table (MySQL prints <c>Rows fetched before execution</c>).</param>
+/// <param name="RootCostOptional">An estimated plan may lack a root cost (MariaDB gives none for a single-row lookup).</param>
 /// <param name="HasJoinNode">The plan of a two-table join has a <see cref="PlanNodeKind.Join"/> node (SQLite lists the nested loops as plain steps: exception as data).</param>
 internal sealed record PlanSpec(
-    DatabaseDialect Dialect, string Prefix, bool TopSyntax, string SlowSql, bool HasCost, bool HasActual, bool RolledBackOnActual, bool HasJoinNode = true, bool ActualFoldsConstantLookup = false);
+    DatabaseDialect Dialect, string Prefix, bool TopSyntax, string SlowSql, bool HasCost, bool HasActual, bool RolledBackOnActual, bool HasJoinNode = true, bool ActualFoldsConstantLookup = false, bool RootCostOptional = false);
 
 /// <summary>Checks that a provider gives a usable <see cref="QueryPlan"/> for the same statements on the sample schema; shared by every driver test project.</summary>
 internal static class PlanScenario
@@ -98,7 +99,7 @@ internal static class PlanScenario
         if (spec.HasCost)
         {
             // MySQL's EXPLAIN ANALYZE tree gives no estimate on Limit/Sort nodes, so the root cost is only required of estimated plans.
-            if (mode == PlanMode.Estimated)
+            if (mode == PlanMode.Estimated && !spec.RootCostOptional)
                 Assert.True(plan.Root.EstimatedCost is not null, $"Root {plan.Root.Operation} has no cost: {plan.SourceText}");
             Assert.All(scans, n => Assert.True(n.EstimatedRows is not null, $"{plan.Mode} {n.Operation} {n.Target} has no estimated rows"));
         }

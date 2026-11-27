@@ -21,11 +21,12 @@ To add a UI string, add the same key to `UiTextCatalogFr` and `UiTextCatalogEn` 
 | SQLite | `Microsoft.Data.Sqlite` | compatible (publish and run); `e_sqlite3.dll` must ship next to the exe |
 | PostgreSQL | `Npgsql` (`NpgsqlSlimDataSourceBuilder`) | compatible (publish only, not run against a server) |
 | MySQL | `MySqlConnector` | compatible (publish only, not run against a server) |
+| MariaDB | `MySqlConnector` (same driver as MySQL) | compatible as MySQL; run against `mariadb:11.4` in the tests |
 | SQL Server | `Microsoft.Data.SqlClient` | compatible (publish and startup only); the package raises IL2104/IL3053 itself |
 
 SSH tunnels (`SSH.NET`) are compatible under the same conditions (publish and startup only). The jump host key is checked against `known-hosts.json` (`IKnownHostsStore`): the first key is shown with its fingerprint and remembered on your yes, a changed key is refused ([ADR 0013](docs/adr/0013-ssh-host-keys.md)).
 
-Oracle exists only as a proof of concept through a separate bridge process ([docs/poc/oracle-bridge.md](docs/poc/oracle-bridge.md)). Informix, DB2, ClickHouse, Snowflake and BigQuery are not supported; they are future candidates carded (not scheduled) in phase 21 of [the task index](docs/tasks/README.md), Informix first with a driver proof of concept. Phase 11 ran the four engines against real servers (Testcontainers). The feature-by-engine support matrix, what is not supported (MariaDB, Azure SQL, sequences, user-defined types, ...) and the manual window checks still pending are in [ADR 0008](docs/adr/0008-engine-parity.md). Tests and how to run them: [docs/testing.md](docs/testing.md).
+Oracle exists only as a proof of concept through a separate bridge process ([docs/poc/oracle-bridge.md](docs/poc/oracle-bridge.md)). Informix, DB2, ClickHouse, Snowflake and BigQuery are not supported; they are future candidates carded (not scheduled) in phase 21 of [the task index](docs/tasks/README.md), Informix first with a driver proof of concept. Phase 11 ran the four engines against real servers (Testcontainers). The feature-by-engine support matrix, what is not supported (Azure SQL, sequences, user-defined types, ...) and the manual window checks still pending are in [ADR 0008](docs/adr/0008-engine-parity.md). Tests and how to run them: [docs/testing.md](docs/testing.md).
 
 SQL completion (phase 14): after `JOIN` the popup offers each table with its alias and the `ON` condition built from the foreign keys, inserts schema-qualified names where needed, follows the keyword-case setting, and has statement snippets (`sel`, `ins`, `upd`, `del`, `cte`, `crt`). Decisions and limits: [ADR 0011](docs/adr/0011-sql-completion.md).
 
@@ -38,9 +39,10 @@ SQL completion (phase 14): after `JOIN` the popup offers each table with its ali
 | SQLite | yes (structure only) | no | none: nothing is invented |
 | PostgreSQL | yes | yes, `BEGIN READ ONLY` then rollback | cost, estimate, timing, buffers |
 | MySQL 8.x | yes | yes (`EXPLAIN ANALYZE`, no wrapper) | cost and estimate (estimated), timing (actual) |
+| MariaDB 11.x | yes | yes (`ANALYZE FORMAT=JSON`, no wrapper) | cost and estimate (estimated), timing (actual) |
 | SQL Server | yes (not with bound parameters) | yes, rolled-back transaction | cost, estimate, timing, missing index |
 
-MariaDB and Oracle are not supported for plans, and plan comparison and export do not exist. See [ADR 0010](docs/adr/0010-execution-plan.md) for the design and known limits; the screens still need the owner's checks of [docs/verification/plan.md](docs/verification/plan.md).
+Oracle is not supported for plans, and plan comparison and export do not exist. See [ADR 0010](docs/adr/0010-execution-plan.md) for the design and known limits; the screens still need the owner's checks of [docs/verification/plan.md](docs/verification/plan.md).
 
 ## Transactions and production confirmation
 

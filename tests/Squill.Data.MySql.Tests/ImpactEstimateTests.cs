@@ -9,6 +9,6 @@ public sealed class ImpactEstimateTests(MySqlFixture server) : IClassFixture<MyS
     [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
     public async Task PlannerEstimateIsWithinAFactorOfTwoAndNothingIsWritten()
     {
-        await ImpactEstimateScenario.RunAsync(new MySqlDatabaseProvider(), new ConnectionProfile(Guid.NewGuid(), "my", DatabaseDialect.MySql, server.Host, server.Port, MySqlFixture.Database, MySqlFixture.UserName, null, null), MySqlFixture.Password);
+        await ImpactEstimateScenario.RunAsync(new MySqlDatabaseProvider(), new ConnectionProfile(Guid.NewGuid(), "my", DatabaseDialect.MySql, server.Host, server.Port, MySqlFixture.Database, MySqlFixture.UserName, null, null), MySqlFixture.Password, MySqlFixture.IsMariaDb);
     }
 }

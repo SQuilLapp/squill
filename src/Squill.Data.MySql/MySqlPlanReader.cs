@@ -4,7 +4,7 @@ using Squill.Core.Plans;
 
 namespace Squill.Data.MySql;
 
-/// <summary>Runs <c>EXPLAIN FORMAT=JSON</c> or <c>EXPLAIN ANALYZE</c> on an open MySQL connection and parses the answer.</summary>
+/// <summary>Runs <c>EXPLAIN FORMAT=JSON</c> or <c>EXPLAIN ANALYZE</c> (MariaDB: <c>ANALYZE FORMAT=JSON</c>) on an open MySQL or MariaDB connection and parses the answer.</summary>
 internal static class MySqlPlanReader
 {
     private static readonly Version MinimumAnalyzeVersion = new(8, 0, 18);
@@ -17,12 +17,15 @@ internal static class MySqlPlanReader
     /// <param name="mode">Estimated or actual.</param>
     /// <param name="cancellationToken">Cancels the request.</param>
     /// <returns>The parsed plan.</returns>
-    /// <exception cref="PlanUnavailableException">The server is MariaDB, whose plan format differs, is older than 8.0.18 for an actual plan, or refuses <c>EXPLAIN</c> with bound parameters.</exception>
+    /// <exception cref="PlanUnavailableException">The server is MySQL than 8.0.18 for an actual plan, or refuses <c>EXPLAIN</c> with bound parameters.</exception>
     public static async ValueTask<QueryPlan> ExplainAsync(
         MySqlConnection connection, int commandTimeoutSeconds, string sql, IReadOnlyList<QueryParameter> parameters, PlanMode mode, CancellationToken cancellationToken)
     {
-        if (connection.ServerVersion.Contains("MariaDB", StringComparison.OrdinalIgnoreCase))
-            throw new PlanUnavailableException("engine", "MariaDB servers are not supported for query plans.");
+        if (IsMariaDb(connection))
+        {
+            var analyze = mode == PlanMode.Actual;
+            return MariaDbPlanParser.Parse(sql, await RunAsync(connection, commandTimeoutSeconds, (analyze ? "ANALYZE FORMAT=JSON " : "EXPLAIN FORMAT=JSON ") + sql, parameters, cancellationToken), mode);
+        }
         if (mode == PlanMode.Estimated)
             return MySqlPlanParser.Parse(sql, await RunAsync(connection, commandTimeoutSeconds, "EXPLAIN FORMAT=JSON " + sql, parameters, cancellationToken));
 
@@ -30,6 +33,9 @@ internal static class MySqlPlanReader
             throw new PlanUnavailableException("version", "EXPLAIN ANALYZE needs MySQL 8.0.18 or later.");
         return MySqlAnalyzeTextParser.Parse(sql, await RunAsync(connection, commandTimeoutSeconds, "EXPLAIN ANALYZE " + sql, parameters, cancellationToken));
     }
+
+    /// <summary>Whether the server is MariaDB (MySqlConnector reports <c>11.4.x-MariaDB</c>).</summary>
+    internal static bool IsMariaDb(MySqlConnection connection) => connection.ServerVersion.Contains("MariaDB", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Runs one <c>EXPLAIN</c> statement and returns its single text cell.</summary>
     internal static async Task<string> RunAsync(

@@ -1,6 +1,6 @@
 # P21-02 - MariaDB: execution plan, transaction probe and the support matrix
 
-Status: todo
+Status: done
 Depends on: P21-01
 
 ## Goal
@@ -18,9 +18,9 @@ Exists today: the MySQL plan reader parses `EXPLAIN FORMAT=JSON` (MySQL 8 shape)
 - Plan comparison or export (not built for any engine).
 
 ## Tasks
-- [ ] Golden-file tests of `MariaDbPlanParser` (estimated and analyzed JSON captured from the container).
-- [ ] Docker-gated tests: one plan per mode through the shared engine scenario (P13-11), the probe in and out of a transaction.
-- [ ] Docs: ADR 0008 matrix column, README rows, `CHANGELOG.md` line.
+- [x] Golden-file tests of `MariaDbPlanParser` (estimated and analyzed JSON captured from the container).
+- [x] Docker-gated tests: one plan per mode through the shared engine scenario (P13-11), the probe in and out of a transaction.
+- [x] Docs: ADR 0008 matrix column, README rows, `CHANGELOG.md` line.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance; `-Engine mariadb` green; README and ADR 0008 updated.
@@ -33,3 +33,10 @@ Exists today: the MySQL plan reader parses `EXPLAIN FORMAT=JSON` (MySQL 8 shape)
 
 ## Suggested commit message
 Read MariaDB execution plans and transaction state, and add MariaDB to the support matrix
+
+## Done notes
+- `MariaDbPlanParser` (pure, `Plans/mariadb-*.json` captured from `mariadb:11.4`) is chosen by `MySqlPlanReader` from the server version (`MariaDB` in `ServerVersion`), not from the profile flag: the connection does not receive the profile and the server string is already the rule of P21-01. `Analyser` runs `ANALYZE FORMAT=JSON`.
+- `r_rows` is a per-loop average, so `ActualRows` = `r_rows` x `r_loops`; table time = `r_table_time_ms` + `r_other_time_ms`. No cost on `query_block` for a single-row lookup: `PlanSpec.RootCostOptional` added to the shared plan scenario.
+- Probe: `SELECT @@in_transaction` on MariaDB only; MySQL stays unknown.
+- Docs: ADR 0008 MariaDB column, ADR 0010, README rows, `CHANGELOG.md`.
+- `-Engine mariadb`: 167 of 172 pass before the last two fixes, 169 after; the 3 left are the P21-97 / P21-98 ones. MariaDB gives no row figure for `DELETE` without `WHERE` ("Deleting all rows"): `ImpactEstimateScenario` and `TransactionFlowSpec.HasEstimate` expect none there.

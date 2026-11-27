@@ -29,11 +29,11 @@ Phase 13 (cards P13-01 to P13-22, [task index](../tasks/README.md)) adds the que
 - **Parallel plans are approximate.** PostgreSQL `Gather` and SQL Server `Parallelism` are drawn as ordinary nodes; time is the engine's inclusive figure and relative percentages on parallel plans are approximate.
 - **8 kB block size.** PostgreSQL buffer counts are converted to bytes with 8192 per block (the default; a server built with another block size is shown wrong).
 - **MySQL `EXPLAIN ANALYZE` is parsed from indented text** and depends on the 8.x format (tested against 8.4); an unrecognized line becomes a raw node or `PlanParseException` with the `Texte` view.
-- **MariaDB is unsupported** (different JSON and analyze output): the provider says so (`PlanUnavailableException`, reason `engine`).
+- **MariaDB** has its own parser (`MariaDbPlanParser`, [P21-02](../tasks/phase-21/P21-02-mariadb-plan-and-transactions.md)): `EXPLAIN FORMAT=JSON` has no `cost_info`, and `ANALYZE FORMAT=JSON` runs the statement and gives per-loop `r_rows` (the parser multiplies by `r_loops`). A figure the server omits stays empty.
 - **Parameters.** PostgreSQL explains with bound parameters. SQL Server showplan cannot compile a statement with bound parameters: `Expliquer` says so (reason `parameters`, found by the Docker tests); an actual plan with parameters may be unavailable too. MySQL reports `parameters` when the server refuses `?` in `EXPLAIN`. Values are never substituted silently. Positional placeholders are refused as in a normal run.
 - **MySQL has no analyze wrapper**: `EXPLAIN ANALYZE` accepts `SELECT` only, which is what `PlanEligibility` allows, but a read-only guarantee comes from the guard alone.
 - **SQL Server showplan state risk** is mitigated as above, not removed: if the `OFF` batch cannot run, the session must be reopened.
 - **Windows were not driven.** The WinUI and Avalonia plan screens were never compared with the M06 PNGs by an agent session; see [verification/plan.md](../verification/plan.md) and section 13 of [visual-spec.md](../design/visual-spec.md).
 
 ## Not done
-Plan comparison (`Comparer...`), plan history and saved plans, live statistics, index suggestions for PostgreSQL and MySQL, export of a plan to a file, Oracle, MariaDB, cost of a statement inside a stored routine.
+Plan comparison (`Comparer...`), plan history and saved plans, live statistics, index suggestions for PostgreSQL and MySQL, export of a plan to a file, Oracle, cost of a statement inside a stored routine.

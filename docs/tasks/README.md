@@ -438,7 +438,7 @@ Depends on: <card ids, ranges allowed>
 | [P20-42](phase-20/P20-42-winui-preview-pane-follows-theme.md) | WinUI: the preview pane follows the theme (light theme drew it dark), guard against unrepainted element-less brushes | P20-40 | done |
 | [P20-43](phase-20/P20-43-preview-pane-caps-long-text.md) | Preview pane: a very long value no longer freezes the UI thread (shown text capped, notice, `Show all`, copy and apply keep the whole value; both heads, measured AOT drive) | P20-33, P20-41, P20-42 | done |
 | [P21-01](phase-21/P21-01-mariadb-container-verification.md) | MariaDB: container tests and the dialect differences | none | done |
-| [P21-02](phase-21/P21-02-mariadb-plan-and-transactions.md) | MariaDB: execution plan, transaction probe and the support matrix | P21-01 | todo |
+| [P21-02](phase-21/P21-02-mariadb-plan-and-transactions.md) | MariaDB: execution plan, transaction probe and the support matrix | P21-01 | done |
 | [P21-03](phase-21/P21-03-oracle-bridge-protocol.md) | Oracle bridge: cancel, transactions, several result sets and DBMS_OUTPUT | none | todo |
 | [P21-04](phase-21/P21-04-oracle-schema-objects.md) | Data.Oracle: indexes, foreign keys, defaults, routines, triggers and view definitions | P21-03 | todo |
 | [P21-05](phase-21/P21-05-sql-oracle-dialect.md) | Sql: Oracle dialect (tokenizer, splitter, keywords, quoting, types, functions) | none | todo |

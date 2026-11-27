@@ -16,8 +16,9 @@ public static class ImpactEstimateScenario
     /// <param name="provider">The provider of the engine under test.</param>
     /// <param name="profile">Profile of an empty, writable database.</param>
     /// <param name="password">The password of the profile, or <c>null</c>.</param>
+    /// <param name="mariaDb">The server is MariaDB: it gives no figure for a <c>DELETE</c> without <c>WHERE</c> ("Deleting all rows") but does for <c>INSERT ... SELECT</c>.</param>
     /// <returns>One line per estimate with the observed figure and the real count.</returns>
-    public static async Task<IReadOnlyList<string>> RunAsync(IDatabaseProvider provider, ConnectionProfile profile, string? password)
+    public static async Task<IReadOnlyList<string>> RunAsync(IDatabaseProvider provider, ConnectionProfile profile, string? password, bool mariaDb = false)
     {
         var d = profile.Dialect;
         var registry = new ProviderRegistry();
@@ -44,7 +45,7 @@ public static class ImpactEstimateScenario
                 figures.Add(line);
                 File.AppendAllText(Path.Combine(AppContext.BaseDirectory, "impact-figures.txt"), line + Environment.NewLine);
                 // Observed on MySQL 8.4: EXPLAIN FORMAT=JSON of INSERT ... SELECT gives the plan reader no usable row figure, so the dialog shows none.
-                if (d == DatabaseDialect.Sqlite || (d == DatabaseDialect.MySql && sql.StartsWith("INSERT", StringComparison.Ordinal)))
+                if (d == DatabaseDialect.Sqlite || (d == DatabaseDialect.MySql && !mariaDb && sql.StartsWith("INSERT", StringComparison.Ordinal)) || (mariaDb && sql == "DELETE FROM ie_t"))
                 {
                     Assert.Null(estimate);
                     continue;

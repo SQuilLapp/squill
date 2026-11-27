@@ -48,7 +48,7 @@ public sealed class TransactionTests(MySqlFixture server) : IClassFixture<MySqlF
             DdlTransactional: false,
             ErrorAbortsTransaction: false,
             OtherConnectionCanReadBeforeCommit: true,
-            ProbeKnowsTransactions: false,
+            ProbeKnowsTransactions: MySqlFixture.IsMariaDb, // @@in_transaction exists in MariaDB only
             ProbeKnowsFailure: false,
             SupportsActualPlan: true);
         await TransactionScenario.RunAsync(new MySqlDatabaseProvider(), OpenAsync, expectations);
@@ -165,11 +165,16 @@ public sealed class TransactionTests(MySqlFixture server) : IClassFixture<MySqlF
     }
 
     [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
-    public async Task Probe_IsUnknown()
+    public async Task Probe_IsUnknownOnMySql_AndReadsInTransactionOnMariaDb()
     {
         await using var a = await OpenAsync();
+        var probe = (ITransactionProbe)a;
+        if (MySqlFixture.IsMariaDb)
+            Assert.Equal(new TransactionProbeResult(false, false), await probe.ProbeAsync(CancellationToken.None));
         await ExecAsync(a, "START TRANSACTION");
-        Assert.Equal(TransactionProbeResult.Unknown, await ((ITransactionProbe)a).ProbeAsync(CancellationToken.None));
+        Assert.Equal(MySqlFixture.IsMariaDb ? new TransactionProbeResult(true, false) : TransactionProbeResult.Unknown, await probe.ProbeAsync(CancellationToken.None));
         await ExecAsync(a, "ROLLBACK");
+        if (MySqlFixture.IsMariaDb)
+            Assert.Equal(new TransactionProbeResult(false, false), await probe.ProbeAsync(CancellationToken.None));
     }
 }
