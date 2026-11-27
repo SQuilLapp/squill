@@ -86,8 +86,12 @@ src/Squill.App.WinUI/Views/TransactionAskDialog.cs|SquillFgBrush|resource key
 src/Squill.Core/Design/DesignValidator.cs|Changing the type of '{a.After.Name}' may fail or lose data.|English fallback of a coded issue, rendered through issue.design.typeChangeRisk
 src/Squill.Core/Design/DesignValidator.cs|Data in column '{d.Name}' is lost.|English fallback of a coded issue, rendered through issue.design.dropColumnDataLoss
 src/Squill.Core/Design/DesignValidator.cs|Existing NULLs make '{a.After.Name}' fail to become non-nullable.|English fallback of a coded issue, rendered through issue.design.nullsBlockNotNull
+src/Squill.OracleBridge/OracleSession.cs|No transaction is open.|bridge protocol error, shown as a driver message
 src/Squill.OracleBridge/OracleSession.cs|The connection is not open.|bridge protocol error, shown as a driver message
 src/Squill.OracleBridge/OracleSession.cs|Unknown operation '{request.Op}'.|bridge protocol error, shown as a driver message
+src/Squill.OracleBridge/OracleSession.cs|begin dbms_output.enable(null); end;|PL/SQL sent to the server, not UI text
+src/Squill.OracleBridge/OracleSession.cs|begin dbms_output.get_line(:line, :status); end;|PL/SQL sent to the server, not UI text
+src/Squill.OracleBridge/OracleSession.cs|select dbms_transaction.local_transaction_id from dual|SQL sent to the server, not UI text
 src/Squill.Presentation/Designer/TableDesignerViewModel.cs|The foreign key '{fk.Name}' references the missing table '{fk.ReferencedTable}'.|English fallback of a coded issue, rendered through issue.design.foreignKeyTableMissing
 src/Squill.Presentation/Designer/TableDesignerViewModel.cs|Trigger '{name}' may use the column '{column}'.|English fallback of a coded issue, rendered through issue.design.triggerMentionsColumn
 src/Squill.Presentation/Designer/TableDesignerViewModel.cs|Views depending on this table are not recreated.|English fallback of a coded issue, rendered through issue.design.viewsNotRecreated

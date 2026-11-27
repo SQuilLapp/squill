@@ -136,6 +136,7 @@ public sealed class DdlCreateDropTests
     [InlineData(DatabaseDialect.SqlServer, true)]
     [InlineData(DatabaseDialect.Sqlite, true)]
     [InlineData(DatabaseDialect.MySql, false)]
+    [InlineData(DatabaseDialect.Oracle, false)]
     public void UsesTransactionalDdl_ByDialect(DatabaseDialect d, bool expected) =>
         Assert.Equal(expected, DdlGenerators.UsesTransactionalDdl(d));
 }

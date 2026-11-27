@@ -4,7 +4,7 @@ namespace Squill.Data;
 
 /// <summary>
 /// Optional capability of a connection: reports the server-side transaction state. Implemented by the SQLite, PostgreSQL,
-/// MySQL and SQL Server connections; a connection without it does not support manual transactions (Oracle bridge).
+/// MySQL, SQL Server and Oracle (bridge) connections; a connection without it does not support manual transactions.
 /// </summary>
 public interface ITransactionProbe
 {

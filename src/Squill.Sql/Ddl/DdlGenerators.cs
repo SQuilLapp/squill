@@ -24,8 +24,8 @@ public static class DdlGenerators
 
     /// <summary>Tells whether the engine can roll back DDL statements inside a transaction.</summary>
     /// <param name="d">The database engine.</param>
-    /// <returns><see langword="false"/> for MySQL, which commits implicitly on DDL.</returns>
-    public static bool UsesTransactionalDdl(DatabaseDialect d) => d != DatabaseDialect.MySql;
+    /// <returns><see langword="false"/> for MySQL and Oracle, which commit implicitly on DDL.</returns>
+    public static bool UsesTransactionalDdl(DatabaseDialect d) => d is not (DatabaseDialect.MySql or DatabaseDialect.Oracle);
 
     /// <summary>Joins statements into one script for display and copy.</summary>
     /// <param name="statements">The statements, without trailing semicolons.</param>

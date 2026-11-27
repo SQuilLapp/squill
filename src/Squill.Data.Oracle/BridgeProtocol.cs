@@ -13,7 +13,8 @@ internal sealed record WireColumn(string Name, string DataType, string Kind);
 
 /// <summary>
 /// A request line. <c>open</c> uses the connection fields, <c>execute</c> uses <see cref="Sql"/> and <see cref="Parameters"/>, <c>fetch</c> uses
-/// <see cref="MaxRows"/>; <c>closeReader</c> and <c>close</c> need nothing more.
+/// <see cref="MaxRows"/>, <c>savepoint</c> and <c>rollback</c> (to a savepoint) use <see cref="Name"/>; <c>begin</c>, <c>commit</c>, <c>nextResult</c>,
+/// <c>probe</c>, <c>cancel</c>, <c>closeReader</c> and <c>close</c> need nothing more.
 /// </summary>
 internal sealed record BridgeRequest(
     long Id,
@@ -27,9 +28,14 @@ internal sealed record BridgeRequest(
     int? CommandTimeoutSeconds = null,
     string? Sql = null,
     WireParameter[]? Parameters = null,
-    int? MaxRows = null);
+    int? MaxRows = null,
+    string? Name = null);
 
-/// <summary>A response line; <see cref="Id"/> echoes the request and <see cref="Error"/> is set when <see cref="Ok"/> is false.</summary>
+/// <summary>
+/// A response line; <see cref="Id"/> echoes the request and <see cref="Error"/> is set when <see cref="Ok"/> is false. <see cref="Messages"/> carries the
+/// <c>DBMS_OUTPUT</c> lines produced since the previous response; <see cref="InTransaction"/> answers <c>probe</c>; for <c>nextResult</c>,
+/// <see cref="Done"/> means there is no further result set.
+/// </summary>
 internal sealed record BridgeResponse(
     long Id,
     bool Ok,
@@ -38,7 +44,9 @@ internal sealed record BridgeResponse(
     WireColumn[]? Columns = null,
     WireCell?[][]? Rows = null,
     bool Done = false,
-    long RecordsAffected = -1);
+    long RecordsAffected = -1,
+    string[]? Messages = null,
+    bool? InTransaction = null);
 
 /// <summary>Source-generated JSON metadata of the bridge protocol (one JSON object per line).</summary>
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]

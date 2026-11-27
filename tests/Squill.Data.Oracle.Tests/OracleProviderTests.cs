@@ -1,4 +1,5 @@
 using Squill.Core;
+using Squill.Core.Transactions;
 using Xunit;
 
 namespace Squill.Data.Oracle.Tests;
@@ -141,6 +142,174 @@ public sealed class OracleProviderTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.ExecuteAsync("select slow", [], cts.Token));
 
         Assert.True(bridge.Killed);
+        await Assert.ThrowsAsync<OracleBridgeException>(async () => await connection.ExecuteAsync("select 1 from dual", [], CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_CancelledWhileBridgeAnswers_KeepsTheConnection()
+    {
+        await using var bridge = new FakeBridge(r => r.Op == "execute" && r.Sql == "slow" ? null : r.Op == "open" ? new BridgeResponse(0, true, ServerVersion: "v") : new BridgeResponse(0, true, Done: true), honourCancel: true);
+        await using var connection = await OpenAsync(bridge);
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.ExecuteAsync("slow", [], cts.Token));
+        await (await connection.ExecuteAsync("select 1 from dual", [], CancellationToken.None)).DisposeAsync();
+
+        Assert.False(bridge.Killed);
+        Assert.Equal(["open", "execute", "cancel", "execute"], bridge.Ops);
+        Assert.True(bridge.Requests.Single(r => r.Op == "cancel").Id < 0);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_AlreadyCancelled_SendsNothing()
+    {
+        await using var bridge = new FakeBridge(FakeBridge.Scripted([]));
+        await using var connection = await OpenAsync(bridge);
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.ExecuteAsync("select 1 from dual", [], cts.Token));
+        Assert.Equal(["open"], bridge.Ops);
+    }
+
+    [Theory]
+    [InlineData("SET TRANSACTION READ WRITE", "begin", null)]
+    [InlineData("set transaction read write;", "begin", null)]
+    [InlineData("COMMIT", "commit", null)]
+    [InlineData("commit work;", "commit", null)]
+    [InlineData("ROLLBACK", "rollback", null)]
+    [InlineData("SAVEPOINT squill_sp_1", "savepoint", "squill_sp_1")]
+    [InlineData("ROLLBACK TO SAVEPOINT squill_sp_1", "rollback", "squill_sp_1")]
+    [InlineData("rollback to sp;", "rollback", "sp")]
+    public async Task ExecuteAsync_TransactionStatement_RunsAsBridgeOperation(string sql, string op, string? name)
+    {
+        await using var bridge = new FakeBridge(r => r.Op == "open" ? new BridgeResponse(0, true, ServerVersion: "v") : new BridgeResponse(0, true, Done: true));
+        await using var connection = await OpenAsync(bridge);
+
+        await using (var reader = await connection.ExecuteAsync(sql, [], CancellationToken.None))
+            Assert.Empty(reader.Columns);
+
+        var sent = bridge.Requests[^1];
+        Assert.Equal((op, name, null), (sent.Op, sent.Name, sent.Sql));
+        Assert.DoesNotContain("closeReader", bridge.Ops);
+    }
+
+    [Theory]
+    [InlineData("SET TRANSACTION READ ONLY")]
+    [InlineData("COMMIT COMMENT 'x'")]
+    [InlineData("ROLLBACK TO bad-name")]
+    [InlineData("SELECT * FROM commit")]
+    public async Task ExecuteAsync_OtherStatement_StaysSql(string sql)
+    {
+        await using var bridge = new FakeBridge(r => r.Op == "open" ? new BridgeResponse(0, true, ServerVersion: "v") : new BridgeResponse(0, true, Done: true));
+        await using var connection = await OpenAsync(bridge);
+
+        await (await connection.ExecuteAsync(sql, [], CancellationToken.None)).DisposeAsync();
+        Assert.Equal(("execute", sql), (bridge.Requests[^1].Op, bridge.Requests[^1].Sql));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_TransactionError_Throws()
+    {
+        await using var bridge = new FakeBridge(r => r.Op == "commit" ? new BridgeResponse(0, false, "ORA-02091: transaction rolled back") : new BridgeResponse(0, true, ServerVersion: "v"));
+        await using var connection = await OpenAsync(bridge);
+
+        var e = await Assert.ThrowsAsync<OracleBridgeException>(async () => await connection.ExecuteAsync("COMMIT", [], CancellationToken.None));
+        Assert.StartsWith("ORA-02091", e.Message);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    public async Task ProbeAsync_AnswersFromTheBridge(bool inTransaction, bool expected)
+    {
+        await using var bridge = new FakeBridge(r => r.Op == "probe" ? new BridgeResponse(0, true, InTransaction: inTransaction) : new BridgeResponse(0, true, ServerVersion: "v"));
+        await using var connection = await OpenAsync(bridge);
+
+        var probe = Assert.IsAssignableFrom<ITransactionProbe>(connection);
+        Assert.Equal(new TransactionProbeResult(expected, false), await probe.ProbeAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ProbeAsync_BridgeError_IsUnknown()
+    {
+        await using var bridge = new FakeBridge(r => r.Op == "probe" ? new BridgeResponse(0, false, "ORA-00942") : new BridgeResponse(0, true, ServerVersion: "v"));
+        await using var connection = await OpenAsync(bridge);
+
+        Assert.Equal(TransactionProbeResult.Unknown, await ((ITransactionProbe)connection).ProbeAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task NextResultAsync_ImplicitResults_MoveAcrossSetsAndCollectMessages()
+    {
+        WireColumn[] one = [new("A", "NUMBER", "i")];
+        WireColumn[] two = [new("B", "VARCHAR2", "s")];
+        var nextCalls = 0;
+        await using var bridge = new FakeBridge(r => r.Op switch
+        {
+            "open" => new BridgeResponse(0, true, ServerVersion: "v"),
+            "execute" => new BridgeResponse(0, true, Columns: one, Messages: ["from block"]),
+            "fetch" => new BridgeResponse(0, true, Rows: [[WireValue.Encode(1)]], Done: true),
+            "nextResult" => ++nextCalls switch
+            {
+                1 => new BridgeResponse(0, true, Columns: two, Messages: ["second", "lines"]),
+                _ => new BridgeResponse(0, true, Done: true, RecordsAffected: 4),
+            },
+            _ => new BridgeResponse(0, true),
+        });
+        await using var connection = await OpenAsync(bridge);
+
+        await using var reader = await connection.ExecuteAsync("begin dbms_sql.return_result(:c); end;", [], CancellationToken.None);
+        Assert.Equal(["A"], reader.Columns.Select(c => c.Name));
+        Assert.Single((await reader.ReadBatchAsync(10, CancellationToken.None))!);
+        Assert.Null(await reader.ReadBatchAsync(10, CancellationToken.None));
+        Assert.Equal(["from block"], reader.Messages);
+
+        Assert.True(await reader.NextResultAsync(CancellationToken.None));
+        Assert.Equal(["B"], reader.Columns.Select(c => c.Name));
+        Assert.Equal(typeof(string), reader.Columns[0].ClrType);
+        Assert.Equal(["from block", "second", "lines"], reader.Messages);
+
+        Assert.False(await reader.NextResultAsync(CancellationToken.None));
+        Assert.Empty(reader.Columns);
+        Assert.Equal(4, reader.RecordsAffected);
+        Assert.False(await reader.NextResultAsync(CancellationToken.None));
+        await reader.DisposeAsync();
+
+        Assert.Equal(["open", "execute", "fetch", "nextResult", "nextResult"], bridge.Ops);
+    }
+
+    [Fact]
+    public async Task NextResultAsync_StatementWithoutResultSet_AnswersLocally()
+    {
+        await using var bridge = new FakeBridge(r => r.Op == "execute" ? new BridgeResponse(0, true, Done: true, RecordsAffected: 1, Messages: ["hi"]) : new BridgeResponse(0, true, ServerVersion: "v"));
+        await using var connection = await OpenAsync(bridge);
+
+        await using var reader = await connection.ExecuteAsync("begin dbms_output.put_line(1); end;", [], CancellationToken.None);
+        Assert.False(await reader.NextResultAsync(CancellationToken.None));
+        Assert.Equal(["hi"], reader.Messages);
+        Assert.DoesNotContain("nextResult", bridge.Ops);
+    }
+
+    [Fact]
+    public async Task SendAsync_AnswerWithAnotherId_Throws()
+    {
+        var toBridge = new System.IO.Pipelines.Pipe();
+        var fromBridge = new System.IO.Pipelines.Pipe();
+        await using var client = new BridgeClient(toBridge.Writer.AsStream(), fromBridge.Reader.AsStream(), _ => { });
+        await fromBridge.Writer.WriteAsync(System.Text.Encoding.UTF8.GetBytes("{\"id\":99,\"ok\":true}\n"), TestContext.Current.CancellationToken);
+
+        var e = await Assert.ThrowsAsync<OracleBridgeException>(async () => await client.SendAsync(new BridgeRequest(0, "fetch"), CancellationToken.None));
+        Assert.Contains("99", e.Message);
+    }
+
+    [Fact]
+    public async Task SendAsync_BridgeExits_LaterCallsFail()
+    {
+        await using var bridge = new FakeBridge(FakeBridge.Scripted([]));
+        await using var connection = await OpenAsync(bridge);
+        await bridge.Client.DisposeAsync();
+
         await Assert.ThrowsAsync<OracleBridgeException>(async () => await connection.ExecuteAsync("select 1 from dual", [], CancellationToken.None));
     }
 

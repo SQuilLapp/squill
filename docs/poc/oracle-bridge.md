@@ -26,19 +26,30 @@ Squill.Data.Oracle                             one process per connection
 
 UTF-8, **one JSON object per line**, strictly request / response in turn (the client holds a lock, one request in flight). stdout is reserved for the protocol. JSON is camelCase, nulls omitted, handled only by `BridgeJsonContext` (source generated, no reflection).
 
-Request `{id, op, ...}`, response `{id, ok, error?, ...}`; `id` is echoed and checked.
+Request `{id, op, ...}`, response `{id, ok, error?, ...}`; `id` is echoed and checked. The only line sent out of turn is `cancel` (see below).
 
 | op | request fields | response fields |
 |---|---|---|
 | `open` | `host`, `port`, `service`, `user`, `password`, `connectTimeoutSeconds`, `commandTimeoutSeconds` | `serverVersion` |
-| `execute` | `sql`, `parameters[{name, value}]` | `columns[{name, dataType, kind}]`; `done` + `recordsAffected` when there is no result set |
-| `fetch` | `maxRows` | `rows`, `done`, `recordsAffected` (once done) |
+| `execute` | `sql`, `parameters[{name, value}]` | `columns[{name, dataType, kind}]`; `done` + `recordsAffected` when there is no result set; `messages` |
+| `fetch` | `maxRows` | `rows`, `done`, `recordsAffected` (once done), `messages` (at the end of the set) |
+| `nextResult` | - | `columns` of the next result set (implicit results of `DBMS_SQL.RETURN_RESULT`, `REF CURSOR`s), or `done` when there is none (the reader is then released) |
+| `begin` | - | - (opens the driver's local transaction; reused when one is already open) |
+| `commit` | - | - (ends the local transaction; a no-op in auto-commit) |
+| `rollback` | `name?` | - (without `name` ends the transaction; with `name` rolls back to that savepoint and keeps it) |
+| `savepoint` | `name` | - (needs an open transaction) |
+| `probe` | - | `inTransaction`, from `DBMS_TRANSACTION.LOCAL_TRANSACTION_ID` (null until the session changed data) |
+| `cancel` | - | - (interrupts the running statement, see below) |
 | `closeReader` | - | - |
 | `close` | - | - (the bridge exits afterwards) |
 
 Values are typed cells `{k, v}` (kinds `s` string, `i` int64, `d` decimal, `f` double, `b` bool, `t` DateTime, `o` DateTimeOffset, `x` bytes as base64); SQL NULL is JSON `null`. Decimals travel as invariant text, so `NUMBER` keeps its precision. A value the driver cannot convert (a `NUMBER` beyond `decimal`) falls back to a string cell. The same codec encodes statement parameters. The password only travels in the `open` line, never on the command line.
 
-The bridge keeps at most one open reader: `execute` closes the previous one; the schema is read by the provider with ordinary `execute`/`fetch` calls over `all_objects`, `all_tab_columns`, `all_constraints` (bridge stays a generic executor). System schemas are filtered with a fixed list of Oracle users plus the connected user's own schema, valid on every version (`all_users.oracle_maintained` is absent before 12c and was found unset on a 19c server). A trailing `;` is stripped from plain statements (Oracle rejects it), but kept after `END`.
+Transactions: until `begin`, the driver autocommits each statement. `OracleDatabaseConnection` recognises the statements the app sends (`SET TRANSACTION READ WRITE`, `COMMIT`, `ROLLBACK`, `SAVEPOINT x`, `ROLLBACK TO [SAVEPOINT] x`, trailing `;` allowed) and runs them as the ops above, so the session code, which sends `TransactionSql` texts, works unchanged. Any other `SET TRANSACTION` form is plain SQL. DDL commits implicitly (`UsesTransactionalDdl` is false for Oracle).
+
+Messages: the bridge runs `DBMS_OUTPUT.ENABLE(NULL)` at `open` (silently skipped without EXECUTE on the package) and drains `DBMS_OUTPUT.GET_LINE` (at most 5000 lines) after `execute`, at the end of each result set and after `nextResult`; the lines ride in the `messages` field of that response (there is no separate `messages` op) and `OracleResultReader.Messages` accumulates them.
+
+The bridge keeps at most one open reader: `execute` closes the previous one; the reader stays open after the last row of a set so that `nextResult` can move on, and is released by `nextResult` returning `done`, `closeReader`, `close` or the next `execute`; the schema is read by the provider with ordinary `execute`/`fetch` calls over `all_objects`, `all_tab_columns`, `all_constraints` (bridge stays a generic executor). System schemas are filtered with a fixed list of Oracle users plus the connected user's own schema, valid on every version (`all_users.oracle_maintained` is absent before 12c and was found unset on a 19c server). A trailing `;` is stripped from plain statements (Oracle rejects it), but kept after `END`.
 
 ## Lifecycle
 
@@ -46,18 +57,18 @@ The bridge keeps at most one open reader: `execute` closes the previous one; the
 2. One bridge process per connection (a connection = one Oracle session, same as the other engines).
 3. Disposing the connection sends `close`, waits up to 2 s for the exit, then kills the process. A failed `open` stops the process too.
 4. If the bridge dies or answers out of turn, the client is marked broken: later calls throw `OracleBridgeException`.
-5. **Cancellation**: a running statement cannot be interrupted. Cancelling the token kills the bridge (so the Oracle session ends and the statement stops) and the connection is unusable afterwards. Acceptable for a POC; a real implementation would add a `cancel` op handled on a second thread with `OracleCommand.Cancel()`.
+5. **Cancellation**: the bridge reads stdin on one thread and runs requests on a worker. `cancel` (negative id, so it never collides with a request id) is answered at once by the reader thread and calls `OracleCommand.Cancel()`; the in-flight `execute` / `fetch` then answers with an `ORA-01013` error, the client throws `OperationCanceledException` and the connection stays usable. The client sends `cancel` without the request lock when the token is cancelled, skips negative-id answers while reading, and only if the request is still unanswered after 5 seconds does it kill the bridge (the connection is then unusable). Both threads write stdout through one lock.
 
 ## Supported in the POC
 
-Connect (host, port, service name, user, password, connect and command timeout), run a statement with named parameters (`:name`), stream the result set in batches, read columns (name, Oracle type name, CLR type), DML `RecordsAffected` (autocommit), list schemas (`ListDatabasesAsync` = non-Oracle-maintained users), read tables, views, columns with `NUMBER(p,s)` / `VARCHAR2(n)` types, nullability and primary key into the schema model (so the explorer shows them).
+Connect (host, port, service name, user, password, connect and command timeout), run a statement with named parameters (`:name`), stream the result set in batches, read columns (name, Oracle type name, CLR type), DML `RecordsAffected` (autocommit), cancel without killing, manual transactions with savepoints (`ITransactionProbe`), several result sets (implicit results) and `DBMS_OUTPUT` messages, list schemas (`ListDatabasesAsync` = non-Oracle-maintained users), read tables, views, columns with `NUMBER(p,s)` / `VARCHAR2(n)` types, nullability and primary key into the schema model (so the explorer shows them).
 
 ## Not supported (follow-ups)
 
-TLS/TCPS and wallets, SSH tunnel (untested), several result sets and `DBMS_OUTPUT` messages, cancel without killing, transactions control, indexes, foreign keys, column defaults, routines, triggers, view definitions, Oracle dialect for the SQL layer (tokenizer, completion, formatter, DDL generators fall back to the generic ANSI behaviour), terminal (`sqlplus`) launch, CI job, bridge as a pool shared by several connections, Windows-only path of `ResolvePath` untested on Linux and macOS.
+TLS/TCPS and wallets, SSH tunnel (untested), `REF CURSOR` out parameters (the next result set is read like an implicit result, but nothing declares the parameter: `QueryParameter` has no direction), indexes, foreign keys, column defaults, routines, triggers, view definitions, Oracle dialect for the SQL layer (tokenizer, completion, formatter, DDL generators fall back to the generic ANSI behaviour), terminal (`sqlplus`) launch, CI job, bridge as a pool shared by several connections, Windows-only path of `ResolvePath` untested on Linux and macOS.
 
 ## Verification
 
-- 29 unit tests with an in-process fake bridge (codec round trip through JSON, batching, parameters, errors, close, cancel kills, schema mapping).
-- 4 tests on a real `gvenzl/oracle-free:23-slim-faststart` container through the real bridge (`rtk pwsh eng/run-docker-tests.ps1 -Engine oracle`, Podman); `oracle` is not part of `all` because of the image size.
+- 59 tests (4 Docker-gated, skipped without Docker) with an in-process fake bridge (codec round trip through JSON, batching, parameters, errors, close, cancel without killing, cancel that kills a bridge that does not answer, transaction statements as ops, probe, several result sets, messages, answer with another id, schema mapping).
+- 8 tests on a real `gvenzl/oracle-free:23-slim-faststart` container through the real bridge (`rtk pwsh eng/run-docker-tests.ps1 -Engine oracle`, Podman); `oracle` is not part of `all` because of the image size.
 - AOT: `Squill.Data.Oracle` builds with `-warnaserror` and the AOT analyzers; the WinUI head still publishes Native AOT with the provider linked in.

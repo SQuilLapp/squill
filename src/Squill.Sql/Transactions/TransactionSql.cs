@@ -8,12 +8,12 @@ public static class TransactionSql
 {
     /// <summary>Gets the begin statement.</summary>
     /// <param name="dialect">The engine.</param>
-    /// <returns>The statement, or <see langword="null"/> when the engine begins transactions implicitly (Oracle).</returns>
+    /// <returns>The statement; on Oracle <c>SET TRANSACTION READ WRITE</c>, which the bridge maps to the driver's local transaction (Oracle has no <c>BEGIN</c>).</returns>
     public static string? Begin(DatabaseDialect dialect) => dialect switch
     {
         DatabaseDialect.MySql => "START TRANSACTION",
         DatabaseDialect.SqlServer => "BEGIN TRANSACTION",
-        DatabaseDialect.Oracle => null,
+        DatabaseDialect.Oracle => "SET TRANSACTION READ WRITE",
         _ => "BEGIN",
     };
 
@@ -29,8 +29,8 @@ public static class TransactionSql
 
     /// <summary>Whether the engine supports savepoints in this app.</summary>
     /// <param name="dialect">The engine.</param>
-    /// <returns><see langword="false"/> for Oracle, whose bridge keeps auto-commit.</returns>
-    public static bool SupportsSavepoints(DatabaseDialect dialect) => dialect != DatabaseDialect.Oracle;
+    /// <returns><see langword="true"/> for every engine.</returns>
+    public static bool SupportsSavepoints(DatabaseDialect dialect) => true;
 
     /// <summary>Gets the statement that creates a savepoint.</summary>
     /// <param name="dialect">The engine.</param>
@@ -51,12 +51,12 @@ public static class TransactionSql
     /// <summary>Gets the statement that releases a savepoint.</summary>
     /// <param name="dialect">The engine.</param>
     /// <param name="name">A valid savepoint name.</param>
-    /// <returns>The statement, or <see langword="null"/> on SQL Server, which has none.</returns>
+    /// <returns>The statement, or <see langword="null"/> on SQL Server and Oracle, which have none.</returns>
     /// <exception cref="ArgumentException"><paramref name="name"/> is not a valid savepoint name.</exception>
     public static string? ReleaseSavepoint(DatabaseDialect dialect, string name)
     {
         var checkedName = Checked(name);
-        return dialect == DatabaseDialect.SqlServer ? null : "RELEASE SAVEPOINT " + checkedName;
+        return dialect is DatabaseDialect.SqlServer or DatabaseDialect.Oracle ? null : "RELEASE SAVEPOINT " + checkedName;
     }
 
     /// <summary>Builds the savepoint name the app generates.</summary>

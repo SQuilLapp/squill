@@ -11,7 +11,7 @@ public sealed class TransactionSqlTests
     [InlineData(DatabaseDialect.PostgreSql, "BEGIN", "COMMIT", "ROLLBACK")]
     [InlineData(DatabaseDialect.MySql, "START TRANSACTION", "COMMIT", "ROLLBACK")]
     [InlineData(DatabaseDialect.SqlServer, "BEGIN TRANSACTION", "COMMIT TRANSACTION", "ROLLBACK TRANSACTION")]
-    [InlineData(DatabaseDialect.Oracle, null, "COMMIT", "ROLLBACK")]
+    [InlineData(DatabaseDialect.Oracle, "SET TRANSACTION READ WRITE", "COMMIT", "ROLLBACK")]
     public void BeginCommitRollback(DatabaseDialect d, string? begin, string commit, string rollback)
     {
         Assert.Equal(begin, TransactionSql.Begin(d));
@@ -56,9 +56,17 @@ public sealed class TransactionSqlTests
     public void SavepointName_IsGeneratedForm() => Assert.Equal("squill_sp_3", TransactionSql.SavepointName(3));
 
     [Fact]
-    public void SupportsSavepoints_ExceptOracle()
+    public void SupportsSavepoints_EveryEngine()
     {
         Assert.True(TransactionSql.SupportsSavepoints(DatabaseDialect.SqlServer));
-        Assert.False(TransactionSql.SupportsSavepoints(DatabaseDialect.Oracle));
+        Assert.True(TransactionSql.SupportsSavepoints(DatabaseDialect.Oracle));
+    }
+
+    [Fact]
+    public void Oracle_SavepointTexts_HaveNoRelease()
+    {
+        Assert.Equal("SAVEPOINT sp1", TransactionSql.Savepoint(DatabaseDialect.Oracle, "sp1"));
+        Assert.Equal("ROLLBACK TO SAVEPOINT sp1", TransactionSql.RollbackToSavepoint(DatabaseDialect.Oracle, "sp1"));
+        Assert.Null(TransactionSql.ReleaseSavepoint(DatabaseDialect.Oracle, "sp1"));
     }
 }

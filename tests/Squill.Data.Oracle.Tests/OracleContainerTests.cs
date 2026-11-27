@@ -71,4 +71,102 @@ public sealed class OracleContainerTests(OracleFixture server) : IClassFixture<O
         var e = await Assert.ThrowsAsync<OracleBridgeException>(async () => await connection.ExecuteAsync("select * from no_such_table", [], CancellationToken.None));
         Assert.Contains("ORA-00942", e.Message);
     }
+
+    private static async Task RunAsync(IDatabaseConnection connection, string sql, CancellationToken cancellationToken)
+    {
+        await using var reader = await connection.ExecuteAsync(sql, [], cancellationToken);
+        while (await reader.NextResultAsync(cancellationToken))
+        {
+        }
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task Cancel_RunningStatement_IsInterruptedAndTheConnectionStaysUsable()
+    {
+        await using var connection = await OpenAsync();
+
+        // Not DBMS_SESSION.SLEEP(30): Oracle Free 23ai does not service a break while the session sleeps, so a statement that works is cancelled instead.
+        var started = System.Diagnostics.Stopwatch.StartNew();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await RunAsync(connection, "select count(*) from (select level l from dual connect by level <= 100000) a, (select level m from dual connect by level <= 100000) b where mod(a.l * b.m, 7) = 3", cts.Token));
+        Assert.True(started.Elapsed < TimeSpan.FromSeconds(15), $"cancel took {started.Elapsed}");
+
+        Assert.Equal([1m], Assert.Single(await QueryAsync(connection, "select 1 from dual")));
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task Transactions_CommitRollbackAndSavepoint_AreHonoured()
+    {
+        await using var connection = await OpenAsync();
+        await using var observer = await OpenAsync();
+        var probe = Assert.IsAssignableFrom<Squill.Data.ITransactionProbe>(connection);
+        await RunAsync(connection, "create table squill_tx (id number(10))", CancellationToken.None);
+        try
+        {
+            async Task<decimal> CountAsync(IDatabaseConnection c) => (decimal)(await QueryAsync(c, "select count(*) from squill_tx"))[0][0]!;
+
+            Assert.False((await probe.ProbeAsync(CancellationToken.None)).InTransaction);
+            await RunAsync(connection, "SET TRANSACTION READ WRITE", CancellationToken.None);
+            await RunAsync(connection, "insert into squill_tx values (1)", CancellationToken.None);
+            await RunAsync(connection, "SAVEPOINT sp1", CancellationToken.None);
+            await RunAsync(connection, "insert into squill_tx values (2)", CancellationToken.None);
+            Assert.True((await probe.ProbeAsync(CancellationToken.None)).InTransaction);
+            Assert.Equal(2m, await CountAsync(connection));
+            Assert.Equal(0m, await CountAsync(observer));
+
+            await RunAsync(connection, "ROLLBACK TO SAVEPOINT sp1", CancellationToken.None);
+            Assert.Equal(1m, await CountAsync(connection));
+            await RunAsync(connection, "COMMIT", CancellationToken.None);
+            Assert.False((await probe.ProbeAsync(CancellationToken.None)).InTransaction);
+            Assert.Equal(1m, await CountAsync(observer));
+
+            await RunAsync(connection, "SET TRANSACTION READ WRITE", CancellationToken.None);
+            await RunAsync(connection, "insert into squill_tx values (3)", CancellationToken.None);
+            await RunAsync(connection, "ROLLBACK", CancellationToken.None);
+            Assert.Equal(1m, await CountAsync(connection));
+            Assert.Equal(1m, await CountAsync(observer));
+
+            // Back in auto-commit: a plain insert is visible to the other session at once.
+            await RunAsync(connection, "insert into squill_tx values (4)", CancellationToken.None);
+            Assert.Equal(2m, await CountAsync(observer));
+        }
+        finally
+        {
+            await RunAsync(connection, "drop table squill_tx", CancellationToken.None);
+        }
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task ImplicitResults_TwoCursors_AreReadOneAfterTheOther()
+    {
+        await using var connection = await OpenAsync();
+
+        await using var reader = await connection.ExecuteAsync(
+            "declare c1 sys_refcursor; c2 sys_refcursor; begin " +
+            "open c1 for select 1 as a from dual; dbms_sql.return_result(c1); " +
+            "open c2 for select 'x' as b, 'y' as c from dual; dbms_sql.return_result(c2); end;", [], CancellationToken.None);
+        Assert.Equal(["A"], reader.Columns.Select(c => c.Name));
+        Assert.Equal([1m], Assert.Single((await reader.ReadAllAsync(10, CancellationToken.None))));
+
+        Assert.True(await reader.NextResultAsync(CancellationToken.None));
+        Assert.Equal(["B", "C"], reader.Columns.Select(c => c.Name));
+        Assert.Equal(["x", "y"], Assert.Single((await reader.ReadAllAsync(10, CancellationToken.None))));
+
+        Assert.False(await reader.NextResultAsync(CancellationToken.None));
+    }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task DbmsOutput_PutLine_ArrivesAsMessages()
+    {
+        await using var connection = await OpenAsync();
+
+        await using var reader = await connection.ExecuteAsync(
+            "begin dbms_output.put_line('hello'); dbms_output.put_line(''); dbms_output.put_line('world'); end;", [], CancellationToken.None);
+        Assert.False(await reader.NextResultAsync(CancellationToken.None));
+        Assert.Equal(["hello", "", "world"], reader.Messages);
+
+        await using var again = await connection.ExecuteAsync("select 1 from dual", [], CancellationToken.None);
+        await again.ReadAllAsync(10, CancellationToken.None);
+        Assert.Empty(again.Messages);
+    }
 }

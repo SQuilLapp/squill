@@ -1,11 +1,12 @@
 using System.Globalization;
 using Squill.Core;
 using Squill.Core.Plans;
+using Squill.Core.Transactions;
 
 namespace Squill.Data.Oracle;
 
 /// <summary>An Oracle connection held by a bridge process.</summary>
-internal sealed class OracleDatabaseConnection(BridgeClient client, string serverVersion) : IDatabaseConnection, IPlanReader
+internal sealed class OracleDatabaseConnection(BridgeClient client, string serverVersion) : IDatabaseConnection, IPlanReader, ITransactionProbe
 {
     /// <inheritdoc />
     public string ServerVersion { get; } = serverVersion;
@@ -13,6 +14,8 @@ internal sealed class OracleDatabaseConnection(BridgeClient client, string serve
     /// <inheritdoc />
     public async ValueTask<IResultReader> ExecuteAsync(string sql, IReadOnlyList<QueryParameter> parameters, CancellationToken cancellationToken)
     {
+        if (parameters.Count == 0 && OracleTransactionStatement.TryParse(sql, out var op, out var name))
+            return new OracleResultReader(client, await client.SendAsync(new BridgeRequest(0, op, Name: name), cancellationToken));
         var response = await client.SendAsync(new BridgeRequest(
             0, "execute",
             Sql: sql,
@@ -105,6 +108,20 @@ internal sealed class OracleDatabaseConnection(BridgeClient client, string serve
         var filter = OracleSchemaReader.UserFilter("username");
         await using var reader = await ExecuteAsync($"select username from all_users where {filter} order by username", [], cancellationToken);
         return [.. (await reader.ReadAllAsync(256, cancellationToken)).Select(r => (string)r[0]!)];
+    }
+
+    /// <inheritdoc />
+    /// <remarks>Answers from <c>DBMS_TRANSACTION.LOCAL_TRANSACTION_ID</c>, which is null until the session has changed data (and again after a commit or an implicit DDL commit).</remarks>
+    public async ValueTask<TransactionProbeResult> ProbeAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return new TransactionProbeResult((await client.SendAsync(new BridgeRequest(0, "probe"), cancellationToken)).InTransaction, false);
+        }
+        catch (OracleBridgeException)
+        {
+            return TransactionProbeResult.Unknown;
+        }
     }
 
     /// <inheritdoc />
