@@ -546,6 +546,7 @@ Depends on: <card ids, ranges allowed>
 | [P21-110](phase-21/P21-110-installer-ibm-eula-screen.md) | Installer: a real EULA screen for the IBM clidriver licence | P21-106 | todo |
 | [P21-111](phase-21/P21-111-informix-clidriver-linux-macos.md) | Informix: clidriver for Linux and macOS | P21-106 | todo |
 | [P21-112](phase-21/P21-112-editable-source-reasons-uitext.md) | Editor: localise the read-only reasons of EditableSourceAnalyzer | P21-12 | todo |
+| [P21-113](phase-21/P21-113-avalonia-tests-hang.md) | Avalonia tests hang intermittently (DesignerUiTests) | none | todo |
 
 ### Phase 9 - Visual conformance
 
