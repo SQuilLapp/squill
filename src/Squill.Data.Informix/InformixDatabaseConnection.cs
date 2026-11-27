@@ -82,9 +82,8 @@ internal sealed class InformixDatabaseConnection : IDatabaseConnection, ITransac
     }
 
     /// <inheritdoc />
-    /// <exception cref="NotSupportedException">Always for now: the schema reader arrives with the next card.</exception>
     public ValueTask<SchemaSnapshot> ReadSchemaAsync(CancellationToken cancellationToken) =>
-        throw new NotSupportedException("Reading the Informix schema is not implemented yet.");
+        InformixSchemaReader.ReadAsync(this, cancellationToken);
 
     /// <inheritdoc />
     public async ValueTask<IReadOnlyList<string>> ListDatabasesAsync(CancellationToken cancellationToken)

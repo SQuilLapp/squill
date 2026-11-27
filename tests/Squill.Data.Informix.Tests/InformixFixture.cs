@@ -50,6 +50,9 @@ public sealed class InformixFixture : IAsyncLifetime
     /// <summary>Gets a database created without a log, where transactions are not supported.</summary>
     public const string UnloggedDatabase = "sqnolog";
 
+    /// <summary>Gets a logged database holding the sample schema of the schema reader test.</summary>
+    public const string SchemaDatabase = "sqschema";
+
     public string ConnectionString(string password = Password, string database = Database) => OdbcConnectionString.Build(Host, Port, database, UserName, password);
 
     public async ValueTask InitializeAsync()
@@ -73,6 +76,7 @@ public sealed class InformixFixture : IAsyncLifetime
                 using var connection = await OdbcConnection.OpenAsync(ConnectionString(), TestContext.Current.CancellationToken);
                 (await connection.ExecuteAsync("create database " + LoggedDatabase + " with log", TestContext.Current.CancellationToken)).Dispose();
                 (await connection.ExecuteAsync("create database " + UnloggedDatabase, TestContext.Current.CancellationToken)).Dispose();
+                (await connection.ExecuteAsync("create database " + SchemaDatabase + " with log", TestContext.Current.CancellationToken)).Dispose();
                 return;
             }
             catch (OdbcException) when (DateTime.UtcNow < deadline)
