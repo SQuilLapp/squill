@@ -120,6 +120,27 @@ public sealed class ResultViewState : ViewModelBase, IDisposable
         Apply();
     }
 
+    /// <summary>Copies the filters, search text and sort of another state (a result of the same shape that replaces its result) and applies them once.</summary>
+    /// <param name="other">The state to copy.</param>
+    internal void CopyFrom(ResultViewState other)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+        if (!other.IsActive)
+            return;
+        Filters.Clear();
+        foreach (var chip in other.Filters)
+            Filters.Add(chip);
+        _searchText = other._searchText;
+        _sort = other._sort;
+        OnPropertyChanged(nameof(SearchText));
+        OnPropertyChanged(nameof(Sort));
+        Apply();
+    }
+
+    /// <summary>Gets a task that completes when the filtered view has computed everything asked so far.</summary>
+    /// <returns>The task; already complete while no view exists.</returns>
+    internal Task WhenIdle() => _view?.WhenIdle() ?? Task.CompletedTask;
+
     /// <summary>Applies one click on a column header: ascending, descending, then no sort.</summary>
     /// <param name="column">The clicked column.</param>
     public void ToggleSort(int column) => SetSort(GridSort.Next(_sort, column));

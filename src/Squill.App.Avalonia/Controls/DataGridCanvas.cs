@@ -39,7 +39,7 @@ public sealed class DataGridCanvas : Control
     public static readonly StyledProperty<GridSelection> SelectionProperty =
         AvaloniaProperty.Register<DataGridCanvas, GridSelection>(nameof(Selection), new GridSelection());
 
-    private readonly LruCache<(string Text, IBrush Brush, Face Face, bool Struck), FormattedText> _text = new(4096);
+    private readonly LruCache<(string Text, IBrush Brush, Face Face, bool Struck, int Width), FormattedText> _text = new(4096);
     private readonly GridLayout _layout;
     private Faces? _faces;
     private IGridDataSource? _source;
@@ -74,6 +74,11 @@ public sealed class DataGridCanvas : Control
         };
         _layout = new GridLayout(ResolveDouble("SquillRowHeightStandard", 26), ResolveDouble("SquillRowHeightStandard", 26));
     }
+
+    private bool _busy;
+
+    /// <summary>Raised when a long paste starts (<see langword="true"/>) and when it ends (<see langword="false"/>), so the host can show a busy popup.</summary>
+    public event EventHandler<bool>? BusyChanged;
 
     /// <summary>Raised when the content extent, viewport or scroll offsets changed so hosts can update scroll bars.</summary>
     public event EventHandler? ScrollStateChanged;
@@ -192,6 +197,36 @@ public sealed class DataGridCanvas : Control
     {
         get => _scrollY;
         set => SetScroll(_scrollX, value);
+    }
+
+    /// <summary>Captures the scroll offsets and, when the user resized a column, the column widths, so a refresh can put the view back.</summary>
+    /// <returns>The memo for <see cref="RestoreView"/>.</returns>
+    public GridViewMemo SaveView()
+    {
+        double[]? widths = null;
+        if (_userResized)
+        {
+            widths = new double[_layout.ColumnCount];
+            for (var i = 0; i < widths.Length; i++)
+                widths[i] = _layout.ColumnWidth(i);
+        }
+
+        return new GridViewMemo(_scrollX, _scrollY, widths, _layout.ColumnCount);
+    }
+
+    /// <summary>Puts back the scroll offsets (clamped) and the widths the user chose after the data source was replaced.</summary>
+    /// <param name="memo">What <see cref="SaveView"/> returned for the previous data.</param>
+    public void RestoreView(GridViewMemo memo)
+    {
+        var count = _source?.Columns.Count ?? 0;
+        if (memo.Widths is { } widths && widths.Length == count && count == memo.ColumnCount)
+        {
+            _layout.SetColumnWidths(widths);
+            _userResized = true;
+        }
+
+        SetScroll(memo.ScrollX, memo.ScrollY);
+        InvalidateVisual();
     }
 
     /// <summary>Gets the duration of the last <see cref="Render"/> call, in milliseconds.</summary>
@@ -338,7 +373,15 @@ public sealed class DataGridCanvas : Control
             brush = b.Muted;
         }
 
-        var text = Text(value, brush, face, state == RowState.Deleted);
+        value = CellText.Preview(value);
+        var struck = state == RowState.Deleted;
+        var text = Text(value, brush, face, struck);
+        var room = (int)Math.Floor(colWidth - (2 * CellPadding));
+        if (room > 0 && text.Width > room)
+        {
+            text = Text(value, brush, face, struck, room);
+        }
+
         var x = IsNumeric(info) && face == Face.Mono ? Math.Max(left + CellPadding, left + colWidth - CellPadding - text.Width) : left + CellPadding;
         context.DrawText(text, new Point(x, top + ((rowHeight - text.Height) / 2)));
         if (edit?.IsCellInvalid(row, col) == true)
@@ -654,7 +697,7 @@ public sealed class DataGridCanvas : Control
     {
         base.OnKeyDown(e);
         var source = _source;
-        if (source is null)
+        if (source is null || _busy)
         {
             return;
         }
@@ -702,7 +745,7 @@ public sealed class DataGridCanvas : Control
     protected override void OnTextInput(TextInputEventArgs e)
     {
         base.OnTextInput(e);
-        if (EditController is { } edit && !string.IsNullOrEmpty(e.Text) && !char.IsControl(e.Text[0]) && edit.Begin(e.Text))
+        if (!_busy && EditController is { } edit && !string.IsNullOrEmpty(e.Text) && !char.IsControl(e.Text[0]) && edit.Begin(e.Text))
         {
             e.Handled = true;
         }
@@ -732,14 +775,40 @@ public sealed class DataGridCanvas : Control
         }
     }
 
-    private async Task PasteAsync(GridEditController edit)
+    private Task PasteAsync(GridEditController edit) =>
+        TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard ? PasteClipboardAsync(edit, clipboard) : Task.CompletedTask;
+
+    private async Task PasteClipboardAsync(GridEditController edit, IClipboard clipboard)
     {
-        if (TopLevel.GetTopLevel(this)?.Clipboard is not { } clipboard || await clipboard.TryGetTextAsync() is not { } text)
+        if (await clipboard.TryGetTextAsync() is { } text)
         {
-            return;
+            await PasteTextAsync(edit, text);
+        }
+    }
+
+    // A long text shows the busy popup while the controller does its heavy work off the UI thread.
+    internal async Task PasteTextAsync(GridEditController edit, string text)
+    {
+        string? error;
+        if (LongPaste.IsLong(text))
+        {
+            _busy = true;
+            BusyChanged?.Invoke(this, true);
+            try
+            {
+                error = await edit.PasteAsync(text, CancellationToken.None);
+            }
+            finally
+            {
+                _busy = false;
+                BusyChanged?.Invoke(this, false);
+            }
+        }
+        else
+        {
+            error = edit.Paste(text);
         }
 
-        var error = edit.Paste(text);
         if (error is not null && Dialogs is { } dialogs)
         {
             await dialogs.ShowErrorAsync(UiText.Get("results.paste"), error);
@@ -846,7 +915,7 @@ public sealed class DataGridCanvas : Control
             var max = Text(info.Name, brush, Face.UiSemibold).Width + 6 + Text(info.DataTypeName, brush, Face.MonoSmall).Width + KeyGlyphWidth + ButtonsZone;
             for (var row = 0; row < sample; row++)
             {
-                var value = CellFormatter.FormatDisplay(source.GetCell(row, col), info) ?? "NULL";
+                var value = CellText.Preview(CellFormatter.FormatDisplay(source.GetCell(row, col), info) ?? "NULL");
                 max = Math.Max(max, Text(value, brush, Face.Mono).Width);
             }
 
@@ -857,9 +926,9 @@ public sealed class DataGridCanvas : Control
         _measuredRows = sample;
     }
 
-    private FormattedText Text(string text, IBrush brush, Face face, bool struck = false)
+    private FormattedText Text(string text, IBrush brush, Face face, bool struck = false, int width = 0)
     {
-        if (!_text.TryGet((text, brush, face, struck), out var formatted))
+        if (!_text.TryGet((text, brush, face, struck, width), out var formatted))
         {
             var faces = _faces ??= ResolveFaces();
             var (typeface, size) = face switch
@@ -870,12 +939,19 @@ public sealed class DataGridCanvas : Control
                 _ => (faces.Mono, faces.MonoSize),
             };
             formatted = new FormattedText(text, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, size, brush);
+            if (width > 0)
+            {
+                formatted.MaxTextWidth = width;
+                formatted.MaxLineCount = 1;
+                formatted.Trimming = TextTrimming.CharacterEllipsis;
+            }
+
             if (struck)
             {
                 formatted.SetTextDecorations(TextDecorations.Strikethrough);
             }
 
-            _text.Add((text, brush, face, struck), formatted);
+            _text.Add((text, brush, face, struck, width), formatted);
         }
 
         return formatted;
@@ -959,3 +1035,10 @@ public sealed class ColumnMenuRequestedEventArgs(int column, Point anchor) : Eve
     /// <summary>Gets where the menu hangs, in canvas coordinates.</summary>
     public Point Anchor { get; } = anchor;
 }
+
+/// <summary>The scroll offsets and chosen column widths of a grid, kept across a refresh.</summary>
+/// <param name="ScrollX">The horizontal scroll offset.</param>
+/// <param name="ScrollY">The vertical scroll offset.</param>
+/// <param name="Widths">The widths of the columns when the user resized one, else <see langword="null"/>.</param>
+/// <param name="ColumnCount">The number of columns the memo was taken with.</param>
+public readonly record struct GridViewMemo(double ScrollX, double ScrollY, double[]? Widths, int ColumnCount);

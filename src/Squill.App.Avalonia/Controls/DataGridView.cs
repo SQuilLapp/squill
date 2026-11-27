@@ -1,12 +1,16 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Automation;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Squill.Presentation;
 using Squill.Presentation.Editing;
+using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 
 namespace Squill.App.Avalonia.Controls;
@@ -39,12 +43,20 @@ public sealed class DataGridView : Grid
         _editor.Bind(TemplatedControl.ForegroundProperty, _editor.GetResourceObservable("SquillFgBrush"));
         _editor.TextChanged += (_, _) =>
         {
-            if (_controller is { IsEditing: true } c && !_syncing && c.EditText != (_editor.Text ?? ""))
+            if (_controller is { IsEditing: true, IsMultiLine: false } c && !_syncing && c.EditText != (_editor.Text ?? ""))
             {
                 c.SetText(_editor.Text ?? "");
             }
         };
+        _canvas.BusyChanged += (_, busy) => BusyChanged?.Invoke(this, busy);
         _editor.KeyDown += OnEditorKeyDown;
+        _editor.PastingFromClipboard += (_, e) =>
+        {
+            e.Handled = true;
+            _ = PasteFromClipboardAsync();
+        };
+        // A read-only box does not raise PastingFromClipboard.
+        _editor.AddHandler(InputElement.KeyDownEvent, OnEditorPasteKey, RoutingStrategies.Tunnel);
         AddHandler(PointerWheelChangedEvent, (_, e) =>
         {
             if (!e.Handled)
@@ -74,6 +86,9 @@ public sealed class DataGridView : Grid
             }
         };
     }
+
+    /// <summary>Raised when a long paste (grid or in-place editor) starts (<see langword="true"/>) and ends (<see langword="false"/>).</summary>
+    public event EventHandler<bool>? BusyChanged;
 
     /// <summary>Gets the drawing surface.</summary>
     public DataGridCanvas Canvas => _canvas;
@@ -178,6 +193,78 @@ public sealed class DataGridView : Grid
         }
     }
 
+    private void OnEditorPasteKey(object? sender, KeyEventArgs e)
+    {
+        var paste = (e.Key == Key.V && (e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
+            || (e.Key == Key.Insert && e.KeyModifiers.HasFlag(KeyModifiers.Shift));
+        if (paste && _controller is { IsEditing: true, IsMultiLine: true })
+        {
+            e.Handled = true;
+            _ = PasteFromClipboardAsync();
+        }
+    }
+
+    private async Task PasteFromClipboardAsync()
+    {
+        if (_controller is not { IsEditing: true } c)
+        {
+            return;
+        }
+
+        var (row, column) = (c.EditRow, c.EditColumn);
+        string? text;
+        try
+        {
+            text = TopLevel.GetTopLevel(_editor)?.Clipboard is { } clipboard ? await clipboard.TryGetTextAsync() : null;
+        }
+        catch (Exception)
+        {
+            return;
+        }
+
+        if (text is not null && c.IsEditing && c.EditRow == row && c.EditColumn == column)
+        {
+            var isLong = LongPaste.IsLong(text);
+            if (isLong)
+            {
+                BusyChanged?.Invoke(this, true);
+                // Lets the popup render before the text insert blocks the UI thread.
+                await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Render);
+            }
+
+            try
+            {
+                PasteIntoEditor(text);
+            }
+            finally
+            {
+                if (isLong)
+                {
+                    BusyChanged?.Invoke(this, false);
+                }
+            }
+        }
+    }
+
+    // The controller owns the text: a multi-line paste never goes through the one-line box.
+    internal void PasteIntoEditor(string text)
+    {
+        if (_controller is not { IsEditing: true } c)
+        {
+            return;
+        }
+
+        if (CellText.IsSingleLine(text) && !c.IsMultiLine)
+        {
+            _editor.SelectedText = text;
+        }
+        else
+        {
+            var start = Math.Min(_editor.SelectionStart, _editor.SelectionEnd);
+            c.PasteText(text, start, Math.Abs(_editor.SelectionEnd - _editor.SelectionStart));
+        }
+    }
+
     private void SyncEditor()
     {
         _syncing = true;
@@ -198,9 +285,10 @@ public sealed class DataGridView : Grid
                 return;
             }
 
-            if ((_editor.Text ?? "") != c.EditText)
+            _editor.IsReadOnly = c.IsMultiLine;
+            if ((_editor.Text ?? "") != c.EditDisplayText)
             {
-                _editor.Text = c.EditText;
+                _editor.Text = c.EditDisplayText;
                 _editor.CaretIndex = _editor.Text.Length;
             }
 
@@ -210,7 +298,9 @@ public sealed class DataGridView : Grid
             var danger = c.Error is not null;
             _editor.Bind(TemplatedControl.BorderBrushProperty, _editor.GetResourceObservable(danger ? "SquillDangerBrush" : "SquillAccentBrush"));
             _editor.BorderThickness = new Thickness(2);
-            ToolTip.SetTip(_editor, c.Error);
+            var hint = c.IsMultiLine ? UiText.Get("results.multiLineEdit") : null;
+            ToolTip.SetTip(_editor, c.Error ?? hint);
+            AutomationProperties.SetHelpText(_editor, hint ?? "");
             if (rect is { } r)
             {
                 _editor.Margin = new Thickness(r.X, r.Y, 0, 0);

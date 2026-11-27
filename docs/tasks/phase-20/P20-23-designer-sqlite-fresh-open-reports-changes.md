@@ -1,6 +1,6 @@
 # P20-23 - Table designer: an untouched SQLite table already shows a rebuild script and an enabled `Appliquer`
 
-Status: todo
+Status: done
 Depends on: P20-19
 
 ## Goal
@@ -14,7 +14,7 @@ Found by P20-19 on the published Avalonia head (SQLite `-Scenario Full`, dark, F
 - The not built designer features; other engines unless the same test fails there.
 
 ## Tasks
-- [ ] Failing test, fix, capture.
+- [x] Failing test, fix, capture.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance (`Squill.Windows.slnx` too); captures read.

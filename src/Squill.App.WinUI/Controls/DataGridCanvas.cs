@@ -38,7 +38,7 @@ public sealed partial class DataGridCanvas : Grid
     internal const double GutterWidth = 36;
 
     private readonly CanvasControl _canvas = new();
-    private readonly LruCache<(string Text, Face Face, bool Struck), CanvasTextLayout> _text = new(4096, layout => layout.Dispose());
+    private readonly LruCache<(string Text, Face Face, bool Struck, int Width), CanvasTextLayout> _text = new(4096, layout => layout.Dispose());
     private readonly GridLayout _layout;
     private IGridDataSource? _source;
     private GridColors? _colors;
@@ -46,6 +46,7 @@ public sealed partial class DataGridCanvas : Grid
     private double _scrollY;
     private bool _needsMeasure;
     private bool _userResized;
+    private (double X, double Y)? _pendingScroll;
     private int _resizeColumn = -1;
     private double _resizeStartX;
     private double _resizeStartWidth;
@@ -94,6 +95,9 @@ public sealed partial class DataGridCanvas : Grid
         };
     }
 
+    /// <summary>Raised when a long paste starts (<see langword="true"/>) and when it ends (<see langword="false"/>), so the host can show a busy popup.</summary>
+    public event EventHandler<bool>? BusyChanged;
+
     /// <summary>Raised when the content extent, viewport or scroll offsets changed so hosts can update scroll bars.</summary>
     public event EventHandler? ScrollStateChanged;
 
@@ -116,6 +120,7 @@ public sealed partial class DataGridCanvas : Grid
 
             Selection.Clear();
             _userResized = false;
+            _pendingScroll = null;
             _needsMeasure = true;
             _layout.SetColumnWidths([]);
             SetScroll(0, 0);
@@ -202,6 +207,9 @@ public sealed partial class DataGridCanvas : Grid
     internal CellBox? CellRect(long row, int column) =>
         GridEditGeometry.EditorBox(_layout, row, column, _scrollX, _scrollY, _canvas.ActualWidth, BodyHeight, GutterWidth);
 
+    /// <summary>Gets whether the drawing surface has the keyboard focus.</summary>
+    public bool SurfaceHasFocus => _canvas.FocusState != FocusState.Unfocused;
+
     /// <summary>Gives keyboard focus back to the drawing surface.</summary>
     public void FocusSurface() => _canvas.Focus(FocusState.Programmatic);
 
@@ -223,6 +231,40 @@ public sealed partial class DataGridCanvas : Grid
     {
         get => _scrollY;
         set => SetScroll(_scrollX, value);
+    }
+
+    /// <summary>Captures the scroll offsets and, when the user resized a column, the column widths, so a refresh can put the view back.</summary>
+    /// <returns>The memo for <see cref="RestoreView"/>.</returns>
+    public GridViewMemo SaveView()
+    {
+        double[]? widths = null;
+        if (_userResized)
+        {
+            widths = new double[_layout.ColumnCount];
+            for (var i = 0; i < widths.Length; i++)
+                widths[i] = _layout.ColumnWidth(i);
+        }
+
+        return new GridViewMemo(_scrollX, _scrollY, widths, _layout.ColumnCount);
+    }
+
+    /// <summary>Puts back the scroll offsets (clamped) and the widths the user chose after the data source was replaced.</summary>
+    /// <param name="memo">What <see cref="SaveView"/> returned for the previous data.</param>
+    public void RestoreView(GridViewMemo memo)
+    {
+        var count = _source?.Columns.Count ?? 0;
+        if (memo.Widths is { } widths && widths.Length == count && count == memo.ColumnCount)
+        {
+            _layout.SetColumnWidths(widths);
+            _userResized = true;
+            _needsMeasure = false;
+            _pendingScroll = null;
+        }
+        else if (_needsMeasure)
+            _pendingScroll = (memo.ScrollX, memo.ScrollY);
+
+        SetScroll(memo.ScrollX, memo.ScrollY);
+        _canvas.Invalidate();
     }
 
     /// <summary>Gets the duration of the last draw callback, in milliseconds.</summary>
@@ -338,7 +380,14 @@ public sealed partial class DataGridCanvas : Grid
                     color = c.Muted;
                 }
 
+                value = CellText.Preview(value);
                 var layout = TextLayout(ds, value, face, state == RowState.Deleted);
+                var room = (int)Math.Floor(colWidth - (2 * CellPadding));
+                if (room > 0 && layout.LayoutBounds.Width > room)
+                {
+                    layout = TextLayout(ds, value, face, state == RowState.Deleted, room);
+                }
+
                 var textWidth = (float)layout.LayoutBounds.Width;
                 var x = IsNumeric(info) && face == Face.Mono ? Math.Max(left + CellPadding, left + colWidth - CellPadding - textWidth) : left + CellPadding;
                 ds.DrawTextLayout(layout, x, top + ((rowHeight - (float)layout.LayoutBounds.Height) / 2), color);
@@ -467,13 +516,19 @@ public sealed partial class DataGridCanvas : Grid
     private static bool IsNumeric(ColumnInfo info) =>
         Type.GetTypeCode(Nullable.GetUnderlyingType(info.ClrType) ?? info.ClrType) is >= TypeCode.SByte and <= TypeCode.Decimal;
 
-    private CanvasTextLayout TextLayout(ICanvasResourceCreator creator, string text, Face face, bool struck = false)
+    private CanvasTextLayout TextLayout(ICanvasResourceCreator creator, string text, Face face, bool struck = false, int width = 0)
     {
-        if (!_text.TryGet((text, face, struck), out var layout))
+        if (!_text.TryGet((text, face, struck, width), out var layout))
         {
             var faces = _faces ??= ResolveFaces();
             // The layout copies the format, so a short-lived one is enough.
             using var format = new CanvasTextFormat { WordWrapping = CanvasWordWrapping.NoWrap };
+            if (width > 0)
+            {
+                format.TrimmingGranularity = CanvasTextTrimmingGranularity.Character;
+                format.TrimmingSign = CanvasTrimmingSign.Ellipsis;
+            }
+
             switch (face)
             {
                 case Face.UiSemibold:
@@ -496,13 +551,13 @@ public sealed partial class DataGridCanvas : Grid
                     break;
             }
 
-            layout = new CanvasTextLayout(creator, text, format, Unbounded, (float)_layout.RowHeight);
+            layout = new CanvasTextLayout(creator, text, format, width > 0 ? width : Unbounded, (float)_layout.RowHeight);
             if (struck)
             {
                 layout.SetStrikethrough(0, text.Length, true);
             }
 
-            _text.Add((text, face, struck), layout);
+            _text.Add((text, face, struck, width), layout);
         }
 
         return layout;
@@ -547,7 +602,7 @@ public sealed partial class DataGridCanvas : Grid
             var max = TextLayout(creator, info.Name, Face.UiSemibold).LayoutBounds.Width + 6 + TextLayout(creator, info.DataTypeName, Face.MonoSmall).LayoutBounds.Width + KeyGlyphWidth + ButtonsZone;
             for (var row = 0; row < sample; row++)
             {
-                var value = CellFormatter.FormatDisplay(source.GetCell(row, col), info) ?? "NULL";
+                var value = CellText.Preview(CellFormatter.FormatDisplay(source.GetCell(row, col), info) ?? "NULL");
                 max = Math.Max(max, TextLayout(creator, value, Face.Mono).LayoutBounds.Width);
             }
 
@@ -555,7 +610,10 @@ public sealed partial class DataGridCanvas : Grid
         }
 
         _layout.SetColumnWidths(widths);
-        SetScroll(_scrollX, _scrollY);
+        // The widths were unknown when a refresh asked for its scroll back: apply it now that the content extent is.
+        var (x, y) = _pendingScroll ?? (_scrollX, _scrollY);
+        _pendingScroll = null;
+        SetScroll(x, y);
     }
 
     private void OnSourceChanged(object? sender, EventArgs e)
@@ -728,9 +786,11 @@ public sealed partial class DataGridCanvas : Grid
         }
     }
 
+    private bool _busy;
+
     private void OnKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (_source is not { } source)
+        if (_source is not { } source || _busy)
         {
             return;
         }
@@ -776,7 +836,7 @@ public sealed partial class DataGridCanvas : Grid
 
     private void OnCharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs e)
     {
-        if (_edit is { } edit && !char.IsControl(e.Character) && edit.Begin(e.Character.ToString()))
+        if (!_busy && _edit is { } edit && !char.IsControl(e.Character) && edit.Begin(e.Character.ToString()))
         {
             e.Handled = true;
         }
@@ -814,7 +874,27 @@ public sealed partial class DataGridCanvas : Grid
             return;
         }
 
-        var error = edit.Paste(await content.GetTextAsync());
+        var text = await content.GetTextAsync();
+        string? error;
+        if (LongPaste.IsLong(text))
+        {
+            _busy = true;
+            BusyChanged?.Invoke(this, true);
+            try
+            {
+                error = await edit.PasteAsync(text, CancellationToken.None);
+            }
+            finally
+            {
+                _busy = false;
+                BusyChanged?.Invoke(this, false);
+            }
+        }
+        else
+        {
+            error = edit.Paste(text);
+        }
+
         if (error is not null && Dialogs is { } dialogs)
         {
             await dialogs.ShowErrorAsync(UiText.Get("results.paste"), error);
@@ -951,3 +1031,10 @@ public sealed class ColumnMenuRequestedEventArgs(int column, Point anchor) : Eve
     /// <summary>Gets where the menu hangs, in surface coordinates.</summary>
     public Point Anchor { get; } = anchor;
 }
+
+/// <summary>The scroll offsets and chosen column widths of a grid, kept across a refresh.</summary>
+/// <param name="ScrollX">The horizontal scroll offset.</param>
+/// <param name="ScrollY">The vertical scroll offset.</param>
+/// <param name="Widths">The widths of the columns when the user resized one, else <see langword="null"/>.</param>
+/// <param name="ColumnCount">The number of columns the memo was taken with.</param>
+public readonly record struct GridViewMemo(double ScrollX, double ScrollY, double[]? Widths, int ColumnCount);

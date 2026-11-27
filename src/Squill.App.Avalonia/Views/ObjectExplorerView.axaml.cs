@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -75,7 +76,7 @@ public sealed partial class ObjectExplorerView : UserControl
                 "CompareItem" => connection && node.IsConnected,
                 "MonitorItem" => connection && node.IsConnected,
                 "SecurityItem" => connection && node.IsConnected,
-                "ChooseTablesItem" => database,
+                "ChooseShownItem" => Explorer?.CanFilter(node) ?? false,
                 "ShowAllItem" => database && node.Kind == ExplorerNodeKind.Database && node.HiddenCount > 0,
                 "HideTableItem" => listed,
                 "RefreshItem" => node is { Kind: ExplorerNodeKind.Database, Session: not null },
@@ -132,10 +133,30 @@ public sealed partial class ObjectExplorerView : UserControl
 
     private void OnDisconnectClicked(object? sender, RoutedEventArgs e) => Workspace?.DisconnectCommand.Execute(null);
 
-    private void OnChooseTablesClicked(object? sender, RoutedEventArgs e)
+    private void OnChooseShownClicked(object? sender, RoutedEventArgs e)
     {
-        if ((sender as Control)?.DataContext is ExplorerNode node)
-            Explorer?.ChooseTablesCommand.Execute(node);
+        // Anchored to the tree: the explorer rebuilds the row nodes on every toggle.
+        if (sender is not MenuItem { DataContext: ExplorerNode node } item)
+            return;
+        // The row's bounds in tree coordinates, so the popup sits next to the row and not under the whole tree.
+        Rect? row = null;
+        if ((item.Parent as ContextMenu)?.PlacementTarget is { } target && target.TranslatePoint(default, Tree) is { } origin)
+            row = new Rect(origin, target.Bounds.Size);
+        ShowFilter(node, Tree, row);
+    }
+
+    private void OnBadgeClicked(object? sender, RoutedEventArgs e)
+    {
+        // Handled, so the click neither selects the row nor changes a multi-selection.
+        e.Handled = true;
+        if (sender is Button { DataContext: ExplorerNode node } badge)
+            ShowFilter(node, badge);
+    }
+
+    private void ShowFilter(ExplorerNode node, Control anchor, Rect? row = null)
+    {
+        if (Explorer?.CreateFilter(node) is { } vm)
+            ExplorerFilterMenu.Show(anchor, vm, row);
     }
 
     private void OnShowAllClicked(object? sender, RoutedEventArgs e)

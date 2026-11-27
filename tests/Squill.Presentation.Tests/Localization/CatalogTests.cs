@@ -14,6 +14,8 @@ public sealed partial class CatalogTests
     [
         "workspace.dropTablesLabel.one", // "{0} table" reads the same in both languages
         "workspace.dropTablesLabel.other", // "{0} tables" reads the same in both languages
+        "query.autoRefresh.seconds", // "{0} s" is the same abbreviation in both languages
+        "explorer.filter.note", // "({0})" is only a placeholder in parentheses
         "home.newConnection.subtitle", // list of engine names
         "home.env.prod", // environment pill, same short form in both languages
         "import.step.source", // step name, same word in both languages

@@ -25,7 +25,7 @@ To add a UI string, add the same key to `UiTextCatalogFr` and `UiTextCatalogEn` 
 
 SSH tunnels (`SSH.NET`) are compatible under the same conditions (publish and startup only). The jump host key is checked against `known-hosts.json` (`IKnownHostsStore`): the first key is shown with its fingerprint and remembered on your yes, a changed key is refused ([ADR 0013](docs/adr/0013-ssh-host-keys.md)).
 
-Oracle exists only as a proof of concept through a separate bridge process ([docs/poc/oracle-bridge.md](docs/poc/oracle-bridge.md)). Phase 11 ran the four engines against real servers (Testcontainers). The feature-by-engine support matrix, what is not supported (MariaDB, Azure SQL, sequences, user-defined types, ...) and the manual window checks still pending are in [ADR 0008](docs/adr/0008-engine-parity.md). Tests and how to run them: [docs/testing.md](docs/testing.md).
+Oracle exists only as a proof of concept through a separate bridge process ([docs/poc/oracle-bridge.md](docs/poc/oracle-bridge.md)). Informix, DB2, ClickHouse, Snowflake and BigQuery are not supported; they are future candidates carded (not scheduled) in phase 21 of [the task index](docs/tasks/README.md), Informix first with a driver proof of concept. Phase 11 ran the four engines against real servers (Testcontainers). The feature-by-engine support matrix, what is not supported (MariaDB, Azure SQL, sequences, user-defined types, ...) and the manual window checks still pending are in [ADR 0008](docs/adr/0008-engine-parity.md). Tests and how to run them: [docs/testing.md](docs/testing.md).
 
 SQL completion (phase 14): after `JOIN` the popup offers each table with its alias and the `ON` condition built from the foreign keys, inserts schema-qualified names where needed, follows the keyword-case setting, and has statement snippets (`sel`, `ins`, `upd`, `del`, `cte`, `crt`). Decisions and limits: [ADR 0011](docs/adr/0011-sql-completion.md).
 
@@ -55,6 +55,10 @@ The query toolbar has an `Auto-commit | Manuel` toggle. In `Manuel` the first st
 
 Oracle keeps auto-commit. See [ADR 0012](docs/adr/0012-transactions-and-production-confirmation.md) for the design and known limits; the windows still need the owner's checks of [docs/verification/transactions.md](docs/verification/transactions.md).
 
+## Auto-refresh of a query tab
+
+The clock button before `Stop` re-runs the last run of a tab every `5 s`, `10 s`, `30 s`, `1 m`, `5 m` or a custom 1 to 3600 seconds (default `Disabled`, per tab, not saved). Only a read-only run that ended without error can refresh. A refresh writes no history, keeps the sort, filters, scroll and column widths, and does not close the completion popup. It pauses while grid edits are pending, a value is being edited, the transaction failed, the session is busy or the tab is hidden, and it stops on the first failed refresh or on `Stop`.
+
 ## Dropping several tables, and what phase 20 did not verify
 
 In the explorer, select several tables (Ctrl+click, Shift+click) and use `Supprimer N tables` or `Delete`: the confirmation lists them, referencing tables go first, a table outside the selection that references one blocks the drop (there is no `CASCADE`), and PostgreSQL, SQL Server and SQLite drop all or none (MySQL stops at the first failure). Dropping a single table now follows the same path, including the Production confirmation. Checklist for the owner: [docs/verification/multi-delete.md](docs/verification/multi-delete.md).
@@ -74,7 +78,7 @@ See [ADR 0004](docs/adr/0004-schema-designer.md) for the design and what is not 
 
 Results of a plain `SELECT` over one table can be edited in the grid: change cells, add rows, delete rows, then commit or discard. The primary key must be selected; otherwise the result is read-only and the panel says why (join, view, `DISTINCT` / `GROUP BY` / `WITH`, no primary key, key column not selected). The generated `INSERT`, `UPDATE` and `DELETE` statements can be previewed before they run, and all changes are applied in one transaction (MySQL / MariaDB engines without transactions excepted).
 
-- The cell editor follows the column type, with true / false / NULL and date pickers and a `DEFAULT` choice; a long or JSON value opens a preview pane on the right. The explorer can show only some tables ("Choose tables", saved per connection and database through `ITableFilterStore`).
+- The cell editor follows the column type, with true / false / NULL and date pickers and a `DEFAULT` choice; a long or JSON value opens a preview pane on the right. The explorer shows only what you choose: a DataGrip-style popup, opened from the `n of m` badge on connection, database and schema rows, checks databases, schemas and tables and accepts wildcard patterns (saved per connection through `ITableFilterStore`).
 - Updates and deletes match the primary key only: if someone else changed other columns of the row meanwhile, your commit overwrites them (last write wins). A row deleted by someone else makes the commit fail and roll back.
 - The DML tests for PostgreSQL, MySQL / MariaDB and SQL Server need Docker and have never been run, and the edit flow was not driven by hand in either head.
 

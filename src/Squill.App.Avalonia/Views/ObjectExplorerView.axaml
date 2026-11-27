@@ -33,7 +33,7 @@
                 <MenuItem Name="MonitorItem" Header="{loc:Text explorer.sessionsMonitor}" Click="OnMonitorClicked" />
                 <MenuItem Name="SecurityItem" Header="{loc:Text explorer.security}" Click="OnSecurityClicked" />
                 <MenuItem Name="DisconnectItem" Header="{loc:Text explorer.disconnect}" Click="OnDisconnectClicked" />
-                <MenuItem Name="ChooseTablesItem" Header="{loc:Text explorer.chooseTables}" Click="OnChooseTablesClicked" />
+                <MenuItem Name="ChooseShownItem" Header="{loc:Text explorer.chooseShown}" Click="OnChooseShownClicked" />
                 <MenuItem Name="ShowAllItem" Header="{loc:Text explorer.showAllTables}" Click="OnShowAllClicked" />
                 <MenuItem Name="HideTableItem" Header="{loc:Text explorer.hideTable}" Click="OnHideTableClicked" />
                 <MenuItem Name="RefreshItem" Header="{loc:Text explorer.refresh}" Click="OnRefreshClicked" />
@@ -59,11 +59,15 @@
             </StackPanel>
             <TextBlock Grid.Column="1" Text="{Binding Title}" Foreground="{DynamicResource SquillFgBrush}" VerticalAlignment="Center"
                        FontWeight="{Binding Kind, Converter={x:Static v:ExplorerGlyphs.TitleWeight}}" TextTrimming="CharacterEllipsis" />
-            <Border Grid.Column="2" Classes="badge" Margin="8,0,0,0" IsVisible="{Binding HasEnvironment}"
-                    Classes.env-prod="{Binding IsProd}" Classes.env-staging="{Binding IsStaging}"
-                    Classes.env-dev="{Binding IsDev}" Classes.env-local="{Binding IsLocal}">
-              <TextBlock Text="{Binding EnvironmentText}" />
-            </Border>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+              <Border Classes="badge" Margin="8,0,0,0" IsVisible="{Binding HasEnvironment}"
+                      Classes.env-prod="{Binding IsProd}" Classes.env-staging="{Binding IsStaging}"
+                      Classes.env-dev="{Binding IsDev}" Classes.env-local="{Binding IsLocal}">
+                <TextBlock Text="{Binding EnvironmentText}" />
+              </Border>
+              <Button Name="FilterBadgeButton" Classes="filter-badge" Margin="6,0,0,0" Content="{Binding FilterBadge}" IsVisible="{Binding HasFilterBadge}"
+                      Click="OnBadgeClicked" ToolTip.Tip="{loc:Text explorer.chooseShown}" />
+            </StackPanel>
             <TextBlock Grid.Column="3" Classes="mono" Text="{Binding Trailing}" Foreground="{DynamicResource SquillFg3Brush}"
                        Margin="8,0,0,0" VerticalAlignment="Center" />
             <ProgressBar Grid.Column="3" Width="40" Height="3" Margin="8,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right"

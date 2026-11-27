@@ -86,6 +86,37 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
     /// <returns>The reason the edit was refused, or <see langword="null"/> when it was recorded.</returns>
     public string? TrySetCell(long row, int column, string? text)
     {
+        if (CheckCell(row, column) is { } refusal)
+            return refusal;
+        if (!CellValueParser.TryParse(text, Grid.Columns[column], out var value, out var error))
+            return error;
+        Grid.SetCell(row, column, value);
+        return null;
+    }
+
+    /// <summary>Records already parsed values for several cells with a single grid change.</summary>
+    /// <param name="cells">The cells and their parsed values, in order.</param>
+    /// <returns>The index and reason of the first cell refused (the cells before it are recorded), or <see langword="null"/> when all were.</returns>
+    internal (int Index, string Error)? TrySetCells(IReadOnlyList<(long Row, int Column, object? Value)> cells)
+    {
+        (int, string)? refused = null;
+        var count = cells.Count;
+        for (var i = 0; i < cells.Count; i++)
+        {
+            if (CheckCell(cells[i].Row, cells[i].Column) is { } reason)
+            {
+                refused = (i, reason);
+                count = i;
+                break;
+            }
+        }
+
+        Grid.SetCells(count == cells.Count ? cells : [.. cells.Take(count)]);
+        return refused;
+    }
+
+    private string? CheckCell(long row, int column)
+    {
         if (Grid.IsViewActive)
             return UiText.Get("results.readOnly.filtered");
         if (!Grid.CanEdit)
@@ -96,9 +127,6 @@ public sealed partial class ResultEditorViewModel : ViewModelBase
             return reason;
         if (Grid.GetRowState(row) == RowState.Deleted)
             return UiText.Get("results.rowDeleted");
-        if (!CellValueParser.TryParse(text, Grid.Columns[column], out var value, out var error))
-            return error;
-        Grid.SetCell(row, column, value);
         return null;
     }
 

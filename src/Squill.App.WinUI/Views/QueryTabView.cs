@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
@@ -31,6 +32,9 @@ public sealed partial class QueryTabView : UserControl
     private readonly Button _script = new() { Height = 28, MinHeight = 28 };
     private readonly Button _explain = new() { Height = 28, MinHeight = 28 };
     private readonly Button _analyze = new() { Height = 28, MinHeight = 28 };
+    private readonly Button _autoRefresh = new() { Style = Res("GhostButtonStyle"), Height = 28, MinHeight = 28, Padding = new Thickness(8, 0, 8, 0) };
+    private GridViewMemo? _viewMemo;
+    private bool _gridHadFocus;
     private readonly Button _stop = new() { Height = 28, MinHeight = 28, Content = UiText.Get("editor.stop") };
     private readonly Button _modeAuto = new() { Style = Res("VariantButtonStyle"), MinWidth = 0, Height = 28, MinHeight = 28, Padding = new Thickness(10, 0, 10, 0), CornerRadius = new CornerRadius(6, 0, 0, 6), Content = UiText.Get("tx.mode.auto") };
     private readonly Button _modeManual = new() { Style = Res("VariantButtonStyle"), MinWidth = 0, Height = 28, MinHeight = 28, Padding = new Thickness(10, 0, 10, 0), Margin = new Thickness(-1, 0, 0, 0), CornerRadius = new CornerRadius(0, 6, 6, 0), Content = UiText.Get("tx.mode.manual") };
@@ -58,6 +62,7 @@ public sealed partial class QueryTabView : UserControl
     private readonly Border _snippetsTabBar = new() { BorderThickness = new Thickness(0, 0, 0, 2) };
     private readonly DataGridView _grid = new();
     private readonly CellPreviewPanel _preview = new();
+    private readonly BusyOverlay _busy = new();
     private readonly TextBlock _message = new() { Margin = new Thickness(12), TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true, Foreground = Brush("SquillFgBrush"), Visibility = Visibility.Collapsed };
     private readonly TextBlock _empty = new() { Margin = new Thickness(12), Text = UiText.Get("results.empty"), Foreground = Brush("SquillFg3Brush") };
     private readonly ProgressBar _progress = new() { IsIndeterminate = true, Height = 2, Visibility = Visibility.Collapsed };
@@ -164,6 +169,10 @@ public sealed partial class QueryTabView : UserControl
         Grid.SetColumn(_preview, 2);
         body.Children.Add(previewSplitter);
         body.Children.Add(_preview);
+        Grid.SetColumnSpan(_busy, 3);
+        body.Children.Add(_busy);
+        _grid.BusyChanged += OnBusyChanged;
+        _preview.BusyChanged += OnBusyChanged;
         // A closed pane gives its whole column back (the width the user dragged stays in Width, only the limits change).
         _preview.OpenChanged += (_, open) =>
         {
@@ -279,6 +288,7 @@ public sealed partial class QueryTabView : UserControl
         _sidePanel.BorderBrush = ThemeBrush("SquillBorderSubtleBrush");
         _format.Content = Icons.Create("SquillIconFormat", 14, ThemeBrush("SquillFg2Brush"));
         _historyToggle.Content = Icons.Create("SquillIconHistory", 14, ThemeBrush("SquillFg2Brush"));
+        ShowAutoRefresh();
         _parameters.Paint();
         _resultsHeader!.BorderBrush = ThemeBrush("SquillBorderSubtleBrush");
         _resultsHeader.Background = ThemeBrush("SquillBgBaseBrush");
@@ -344,7 +354,7 @@ public sealed partial class QueryTabView : UserControl
         _modeAuto.Click += OnModeClicked;
         _modeManual.Click += OnModeClicked;
         var mode = new StackPanel { Orientation = Orientation.Horizontal, Children = { _modeAuto, _modeManual } };
-        var left = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { _run, _script, _explain, _analyze, _stop, _toolbarSeparator, mode, _pill, _txCommit, _txRollback } };
+        var left = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { _run, _script, _explain, _analyze, _autoRefresh, _stop, _toolbarSeparator, mode, _pill, _txCommit, _txRollback } };
         var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { _format, _historyToggle } };
         Grid.SetColumn(right, 1);
         var row = new Grid { ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } }, Children = { left, right } };
@@ -524,6 +534,8 @@ public sealed partial class QueryTabView : UserControl
         {
             _tab.PropertyChanged -= OnTabPropertyChanged;
             _tab.Results.CollectionChanged -= OnResultsChanged;
+            _tab.ResultsReplacing -= OnResultsReplacing;
+            _tab.ResultsReplaced -= OnResultsReplaced;
         }
 
         // A control has a single parent: release the previous editor before another tab shows its own.
@@ -539,6 +551,8 @@ public sealed partial class QueryTabView : UserControl
         {
             tab.PropertyChanged += OnTabPropertyChanged;
             tab.Results.CollectionChanged += OnResultsChanged;
+            tab.ResultsReplacing += OnResultsReplacing;
+            tab.ResultsReplaced += OnResultsReplaced;
             _editorHost.Child = (tab.Editor as IEditorControl)?.Control;
         }
 
@@ -546,6 +560,7 @@ public sealed partial class QueryTabView : UserControl
         _run.Command = tab?.RunCommand;
         _script.Command = tab?.RunAllCommand;
         _stop.Command = tab?.CancelCommand;
+        _autoRefresh.Flyout = tab is null ? null : AutoRefreshMenu.Build(tab);
         _explain.Command = tab?.ExplainCommand;
         _analyze.Command = tab?.AnalyzeCommand;
         _txCommit.Command = tab?.CommitCommand;
@@ -555,7 +570,28 @@ public sealed partial class QueryTabView : UserControl
         ShowResult();
         ShowRunning();
         ShowPlanButtons();
+        ShowAutoRefresh();
         ShowTransaction();
+    }
+
+    // Keeps what the user arranged in the grid across a refresh: the view-model swaps the results between these two events.
+    private void OnResultsReplacing()
+    {
+        _columnMenu.Hide();
+        _viewMemo = _result?.Kind == ResultKind.Grid ? _grid.Canvas.SaveView() : null;
+        _gridHadFocus = _grid.Canvas.SurfaceHasFocus;
+    }
+
+    private void OnResultsReplaced()
+    {
+        if (_viewMemo is { } memo && _result?.Kind == ResultKind.Grid && _grid.DataSource?.Columns.Count == memo.ColumnCount)
+        {
+            _grid.Canvas.RestoreView(memo);
+            if (_gridHadFocus)
+                _grid.Canvas.FocusSurface();
+        }
+
+        _viewMemo = null;
     }
 
     private void OnResultsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildResultTabs();
@@ -632,11 +668,31 @@ public sealed partial class QueryTabView : UserControl
         else if (e.PropertyName == nameof(QueryTabViewModel.IsRunning))
         {
             ShowRunning();
-            if (_tab?.IsRunning == true)
+            if (_tab?.IsRunning == true && !_tab.IsRefreshing)
                 (_tab.Editor as LoomSqlEditor)?.HideSuggest();
         }
         else if (e.PropertyName is nameof(QueryTabViewModel.CanExplain) or nameof(QueryTabViewModel.CanAnalyze) or nameof(QueryTabViewModel.ExplainDisabledReason) or nameof(QueryTabViewModel.AnalyzeDisabledReason))
             ShowPlanButtons();
+        else if (e.PropertyName is nameof(QueryTabViewModel.AutoRefreshInterval) or nameof(QueryTabViewModel.AutoRefreshLabel) or nameof(QueryTabViewModel.AutoRefreshToolTip) or nameof(QueryTabViewModel.AutoRefreshPausedReason) or nameof(QueryTabViewModel.CanRefresh))
+            ShowAutoRefresh();
+    }
+
+    // The clock shows the interval next to the icon in the accent colour while auto-refresh is on.
+    private void ShowAutoRefresh()
+    {
+        var tab = _tab;
+        var label = tab?.AutoRefreshLabel ?? "";
+        var brush = ThemeBrush(label.Length > 0 ? "SquillAccentTextBrush" : "SquillFg2Brush");
+        var panel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center };
+        panel.Children.Add(Icons.Create("SquillIconTimer", 14, brush));
+        if (label.Length > 0)
+            panel.Children.Add(new TextBlock { Style = Res("MonoTextBlockStyle"), FontSize = 12, Foreground = brush, VerticalAlignment = VerticalAlignment.Center, Text = label });
+        panel.Children.Add(Icons.Create("SquillIconCollapse", 10, ThemeBrush("SquillFg2Brush")));
+        _autoRefresh.Content = panel;
+        _autoRefresh.IsEnabled = tab is not null && (tab.CanRefresh || tab.AutoRefreshInterval is not null);
+        ToolTipService.SetToolTip(_autoRefresh, tab?.AutoRefreshToolTip);
+        AutomationProperties.SetName(_autoRefresh, (UiText.Get("query.autoRefresh.menu") + " " + label).TrimEnd());
+        LayoutToolbar();
     }
 
     // The commands stay executable; the view-model says through CanExplain / CanAnalyze whether the statement qualifies and why not.
@@ -797,6 +853,18 @@ public sealed partial class QueryTabView : UserControl
     }
 
     private static Style Res(string key) => (Style)Application.Current.Resources[key];
+
+    private void OnBusyChanged(object? sender, bool busy)
+    {
+        if (busy)
+        {
+            _busy.Show();
+        }
+        else
+        {
+            _busy.Hide();
+        }
+    }
 
     private static Microsoft.UI.Xaml.Media.Brush Brush(string key) => Tokens.Brush(key);
 }

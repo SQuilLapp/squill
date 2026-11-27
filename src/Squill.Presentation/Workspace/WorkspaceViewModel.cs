@@ -36,6 +36,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
     private readonly IQueryHistoryStore _history;
     private readonly ISettingsStore _settings;
     private readonly IUiDispatcher _dispatcher;
+    private readonly TimeProvider _time;
     private readonly IDialogService _dialogs;
     private readonly Func<ISqlEditor> _editorFactory;
     private readonly IProfileStore _profiles;
@@ -100,7 +101,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         _diagramStore = diagramStore;
         _measureText = measureText;
         // shortcut: the timer runs for the life of the workspace instead of starting when a transaction opens; the tick is one cheap pass.
-        _elapsedTimer = (time ?? TimeProvider.System).CreateTimer(_ => _dispatcher.Post(RefreshElapsed), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        _time = time ?? TimeProvider.System;
+        _elapsedTimer = _time.CreateTimer(_ => _dispatcher.Post(RefreshElapsed), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
         var objects = new PaletteObjectProvider(this);
         var historySearch = new PaletteHistoryProvider(history, profiles, this, time);
         var line = new PaletteLineProvider(this);
@@ -530,6 +532,8 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         };
         foreach (var monitor in Monitors)
             monitor.SetActive(ReferenceEquals(monitor, tab)); // a monitor only polls while its tab is on screen
+        foreach (var query in Tabs)
+            query.SetActive(ReferenceEquals(query, tab)); // a query tab only auto-refreshes while shown
         _shownSession = session;
         _shownCompare = tab as SchemaCompareViewModel; // the target of a compare changes while its tab stays on screen
         if (session is not null && !ReferenceEquals(ActiveSession, session))
@@ -614,6 +618,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         {
             Tabs.Remove(tab);
             tab.CancelPendingDiagnostics();
+            tab.StopAutoRefresh();
             RemovePlansOf(tab);
         }
         foreach (var designer in Designers.Where(d => d.Session.Root == session).ToList())
@@ -658,6 +663,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         var index = Tabs.IndexOf(tab);
         Tabs.RemoveAt(index);
         tab.CancelPendingDiagnostics();
+        tab.StopAutoRefresh();
         RemovePlansOf(tab);
         if (ActiveTab == tab)
             ActiveTab = Tabs.Count == 0 ? null : Tabs[Math.Min(index, Tabs.Count - 1)];
@@ -979,7 +985,7 @@ public sealed partial class WorkspaceViewModel : ViewModelBase, IDisposable, IPa
         if (caretAtEnd)
             editor.CaretOffset = text.Length;
         _tabCounters[session] = _tabCounters.GetValueOrDefault(session) + 1;
-        var tab = new QueryTabViewModel(session, editor, _history, _settings, _dispatcher, _dialogs)
+        var tab = new QueryTabViewModel(session, editor, _history, _settings, _dispatcher, _dialogs, _time)
         {
             Title = session.Parent is null
                 ? UiText.Format("tab.query", _tabCounters[session])

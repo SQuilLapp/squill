@@ -479,7 +479,8 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         var design = BuildDesign();
         Design = design;
 
-        var issues = DesignValidator.Validate(design, Original, _dialect).ToList();
+        var baseline = Baseline;
+        var issues = DesignValidator.Validate(design, baseline, _dialect).ToList();
         foreach (var fk in design.ForeignKeys)
         {
             var self = string.Equals(fk.ReferencedTable, design.Name, StringComparison.OrdinalIgnoreCase)
@@ -497,13 +498,13 @@ public sealed partial class TableDesignerViewModel : ViewModelBase
         issues = [.. issues.Select(i => i with { Message = IssueText.Format(i.Code, i.Args, i.Message) })];
         Issues = [.. issues.Where(i => i.Severity == DesignIssueSeverity.Error), .. issues.Where(i => i.Severity != DesignIssueSeverity.Error)];
         HasErrors = issues.Any(i => i.Severity == DesignIssueSeverity.Error);
-        HasChanges = Original is null || TableDiff.Compute(Original, design).Count > 0;
+        HasChanges = baseline is null || TableDiff.Compute(baseline, design).Count > 0;
         _statements = HasErrors ? [] : Original is null
             ? DdlGenerators.For(_dialect).CreateTable(design)
-            : DdlGenerators.For(_dialect).Alter(Original, design);
+            : DdlGenerators.For(_dialect).Alter(baseline!, design);
         Script = DdlGenerators.ToScript(_statements);
         UpdateRowStates(design);
-        DraftChangeCount = Baseline is { } baseline ? TableDiff.Compute(baseline, design).Count : 0;
+        DraftChangeCount = baseline is null ? 0 : TableDiff.Compute(baseline, design).Count;
         DraftText = DraftChangeCount == 0 ? "" : UiText.FormatPlural("designer.draftChanges", DraftChangeCount);
         var connection = _session.Profile;
         Subtitle = string.Join(" · ", new[] { connection.Name, connection.Database ?? connection.FilePath, design.Schema }.Where(x => !string.IsNullOrEmpty(x)));

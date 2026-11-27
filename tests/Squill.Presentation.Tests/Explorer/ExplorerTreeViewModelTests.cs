@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Squill.Presentation.Tests.Explorer;
 
-public sealed class ExplorerTreeViewModelTests
+public sealed partial class ExplorerTreeViewModelTests
 {
     private static readonly ColumnDefinition Id = new("id", "int", false, true, null);
     private static readonly ColumnDefinition Email = new("email", "text", true, false, null);
@@ -324,6 +324,7 @@ public sealed class ExplorerTreeViewModelTests
         Assert.Equal("d", new ExplorerNode("t", ExplorerNodeKind.Column, "d", count: 3).Trailing);
         Assert.Equal("1,208", new ExplorerNode("t", ExplorerNodeKind.Folder, count: 1208).Trailing);
         Assert.Null(new ExplorerNode("t", ExplorerNodeKind.Table).Trailing);
+        Assert.Null(new ExplorerNode("t", ExplorerNodeKind.Schema, count: 3) { FilterBadge = "2 of 3" }.Trailing);
     }
 
     [Fact]
@@ -501,17 +502,6 @@ public sealed class ExplorerTreeViewModelTests
         }
     }
 
-    private sealed class FixedPicker(params string[] shown) : ITableVisibilityPicker
-    {
-        public IReadOnlyList<TableChoice>? Offered { get; private set; }
-
-        public ValueTask<IReadOnlyList<string>?> PickVisibleAsync(string title, IReadOnlyList<TableChoice> choices)
-        {
-            Offered = choices;
-            return ValueTask.FromResult<IReadOnlyList<string>?>(shown);
-        }
-    }
-
     private (ExplorerTreeViewModel Tree, ExplorerNode Database, MemoryFilters Filters, ConnectionProfile Profile) Filtered(MemoryFilters? filters = null)
     {
         filters ??= new MemoryFilters();
@@ -524,22 +514,6 @@ public sealed class ExplorerTreeViewModelTests
 
     private static IEnumerable<string> TableTitles(ExplorerNode database) =>
         Descendants(database).Where(n => n.Kind is ExplorerNodeKind.Table or ExplorerNodeKind.View).Select(n => n.Title);
-
-    [Fact]
-    public async Task ChooseTables_HidesTheUnchecked_ShowsACount_AndSavesPerDatabase()
-    {
-        var (tree, database, filters, profile) = Filtered();
-        var picker = new FixedPicker("public.users", "public.v");
-        tree.Picker = picker;
-
-        await tree.ChooseTablesCommand.ExecuteAsync(database);
-
-        Assert.Equal(["public.logs", "public.users", "public.v"], picker.Offered!.Select(c => c.Key));
-        Assert.Equal(["users", "v"], TableTitles(database));
-        Assert.Equal(1, database.HiddenCount);
-        Assert.Equal(UiText.FormatPlural("explorer.hiddenTables", 1), database.Trailing);
-        Assert.Equal(["public.logs"], filters.Saved[profile.Id].Hidden["d"]);
-    }
 
     [Fact]
     public void HideTable_ThenShowAll_RoundTrips()
@@ -570,23 +544,6 @@ public sealed class ExplorerTreeViewModelTests
         await WaitAsync(() => database.HiddenCount == 1);
 
         Assert.Equal(["users"], TableTitles(database));
-    }
-
-    [Fact]
-    public async Task CancelledPicker_ChangesNothing()
-    {
-        var (tree, database, filters, _) = Filtered();
-        tree.Picker = new CancelPicker();
-
-        await tree.ChooseTablesCommand.ExecuteAsync(database);
-
-        Assert.Empty(filters.Saved);
-        Assert.Equal(3, TableTitles(database).Count());
-    }
-
-    private sealed class CancelPicker : ITableVisibilityPicker
-    {
-        public ValueTask<IReadOnlyList<string>?> PickVisibleAsync(string title, IReadOnlyList<TableChoice> choices) => ValueTask.FromResult<IReadOnlyList<string>?>(null);
     }
 
     private sealed class FakeStore : IProfileStore

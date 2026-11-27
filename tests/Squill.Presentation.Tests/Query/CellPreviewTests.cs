@@ -5,6 +5,7 @@ using Squill.Platform.Settings;
 using Squill.Platform.Storage;
 using Squill.Presentation.Editor;
 using Squill.Presentation.Query;
+using Squill.Presentation.Results;
 using Squill.Presentation.Sessions;
 using Xunit;
 
@@ -26,6 +27,9 @@ public sealed class CellPreviewTests : IAsyncLifetime
             "CREATE TABLE t (id INTEGER PRIMARY KEY, short TEXT, doc JSON)",
             "INSERT INTO t (short, doc) VALUES ('abc', '{\"a\":1,\"b\":[1,2]}'), ('x', NULL), ('y', 'line one' || char(10) || 'line two')",
             "INSERT INTO t (short, doc) VALUES ('z', '" + new string('q', 120) + "')",
+            "INSERT INTO t (short, doc) VALUES ('one' || char(13) || char(10) || 'two', NULL)",
+            "INSERT INTO t (short, doc) VALUES ('big', '[' || (WITH RECURSIVE c(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM c WHERE n < 3000) SELECT group_concat('{\"i\":' || n || ',\"p\":\"' || replace(hex(zeroblob(16)), '0', 'x') || '\"}') FROM c) || ']')",
+            "INSERT INTO t (short, doc) VALUES (replace(hex(zeroblob(75000)), '0', 'k'), NULL)",
         })
             await (await _connection.ExecuteAsync(sql, [], CancellationToken.None)).DisposeAsync();
         var schema = await _connection.ReadSchemaAsync(CancellationToken.None);
@@ -130,6 +134,132 @@ public sealed class CellPreviewTests : IAsyncLifetime
         Assert.False(result.Preview.CanEdit);
     }
 
+    private static string BigRaw(IGridDataSource grid) => (string)grid.GetCell(5, 2)!;
+
+    [Fact]
+    public async Task Refresh_HugePrettyJson_ShowsHeadReadOnly()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+
+        result.Selection!.SelectCell(5, 2, false);
+        ui.Pump(preview.Pending);
+
+        var raw = BigRaw(result.DisplayGrid!);
+        CellPreviewViewModel.TryPretty(raw, out var pretty, out _);
+        Assert.True(preview.IsTruncated);
+        Assert.Equal(CellPreviewViewModel.Head(pretty), preview.Text);
+        Assert.True(preview.Text.Count(c => c == '\n') < CellPreviewViewModel.MaxShownLines);
+        Assert.NotNull(preview.Notice);
+        Assert.Equal(raw, preview.FullValue);
+        Assert.Null(preview.Error);
+    }
+
+    [Fact]
+    public async Task Refresh_ShortMinifiedJsonWithManyLines_ShowsHead()
+    {
+        var result = await RunAsync("SELECT '[' || (WITH RECURSIVE c(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM c WHERE n < 1500) SELECT group_concat('{\"i\":' || n || '}') FROM c) || ']' AS doc");
+
+        result.Selection!.SelectCell(0, 0, false);
+
+        var preview = result.Preview!;
+        Assert.True(preview.IsTruncated);
+        Assert.True(preview.IsOpen);
+        Assert.Equal(CellPreviewViewModel.MaxShownChars, preview.Text.Length);
+    }
+
+    [Fact]
+    public async Task Refresh_LongSingleLineText_ShowsHead()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+
+        result.Selection!.SelectCell(6, 1, false);
+
+        Assert.True(result.Preview!.IsTruncated);
+        Assert.Equal(CellPreviewViewModel.MaxShownChars, result.Preview.Text.Length);
+        Assert.Equal(75_000 * 2, result.Preview.FullValue!.Length);
+    }
+
+    [Fact]
+    public async Task Refresh_ShortValue_IsNotTruncated()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+
+        result.Selection!.SelectCell(0, 2, false);
+
+        Assert.False(result.Preview!.IsTruncated);
+        Assert.Null(result.Preview.FullValue);
+        Assert.Null(result.Preview.Notice);
+    }
+
+    [Fact]
+    public async Task Text_TruncatedHeadRoundTrip_IsNeverDirty()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+        result.Selection!.SelectCell(5, 2, false);
+        ui.Pump(preview.Pending);
+
+        preview.Text = preview.Text.Replace("\n", "\r");
+        preview.Text += "x";
+
+        Assert.False(preview.IsDirty);
+        Assert.False(preview.ApplyCommand.CanExecute(null));
+        Assert.False(preview.IsWorking);
+    }
+
+    [Fact]
+    public async Task Format_Truncated_ShowsWholeTextAndClearsNotice()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+        result.Selection!.SelectCell(5, 2, false);
+        ui.Pump(preview.Pending);
+
+        preview.FormatCommand.Execute(null);
+        ui.Pump(preview.Pending);
+
+        CellPreviewViewModel.TryPretty(BigRaw(result.DisplayGrid!), out var pretty, out _);
+        Assert.False(preview.IsTruncated);
+        Assert.Equal(pretty, preview.Text);
+        Assert.Null(preview.Notice);
+        Assert.Null(preview.FullValue);
+        Assert.False(preview.IsDirty);
+    }
+
+    [Fact]
+    public async Task Apply_AfterShowAll_StoresShownTextWithLf()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+        result.Selection!.SelectCell(5, 2, false);
+        ui.Pump(preview.Pending);
+        preview.FormatCommand.Execute(null);
+        ui.Pump(preview.Pending);
+
+        var edited = preview.Text.Replace("\"i\": 1,", "\"i\": 7,");
+        preview.Text = edited.Replace("\n", "\r");
+        ui.Pump(preview.Pending);
+        preview.ApplyCommand.Execute(null);
+
+        Assert.Equal(edited, result.Editor!.Grid.GetCell(5, 2));
+    }
+
+    [Fact]
+    public async Task FullValue_EqualsGridCopy()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(6, 1, false);
+
+        var copy = result.Selection.ToTsv(result.DisplayGrid!);
+
+        Assert.Equal(copy[..^1], result.Preview!.FullValue);
+    }
+
     private sealed class History : IQueryHistoryStore
     {
         public ValueTask AppendAsync(HistoryEntry e, CancellationToken ct) => ValueTask.CompletedTask;
@@ -144,5 +274,206 @@ public sealed class CellPreviewTests : IAsyncLifetime
         public ValueTask<AppSettings> LoadAsync(CancellationToken ct) => ValueTask.FromResult(AppSettings.Default);
 
         public ValueTask SaveAsync(AppSettings settings, CancellationToken ct) => ValueTask.CompletedTask;
+    }
+
+    // Queues what the view-model resumes on the "UI thread" until the test pumps it, so the in-between state is observable.
+    private sealed class QueueContext : SynchronizationContext, IDisposable
+    {
+        private readonly SynchronizationContext? _previous = Current;
+        private readonly System.Collections.Concurrent.BlockingCollection<Action> _queue = [];
+
+        public QueueContext() => SetSynchronizationContext(this);
+
+        public override void Post(SendOrPostCallback d, object? state) => _queue.Add(() => d(state));
+
+        public void Pump(Task until)
+        {
+            while (!until.IsCompleted)
+            {
+                if (_queue.TryTake(out var work, 20))
+                    work();
+            }
+        }
+
+        public void Dispose() => SetSynchronizationContext(_previous);
+    }
+
+    [Fact]
+    public async Task Refresh_ValidJson_ShowsIndentedTextWithoutError()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+
+        result.Selection!.SelectCell(0, 2, false);
+
+        Assert.Null(result.Preview!.Error);
+        Assert.Contains("\n", result.Preview.Text);
+        Assert.False(result.Preview.IsDirty);
+    }
+
+    [Fact]
+    public async Task Text_LongJson_ValidatesInBackground()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+
+        preview.Text = "{\"a\":\"" + new string('x', 150_000);
+
+        Assert.True(preview.IsWorking);
+        Assert.False(preview.ApplyCommand.CanExecute(null));
+        ui.Pump(preview.Pending);
+        Assert.False(preview.IsWorking);
+        Assert.False(string.IsNullOrEmpty(preview.Error));
+    }
+
+    [Fact]
+    public async Task Text_LongJson_LatestRequestWins()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+
+        preview.Text = "{\"a\":\"" + new string('x', 150_000);
+        preview.Text = "{\"a\":\"" + new string('x', 150_000) + "\"}";
+        ui.Pump(preview.Pending);
+
+        Assert.False(preview.IsWorking);
+        Assert.Null(preview.Error);
+        Assert.True(preview.ApplyCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task Refresh_LongJson_SetsTextOnce()
+    {
+        var result = await RunAsync("SELECT '{\"k\":\"' || replace(hex(zeroblob(60000)), '0', 'a') || '\"}' AS doc");
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+        var changes = 0;
+        preview.PropertyChanged += (_, e) => changes += e.PropertyName == nameof(preview.Text) ? 1 : 0;
+
+        result.Selection!.SelectCell(0, 0, false);
+
+        Assert.True(preview.IsWorking);
+        Assert.Equal(0, changes);
+        ui.Pump(preview.Pending);
+        Assert.False(preview.IsWorking);
+        Assert.Equal(1, changes);
+        Assert.True(preview.IsJson);
+        Assert.Contains("\n", preview.Text);
+    }
+
+    [Fact]
+    public async Task Refresh_JsonValue_TextHasNoCr()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+
+        result.Selection!.SelectCell(0, 2, false);
+
+        Assert.DoesNotContain('\r', result.Preview!.Text);
+    }
+
+    [Fact]
+    public async Task Text_DiffersOnlyByLineBreaks_IsNotDirty()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+
+        preview.Text = preview.Text.Replace("\n", "\r");
+
+        Assert.False(preview.IsDirty);
+        Assert.False(preview.ApplyCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task Text_TextValueWithCrLf_RoundTripIsNotDirty()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(4, 1, false);
+        var preview = result.Preview!;
+        Assert.True(preview.IsOpen);
+
+        preview.Text = "one\rtwo";
+
+        Assert.False(preview.IsDirty);
+    }
+
+    [Fact]
+    public async Task Apply_CrLineBreaks_StoresLf()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+
+        preview.Text = "{\r  \"a\": 2\r}";
+        preview.ApplyCommand.Execute(null);
+
+        Assert.Equal("{\n  \"a\": 2\n}", result.Editor!.Grid.GetCell(0, 2));
+        Assert.False(preview.IsDirty);
+    }
+
+    [Fact]
+    public async Task Apply_MixedLineBreaks_StoresLf()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(2, 2, false);
+
+        result.Preview!.Text = "a\r\nb\nc\rd";
+        result.Preview.ApplyCommand.Execute(null);
+
+        Assert.Equal("a\nb\nc\nd", result.Editor!.Grid.GetCell(2, 2));
+    }
+
+    [Fact]
+    public async Task Apply_300KbIndentedJsonWithCr_StoresLfText()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+        using var ui = new QueueContext();
+        var lf = "{\n" + string.Concat(Enumerable.Range(0, 10_000).Select(i => $"  \"k{i}\": \"vvvvvvvvvvvvvvvvvvvv\",\n")) + "  \"z\": 1\n}";
+        var cr = lf.Replace("\n", "\r");
+
+        preview.Text = cr;
+        ui.Pump(preview.Pending);
+        preview.ApplyCommand.Execute(null);
+        ui.Pump(preview.Pending);
+
+        var stored = (string)result.Editor!.Grid.GetCell(0, 2)!;
+        Assert.Equal(lf, stored);
+        Assert.Equal(cr.Length, stored.Length);
+    }
+
+    [Fact]
+    public async Task Apply_EditedMinifiedJson_StoresShownIndentedText()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+
+        preview.Text = preview.Text.Replace("\"a\": 1", "\"a\": 2");
+        preview.ApplyCommand.Execute(null);
+
+        var stored = (string)result.Editor!.Grid.GetCell(0, 2)!;
+        Assert.Contains("\"a\": 2", stored);
+        Assert.Contains('\n', stored);
+        Assert.DoesNotContain('\r', stored);
+    }
+
+    [Fact]
+    public async Task Text_ShortJson_StaysSynchronous()
+    {
+        var result = await RunAsync("SELECT * FROM t ORDER BY id");
+        result.Selection!.SelectCell(0, 2, false);
+        var preview = result.Preview!;
+        var working = false;
+        preview.PropertyChanged += (_, e) => working |= e.PropertyName == nameof(preview.IsWorking) && preview.IsWorking;
+
+        preview.Text = "{\"a\": 2}";
+
+        Assert.False(working);
+        Assert.Null(preview.Error);
     }
 }

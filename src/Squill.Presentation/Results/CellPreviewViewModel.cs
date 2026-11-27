@@ -3,6 +3,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Squill.Core;
 using Squill.Presentation.Editing;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Query;
@@ -18,7 +19,13 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
     /// <summary>The length from which a value opens the pane by itself.</summary>
     public const int LongTextLength = 80;
 
-    private static readonly JsonWriterOptions PrettyOptions = new() { Indented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+    /// <summary>The most lines the pane puts into its text box; above it the pane shows the start of the value (a native box costs about 0.11 ms per line).</summary>
+    public const int MaxShownLines = 2_000;
+
+    /// <summary>The most characters the pane puts into its text box; above it the pane shows the start of the value (measured on the WinUI box: one line of 12,000 characters is drawn, one of 30,000 or more is drawn badly or not at all).</summary>
+    public const int MaxShownChars = 10_000;
+
+    private static readonly JsonWriterOptions PrettyOptions = new() { Indented = true, NewLine = "\n", Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     private readonly ResultViewModel _result;
     private IGridDataSource? _grid;
@@ -26,6 +33,8 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
     private bool _dismissed;
     private long _row;
     private int _column;
+    private int _request;
+    private bool _refreshing;
 
     /// <summary>Follows the selection and the data of a result.</summary>
     /// <param name="result">The grid result whose selected cell is previewed.</param>
@@ -51,10 +60,27 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
     public event EventHandler? ViewChanged;
 
     /// <summary>Gets whether the format button is shown.</summary>
-    public bool ShowFormat => IsJson || CanEdit;
+    public bool ShowFormat => IsJson || CanEdit || IsTruncated;
+
+    /// <summary>Gets whether the format button can be used: the text is JSON, or only the start of the value is shown and the button shows all of it.</summary>
+    public bool CanFormat => IsJson || IsTruncated;
+
+    /// <summary>Gets the text of the format button, "Show all" while only the start of the value is shown.</summary>
+    public string FormatLabel => UiText.Get(IsTruncated ? "preview.showAll" : "preview.format");
+
+    /// <summary>Gets the whole cell value, as the grid copies it, while <see cref="IsTruncated"/>; otherwise <see langword="null"/>.</summary>
+    public string? FullValue { get; private set; }
 
     /// <summary>Gets whether the apply button is shown.</summary>
     public bool ShowApply => CanEdit;
+
+    /// <summary>Gets whether a long value is being parsed or checked in the background; <see cref="ApplyCommand"/> waits for it.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ApplyCommand))]
+    public partial bool IsWorking { get; private set; }
+
+    /// <summary>Gets the last background request, completed when the pane is idle.</summary>
+    internal Task Pending { get; private set; } = Task.CompletedTask;
 
     /// <summary>Gets whether <see cref="Error"/> has a message to show.</summary>
     public bool HasError => !string.IsNullOrEmpty(Error);
@@ -83,6 +109,14 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool CanEdit { get; private set; }
 
+    /// <summary>Gets whether <see cref="Text"/> is only the start of a very long value: the box is read-only and nothing can be applied.</summary>
+    [ObservableProperty]
+    public partial bool IsTruncated { get; private set; }
+
+    /// <summary>Gets the sentence that says how much of the value is shown, or <see langword="null"/> when all of it is.</summary>
+    [ObservableProperty]
+    public partial string? Notice { get; private set; }
+
     /// <summary>Gets whether <see cref="Text"/> differs from the value of the cell.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ApplyCommand))]
@@ -95,8 +129,45 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
 
     partial void OnTextChanged(string value)
     {
-        IsDirty = CanEdit && value != _original;
-        Error = Validate(value);
+        if (_refreshing || IsTruncated)
+            return;
+        IsDirty = CanEdit && NormalizeLineBreaks(value) != _original;
+        if (CanEdit && LongPaste.IsLong(value))
+        {
+            var column = Column();
+            StartBackground(() => Validate(value, column, false), error => Error = error);
+            return;
+        }
+
+        Supersede();
+        Error = Validate(value, Column(), false);
+    }
+
+    private ColumnInfo? Column() => _result.DisplayGrid is { } grid && _column < grid.Columns.Count ? grid.Columns[_column] : null;
+
+    private void Supersede()
+    {
+        _request++;
+        IsWorking = false;
+    }
+
+    // Runs work on the thread pool; the result is applied on the UI thread unless a newer request replaced this one.
+    private void StartBackground<T>(Func<T> work, Action<T> apply)
+    {
+        var request = ++_request;
+        IsWorking = true;
+        Pending = Run();
+
+        async Task Run()
+        {
+            // Yield first: a fast pool thread could finish the work before the await and run apply inline, hiding IsWorking from the caller.
+            await Task.Yield();
+            var result = await Task.Run(work).ConfigureAwait(true);
+            if (request != _request)
+                return;
+            apply(result);
+            IsWorking = false;
+        }
     }
 
     /// <summary>Hides the pane until another cell is selected.</summary>
@@ -111,8 +182,30 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
     [RelayCommand]
     private void Format()
     {
-        if (TryPretty(Text, out var pretty, out _))
+        if (IsTruncated)
+        {
+            ShowAll();
+            return;
+        }
+
+        if (!IsWorking && TryPretty(Text, out var pretty, out _))
             Text = pretty;
+    }
+
+    // Replaces the start of a long value with all of it; the native box may block while it is filled, the user asked for it.
+    private void ShowAll()
+    {
+        if (IsWorking || FullValue is not { } raw)
+            return;
+        var column = Column();
+        var canEdit = CanEdit;
+        var json = IsJson;
+        StartBackground(() =>
+        {
+            var text = raw;
+            var ok = json && TryPretty(raw, out text, out _);
+            return (ok, text, Error: canEdit ? Validate(text, column, ok) : null);
+        }, r => Show(r.ok, r.text, r.Error));
     }
 
     [RelayCommand(CanExecute = nameof(CanApply))]
@@ -120,18 +213,19 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
     {
         if (_result.Editor is not { } editor)
             return;
-        var error = editor.TrySetCell(_row, _column, Text);
+        var value = NormalizeLineBreaks(Text);
+        var error = editor.TrySetCell(_row, _column, value);
         if (error is not null)
         {
             Error = error;
             return;
         }
 
-        _original = Text;
+        _original = value;
         IsDirty = false;
     }
 
-    private bool CanApply() => CanEdit && IsDirty && Error is null;
+    private bool CanApply() => CanEdit && IsDirty && Error is null && !IsWorking;
 
     private void Watch()
     {
@@ -172,32 +266,131 @@ public sealed partial class CellPreviewViewModel : ViewModelBase
         }
 
         var json = CellEditorKinds.For(column) == CellEditorKind.Json || LooksLikeJson(value);
-        var isJson = json && TryPretty(value, out value, out _);
         Title = column.Name;
         TypeText = column.DataTypeName;
-        IsJson = isJson;
         CanEdit = _result is { EditController: { } edit, Editor: { } editor } && editor.Grid.CanEdit
             && edit.IsColumnEditable(_column) && editor.Grid.GetRowState(_row) != RowState.Deleted;
-        _original = value;
-        Text = value;
         IsDirty = false;
-        Error = Validate(value);
+        if (json && LongPaste.IsLong(value))
+        {
+            // Text is set once, when the pretty text is ready, so the pane's native box is not filled twice.
+            var canEdit = CanEdit;
+            var raw = value;
+            StartBackground(() =>
+            {
+                var ok = TryPretty(raw, out var pretty, out _);
+                var head = Head(pretty);
+                return (ok, pretty, head, Error: canEdit && head is null ? Validate(pretty, column, ok) : null);
+            }, r => Show(r.ok, r.head ?? r.pretty, r.Error, r.head is null ? null : raw));
+            IsOpen = !_dismissed;
+            return;
+        }
+
+        Supersede();
+        var whole = value;
+        var isJson = json && TryPretty(value, out value, out _);
+        if (Head(value) is { } head)
+        {
+            Show(isJson, head, null, whole);
+            IsOpen = !_dismissed;
+            return;
+        }
+
+        Show(isJson, value, Validate(value, column, isJson));
         IsOpen = !_dismissed && (isJson || json || value.Length >= LongTextLength || value.Contains('\n', StringComparison.Ordinal));
     }
 
-    private string? Validate(string text)
+    // full is the whole value when value is only its start.
+    private void Show(bool isJson, string value, string? error, string? full = null)
     {
-        if (!CanEdit)
+        IsJson = isJson;
+        FullValue = full;
+        IsTruncated = full is not null;
+        Notice = full is null ? null : UiText.Format("preview.truncated", value.Length, full.Length);
+        _original = NormalizeLineBreaks(value);
+        _refreshing = true;
+        try
+        {
+            Text = value;
+        }
+        finally
+        {
+            _refreshing = false;
+        }
+
+        IsDirty = false;
+        Error = error;
+    }
+
+    // jsonKnownValid skips the JSON parse when the caller already parsed the text.
+    private string? Validate(string text, ColumnInfo? column, bool jsonKnownValid)
+    {
+        if (!CanEdit || column is null)
             return null;
-        if (CellEditorKinds.For(_result.DisplayGrid!.Columns[_column]) == CellEditorKind.Json && !TryPretty(text, out _, out var jsonError))
+        if (!jsonKnownValid && CellEditorKinds.For(column) == CellEditorKind.Json && !TryPretty(text, out _, out var jsonError))
             return UiText.Format("preview.invalidJson", jsonError);
-        return CellValueParser.TryParse(text, _result.DisplayGrid!.Columns[_column], out _, out var error) ? null : error;
+        return CellValueParser.TryParse(text, column, out _, out var error) ? null : error;
+    }
+
+    /// <summary>Gets the start of a value too long for the pane's text box.</summary>
+    /// <param name="text">The text the pane would show.</param>
+    /// <returns>
+    /// <see langword="null"/> when <paramref name="text"/> has at most <see cref="MaxShownLines"/> lines and <see cref="MaxShownChars"/> characters;
+    /// otherwise the shorter of the first <see cref="MaxShownLines"/> lines (without the line break that ends them) and the first
+    /// <see cref="MaxShownChars"/> characters, never cut inside a surrogate pair. It stops scanning at the first limit reached.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="text"/> is <see langword="null"/>.</exception>
+    internal static string? Head(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        var end = Math.Min(text.Length, MaxShownChars);
+        var breaks = 0;
+        for (var i = 0; i < end; i++)
+        {
+            var c = text[i];
+            if (c != '\n' && c != '\r')
+                continue;
+            if (++breaks == MaxShownLines)
+                return text[..i];
+            if (c == '\r' && i + 1 < text.Length && text[i + 1] == '\n')
+                i++;
+        }
+
+        if (text.Length <= MaxShownChars)
+            return null;
+        return char.IsHighSurrogate(text[MaxShownChars - 1]) ? text[..(MaxShownChars - 1)] : text[..MaxShownChars];
     }
 
     private static bool LooksLikeJson(string text)
     {
         var t = text.AsSpan().TrimStart();
         return t.Length > 1 && (t[0] == '{' || t[0] == '[');
+    }
+
+    /// <summary>Replaces every <c>\r\n</c> and every lone <c>\r</c> with <c>\n</c>; nothing else changes.</summary>
+    /// <param name="text">The text to normalize.</param>
+    /// <returns>The normalized text, or <paramref name="text"/> itself when it has no <c>\r</c>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="text"/> is <see langword="null"/>.</exception>
+    public static string NormalizeLineBreaks(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        var first = text.IndexOf('\r', StringComparison.Ordinal);
+        if (first < 0)
+            return text;
+        var sb = new StringBuilder(text.Length).Append(text, 0, first);
+        for (var i = first; i < text.Length; i++)
+        {
+            if (text[i] != '\r')
+                sb.Append(text[i]);
+            else
+            {
+                sb.Append('\n');
+                if (i + 1 < text.Length && text[i + 1] == '\n')
+                    i++;
+            }
+        }
+
+        return sb.ToString();
     }
 
     /// <summary>Indents a JSON document.</summary>

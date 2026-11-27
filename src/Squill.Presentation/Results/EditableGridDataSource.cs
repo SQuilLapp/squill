@@ -192,6 +192,32 @@ public sealed class EditableGridDataSource : IGridDataSource
     /// <exception cref="ArgumentException">The column is read-only.</exception>
     public void SetCell(long row, int column, object? value)
     {
+        SetCellCore(row, column, value);
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Records new values for several cells and raises <see cref="Changed"/> once (not at all for an empty list).</summary>
+    /// <param name="cells">The cells and their new values; <c>null</c> is SQL NULL.</param>
+    /// <exception cref="InvalidOperationException">The source is still streaming, or a row is marked deleted.</exception>
+    /// <exception cref="ArgumentException">A column is read-only.</exception>
+    public void SetCells(IReadOnlyList<(long Row, int Column, object? Value)> cells)
+    {
+        ArgumentNullException.ThrowIfNull(cells);
+        if (cells.Count == 0)
+            return;
+        try
+        {
+            foreach (var (row, column, value) in cells)
+                SetCellCore(row, column, value);
+        }
+        finally
+        {
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private void SetCellCore(long row, int column, object? value)
+    {
         CheckMutable(row);
         if (GetReadOnlyReason(column) is not null)
         {
@@ -241,7 +267,6 @@ public sealed class EditableGridDataSource : IGridDataSource
             }
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>Appends a pending-inserted row with every cell null and unset.</summary>

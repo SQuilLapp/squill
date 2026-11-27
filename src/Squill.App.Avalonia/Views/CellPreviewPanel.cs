@@ -1,8 +1,12 @@
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
+using Avalonia.Threading;
+using Squill.Presentation.Editing;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
 
@@ -15,9 +19,11 @@ public sealed class CellPreviewPanel : Border
     private readonly TextBlock _type = new() { FontSize = 12, Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBox _text = new() { AcceptsReturn = true, AcceptsTab = true, TextWrapping = TextWrapping.NoWrap, BorderThickness = new Thickness(0), CornerRadius = new CornerRadius(0) };
     private readonly TextBlock _error = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(12, 4) };
+    private readonly TextBlock _notice = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, MaxLines = 2, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(12, 4), IsVisible = false };
     private readonly Button _format = new() { Classes = { "ghost" }, Height = 26, MinHeight = 26, Content = UiText.Get("preview.format") };
     private readonly Button _apply = new() { Classes = { "primary" }, Height = 26, MinHeight = 26, Content = UiText.Get("preview.apply") };
     private readonly Button _close = new() { Classes = { "ghost" }, Height = 26, MinHeight = 26, Content = UiText.Get("preview.close") };
+    private readonly ProgressBar _working = new() { IsIndeterminate = true, Height = 2, IsVisible = false };
     private CellPreviewViewModel? _model;
     private bool _syncing;
 
@@ -30,6 +36,7 @@ public sealed class CellPreviewPanel : Border
         this.Bind(BorderBrushProperty, this.GetResourceObservable("SquillBorderSubtleBrush"));
         _title.Bind(TextBlock.ForegroundProperty, _title.GetResourceObservable("SquillFgBrush"));
         _type.Bind(TextBlock.ForegroundProperty, _type.GetResourceObservable("SquillFg3Brush"));
+        _notice.Bind(TextBlock.ForegroundProperty, _notice.GetResourceObservable("SquillFg3Brush"));
         _error.Bind(TextBlock.ForegroundProperty, _error.GetResourceObservable("SquillDangerBrush"));
         _text.Bind(TemplatedControl.BackgroundProperty, _text.GetResourceObservable("SquillBgBaseBrush"));
         _text.Bind(TemplatedControl.ForegroundProperty, _text.GetResourceObservable("SquillFgBrush"));
@@ -48,13 +55,17 @@ public sealed class CellPreviewPanel : Border
         footer.Children.Add(_apply);
 
         var bottom = new StackPanel();
+        bottom.Children.Add(_notice);
         bottom.Children.Add(_error);
         bottom.Children.Add(footer);
 
         var root = new DockPanel();
+        AutomationProperties.SetName(_working, UiText.Get("preview.working"));
         DockPanel.SetDock(header, Dock.Top);
+        DockPanel.SetDock(_working, Dock.Top);
         DockPanel.SetDock(bottom, Dock.Bottom);
         root.Children.Add(header);
+        root.Children.Add(_working);
         root.Children.Add(bottom);
         root.Children.Add(_text);
         Child = root;
@@ -64,6 +75,22 @@ public sealed class CellPreviewPanel : Border
             if (_model is not null && !_syncing && _model.Text != (_text.Text ?? ""))
                 _model.Text = _text.Text ?? "";
         };
+        // While only the start of a long value is shown, copying all the shown text copies the whole value.
+        _text.CopyingToClipboard += (_, e) =>
+        {
+            if (_model is { IsTruncated: true, FullValue: { } full } && _text.SelectionEnd - _text.SelectionStart == (_text.Text ?? "").Length
+                && TopLevel.GetTopLevel(_text)?.Clipboard is { } clipboard)
+            {
+                e.Handled = true;
+                _ = clipboard.SetTextAsync(full);
+            }
+        };
+        // Replaces the built-in paste so a long text can show the busy popup before the insert blocks the UI thread.
+        _text.PastingFromClipboard += (_, e) =>
+        {
+            e.Handled = true;
+            _ = PasteAsync();
+        };
         _close.Click += (_, _) => _model?.CloseCommand.Execute(null);
         _format.Click += (_, _) => _model?.FormatCommand.Execute(null);
         _apply.Click += (_, _) => _model?.ApplyCommand.Execute(null);
@@ -71,6 +98,44 @@ public sealed class CellPreviewPanel : Border
 
     /// <summary>Raised when the pane is shown or hidden; the argument tells which.</summary>
     public event EventHandler<bool>? OpenChanged;
+
+    /// <summary>Raised when a long paste into the pane starts (<see langword="true"/>) and ends (<see langword="false"/>).</summary>
+    public event EventHandler<bool>? BusyChanged;
+
+    private async Task PasteAsync()
+    {
+        string? text;
+        try
+        {
+            text = TopLevel.GetTopLevel(_text)?.Clipboard is { } clipboard ? await clipboard.TryGetTextAsync() : null;
+        }
+        catch (Exception)
+        {
+            return;
+        }
+
+        if (text is null)
+        {
+            return;
+        }
+
+        if (!LongPaste.IsLong(text))
+        {
+            _text.SelectedText = text;
+            return;
+        }
+
+        BusyChanged?.Invoke(this, true);
+        try
+        {
+            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Render);
+            _text.SelectedText = text;
+        }
+        finally
+        {
+            BusyChanged?.Invoke(this, false);
+        }
+    }
 
     /// <summary>Shows the preview of another result, or nothing when <see langword="null"/>.</summary>
     /// <param name="model">The preview view-model of the result on screen.</param>
@@ -96,13 +161,18 @@ public sealed class CellPreviewPanel : Border
                 _type.Text = m.TypeText;
                 if ((_text.Text ?? "") != m.Text)
                     _text.Text = m.Text;
-                _text.IsReadOnly = !m.CanEdit;
+                _text.IsReadOnly = !m.CanEdit || m.IsTruncated;
+                _notice.Text = m.Notice;
+                ToolTip.SetTip(_notice, m.Notice);
+                _notice.IsVisible = m.Notice is not null;
                 _error.Text = m.Error;
                 _error.IsVisible = m.HasError;
                 _format.IsVisible = m.ShowFormat;
-                _format.IsEnabled = m.IsJson;
+                _format.Content = m.FormatLabel;
+                _format.IsEnabled = m.CanFormat;
                 _apply.IsVisible = m.ShowApply;
                 _apply.IsEnabled = m.ApplyCommand.CanExecute(null);
+                _working.IsVisible = m.IsWorking;
             }
             finally
             {

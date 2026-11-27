@@ -1,6 +1,6 @@
 # P20-22 - WinUI: the table designer name cell text is nearly invisible once edited (dark theme)
 
-Status: todo
+Status: done
 Depends on: P20-13
 
 ## Goal
@@ -15,7 +15,7 @@ Found by P20-13 on the published WinUI head (dark, French, SQLite): in `TableDes
 - The not built designer features; Avalonia.
 
 ## Tasks
-- [ ] Reproduce, fix, test, capture dark and light.
+- [x] Reproduce, fix, test, capture dark and light.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance with `Squill.Windows.slnx`; captures read.

@@ -254,6 +254,8 @@ public sealed partial class SidebarView : UserControl
             Add(UiText.Get("explorer.delete"), () => List.DeleteCommand.Execute(null));
             if (node.IsConnected)
             {
+                if (explorer.CanFilter(node))
+                    Add(UiText.Get("explorer.chooseShown"), () => ShowFilter(node, (FrameworkElement)sender));
                 Add(UiText.Get("explorer.compareSchemas"), () => _workspace.OpenSchemaCompareCommand.Execute(node.Profile?.Id));
                 var compare = (MenuFlyoutItem)menu.Items[^1];
                 compare.IsEnabled = _workspace.OpenSchemaCompareCommand.CanExecute(node.Profile?.Id);
@@ -276,7 +278,7 @@ public sealed partial class SidebarView : UserControl
         }
         else if (node is { Kind: ExplorerNodeKind.Database or ExplorerNodeKind.Schema, Session: not null })
         {
-            Add(UiText.Get("explorer.chooseTables"), () => explorer.ChooseTablesCommand.Execute(node));
+            Add(UiText.Get("explorer.chooseShown"), () => ShowFilter(node, (FrameworkElement)sender));
             if (node is { Kind: ExplorerNodeKind.Database, HiddenCount: > 0 })
                 Add(UiText.Get("explorer.showAllTables"), () => explorer.ShowAllTablesCommand.Execute(node));
             if (node.Kind == ExplorerNodeKind.Database)
@@ -299,6 +301,10 @@ public sealed partial class SidebarView : UserControl
             if (node.Table is not null)
                 Add(UiText.Get("explorer.hideTable"), () => explorer.HideTableCommand.Execute(node));
         }
+        else if (explorer.CanFilter(node))
+        {
+            Add(UiText.Get("explorer.chooseShown"), () => ShowFilter(node, (FrameworkElement)sender));
+        }
         else
         {
             return;
@@ -308,5 +314,17 @@ public sealed partial class SidebarView : UserControl
         else
             menu.ShowAt((FrameworkElement)sender);
         e.Handled = true;
+    }
+
+    private void OnBadgeClicked(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: ExplorerNode node } badge)
+            ShowFilter(node, badge);
+    }
+
+    private void ShowFilter(ExplorerNode node, FrameworkElement anchor)
+    {
+        if (_workspace?.Explorer.CreateFilter(node) is { } vm)
+            ExplorerFilterMenu.Show(anchor, vm);
     }
 }

@@ -34,12 +34,16 @@ public sealed partial class QueryTabView : UserControl
     private SessionTransaction? _transaction;
     private ResultViewState? _viewState;
     private readonly ColumnMenu _columnMenu = new();
+    private GridViewMemo? _viewMemo;
+    private bool _gridHadFocus;
 
     /// <summary>Creates the view.</summary>
     public QueryTabView()
     {
         InitializeComponent();
         Preview.OpenChanged += (_, open) => SyncPreviewColumn(open);
+        ResultGrid.BusyChanged += OnBusyChanged;
+        Preview.BusyChanged += OnBusyChanged;
         SyncPreviewColumn(false);
         Empty.Text = UiText.Get("results.empty");
         IsVisible = false;
@@ -109,7 +113,12 @@ public sealed partial class QueryTabView : UserControl
     {
         base.OnDataContextChanged(e);
         if (_tab is not null)
+        {
             _tab.PropertyChanged -= OnTabPropertyChanged;
+            _tab.ResultsReplacing -= OnResultsReplacing;
+            _tab.ResultsReplaced -= OnResultsReplaced;
+        }
+
         // A control has a single parent: release the previous editor before another tab shows its own.
         EditorHost.Child = null;
         _tab = DataContext as QueryTabViewModel;
@@ -117,6 +126,8 @@ public sealed partial class QueryTabView : UserControl
         if (_tab is not null)
         {
             _tab.PropertyChanged += OnTabPropertyChanged;
+            _tab.ResultsReplacing += OnResultsReplacing;
+            _tab.ResultsReplaced += OnResultsReplaced;
             EditorHost.Child = (_tab.Editor as AvaloniaSqlEditor)?.Control;
         }
         if (_transaction is not null)
@@ -126,7 +137,50 @@ public sealed partial class QueryTabView : UserControl
             _transaction.PropertyChanged += OnTransactionChanged;
         ShowResult();
         ShowPlanButtons();
+        ShowAutoRefresh();
         ShowTransaction();
+    }
+
+    // Keeps what the user arranged in the grid across a refresh: the view-model swaps the results between these two events.
+    private void OnResultsReplacing()
+    {
+        _columnMenu.Hide();
+        _viewMemo = _result?.Kind == ResultKind.Grid ? ResultGrid.Canvas.SaveView() : null;
+        _gridHadFocus = ResultGrid.Canvas.IsFocused;
+    }
+
+    private void OnResultsReplaced()
+    {
+        if (_viewMemo is { } memo && _result?.Kind == ResultKind.Grid && ResultGrid.DataSource?.Columns.Count == memo.ColumnCount)
+        {
+            ResultGrid.Canvas.RestoreView(memo);
+            if (_gridHadFocus)
+                ResultGrid.Canvas.Focus();
+        }
+
+        _viewMemo = null;
+    }
+
+    private void OnAutoRefreshClicked(object? sender, RoutedEventArgs e)
+    {
+        if (_tab is { } tab)
+            AutoRefreshMenu.Build(tab).ShowAt(AutoRefreshButton);
+    }
+
+    // The clock shows the interval next to the icon in the accent colour while auto-refresh is on.
+    private void ShowAutoRefresh()
+    {
+        var tab = _tab;
+        var label = tab?.AutoRefreshLabel ?? "";
+        AutoRefreshLabel.Text = label;
+        AutoRefreshLabel.IsVisible = label.Length > 0;
+        var brush = this.GetResourceObservable(label.Length > 0 ? "SquillAccentTextBrush" : "SquillFg2Brush");
+        AutoRefreshIcon.Bind(Shape.StrokeProperty, brush);
+        AutoRefreshLabel.Bind(TextBlock.ForegroundProperty, brush);
+        AutoRefreshButton.IsEnabled = tab is not null && (tab.CanRefresh || tab.AutoRefreshInterval is not null);
+        ToolTip.SetTip(AutoRefreshButton, tab?.AutoRefreshToolTip);
+        global::Avalonia.Automation.AutomationProperties.SetName(AutoRefreshButton, (UiText.Get("query.autoRefresh.menu") + " " + label).TrimEnd());
+        LayoutToolbar();
     }
 
     private void OnTransactionChanged(object? sender, PropertyChangedEventArgs e) => ShowTransaction();
@@ -185,10 +239,12 @@ public sealed partial class QueryTabView : UserControl
             ShowResult();
         else if (e.PropertyName == nameof(QueryTabViewModel.IsParametersPanelOpen) && _tab?.IsParametersPanelOpen == true)
             Dispatcher.UIThread.Post(FocusFirstEmptyParameter, DispatcherPriority.Loaded);
-        else if (e.PropertyName == nameof(QueryTabViewModel.IsRunning) && _tab?.IsRunning == true)
+        else if (e.PropertyName == nameof(QueryTabViewModel.IsRunning) && _tab?.IsRunning == true && !_tab.IsRefreshing)
             (_tab.Editor as AvaloniaSqlEditor)?.HideSuggest();
         else if (e.PropertyName is nameof(QueryTabViewModel.CanExplain) or nameof(QueryTabViewModel.CanAnalyze) or nameof(QueryTabViewModel.ExplainDisabledReason) or nameof(QueryTabViewModel.AnalyzeDisabledReason))
             ShowPlanButtons();
+        else if (e.PropertyName is nameof(QueryTabViewModel.AutoRefreshInterval) or nameof(QueryTabViewModel.AutoRefreshLabel) or nameof(QueryTabViewModel.AutoRefreshToolTip) or nameof(QueryTabViewModel.AutoRefreshPausedReason) or nameof(QueryTabViewModel.CanRefresh))
+            ShowAutoRefresh();
     }
 
     private void FocusFirstEmptyParameter()
@@ -399,6 +455,18 @@ public sealed partial class QueryTabView : UserControl
     }
 
     // A closed pane gives its whole column back (the width the user dragged stays in Width, only the limits change).
+    private void OnBusyChanged(object? sender, bool busy)
+    {
+        if (busy)
+        {
+            Busy.Show();
+        }
+        else
+        {
+            Busy.Hide();
+        }
+    }
+
     private void SyncPreviewColumn(bool open)
     {
         PreviewSplitter.IsVisible = open;

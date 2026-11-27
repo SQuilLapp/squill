@@ -405,6 +405,20 @@ public sealed class WorkspaceViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task CloseTab_StopsItsAutoRefresh()
+    {
+        await ConnectAsync();
+        await _workspace.OpenTableCommand.ExecuteAsync(Users);
+        var tab = _workspace.ActiveTab!;
+        tab.SetAutoRefreshCommand.Execute(TimeSpan.FromSeconds(5));
+        Assert.NotNull(tab.AutoRefreshInterval);
+
+        await _workspace.CloseTabCommand.ExecuteAsync(tab);
+
+        Assert.Null(tab.AutoRefreshInterval);
+    }
+
+    [Fact]
     public async Task OpenTable_CreatesTabAndRunsSelectTop()
     {
         await ConnectAsync();

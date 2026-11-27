@@ -39,4 +39,27 @@ public partial class ThemeLookupScanTests
 
         Assert.True(offenders.Count == 0, string.Join(Environment.NewLine, offenders));
     }
+
+    // shortcut: text scan, it does not prove the repaint covers every brush; upgrade to an analyzer if it misses one.
+    [Fact]
+    public void Element_less_token_brushes_are_repainted()
+    {
+        var root = AppContext.BaseDirectory;
+        while (root is not null && !File.Exists(Path.Combine(root, "Squill.slnx")))
+            root = Path.GetDirectoryName(root);
+        Assert.NotNull(root);
+
+        var offenders = new List<string>();
+        var src = Path.Combine(root, "src", "Squill.App.WinUI");
+        foreach (var file in Directory.EnumerateFiles(src, "*.cs", SearchOption.AllDirectories))
+        {
+            if (file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") || file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}") || AllowedFiles.Contains(Path.GetFileName(file)))
+                continue;
+            var text = File.ReadAllText(file);
+            if ((text.Contains("Tokens.Brush(\"") || text.Contains("=> Tokens.Brush(key)")) && !text.Contains("ActualThemeChanged"))
+                offenders.Add(Path.GetRelativePath(src, file));
+        }
+
+        Assert.True(offenders.Count == 0, "Element-less Tokens.Brush without an ActualThemeChanged repaint: " + string.Join(", ", offenders));
+    }
 }

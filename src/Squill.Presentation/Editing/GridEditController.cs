@@ -1,3 +1,4 @@
+using Squill.Core;
 using Squill.Core.Editing;
 using Squill.Presentation.Localization;
 using Squill.Presentation.Results;
@@ -48,6 +49,12 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
     /// <summary>Gets the text typed so far.</summary>
     public string EditText { get; private set; } = "";
 
+    /// <summary>Gets whether the text holds a line break, so the one-line editor shows it read-only.</summary>
+    public bool IsMultiLine => IsEditing && !UsesDefault && !CellText.IsSingleLine(EditText);
+
+    /// <summary>Gets what the one-line editor box shows: the text, or its one-line preview when <see cref="IsMultiLine"/>.</summary>
+    public string EditDisplayText => IsMultiLine ? CellText.Preview(EditText) : EditText;
+
     /// <summary>Gets whether the text stands for the default value of the column, not for a typed value.</summary>
     public bool UsesDefault { get; private set; }
 
@@ -93,6 +100,26 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
         EditText = CellEditorKinds.Sanitize(EditorKind, text);
         Error = Validate(EditText);
         Raise();
+    }
+
+    /// <summary>Pastes a text into the value being edited, keeping it exact (line breaks included).</summary>
+    /// <param name="text">The clipboard text.</param>
+    /// <param name="selectionStart">Start of the replaced range in the box text; ignored while the value is multi-line or the default.</param>
+    /// <param name="selectionLength">Length of the replaced range; a negative length counts as 0.</param>
+    public void PasteText(string text, int selectionStart, int selectionLength)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        if (!IsEditing)
+            return;
+        if (IsMultiLine || UsesDefault)
+        {
+            SetText(text);
+            return;
+        }
+
+        var start = Math.Clamp(selectionStart, 0, EditText.Length);
+        var length = Math.Clamp(selectionLength, 0, EditText.Length - start);
+        SetText(string.Concat(EditText.AsSpan(0, start), text, EditText.AsSpan(start + length)));
     }
 
     /// <summary>Applies a choice of the popup: the default value, or a text; a boolean choice is recorded at once.</summary>
@@ -236,14 +263,34 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
     /// <summary>Drops the pending changes of the selected rows.</summary>
     public void RevertSelectedRows() => editor.RevertRows(SelectedRows());
 
-    /// <summary>Writes tab-separated text into the grid starting at the active cell.</summary>
+    /// <summary>Writes tab-separated text into the grid starting at the active cell, as one grid change.</summary>
     /// <param name="text">The clipboard text; <c>\N</c> is NULL.</param>
     /// <returns>The first error as <c>Row n, column name: message</c>, or <see langword="null"/>; cells before it stay set.</returns>
     public string? Paste(string text)
     {
         ArgumentNullException.ThrowIfNull(text);
+        var plan = PlanPaste(text);
+        return Apply(plan, ParseAll(plan));
+    }
+
+    /// <summary>Same as <see cref="Paste"/>, but the cell values are parsed on a thread-pool thread so a long text does not block the UI.</summary>
+    /// <param name="text">The clipboard text; <c>\N</c> is NULL.</param>
+    /// <param name="cancellationToken">Abandons the parse; nothing is written then.</param>
+    /// <returns>The first error as <c>Row n, column name: message</c>, or <see langword="null"/>; cells before it stay set.</returns>
+    public async Task<string?> PasteAsync(string text, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        var plan = PlanPaste(text);
+        var parsed = await Task.Run(() => ParseAll(plan, cancellationToken), cancellationToken).ConfigureAwait(true);
+        return Apply(plan, parsed);
+    }
+
+    // Maps the lines and tabs to target cells on the caller's thread; the later steps only read this plan.
+    private List<(long Row, int Column, ColumnInfo Info, string? Text)> PlanPaste(string text)
+    {
+        var plan = new List<(long, int, ColumnInfo, string?)>();
         if (!selection.HasSelection)
-            return null;
+            return plan;
         var grid = editor.Grid;
         var lines = text.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
         var count = lines[^1].Length == 0 ? lines.Length - 1 : lines.Length;
@@ -258,15 +305,40 @@ public sealed class GridEditController(ResultEditorViewModel editor, GridSelecti
                 var column = selection.ActiveColumn + j;
                 if (column >= grid.Columns.Count)
                     break;
-                if (!IsColumnEditable(column))
-                    continue;
-                var error = editor.TrySetCell(row, column, cells[j] == "\\N" ? null : cells[j]);
-                if (error is not null)
-                    return UiText.Format("results.pasteIssue", row + 1, grid.Columns[column].Name, error);
+                if (IsColumnEditable(column))
+                    plan.Add((row, column, grid.Columns[column], cells[j] == "\\N" ? null : cells[j]));
             }
         }
 
-        return null;
+        return plan;
+    }
+
+    // Pure: parses the planned cells up to the first error, without touching the grid.
+    private static (List<(long Row, int Column, object? Value)> Cells, int ErrorIndex, string? Error) ParseAll(
+        List<(long Row, int Column, ColumnInfo Info, string? Text)> plan, CancellationToken cancellationToken = default)
+    {
+        var cells = new List<(long, int, object?)>(plan.Count);
+        for (var i = 0; i < plan.Count; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!CellValueParser.TryParse(plan[i].Text, plan[i].Info, out var value, out var error))
+                return (cells, i, error);
+            cells.Add((plan[i].Row, plan[i].Column, value));
+        }
+
+        return (cells, -1, null);
+    }
+
+    private string? Apply(
+        List<(long Row, int Column, ColumnInfo Info, string? Text)> plan,
+        (List<(long Row, int Column, object? Value)> Cells, int ErrorIndex, string? Error) parsed)
+    {
+        var refused = editor.TrySetCells(parsed.Cells);
+        var index = refused?.Index ?? parsed.ErrorIndex;
+        if (index < 0)
+            return null;
+        var cell = plan[index];
+        return UiText.Format("results.pasteIssue", cell.Row + 1, cell.Info.Name, refused?.Error ?? parsed.Error);
     }
 
     /// <summary>Gets the state of a row.</summary>

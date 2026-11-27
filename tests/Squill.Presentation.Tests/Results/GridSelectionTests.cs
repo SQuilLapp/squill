@@ -80,4 +80,38 @@ public sealed class GridSelectionTests
         s.SelectColumn(1, true);
         Assert.Equal("a\tb\n1\tx\n2\t\n3\tz\n", s.ToTsv(Data));
     }
+
+    [Fact]
+    public void CopyFrom_ClampsToNewSize()
+    {
+        var old = new GridSelection();
+        old.SelectCell(2, 1, false);
+        old.SelectCell(8, 5, true);
+        var s = new GridSelection();
+        s.CopyFrom(old, 5, 3);
+        Assert.Equal((4L, 2), (s.ActiveRow, s.ActiveColumn));
+        Assert.True(s.Contains(2, 1, 5) && s.Contains(4, 2, 5));
+    }
+
+    [Fact]
+    public void CopyFrom_AnchorPastEnd_Clears()
+    {
+        var old = new GridSelection();
+        old.SelectCell(8, 1, false);
+        var s = new GridSelection();
+        s.SelectCell(0, 0, false);
+        s.CopyFrom(old, 5, 3);
+        Assert.False(s.HasSelection);
+    }
+
+    [Fact]
+    public void CopyFrom_WholeColumns_Kept()
+    {
+        var old = new GridSelection();
+        old.SelectColumn(0, false);
+        old.SelectColumn(1, true);
+        var s = new GridSelection();
+        s.CopyFrom(old, 4, 3);
+        Assert.True(s.WholeColumns && s.ContainsColumn(1));
+    }
 }
