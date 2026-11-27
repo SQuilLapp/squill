@@ -18,11 +18,11 @@ public sealed class InformixContainerTests(InformixFixture server) : IClassFixtu
 
         Assert.Equal(2, reader.FieldCount);
         Assert.Equal("tabname", reader.ColumnName(0));
-        var names = new List<string?>();
+        var names = new List<object?>();
         while (await reader.ReadAsync(TestContext.Current.CancellationToken))
         {
-            names.Add(reader.GetText(0));
-            Assert.Equal("x", reader.GetText(1));
+            names.Add(reader.GetValue(0));
+            Assert.Equal("x", reader.GetValue(1));
         }
 
         Assert.Equal(["systables", "syscolumns", "sysindices"], names);
@@ -37,8 +37,8 @@ public sealed class InformixContainerTests(InformixFixture server) : IClassFixtu
         using var reader = await connection.ExecuteAsync($"select first 1 cast(null as varchar(5)) as n, cast('{long1500}' as lvarchar(2000)) as l from systables", TestContext.Current.CancellationToken);
 
         Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
-        Assert.Null(reader.GetText(0));
-        Assert.Equal(long1500, reader.GetText(1));
+        Assert.Null(reader.GetValue(0));
+        Assert.Equal(long1500, reader.GetValue(1));
     }
 
     [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]

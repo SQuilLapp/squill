@@ -2,23 +2,25 @@ using System.Text;
 
 namespace Squill.Data.Informix;
 
-/// <summary>A forward-only reader over the result sets of one statement; every value is read as text (null for SQL NULL).</summary>
-internal sealed class OdbcTextReader : IDisposable
+/// <summary>A forward-only reader over the result sets of one statement; values are converted by their ODBC type (null for SQL NULL).</summary>
+internal sealed class OdbcReader : IDisposable
 {
     internal const short NoData = 100;
     private const int NullData = -1, NoTotal = -4, BufferChars = 1024;
 
     private readonly IOdbcApi _api;
     private readonly nint _statement;
+    private readonly CancelGate _gate;
     private string[] _names = [];
     private short[] _types = [];
-    private string?[] _row = [];
+    private object?[] _row = [];
     private bool _disposed;
 
-    internal OdbcTextReader(IOdbcApi api, nint statement)
+    internal OdbcReader(IOdbcApi api, nint statement, CancelGate gate)
     {
         _api = api;
         _statement = statement;
+        _gate = gate;
     }
 
     /// <summary>Gets the number of columns of the current result set, 0 for a statement without one.</summary>
@@ -37,17 +39,17 @@ internal sealed class OdbcTextReader : IDisposable
     /// <returns>The code from <c>SQLDescribeCol</c>.</returns>
     public short ColumnSqlType(int index) => _types[index];
 
-    /// <summary>Gets the text of a column of the current row.</summary>
+    /// <summary>Gets a value of the current row, read once when the row was fetched.</summary>
     /// <param name="index">The 0-based column index.</param>
-    /// <returns>The text, or <see langword="null"/> for SQL NULL.</returns>
-    public string? GetText(int index) => _row[index];
+    /// <returns>An <see cref="int"/>, <see cref="short"/>, <see cref="long"/>, <see cref="decimal"/>, <see cref="double"/>, <see cref="DateTime"/>, <see cref="string"/> or <c>byte[]</c> by the column type, the text itself when it does not fit the type, or <see langword="null"/> for SQL NULL.</returns>
+    public object? GetValue(int index) => _row[index];
 
     /// <summary>Moves to the next row and reads all its columns.</summary>
-    /// <param name="cancellationToken">Cancels before the call starts.</param>
+    /// <param name="cancellationToken">Cancels before the call starts, or asks the driver to cancel the running fetch (which then fails with an <see cref="OdbcException"/>).</param>
     /// <returns><see langword="false"/> after the last row.</returns>
-    /// <exception cref="OdbcException">The fetch failed.</exception>
+    /// <exception cref="OdbcException">The fetch failed or was cancelled.</exception>
     public Task<bool> ReadAsync(CancellationToken cancellationToken = default) =>
-        Task.Run(() =>
+        Task.Run(() => _gate.Run(() =>
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             if (_names.Length == 0)
@@ -57,9 +59,9 @@ internal sealed class OdbcTextReader : IDisposable
                 return false;
             OdbcConnection.Check(_api, rc, OdbcConnection.HandleStmt, _statement);
             for (var i = 0; i < _row.Length; i++)
-                _row[i] = ReadText((ushort)(i + 1));
+                _row[i] = OdbcValue.IsBinary(_types[i]) ? ReadBytes((ushort)(i + 1)) : OdbcValue.Convert(_types[i], ReadText((ushort)(i + 1)));
             return true;
-        }, cancellationToken);
+        }, cancellationToken), cancellationToken);
 
     /// <summary>Moves to the next result set, discarding what is left of the current one.</summary>
     /// <param name="cancellationToken">Cancels before the call starts.</param>
@@ -100,7 +102,7 @@ internal sealed class OdbcTextReader : IDisposable
         OdbcConnection.Check(_api, _api.NumResultCols(_statement, out var count), OdbcConnection.HandleStmt, _statement);
         _names = new string[count];
         _types = new short[count];
-        _row = new string?[count];
+        _row = new object?[count];
         for (var i = 0; i < count; i++)
             OdbcConnection.Check(_api, _api.DescribeCol(_statement, (ushort)(i + 1), out _names[i], out _types[i]), OdbcConnection.HandleStmt, _statement);
         RowsAffected = _api.RowCount(_statement, out var rows) is 0 or 1 ? rows : -1;
@@ -128,6 +130,30 @@ internal sealed class OdbcTextReader : IDisposable
             (text ??= new StringBuilder()).Append(chunk);
             if (!truncated)
                 return text.ToString();
+        }
+    }
+
+    // SQLGetData with SQL_C_BINARY: the indicator is the number of bytes still to come (-1 NULL, -4 unknown); there is no terminator.
+    private byte[]? ReadBytes(ushort column)
+    {
+        var buffer = new byte[BufferChars * 4];
+        MemoryStream? bytes = null;
+        while (true)
+        {
+            var rc = _api.GetBinary(_statement, column, buffer, out var indicator);
+            if (rc == NoData)
+                return bytes?.ToArray() ?? [];
+            OdbcConnection.Check(_api, rc, OdbcConnection.HandleStmt, _statement);
+            var length = (int)indicator;
+            if (length == NullData)
+                return bytes?.ToArray();
+            var truncated = length == NoTotal || length > buffer.Length;
+            var take = truncated ? buffer.Length : length;
+            if (!truncated && bytes is null)
+                return buffer.AsSpan(0, take).ToArray();
+            (bytes ??= new MemoryStream()).Write(buffer, 0, take);
+            if (!truncated)
+                return bytes.ToArray();
         }
     }
 }

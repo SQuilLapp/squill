@@ -10,7 +10,7 @@ Exists today: P21-103 ... P21-105 (layer, connection, schema reader, tests). Pat
 
 ## Design decisions (final)
 - `DatabaseDialect.Informix` in Core; the Informix provider and descriptor registered in both heads' composition roots; profile fields host, port (default 9089, the DRDA listener `drsoctcp`), database, user (no server name needed over DRDA). A server without a DRDA listener gives a hint text through `UiText` (both catalogs).
-- Connection editor tile and engine icon in both heads (copy the Oracle tile; small). The `ParameterScanner` Informix mode (P21-104) is wired in the query tab.
+- Connection editor tile and engine icon in both heads (copy the Oracle tile; small). `DatabaseDialect.Informix` needs a tokenizer and a `ParameterScanner` case that recognise `:name` (copy the Oracle one) and `TransactionSql` texts (`BEGIN`, `COMMIT`, `ROLLBACK`; the connection of P21-104 runs them on the ODBC connection); the `@name` to `?` rewrite already lives in `Squill.Data.Informix` (P21-104 deviation).
 - Packaging: the app ships the `clidriver` folder (from the `Net.IBM.Data.Db2` package files, only the redistributable files named in its `license` text, notices kept, IBM licence text in the installer; about 125 MB on disk, 46 MB downloaded). OWNER DECISION 2026-11-27: shipping `clidriver` is accepted; writing to the Windows registry (`db2cli install -setup`) and any global install are NOT approved. The installer change is made in the smallest way the existing installer allows; if it cannot carry it without a larger change, stop and propose a card.
 - Not built here (list as `P21-107+` proposals in the Done notes): designer DDL, grid editing, execution plans, transactions screen, terminal (`dbaccess`).
 

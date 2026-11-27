@@ -5,5 +5,6 @@
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Squill.Data.Informix.Tests" />
+    <ProjectReference Include="..\Squill.Data\Squill.Data.csproj" />
   </ItemGroup>
 </Project>

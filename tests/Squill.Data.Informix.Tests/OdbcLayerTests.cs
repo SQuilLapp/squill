@@ -6,11 +6,11 @@ public sealed class OdbcLayerTests
 {
     private static FakeResult Result(string[] columns, params string?[][] rows) => new(columns, [.. rows]);
 
-    private static async Task<List<string?[]>> ReadAllAsync(OdbcTextReader reader)
+    private static async Task<List<object?[]>> ReadAllAsync(OdbcReader reader)
     {
-        var rows = new List<string?[]>();
+        var rows = new List<object?[]>();
         while (await reader.ReadAsync(TestContext.Current.CancellationToken))
-            rows.Add(Enumerable.Range(0, reader.FieldCount).Select(reader.GetText).ToArray());
+            rows.Add(Enumerable.Range(0, reader.FieldCount).Select(reader.GetValue).ToArray());
         return rows;
     }
 

@@ -4,7 +4,7 @@ namespace Squill.Data.Informix;
 internal sealed unsafe class OdbcApi : IOdbcApi
 {
     private const int SqlCWChar = -8;
-    private const short SqlNts = -3;
+    private const short SqlNts = -3, SqlCBinary = -2, SqlParamInput = 1, SqlCommit = 0, SqlRollback = 1;
 
     /// <summary>Gets the shared instance.</summary>
     public static OdbcApi Instance { get; } = new();
@@ -61,6 +61,37 @@ internal sealed unsafe class OdbcApi : IOdbcApi
         short rc;
         fixed (char* p = buffer)
             rc = OdbcNative.SQLGetData(statement, column, SqlCWChar, p, buffer.Length * sizeof(char), &length);
+        indicator = length;
+        return rc;
+    }
+
+    /// <inheritdoc/>
+    public short Prepare(nint statement, string sql) => OdbcNative.SQLPrepareW(statement, sql, SqlNts);
+
+    /// <inheritdoc/>
+    public short BindParameter(nint statement, ushort number, OdbcParameter parameter) =>
+        OdbcNative.SQLBindParameter(statement, number, SqlParamInput, parameter.CType, parameter.SqlType, (nuint)parameter.ColumnSize, (short)parameter.DecimalDigits,
+            parameter.DataPointer, parameter.Data.Length, parameter.IndicatorPointer);
+
+    /// <inheritdoc/>
+    public short Execute(nint statement) => OdbcNative.SQLExecute(statement);
+
+    /// <inheritdoc/>
+    public short Cancel(nint statement) => OdbcNative.SQLCancel(statement);
+
+    /// <inheritdoc/>
+    public short SetConnectAttr(nint connection, int attribute, nint value) => OdbcNative.SQLSetConnectAttrW(connection, attribute, value, 0);
+
+    /// <inheritdoc/>
+    public short EndTran(nint connection, bool commit) => OdbcNative.SQLEndTran(OdbcConnection.HandleDbc, connection, commit ? SqlCommit : SqlRollback);
+
+    /// <inheritdoc/>
+    public short GetBinary(nint statement, ushort column, Span<byte> buffer, out nint indicator)
+    {
+        nint length = 0;
+        short rc;
+        fixed (byte* p = buffer)
+            rc = OdbcNative.SQLGetData(statement, column, SqlCBinary, (char*)p, buffer.Length, &length);
         indicator = length;
         return rc;
     }

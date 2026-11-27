@@ -44,7 +44,13 @@ public sealed class InformixFixture : IAsyncLifetime
 
     public int Port => _container!.GetMappedPublicPort(9089);
 
-    public string ConnectionString(string password = Password) => OdbcConnectionString.Build(Host, Port, Database, UserName, password);
+    /// <summary>Gets a database created with a transaction log, for the transaction tests.</summary>
+    public const string LoggedDatabase = "sqlog";
+
+    /// <summary>Gets a database created without a log, where transactions are not supported.</summary>
+    public const string UnloggedDatabase = "sqnolog";
+
+    public string ConnectionString(string password = Password, string database = Database) => OdbcConnectionString.Build(Host, Port, database, UserName, password);
 
     public async ValueTask InitializeAsync()
     {
@@ -65,6 +71,8 @@ public sealed class InformixFixture : IAsyncLifetime
             try
             {
                 using var connection = await OdbcConnection.OpenAsync(ConnectionString(), TestContext.Current.CancellationToken);
+                (await connection.ExecuteAsync("create database " + LoggedDatabase + " with log", TestContext.Current.CancellationToken)).Dispose();
+                (await connection.ExecuteAsync("create database " + UnloggedDatabase, TestContext.Current.CancellationToken)).Dispose();
                 return;
             }
             catch (OdbcException) when (DateTime.UtcNow < deadline)

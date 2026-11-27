@@ -4,7 +4,7 @@ namespace Squill.Data.Informix;
 internal sealed class OdbcConnection : IDisposable
 {
     internal const short HandleEnv = 1, HandleDbc = 2, HandleStmt = 3;
-    private const int SqlAttrOdbcVersion = 200, SqlOv3 = 3;
+    private const int SqlAttrOdbcVersion = 200, SqlOv3 = 3, SqlAttrAutocommit = 102, SqlAutocommitOff = 0, SqlAutocommitOn = 1;
 
     private readonly IOdbcApi _api;
     private nint _env;
@@ -49,22 +49,35 @@ internal sealed class OdbcConnection : IDisposable
             }
         }, cancellationToken);
 
+    /// <summary>Gets a value telling whether a manual transaction is open (autocommit is off).</summary>
+    public bool InTransaction { get; private set; }
+
     /// <summary>Executes a statement and positions the reader on its first result set.</summary>
     /// <param name="sql">The SQL text.</param>
-    /// <param name="cancellationToken">Cancels before the call starts.</param>
+    /// <param name="cancellationToken">Cancels before the call starts, or asks the driver to cancel the running statement (which then fails with an <see cref="OdbcException"/>); the connection stays usable.</param>
     /// <returns>The reader; dispose it before running the next statement.</returns>
-    /// <exception cref="OdbcException">The statement failed.</exception>
-    public Task<OdbcTextReader> ExecuteAsync(string sql, CancellationToken cancellationToken = default) =>
+    /// <exception cref="OdbcException">The statement failed or was cancelled.</exception>
+    public Task<OdbcReader> ExecuteAsync(string sql, CancellationToken cancellationToken = default) =>
+        ExecuteAsync(sql, [], cancellationToken);
+
+    /// <summary>Executes a statement with positional parameters.</summary>
+    /// <param name="sql">The SQL text with one <c>?</c> per value.</param>
+    /// <param name="parameters">The values in marker order, see <see cref="OdbcParameter.From"/>; empty runs the text directly.</param>
+    /// <param name="cancellationToken">Cancels as for <see cref="ExecuteAsync(string, CancellationToken)"/>.</param>
+    /// <returns>The reader; dispose it before running the next statement.</returns>
+    /// <exception cref="OdbcException">The statement failed or was cancelled.</exception>
+    public Task<OdbcReader> ExecuteAsync(string sql, IReadOnlyList<object?> parameters, CancellationToken cancellationToken = default) =>
         Task.Run(() =>
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             Check(_api, _api.AllocHandle(HandleStmt, _dbc, out var statement), HandleDbc, _dbc);
+            var gate = new CancelGate(_api, statement);
             try
             {
-                var rc = _api.ExecDirect(statement, sql);
-                if (rc != OdbcTextReader.NoData) // a searched update that touched no row
+                var rc = gate.Run(() => Run(statement, sql, parameters), cancellationToken);
+                if (rc != OdbcReader.NoData) // a searched update that touched no row
                     Check(_api, rc, HandleStmt, statement);
-                var reader = new OdbcTextReader(_api, statement);
+                var reader = new OdbcReader(_api, statement, gate);
                 reader.LoadResult();
                 return reader;
             }
@@ -75,6 +88,60 @@ internal sealed class OdbcConnection : IDisposable
             }
         }, cancellationToken);
 
+    /// <summary>Turns autocommit off: the next statements belong to a transaction until <see cref="CommitAsync"/> or <see cref="RollbackAsync"/>.</summary>
+    /// <param name="cancellationToken">Cancels before the call starts.</param>
+    /// <returns>A task that completes when autocommit is off; nothing happens when a transaction is already open.</returns>
+    /// <exception cref="OdbcException">The driver refused (for example a database without a transaction log).</exception>
+    public Task BeginAsync(CancellationToken cancellationToken = default) =>
+        Task.Run(() =>
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (InTransaction)
+                return;
+            Check(_api, _api.SetConnectAttr(_dbc, SqlAttrAutocommit, SqlAutocommitOff), HandleDbc, _dbc);
+            InTransaction = true;
+        }, cancellationToken);
+
+    /// <summary>Commits the open transaction and turns autocommit back on.</summary>
+    /// <param name="cancellationToken">Cancels before the call starts.</param>
+    /// <returns>A task that completes after the commit; nothing happens without an open transaction.</returns>
+    /// <exception cref="OdbcException">The commit failed; the transaction stays open.</exception>
+    public Task CommitAsync(CancellationToken cancellationToken = default) => EndAsync(true, cancellationToken);
+
+    /// <summary>Rolls the open transaction back and turns autocommit back on.</summary>
+    /// <param name="cancellationToken">Cancels before the call starts.</param>
+    /// <returns>A task that completes after the rollback; nothing happens without an open transaction.</returns>
+    /// <exception cref="OdbcException">The rollback failed; the transaction stays open.</exception>
+    public Task RollbackAsync(CancellationToken cancellationToken = default) => EndAsync(false, cancellationToken);
+
+    private Task EndAsync(bool commit, CancellationToken cancellationToken) =>
+        Task.Run(() =>
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (!InTransaction)
+                return;
+            Check(_api, _api.EndTran(_dbc, commit), HandleDbc, _dbc);
+            InTransaction = false;
+            Check(_api, _api.SetConnectAttr(_dbc, SqlAttrAutocommit, SqlAutocommitOn), HandleDbc, _dbc);
+        }, cancellationToken);
+
+    private short Run(nint statement, string sql, IReadOnlyList<object?> parameters)
+    {
+        if (parameters.Count == 0)
+            return _api.ExecDirect(statement, sql);
+        Check(_api, _api.Prepare(statement, sql), HandleStmt, statement);
+        var bound = new OdbcParameter[parameters.Count]; // kept alive (and pinned) until SQLExecute returns
+        for (var i = 0; i < bound.Length; i++)
+        {
+            bound[i] = OdbcParameter.From(parameters[i]);
+            Check(_api, _api.BindParameter(statement, (ushort)(i + 1), bound[i]), HandleStmt, statement);
+        }
+
+        var rc = _api.Execute(statement);
+        GC.KeepAlive(bound);
+        return rc;
+    }
+
     /// <summary>Disconnects and frees the connection and environment handles, in that order.</summary>
     public void Dispose()
     {
@@ -82,7 +149,12 @@ internal sealed class OdbcConnection : IDisposable
             return;
         _disposed = true;
         if (_connected)
+        {
+            if (InTransaction)
+                _api.EndTran(_dbc, false); // SQLDisconnect fails with an open transaction
             _api.Disconnect(_dbc);
+        }
+
         if (_dbc != 0)
             _api.FreeHandle(HandleDbc, _dbc);
         if (_env != 0)

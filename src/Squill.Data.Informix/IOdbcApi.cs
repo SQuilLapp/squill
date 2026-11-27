@@ -83,6 +83,50 @@ internal interface IOdbcApi
     /// <returns>The ODBC return code.</returns>
     short CloseCursor(nint statement);
 
+    /// <summary>Prepares a statement with <c>?</c> markers (<c>SQLPrepareW</c>).</summary>
+    /// <param name="statement">The statement handle.</param>
+    /// <param name="sql">The SQL text.</param>
+    /// <returns>The ODBC return code.</returns>
+    short Prepare(nint statement, string sql);
+
+    /// <summary>Binds one input parameter to memory that stays pinned until the statement has run (<c>SQLBindParameter</c>).</summary>
+    /// <param name="statement">The statement handle.</param>
+    /// <param name="number">The 1-based marker number.</param>
+    /// <param name="parameter">The value, its ODBC types and its pinned buffers.</param>
+    /// <returns>The ODBC return code.</returns>
+    short BindParameter(nint statement, ushort number, OdbcParameter parameter);
+
+    /// <summary>Runs a prepared statement (<c>SQLExecute</c>).</summary>
+    /// <param name="statement">The statement handle.</param>
+    /// <returns>The ODBC return code; 100 when a searched update touched no row.</returns>
+    short Execute(nint statement);
+
+    /// <summary>Asks the driver to stop the statement that another thread is running (<c>SQLCancel</c>); the only call allowed concurrently on a handle.</summary>
+    /// <param name="statement">The statement handle.</param>
+    /// <returns>The ODBC return code.</returns>
+    short Cancel(nint statement);
+
+    /// <summary>Sets an integer connection attribute (<c>SQLSetConnectAttrW</c>).</summary>
+    /// <param name="connection">The connection handle.</param>
+    /// <param name="attribute">The attribute id.</param>
+    /// <param name="value">The integer value.</param>
+    /// <returns>The ODBC return code.</returns>
+    short SetConnectAttr(nint connection, int attribute, nint value);
+
+    /// <summary>Commits or rolls back the open transaction (<c>SQLEndTran</c>).</summary>
+    /// <param name="connection">The connection handle.</param>
+    /// <param name="commit"><see langword="true"/> to commit, <see langword="false"/> to roll back.</param>
+    /// <returns>The ODBC return code.</returns>
+    short EndTran(nint connection, bool commit);
+
+    /// <summary>Reads a column of the current row as raw bytes (<c>SQLGetData</c> with <c>SQL_C_BINARY</c>).</summary>
+    /// <param name="statement">The statement handle.</param>
+    /// <param name="column">The 1-based column number.</param>
+    /// <param name="buffer">Receives the bytes (no terminator).</param>
+    /// <param name="indicator">The number of bytes still to come, -1 for NULL, -4 when unknown; read it as <see cref="int"/>.</param>
+    /// <returns>The ODBC return code; 1 with a full buffer means more data follows, 100 means the value was already read.</returns>
+    short GetBinary(nint statement, ushort column, Span<byte> buffer, out nint indicator);
+
     /// <summary>Reads one diagnostic record (<c>SQLGetDiagRecW</c>).</summary>
     /// <param name="handleType">The handle type.</param>
     /// <param name="handle">The handle.</param>

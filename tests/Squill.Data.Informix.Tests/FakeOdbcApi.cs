@@ -1,10 +1,15 @@
 namespace Squill.Data.Informix.Tests;
 
 /// <summary>One scripted result set of <see cref="FakeOdbcApi"/>; a null cell is SQL NULL.</summary>
-public sealed record FakeResult(string[] Columns, List<string?[]> Rows, int RowCount = -1);
+/// <param name="Columns">The column names.</param>
+/// <param name="Rows">The text of each cell; a binary column holds <c>null</c> here and its bytes in <paramref name="Blobs"/>.</param>
+/// <param name="RowCount">What <c>SQLRowCount</c> reports.</param>
+/// <param name="Types">The ODBC type code of each column; 12 when omitted.</param>
+/// <param name="Blobs">The bytes of binary cells by (row, column).</param>
+public sealed record FakeResult(string[] Columns, List<string?[]> Rows, int RowCount = -1, short[]? Types = null, Dictionary<(int Row, int Column), byte[]>? Blobs = null);
 
 /// <summary>A scripted ODBC driver that follows the <c>SQLGetData</c> chunking rules and records every handle call.</summary>
-public sealed class FakeOdbcApi : IOdbcApi
+internal sealed class FakeOdbcApi : IOdbcApi
 {
     private readonly Dictionary<(nint, ushort), int> _offsets = [];
     private nint _next = 100;
@@ -12,6 +17,8 @@ public sealed class FakeOdbcApi : IOdbcApi
     private int _result;
 
     public List<string> Log { get; } = [];
+
+    public List<string> Statements { get; } = [];
 
     public List<FakeResult> Results { get; } = [];
 
@@ -24,6 +31,19 @@ public sealed class FakeOdbcApi : IOdbcApi
     public short ExecReturn { get; set; }
 
     public bool ReportNoTotal { get; set; }
+
+    /// <summary>Gets the parameters bound by the last statement, in marker order.</summary>
+    public List<OdbcParameter> Bound { get; } = [];
+
+    /// <summary>Gets or sets a gate that makes the statement block until <see cref="Cancel"/> is called, then fail like a cancelled one.</summary>
+    public ManualResetEventSlim? BlockUntilCancelled { get; set; }
+
+    /// <summary>Gets or sets the return code of <see cref="EndTran"/> and of the autocommit switch.</summary>
+    public short TransactionReturn { get; set; }
+
+    public ManualResetEventSlim Started { get; } = new();
+
+    public int CancelCount { get; private set; }
 
     private FakeResult Current => Results[_result];
 
@@ -59,9 +79,74 @@ public sealed class FakeOdbcApi : IOdbcApi
 
     public short ExecDirect(nint statement, string sql)
     {
+        Statements.Add(sql);
+        Bound.Clear();
+        return Exec();
+    }
+
+    public short Prepare(nint statement, string sql)
+    {
+        Statements.Add("prepare " + sql);
+        Bound.Clear();
+        return 0;
+    }
+
+    public short BindParameter(nint statement, ushort number, OdbcParameter parameter)
+    {
+        Bound.Add(parameter);
+        return 0;
+    }
+
+    public short Execute(nint statement) => Exec();
+
+    private short Exec()
+    {
         _result = 0;
         _row = -1;
+        if (BlockUntilCancelled is { } gate)
+        {
+            Started.Set();
+            gate.Wait(TimeSpan.FromSeconds(10));
+            Diagnostics.Add(("HY008", -952, "Operation cancelled."));
+            return -1;
+        }
+
         return FailAt == "Exec" ? (short)-1 : ExecReturn;
+    }
+
+    public short Cancel(nint statement)
+    {
+        CancelCount++;
+        Log.Add("cancel");
+        BlockUntilCancelled?.Set();
+        return 0;
+    }
+
+    public short SetConnectAttr(nint connection, int attribute, nint value)
+    {
+        Log.Add($"attr {attribute}={value}");
+        return TransactionReturn;
+    }
+
+    public short EndTran(nint connection, bool commit)
+    {
+        Log.Add(commit ? "commit" : "rollback");
+        return TransactionReturn;
+    }
+
+    public short GetBinary(nint statement, ushort column, Span<byte> buffer, out nint indicator)
+    {
+        indicator = 0;
+        var blob = Current.Blobs![(_row, column - 1)];
+        _offsets.TryGetValue((statement, column), out var offset);
+        if (offset > 0 && offset >= blob.Length)
+            return 100;
+        var left = blob.Length - offset;
+        var take = Math.Min(left, buffer.Length);
+        blob.AsSpan(offset, take).CopyTo(buffer);
+        _offsets[(statement, column)] = offset + take;
+        indicator = left;
+        return take < left ? (short)1 : (short)0;
     }
 
     public short NumResultCols(nint statement, out short count)
@@ -73,7 +158,7 @@ public sealed class FakeOdbcApi : IOdbcApi
     public short DescribeCol(nint statement, ushort column, out string name, out short sqlType)
     {
         name = Current.Columns[column - 1];
-        sqlType = 12;
+        sqlType = Current.Types?[column - 1] ?? 12;
         return 0;
     }
 
