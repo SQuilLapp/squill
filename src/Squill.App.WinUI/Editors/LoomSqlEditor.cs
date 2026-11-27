@@ -44,11 +44,16 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
     private const string MarkerOwner = "squill";
     private const int WindowPadding = 150;
     private const double ErrorIconSize = 14;
+    private const string UsageClass = "squill-usage";
+
+    // Decorations cost O(total) per change: a very common name in a huge script is capped.
+    private const int MaxUsageHighlights = 1000;
 
     private static readonly Dictionary<HighlightKind, EditorDecorationOptions> KindOptions = RegisterStyles();
 
     private readonly LoomControl _editor = new() { LanguageId = LanguageId, DocumentUri = "squill://query" };
     private readonly DecorationsCollection _highlight;
+    private readonly DecorationsCollection _usages;
     private readonly Grid _host = new();
     private readonly Canvas _icons = new();
     private IReadOnlyList<(int Line, string Message)> _errors = [];
@@ -64,6 +69,7 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
     public LoomSqlEditor()
     {
         _highlight = _editor.CreateDecorationsCollection();
+        _usages = _editor.CreateDecorationsCollection();
         _host.Children.Add(_editor);
         _host.Children.Add(_icons);
         _providers = new LoomSqlProviders(() => _dialect);
@@ -92,6 +98,49 @@ public sealed class LoomSqlEditor : ISqlEditor, IEditorControl
         };
         _editor.LayoutChanged += (_, _) => OnViewportChanged();
         _editor.SelectionChanged += (_, _) => CaretChanged?.Invoke(this, EventArgs.Empty);
+
+        // LoomEditor exposes no pointer-to-offset API: its own handler moves the caret to the click first, then the request reads the caret.
+        _editor.AddHandler(UIElement.PointerPressedEvent, new Microsoft.UI.Xaml.Input.PointerEventHandler(OnPointerPressed), true);
+    }
+
+    /// <summary>Raised after a Ctrl+click in the text, with the caret already on the clicked position.</summary>
+    public event EventHandler? DefinitionRequested;
+
+    private void OnPointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var ctrl = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(Windows.System.VirtualKey.Control).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+        if (ctrl && e.GetCurrentPoint(_editor).Properties.IsLeftButtonPressed)
+        {
+            _editor.DispatcherQueue.TryEnqueue(() => DefinitionRequested?.Invoke(this, EventArgs.Empty));
+        }
+    }
+
+    /// <inheritdoc />
+    public void SetHighlights(IReadOnlyList<TextRange> ranges)
+    {
+        var model = _editor.Model;
+        var length = model.GetValueLength(EndOfLinePreference.LF);
+        var options = UsageOptions;
+        _usages.Set(ranges
+            .Take(MaxUsageHighlights)
+            .Where(r => r.Start >= 0 && r.End <= length)
+            .Select(r => new EditorDecoration(new LoomRange(model.GetPositionAt(r.Start), model.GetPositionAt(r.End)), options))
+            .ToList());
+    }
+
+    // The accent-soft and accent-line tokens of SquillTokens.xaml (dark and light), as the editor wants one color per theme.
+    private static readonly EditorDecorationOptions UsageOptions = RegisterUsageStyle();
+
+    private static EditorDecorationOptions RegisterUsageStyle()
+    {
+        CustomDecorationStyles.Register(UsageClass, new CustomDecorationStyle
+        {
+            DarkBackground = new ThemeColor(0x29, 0x94, 0x88, 0xF5),
+            DarkBorder = new ThemeColor(0x80, 0x94, 0x88, 0xF5),
+            Background = new ThemeColor(0x1F, 0x5B, 0x4C, 0xD6),
+            Border = new ThemeColor(0x73, 0x5B, 0x4C, 0xD6),
+        });
+        return new EditorDecorationOptions { ClassName = UsageClass };
     }
 
     // The editor draws dark unless told otherwise; the effective theme of the element is the one the user chose (or the system one).

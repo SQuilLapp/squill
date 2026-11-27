@@ -31,6 +31,7 @@
     <Content Include="..\..\src\Squill.App.WinUI\Views\ExplorerFilterMenu.cs" Link="Xaml\ExplorerFilterMenu.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\AutoRefreshMenu.cs" Link="Xaml\AutoRefreshMenu.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\QueryTabView.cs" Link="Xaml\QueryTabView.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Squill.App.WinUI\Editors\LoomSqlEditor.cs" Link="Xaml\LoomSqlEditor.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\ResizeGrip.cs" Link="Xaml\ResizeGrip.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\BusyOverlay.cs" Link="Xaml\BusyOverlay.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Squill.App.WinUI\Views\CellPreviewPanel.cs" Link="Xaml\CellPreviewPanel.cs" CopyToOutputDirectory="PreserveNewest" />

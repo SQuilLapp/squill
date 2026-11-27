@@ -460,7 +460,7 @@ Depends on: <card ids, ranges allowed>
 | [P21-21](phase-21/P21-21-password-sources-ui.md) | Password sources in both heads (editor choice and the password prompt) | P21-20 | done |
 | [P21-22](phase-21/P21-22-sql-symbol-resolver.md) | Sql: symbol resolution for go to definition and find usages | none | done |
 | [P21-23](phase-21/P21-23-presentation-definition-and-usages.md) | Presentation: go to definition and find usages commands | P21-22 | done |
-| [P21-24](phase-21/P21-24-winui-definition-and-usages.md) | WinUI: F12, Ctrl+click and usage highlights in the LoomEditor | P21-23 | todo |
+| [P21-24](phase-21/P21-24-winui-definition-and-usages.md) | WinUI: F12, Ctrl+click and usage highlights in the LoomEditor | P21-23 | done |
 | [P21-25](phase-21/P21-25-avalonia-definition-and-usages.md) | Avalonia: F12, Ctrl+click and usage highlights | P21-23, P21-24 | todo |
 | [P21-26](phase-21/P21-26-sql-rename-plan.md) | Sql: rename plan for a table or a column in a script text | P21-22 | todo |
 | [P21-27](phase-21/P21-27-presentation-rename-refactoring.md) | Presentation: rename refactoring across open editors and snippets, with the DDL | P21-26 | todo |

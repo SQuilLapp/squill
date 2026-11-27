@@ -44,7 +44,20 @@ public sealed partial class SidebarView : UserControl
         SnippetsPanel.Attach(snippets);
         workspace.ConnectionList.Profiles.CollectionChanged += OnProfilesChanged;
         Tree.ItemsSource = workspace.Explorer.Roots;
+        workspace.Explorer.PropertyChanged += OnExplorerPropertyChanged;
         OnProfilesChanged(null, null);
+    }
+
+    // A selection made by code (go to definition reveals a table) is shown in the tree; one made in the tree is already _lastSelected.
+    private void OnExplorerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(ExplorerTreeViewModel.SelectedNode) || _workspace?.Explorer.SelectedNode is not { } node || node == _lastSelected)
+            return;
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            SetSelection([node]);
+            DispatcherQueue.TryEnqueue(() => (Tree.ContainerFromItem(node) as TreeViewItem)?.StartBringIntoView());
+        });
     }
 
     /// <summary>Shows one of the left panels and loads its content, as the activity rail asks.</summary>

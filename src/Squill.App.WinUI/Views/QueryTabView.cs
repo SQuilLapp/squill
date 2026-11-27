@@ -540,6 +540,11 @@ public sealed partial class QueryTabView : UserControl
 
         // A control has a single parent: release the previous editor before another tab shows its own.
         _editorHost.Child = null;
+        if (_clickEditor is not null)
+            _clickEditor.DefinitionRequested -= OnDefinitionRequested;
+        _clickEditor = tab?.Editor as LoomSqlEditor;
+        if (_clickEditor is not null)
+            _clickEditor.DefinitionRequested += OnDefinitionRequested;
         _tab = tab;
         if (_transaction is not null)
             _transaction.PropertyChanged -= OnTransactionChanged;
@@ -645,13 +650,47 @@ public sealed partial class QueryTabView : UserControl
     }
 
     // The editor consumes Ctrl+Enter as a new line before the window accelerators run, so the run keys are taken on the way down.
+    private LoomSqlEditor? _clickEditor;
+
+    private void OnDefinitionRequested(object? sender, EventArgs e) => _tab?.GoToDefinitionCommand.Execute(null);
+
     private void OnEditorPreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (_tab is null || e.Key is not (VirtualKey.Enter or VirtualKey.F5))
+        if (_tab is null || e.Key is not (VirtualKey.Enter or VirtualKey.F5 or VirtualKey.F12 or VirtualKey.F7 or VirtualKey.B or VirtualKey.Escape))
             return;
         var down = Windows.UI.Core.CoreVirtualKeyStates.Down;
         var ctrl = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(down);
         var shift = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(down);
+        var alt = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(down);
+        if (e.Key == VirtualKey.Escape)
+        {
+            _tab.ClearHighlightsCommand.Execute(null); // not handled: the editor still closes its own popups
+            return;
+        }
+
+        if (e.Key == VirtualKey.F12 && !ctrl && !alt)
+        {
+            (shift ? _tab.FindUsagesCommand : _tab.GoToDefinitionCommand).Execute(null);
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == VirtualKey.F7 && alt && !ctrl && !shift)
+        {
+            _tab.FindUsagesCommand.Execute(null);
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == VirtualKey.B && ctrl && shift && !alt)
+        {
+            _tab.GoToDefinitionInDesignerCommand.Execute(null);
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key is VirtualKey.B or VirtualKey.F7 or VirtualKey.F12)
+            return;
         if (e.Key == VirtualKey.F5 || ctrl && !shift)
             _tab.RunCommand.Execute(null);
         else if (ctrl)
