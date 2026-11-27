@@ -101,4 +101,39 @@ public sealed class ConnectionProfileTests
     [InlineData(86400, 86400)]
     public void ValidateOptions_Bounds_AreAccepted(int connect, int command) =>
         Assert.Empty((Sample() with { ConnectTimeoutSeconds = connect, CommandTimeoutSeconds = command }).ValidateOptions());
+
+    [Fact]
+    public void Serialize_TlsFiles_RoundTripsAndOlderFilesLoadUnchanged()
+    {
+        var profile = Sample() with { TlsCaFile = "/ca.pem", TlsClientCertFile = "/c.crt", TlsClientKeyFile = "/c.key", TlsServerName = "db.example.com", TlsKeyPassphrase = "secret" };
+        var json = JsonSerializer.Serialize(profile, ProfileJsonContext.Default.ConnectionProfile);
+        Assert.DoesNotContain("secret", json);
+        Assert.Equal(profile with { TlsKeyPassphrase = null }, JsonSerializer.Deserialize(json, ProfileJsonContext.Default.ConnectionProfile));
+
+        var old = JsonSerializer.Deserialize("""{"id":"01234567-89ab-cdef-0123-456789abcdef","name":"n","dialect":"PostgreSql","host":"h"}""", ProfileJsonContext.Default.ConnectionProfile)!;
+        Assert.Null(old.TlsCaFile);
+        Assert.Null(old.TlsServerName);
+    }
+
+    [Fact]
+    public void ValidateOptions_MissingTlsFile_ReturnsTheCodeWithThePath()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "squill-no-such-" + Guid.NewGuid().ToString("N") + ".pem");
+        var issue = Assert.Single((Sample() with { TlsCaFile = path }).ValidateOptions());
+        Assert.Equal(CoreMessageCodes.ConnectionTlsFileMissing, issue.Code);
+        Assert.Equal([path], issue.Args);
+    }
+
+    [Fact]
+    public void ValidateOptions_KeyWithoutCertificate_IsAnError()
+    {
+        var key = Path.GetTempFileName();
+        try
+        {
+            var issue = Assert.Single((Sample() with { TlsClientKeyFile = key }).ValidateOptions());
+            Assert.Equal(CoreMessageCodes.ConnectionTlsKeyWithoutCertificate, issue.Code);
+            Assert.Empty((Sample() with { TlsClientKeyFile = key, TlsClientCertFile = key }).ValidateOptions());
+        }
+        finally { File.Delete(key); }
+    }
 }

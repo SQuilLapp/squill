@@ -35,6 +35,13 @@ public sealed class MySqlDatabaseProvider : IDatabaseProvider
                 TlsMode.Require => MySqlSslMode.Required,
                 _ => MySqlSslMode.VerifyFull,
             };
+        // shortcut: MySqlConnector has no server-name override and no encrypted-key support, so TlsServerName and the key passphrase are ignored; upgrade when the driver adds them.
+        if (!string.IsNullOrEmpty(profile.TlsCaFile))
+            builder.SslCa = profile.TlsCaFile;
+        if (!string.IsNullOrEmpty(profile.TlsClientCertFile))
+            builder.SslCert = profile.TlsClientCertFile;
+        if (!string.IsNullOrEmpty(profile.TlsClientKeyFile))
+            builder.SslKey = profile.TlsClientKeyFile;
         return builder.ConnectionString;
     }
 

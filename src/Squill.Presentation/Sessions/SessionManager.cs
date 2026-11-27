@@ -25,6 +25,8 @@ public sealed class SessionManager(ProviderRegistry providers, IProfileStore sto
     {
         var provider = providers.Get(profile.Dialect);
         var password = await store.GetPasswordAsync(profile.Id, ct);
+        if (!string.IsNullOrEmpty(profile.TlsClientKeyFile))
+            profile = profile with { TlsKeyPassphrase = await store.GetTlsKeyPassphraseAsync(profile.Id, ct) };
         ISshTunnel? tunnel = null;
         IDatabaseConnection? connection = null;
         try
@@ -34,7 +36,7 @@ public sealed class SessionManager(ProviderRegistry providers, IProfileStore sto
             {
                 var secret = await store.GetSshSecretAsync(profile.Id, ct);
                 tunnel = await tunnels.OpenAsync(ssh, secret, profile.Host ?? "", profile.Port ?? 0, sshHostKeyPrompt, ct);
-                effective = profile with { Host = "127.0.0.1", Port = tunnel.LocalPort };
+                effective = profile with { Host = "127.0.0.1", Port = tunnel.LocalPort, TlsServerName = profile.TlsServerName ?? profile.Host }; // VerifyFull keeps checking the real host name
             }
             connection = await provider.OpenAsync(effective, password, ct);
             var schema = await connection.ReadSchemaAsync(ct);

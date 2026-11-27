@@ -527,6 +527,8 @@ internal static class UiTextCatalogFr
         ("issue.edit.duplicateKey", "clé en double dans les lignes en attente"),
         ("issue.connection.connectTimeoutRange", "Le délai de connexion doit être compris entre 0 et {0} secondes."),
         ("issue.connection.commandTimeoutRange", "Le délai de commande doit être compris entre 0 et {0} secondes."),
+        ("issue.connection.tlsFileMissing", "Un fichier TLS est introuvable : {0}"),
+        ("issue.connection.tlsKeyWithoutCertificate", "Une clé client nécessite un certificat client."),
         ("issue.sql.unexpected", "'{0}' inattendu"),
         ("issue.sql.unexpectedToken", "Jeton inattendu"),
         ("issue.sql.expectedIdentifierAfterDot", "Identifiant attendu après '.'"),

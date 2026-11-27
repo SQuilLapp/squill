@@ -33,17 +33,34 @@ public sealed class PostgresDatabaseProvider : IDatabaseProvider
                 TlsMode.Require => SslMode.Require,
                 _ => SslMode.VerifyFull,
             };
+        if (!string.IsNullOrEmpty(profile.TlsCaFile))
+            builder.RootCertificate = profile.TlsCaFile;
+        if (!string.IsNullOrEmpty(profile.TlsClientCertFile))
+            builder.SslCertificate = profile.TlsClientCertFile;
+        if (!string.IsNullOrEmpty(profile.TlsClientKeyFile))
+            builder.SslKey = profile.TlsClientKeyFile;
+        if (!string.IsNullOrEmpty(profile.TlsKeyPassphrase))
+            builder.SslPassword = profile.TlsKeyPassphrase;
         return builder.ConnectionString;
     }
 
     // The slim builder keeps the AOT footprint small; arrays are needed by the schema queries and array columns, the other type groups so that every column type reads, TLS by the Tls profile option.
-    private static NpgsqlDataSource BuildDataSource(string connectionString) =>
-        new NpgsqlSlimDataSourceBuilder(connectionString).EnableArrays().EnableNetworkTypes().EnableJsonTypes().EnableRanges().EnableMultiranges().EnableRecords().EnableGeometricTypes().EnableTransportSecurity().Build();
+    private static NpgsqlDataSource BuildDataSource(ConnectionProfile profile, string connectionString)
+    {
+        var builder = new NpgsqlSlimDataSourceBuilder(connectionString);
+        // The name checked against the certificate when it differs from the host (an SSH tunnel connects to 127.0.0.1).
+        if (!string.IsNullOrEmpty(profile.TlsServerName))
+            builder.UseSslClientAuthenticationOptionsCallback(options => options.TargetHost = profile.TlsServerName);
+        return Configure(builder).Build();
+    }
+
+    private static NpgsqlSlimDataSourceBuilder Configure(NpgsqlSlimDataSourceBuilder builder) =>
+        builder.EnableArrays().EnableNetworkTypes().EnableJsonTypes().EnableRanges().EnableMultiranges().EnableRecords().EnableGeometricTypes().EnableTransportSecurity();
 
     /// <inheritdoc />
     public async ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken)
     {
-        var dataSource = BuildDataSource(BuildConnectionString(profile, password));
+        var dataSource = BuildDataSource(profile, BuildConnectionString(profile, password));
         try
         {
             var connection = await dataSource.OpenConnectionAsync(cancellationToken);

@@ -1,6 +1,6 @@
 # P21-16 - Core and Data: TLS certificate files (CA, client certificate and key)
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -18,8 +18,8 @@ Exists today: `ConnectionProfile.Tls` (`TlsMode`: `Default`, `Disable`, `Require
 - The editor fields (P21-17), Windows certificate store selection.
 
 ## Tasks
-- [ ] Profile JSON round trip and validation tests.
-- [ ] Docker-gated tests: PostgreSQL and MySQL containers started with a test CA and `clientcert=verify-full` / `REQUIRE X509`; connect with and without the files.
+- [x] Profile JSON round trip and validation tests.
+- [x] Docker-gated tests: PostgreSQL and MySQL containers started with a test CA and `clientcert=verify-full` / `REQUIRE X509`; connect with and without the files.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance; Docker-gated TLS tests green for PostgreSQL and MySQL.
@@ -32,3 +32,11 @@ Exists today: `ConnectionProfile.Tls` (`TlsMode`: `Default`, `Disable`, `Require
 
 ## Suggested commit message
 Add CA, client certificate and key files to the TLS options of a connection
+
+## Done notes
+- Premise checked: `Tls`, `TrustServerCertificate` and the four provider mappings exist as stated; the Npgsql slim builder exposes the connection-string options and `UseSslClientAuthenticationOptionsCallback` (no callback with `X509Certificate2` needed).
+- `ConnectionProfile` gets `TlsCaFile`, `TlsClientCertFile`, `TlsClientKeyFile`, `TlsServerName` (defaulted, older files load unchanged) and a runtime-only `TlsKeyPassphrase` (`[JsonIgnore]`, never written). It is read by `SessionManager` through the new default interface method `IProfileStore.GetTlsKeyPassphraseAsync` (`SecretKeys.TlsKeyPassphrase`; `JsonProfileStore` implements it and deletes the secret with the profile). Saving the passphrase is P21-17 (the editor owns the field; `SaveAsync` is unchanged).
+- Mapping: PostgreSQL `RootCertificate`/`SslCertificate`/`SslKey`/`SslPassword` and `TlsServerName` through `UseSslClientAuthenticationOptionsCallback` (`TargetHost`); MySQL `SslCa`/`SslCert`/`SslKey` only (MySqlConnector has neither a server-name override nor encrypted keys: `TlsServerName` and the passphrase are ignored, recorded as a `shortcut:`); SQL Server `ServerCertificate` (from `TlsCaFile`) and `HostNameInCertificate`, client files ignored (P21-17 disables them).
+- Over an SSH tunnel `SessionManager` sets `TlsServerName` to the profile host when empty.
+- `ValidateOptions` reports a missing file (`connection.tlsFileMissing`, path as argument) and a key without certificate (`connection.tlsKeyWithoutCertificate`); both messages in the FR and EN catalogs.
+- Docker tests (throw-away CA from `tests/Shared/TestPki.cs`, generated at test time): PostgreSQL with `clientcert=verify-full` (CA + client certificate, encrypted key + passphrase, refused without client certificate / without CA / without server name) and MySQL with `REQUIRE X509` (connect, refused without client certificate / without CA). SQL Server not run (the card asks PostgreSQL and MySQL; its mapping is covered by a connection-string test).

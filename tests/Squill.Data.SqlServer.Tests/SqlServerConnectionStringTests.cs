@@ -74,4 +74,13 @@ public sealed class SqlServerConnectionStringTests
     [InlineData("")]
     public void BuildConnectionString_EmptyDatabase_ConnectsToServerDefault(string? database) =>
         Assert.Equal("", new SqlConnectionStringBuilder(SqlServerDatabaseProvider.BuildConnectionString(Profile with { Database = database }, null)).InitialCatalog);
+
+    [Fact]
+    public void BuildConnectionString_TlsServerFiles_AreMapped_ClientFilesAreIgnored()
+    {
+        var profile = Profile with { TlsCaFile = "server.crt", TlsServerName = "sql.example.com", TlsClientCertFile = "c.crt", TlsClientKeyFile = "c.key" };
+        var builder = new SqlConnectionStringBuilder(SqlServerDatabaseProvider.BuildConnectionString(profile, null));
+        Assert.Equal("server.crt", builder.ServerCertificate);
+        Assert.Equal("sql.example.com", builder.HostNameInCertificate);
+    }
 }

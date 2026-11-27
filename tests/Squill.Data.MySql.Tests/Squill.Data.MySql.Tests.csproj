@@ -28,6 +28,7 @@
     <Compile Include="../Shared/ImpactEstimateScenario.cs" Link="ImpactEstimateScenario.cs" />
     <Compile Include="../Shared/QueryFlowScenario.cs" Link="QueryFlowScenario.cs" />
     <Compile Include="../Shared/GridFilterFlowScenario.cs" Link="GridFilterFlowScenario.cs" />
+    <Compile Include="../Shared/TestPki.cs" Link="TestPki.cs" />
     <Compile Include="../Shared/ScenarioStubs.cs" Link="ScenarioStubs.cs" />
     <Compile Include="../Shared/CancelScenario.cs" Link="CancelScenario.cs" />
     <Compile Include="../Shared/MultiResultScenario.cs" Link="MultiResultScenario.cs" />

@@ -29,6 +29,11 @@ public sealed class SqlServerDatabaseProvider : IDatabaseProvider
         };
         if (profile.Tls != TlsMode.Default)
             builder.Encrypt = profile.Tls == TlsMode.Disable ? SqlConnectionEncryptOption.Optional : SqlConnectionEncryptOption.Mandatory;
+        // SqlClient has no client certificate support: only the server certificate file and the expected host name are mapped.
+        if (!string.IsNullOrEmpty(profile.TlsCaFile))
+            builder.ServerCertificate = profile.TlsCaFile;
+        if (!string.IsNullOrEmpty(profile.TlsServerName))
+            builder.HostNameInCertificate = profile.TlsServerName;
         return builder.ConnectionString;
     }
 

@@ -33,4 +33,10 @@ public interface IProfileStore
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The secret, or <see langword="null"/> when none is stored.</returns>
     ValueTask<string?> GetSshSecretAsync(Guid id, CancellationToken ct);
+
+    /// <summary>Reads the passphrase of the TLS client key of a profile.</summary>
+    /// <param name="id">Profile identifier.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The passphrase, or <see langword="null"/> when none is stored.</returns>
+    ValueTask<string?> GetTlsKeyPassphraseAsync(Guid id, CancellationToken ct) => ValueTask.FromResult<string?>(null);
 }

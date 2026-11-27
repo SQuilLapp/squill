@@ -114,6 +114,12 @@ public static class CoreMessageCodes
     /// <summary>The <c>connection.commandTimeoutRange</c> message.</summary>
     public const string ConnectionCommandTimeoutRange = "connection.commandTimeoutRange";
 
+    /// <summary>The <c>connection.tlsFileMissing</c> message.</summary>
+    public const string ConnectionTlsFileMissing = "connection.tlsFileMissing";
+
+    /// <summary>The <c>connection.tlsKeyWithoutCertificate</c> message.</summary>
+    public const string ConnectionTlsKeyWithoutCertificate = "connection.tlsKeyWithoutCertificate";
+
     /// <summary>Every code of this class.</summary>
     public static readonly IReadOnlyList<string> All =
     [
@@ -154,5 +160,7 @@ public static class CoreMessageCodes
         EditDuplicateKey,
         ConnectionConnectTimeoutRange,
         ConnectionCommandTimeoutRange,
+        ConnectionTlsFileMissing,
+        ConnectionTlsKeyWithoutCertificate,
     ];
 }

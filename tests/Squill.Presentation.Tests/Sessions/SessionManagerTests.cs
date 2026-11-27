@@ -58,6 +58,17 @@ public sealed class SessionManagerTests
     }
 
     [Fact]
+    public async Task OpenAsync_SshAndTlsKey_KeepsTheRealHostNameForVerificationAndReadsThePassphrase()
+    {
+        _store.TlsPassphrase = "key-pass";
+
+        await _manager.OpenAsync(Profile(Ssh) with { TlsClientKeyFile = "c.key", TlsClientCertFile = "c.crt" }, CancellationToken.None);
+
+        Assert.Equal("db.internal", _provider.OpenedWith!.TlsServerName);
+        Assert.Equal("key-pass", _provider.OpenedWith.TlsKeyPassphrase);
+    }
+
+    [Fact]
     public async Task OpenAsync_ListsTheServerDatabases_AndToleratesAFailedListing()
     {
         _provider.Databases = ["app", "other"];
@@ -162,7 +173,9 @@ public sealed class SessionManagerTests
     {
         public string? Password { get; set; }
         public string? SshSecret { get; set; }
+        public string? TlsPassphrase { get; set; }
 
+        public ValueTask<string?> GetTlsKeyPassphraseAsync(Guid id, CancellationToken ct) => ValueTask.FromResult(TlsPassphrase);
         public ValueTask<IReadOnlyList<ConnectionProfile>> ListAsync(CancellationToken ct) => throw new NotSupportedException();
         public ValueTask SaveAsync(ConnectionProfile profile, string? password, string? sshSecret, CancellationToken ct) => throw new NotSupportedException();
         public ValueTask DeleteAsync(Guid id, CancellationToken ct) => throw new NotSupportedException();

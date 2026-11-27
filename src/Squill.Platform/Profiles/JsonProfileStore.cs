@@ -52,6 +52,7 @@ public sealed class JsonProfileStore : IProfileStore, IDisposable
         await _file.UpdateAsync(profiles => profiles.RemoveAll(p => p.Id == id) > 0, ct);
         await _secrets.DeleteAsync(SecretKeys.ProfilePassword(id), ct);
         await _secrets.DeleteAsync(SecretKeys.SshSecret(id), ct);
+        await _secrets.DeleteAsync(SecretKeys.TlsKeyPassphrase(id), ct);
     }
 
     /// <inheritdoc/>
@@ -61,6 +62,10 @@ public sealed class JsonProfileStore : IProfileStore, IDisposable
     /// <inheritdoc/>
     public ValueTask<string?> GetSshSecretAsync(Guid id, CancellationToken ct) =>
         _secrets.GetAsync(SecretKeys.SshSecret(id), ct);
+
+    /// <inheritdoc/>
+    public ValueTask<string?> GetTlsKeyPassphraseAsync(Guid id, CancellationToken ct) =>
+        _secrets.GetAsync(SecretKeys.TlsKeyPassphrase(id), ct);
 
     private ValueTask ApplySecretAsync(string key, string? value, CancellationToken ct) => value switch
     {
