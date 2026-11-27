@@ -318,6 +318,9 @@ internal static class UiTextCatalogFr
         ("ssh.hostkey.body", "Le serveur {0}:{1} a présenté une clé d'hôte {2} jamais vue. Vérifiez son empreinte avant de lui faire confiance."),
         ("ssh.hostkey.trust", "Faire confiance et se connecter"),
         ("ssh.hostkey.cancel", "Annuler"),
+        ("password.command.confirm.title", "Exécuter la commande du mot de passe"),
+        ("password.command.confirm", "La connexion {0} obtient son mot de passe de cette commande, exécutée avec vos droits et sans shell :\n\n{1}\n\nNe l'exécutez que si vous lui faites confiance."),
+        ("password.command.failed", "La commande du mot de passe a échoué ({0} {1}). {2}"),
         ("ssh.hostkey.changed", "L'identité du serveur SSH {0}:{1} diffère de celle mémorisée : la connexion a été refusée. Mémorisée : {2}. Présentée : {3}. Uniquement si le serveur a été réinstallé légitimement, supprimez l'entrée de {0}:{1} du fichier des hôtes connus ({4}) puis reconnectez-vous."),
 
         // Connections window

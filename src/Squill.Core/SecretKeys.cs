@@ -22,4 +22,9 @@ public static class SecretKeys
     /// <param name="id">Identifier of the connection profile.</param>
     /// <returns>The secret store key.</returns>
     public static string ProxySecret(Guid id) => $"profile:{id:N}:proxy";
+
+    /// <summary>Gets the key of the fingerprint of the password command the user confirmed for a profile.</summary>
+    /// <param name="id">Identifier of the connection profile.</param>
+    /// <returns>The secret store key.</returns>
+    public static string PasswordCommandTrust(Guid id) => $"profile:{id:N}:cmdtrust";
 }

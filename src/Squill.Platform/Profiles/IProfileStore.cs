@@ -59,4 +59,18 @@ public interface IProfileStore
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A task that completes once the secret is stored.</returns>
     ValueTask SaveProxySecretAsync(Guid id, string? password, CancellationToken ct) => ValueTask.CompletedTask;
+
+    /// <summary>Tells whether the user already confirmed this exact password command for a profile.</summary>
+    /// <param name="id">Profile identifier.</param>
+    /// <param name="commandLine">The command line about to run.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns><see langword="true"/> when the same command line was confirmed before; the default implementation never remembers.</returns>
+    ValueTask<bool> IsCommandTrustedAsync(Guid id, string commandLine, CancellationToken ct) => ValueTask.FromResult(false);
+
+    /// <summary>Remembers that the user confirmed a password command for a profile (kept in the secret store, never in the profile file, so an imported profile is not trusted).</summary>
+    /// <param name="id">Profile identifier.</param>
+    /// <param name="commandLine">The confirmed command line.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A task that completes once the confirmation is stored.</returns>
+    ValueTask TrustCommandAsync(Guid id, string commandLine, CancellationToken ct) => ValueTask.CompletedTask;
 }

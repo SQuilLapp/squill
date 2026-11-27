@@ -54,6 +54,7 @@ public sealed class JsonProfileStore : IProfileStore, IDisposable
         await _secrets.DeleteAsync(SecretKeys.SshSecret(id), ct);
         await _secrets.DeleteAsync(SecretKeys.TlsKeyPassphrase(id), ct);
         await _secrets.DeleteAsync(SecretKeys.ProxySecret(id), ct);
+        await _secrets.DeleteAsync(SecretKeys.PasswordCommandTrust(id), ct);
     }
 
     /// <inheritdoc/>
@@ -79,6 +80,17 @@ public sealed class JsonProfileStore : IProfileStore, IDisposable
     /// <inheritdoc/>
     public ValueTask SaveProxySecretAsync(Guid id, string? password, CancellationToken ct) =>
         ApplySecretAsync(SecretKeys.ProxySecret(id), password, ct);
+
+    /// <inheritdoc/>
+    public async ValueTask<bool> IsCommandTrustedAsync(Guid id, string commandLine, CancellationToken ct) =>
+        await _secrets.GetAsync(SecretKeys.PasswordCommandTrust(id), ct) == Fingerprint(commandLine);
+
+    /// <inheritdoc/>
+    public ValueTask TrustCommandAsync(Guid id, string commandLine, CancellationToken ct) =>
+        _secrets.SetAsync(SecretKeys.PasswordCommandTrust(id), Fingerprint(commandLine), ct);
+
+    private static string Fingerprint(string commandLine) =>
+        Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(commandLine)));
 
     private ValueTask ApplySecretAsync(string key, string? value, CancellationToken ct) => value switch
     {

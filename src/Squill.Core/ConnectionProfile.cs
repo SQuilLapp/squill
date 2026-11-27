@@ -23,7 +23,9 @@ public sealed record ConnectionProfile(
     string? TlsClientCertFile = null,
     string? TlsClientKeyFile = null,
     string? TlsServerName = null,
-    ProxySettings? Proxy = null)
+    ProxySettings? Proxy = null,
+    PasswordSource PasswordSource = PasswordSource.Stored,
+    string? PasswordCommand = null)
 {
     /// <summary>Passphrase of the client key, read from the secret store when a session opens; never persisted in the profile file.</summary>
     [System.Text.Json.Serialization.JsonIgnore]

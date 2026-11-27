@@ -3,6 +3,7 @@ using Squill.Core;
 using Squill.Data;
 using Squill.Platform.Profiles;
 using Squill.Platform.Proxy;
+using Squill.Platform.Secrets;
 using Squill.Platform.Ssh;
 using Squill.Presentation.Localization;
 
@@ -13,8 +14,10 @@ namespace Squill.Presentation.Sessions;
 /// <param name="store">Source of the database password and the SSH secret.</param>
 /// <param name="tunnels">Opens the SSH tunnel of profiles that need one.</param>
 /// <param name="sshHostKeyPrompt">Asks whether to trust a host key seen for the first time; <see langword="null"/> refuses every unknown key.</param>
+/// <param name="dialogs">Asks for the password of an "ask" profile and confirms a password command; <see langword="null"/> cancels both.</param>
+/// <param name="commandRunner">Runs password commands; <see langword="null"/> uses <see cref="PasswordCommandRunner"/>.</param>
 /// <param name="proxies">Opens the forwarder of profiles that go through a proxy without an SSH tunnel; <see langword="null"/> uses <see cref="ProxyTunnelFactory"/>.</param>
-public sealed class SessionManager(ProviderRegistry providers, IProfileStore store, ISshTunnelFactory tunnels, SshHostKeyPrompt? sshHostKeyPrompt = null, IProxyTunnelFactory? proxies = null)
+public sealed class SessionManager(ProviderRegistry providers, IProfileStore store, ISshTunnelFactory tunnels, SshHostKeyPrompt? sshHostKeyPrompt = null, IProxyTunnelFactory? proxies = null, IDialogService? dialogs = null, IPasswordCommandRunner? commandRunner = null)
 {
     /// <summary>Gets the open sessions.</summary>
     public ObservableCollection<ConnectionSession> Sessions { get; } = [];
@@ -26,7 +29,7 @@ public sealed class SessionManager(ProviderRegistry providers, IProfileStore sto
     public async ValueTask<ConnectionSession> OpenAsync(ConnectionProfile profile, CancellationToken ct)
     {
         var provider = providers.Get(profile.Dialect);
-        var password = await store.GetPasswordAsync(profile.Id, ct);
+        var password = await ResolvePasswordAsync(profile, ct);
         if (!string.IsNullOrEmpty(profile.TlsClientKeyFile))
             profile = profile with { TlsKeyPassphrase = await store.GetTlsKeyPassphraseAsync(profile.Id, ct) };
         ISshTunnel? tunnel = null;
@@ -87,6 +90,35 @@ public sealed class SessionManager(ProviderRegistry providers, IProfileStore sto
             if (tunnel is not null)
                 await tunnel.DisposeAsync();
             throw;
+        }
+    }
+
+    private async ValueTask<string?> ResolvePasswordAsync(ConnectionProfile profile, CancellationToken ct)
+    {
+        switch (profile.PasswordSource)
+        {
+            case PasswordSource.Ask:
+                var asked = dialogs is null ? null : await dialogs.PromptPasswordAsync(profile.Name);
+                return asked ?? throw new OperationCanceledException(ct); // cancelling the prompt is the user cancelling: no error banner
+            case PasswordSource.Command:
+                var command = profile.PasswordCommand ?? "";
+                if (!await store.IsCommandTrustedAsync(profile.Id, command, ct))
+                {
+                    if (dialogs is null || !await dialogs.ConfirmAsync(UiText.Get("password.command.confirm.title"), UiText.Format("password.command.confirm", profile.Name, command)))
+                        throw new OperationCanceledException(ct);
+                    await store.TrustCommandAsync(profile.Id, command, ct);
+                }
+
+                try
+                {
+                    return await (commandRunner ?? new PasswordCommandRunner()).RunAsync(command, ct);
+                }
+                catch (PasswordCommandException ex)
+                {
+                    throw new InvalidOperationException(UiText.Format("password.command.failed", ex.Failure.ToString(), ex.Detail ?? "", ex.StandardError ?? ""));
+                }
+            default:
+                return await store.GetPasswordAsync(profile.Id, ct);
         }
     }
 

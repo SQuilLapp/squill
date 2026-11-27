@@ -55,4 +55,9 @@ public interface IDialogService
     /// <param name="wizard">The wizard to draw. The default implementation, kept until the heads draw it, shows nothing.</param>
     /// <returns>A task that completes when the window is closed.</returns>
     ValueTask ShowImportWizardAsync(Import.ImportWizardViewModel wizard) => ValueTask.CompletedTask;
+
+    /// <summary>Asks for the database password of a profile whose password source is "ask"; the head masks the input.</summary>
+    /// <param name="profileName">Name of the profile, shown in the prompt.</param>
+    /// <returns>The entered password, or <see langword="null"/> when cancelled. The default implementation, kept until the heads draw the prompt, cancels.</returns>
+    ValueTask<string?> PromptPasswordAsync(string profileName) => ValueTask.FromResult<string?>(null);
 }

@@ -50,7 +50,9 @@ public sealed class ConnectionProfileTests
     [Fact]
     public void Serialize_Profile_ContainsNoPassword()
     {
-        var json = JsonSerializer.Serialize(Sample(), ProfileJsonContext.Default.ConnectionProfile);
+        // The two password-source fields are settings (where the password comes from), not secrets.
+        var json = JsonSerializer.Serialize(Sample(), ProfileJsonContext.Default.ConnectionProfile)
+            .Replace("passwordSource", "", StringComparison.Ordinal).Replace("passwordCommand", "", StringComparison.Ordinal);
         Assert.DoesNotContain("password", json, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("passphrase", json, StringComparison.OrdinalIgnoreCase);
     }
