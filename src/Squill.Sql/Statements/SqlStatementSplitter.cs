@@ -6,7 +6,7 @@ namespace Squill.Sql.Statements;
 /// <summary>Splits a script into statements and finds the statement under a caret.</summary>
 public static class SqlStatementSplitter
 {
-    /// <summary>Splits a script on <c>;</c> tokens, honouring T-SQL <c>GO</c>, MySQL <c>DELIMITER</c>, compound bodies and Oracle PL/SQL blocks ended by a lone <c>/</c> line.</summary>
+    /// <summary>Splits a script on <c>;</c> tokens, honouring T-SQL <c>GO</c>, MySQL <c>DELIMITER</c>, compound bodies, Oracle PL/SQL blocks ended by a lone <c>/</c> line and Informix <c>CREATE PROCEDURE</c> bodies ended by <c>END PROCEDURE</c>.</summary>
     /// <param name="text">The script.</param>
     /// <param name="dialect">The database engine, which selects the tokenizer and the batch directives.</param>
     /// <returns>Non-empty statement spans in text order; comment-only and empty statements are dropped.</returns>
@@ -19,6 +19,7 @@ public static class SqlStatementSplitter
         int start = -1, end = 0, count = 0, depth = 0;
         bool isCreate = false, sawObject = false, bodyStarted = false, plsql = false, kindKnown = false;
         var oracle = dialect == DatabaseDialect.Oracle;
+        var informix = dialect == DatabaseDialect.Informix;
 
         void Flush()
         {
@@ -122,6 +123,23 @@ public static class SqlStatementSplitter
                     kindKnown = true;
                     plsql = WordIs(text, token, "FUNCTION") || WordIs(text, token, "PROCEDURE") || WordIs(text, token, "PACKAGE")
                         || WordIs(text, token, "TRIGGER") || WordIs(text, token, "TYPE");
+                }
+            }
+            else if (informix)
+            {
+                // SPL: CREATE [DBA] PROCEDURE|FUNCTION ... END PROCEDURE|FUNCTION; the body keeps its semicolons
+                if (count == 1)
+                {
+                    isCreate = WordIs(text, token, "CREATE");
+                }
+                else if (isCreate && !kindKnown && !WordIs(text, token, "DBA") && !WordIs(text, token, "OR") && !WordIs(text, token, "REPLACE"))
+                {
+                    kindKnown = true;
+                    plsql = WordIs(text, token, "PROCEDURE") || WordIs(text, token, "FUNCTION");
+                }
+                else if (plsql && WordIs(text, token, "END") && NextWordIs(text, tokens, i, "PROCEDURE", "FUNCTION"))
+                {
+                    plsql = false;
                 }
             }
             else if (count == 1)

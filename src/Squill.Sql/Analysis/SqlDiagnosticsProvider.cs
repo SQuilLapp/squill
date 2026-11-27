@@ -62,6 +62,12 @@ public static class SqlDiagnosticsProvider
             return false;
         }
 
+        // The Informix system catalogue (systables, syscolumns, ...) is readable from every database but not listed in the snapshot
+        if (dialect == DatabaseDialect.Informix && t.Name.StartsWith("sys", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
         if (t.Schema is null && ctes.Any(c => string.Equals(c, t.Name, StringComparison.OrdinalIgnoreCase)))
         {
             return false;

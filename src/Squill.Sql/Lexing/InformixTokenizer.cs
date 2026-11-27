@@ -7,7 +7,7 @@ namespace Squill.Sql.Lexing;
 public sealed class InformixTokenizer : SqlTokenizerBase
 {
     /// <inheritdoc />
-    protected override FrozenSet<string> Keywords => AnsiKeywords.Words;
+    protected override FrozenSet<string> Keywords => InformixKeywords.Words;
 
     /// <inheritdoc />
     protected override bool TryReadSpecial(string text, int pos, out Token token)
@@ -20,6 +20,10 @@ public sealed class InformixTokenizer : SqlTokenizerBase
         {
             var end = text.IndexOf('}', pos + 1);
             token = new Token(TokenKind.BlockComment, pos, (end < 0 ? text.Length : end + 1) - pos);
+        }
+        else if (c == '?')
+        {
+            token = new Token(TokenKind.Parameter, pos, 1);
         }
         else if (c == ':' && IsIdentifierStart(next))
         {

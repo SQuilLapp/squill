@@ -108,6 +108,7 @@ public sealed class KeywordCompletionProvider : ISqlCompletionProvider
                 DatabaseDialect.MySql => ["REPLACE", "SHOW", "USE", "TRUNCATE"],
                 DatabaseDialect.SqlServer => ["EXEC", "MERGE", "USE", "DECLARE", "TRUNCATE"],
                 DatabaseDialect.Oracle => ["MERGE", "DECLARE", "TRUNCATE", "EXPLAIN PLAN FOR", "GRANT"],
+                DatabaseDialect.Informix => ["EXECUTE PROCEDURE", "TRUNCATE", "SET", "GRANT", "LOCK TABLE"],
                 _ => ["REPLACE", "PRAGMA", "VACUUM"],
             });
             return words;
@@ -124,6 +125,10 @@ public sealed class KeywordCompletionProvider : ISqlCompletionProvider
                 if (dialect == DatabaseDialect.SqlServer)
                 {
                     words.Add("TOP");
+                }
+                else if (dialect == DatabaseDialect.Informix)
+                {
+                    words.AddRange(["FIRST", "SKIP"]);
                 }
 
                 break;

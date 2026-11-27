@@ -14,13 +14,14 @@ internal static class IdentifierQuoting
     public static string Quote(string name, DatabaseDialect dialect)
     {
         // PostgreSQL folds an unquoted name to lower case, so a name with capitals only resolves when quoted.
+        // Informix folds an unquoted name to lower case (DELIMIDENT: "..." is an identifier), like PostgreSQL.
         // Oracle folds an unquoted name to upper case, so only [A-Z][A-Z0-9_$#]* resolves bare.
         if (dialect == DatabaseDialect.Oracle)
         {
             return IsOraclePlain(name) && !OracleKeywords.Words.Contains(name) ? name : "\"" + name.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
         }
 
-        if (IsPlain(name) && !KeywordsOf(dialect).Contains(name) && !(dialect == DatabaseDialect.PostgreSql && name.Any(char.IsUpper)))
+        if (IsPlain(name) && !KeywordsOf(dialect).Contains(name) && !(dialect is DatabaseDialect.PostgreSql or DatabaseDialect.Informix && name.Any(char.IsUpper)))
         {
             return name;
         }
@@ -40,6 +41,7 @@ internal static class IdentifierQuoting
         DatabaseDialect.SqlServer => TSqlKeywords.Words,
         DatabaseDialect.Sqlite => SqliteKeywords.Words,
         DatabaseDialect.Oracle => OracleKeywords.Words,
+        DatabaseDialect.Informix => InformixKeywords.Words,
         _ => AnsiKeywords.Words,
     };
 

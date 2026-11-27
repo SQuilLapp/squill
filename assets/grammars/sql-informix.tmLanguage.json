@@ -1,0 +1,62 @@
+{
+  "name": "SQL (informix)",
+  "scopeName": "source.sql.informix",
+  "patterns": [
+    {
+      "name": "comment.line.double-dash.sql",
+      "match": "--.*$"
+    },
+    {
+      "name": "comment.block.sql",
+      "begin": "/\\*",
+      "end": "\\*/"
+    },
+    {
+      "name": "comment.block.sql",
+      "begin": "\\{",
+      "end": "\\}"
+    },
+    {
+      "name": "string.quoted.single.sql",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql",
+          "match": "''"
+        }
+      ]
+    },
+    {
+      "name": "variable.other.quoted.sql",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql",
+          "match": "\"\""
+        }
+      ]
+    },
+    {
+      "name": "variable.parameter.sql",
+      "match": "\\?|:[A-Za-z_][A-Za-z0-9_]*"
+    },
+    {
+      "name": "constant.numeric.sql",
+      "match": "\\b\\d+(\\.\\d*)?([eE][+-]?\\d+)?\\b|\\.\\d+([eE][+-]?\\d+)?\\b"
+    },
+    {
+      "name": "support.function.sql",
+      "match": "(?i)\\b(ABS|CHAR_LENGTH|COALESCE|DBINFO|DECODE|LENGTH|LOWER|LPAD|MOD|NULLIF|NVL|REPLACE|ROUND|ROW_NUMBER|RPAD|SUBSTR|TO_CHAR|TO_DATE|TRUNC|UPPER|WEEKDAY)\\b(?=\\s*\\()"
+    },
+    {
+      "name": "keyword.control.sql",
+      "match": "(?i)\\b(ADD|ALL|ALTER|AND|ANY|AS|ASC|AVG|BEGIN|BETWEEN|BIGINT|BIGSERIAL|BLOB|BOOLEAN|BOTH|BY|BYTE|CASCADE|CASE|CAST|CHAR|CHECK|CLOB|COLLATE|COLUMN|COMMIT|CONSTRAINT|COUNT|CREATE|CROSS|CURRENT|CURRENT_DATE|CURRENT_TIME|CURRENT_TIMESTAMP|CURSOR|DATE|DATETIME|DAY|DBA|DECIMAL|DECLARE|DEFAULT|DELETE|DESC|DISTINCT|DOUBLE|DROP|ELSE|END|ESCAPE|EXCEPT|EXEC|EXECUTE|EXISTS|EXTEND|EXTRACT|FALSE|FETCH|FILTER|FIRST|FLOAT|FOLLOWING|FOR|FOREACH|FOREIGN|FROM|FULL|FUNCTION|GRANT|GROUP|HAVING|HOUR|IN|INDEX|INNER|INSERT|INT|INT8|INTEGER|INTERSECT|INTERVAL|INTO|IS|JOIN|KEY|LEADING|LEFT|LIKE|LIMIT|LOCAL|LVARCHAR|MATCHES|MAX|MDY|MIN|MINUTE|MONEY|MONTH|NATURAL|NEXT|NO|NOT|NULL|NUMERIC|OFFSET|ON|ONLY|OR|ORDER|OUTER|OVER|PARTITION|PRECEDING|PRECISION|PRIMARY|PROCEDURE|RANGE|REAL|RECURSIVE|REFERENCES|RESTRICT|RETURNING|REVOKE|RIGHT|ROLLBACK|ROUTINE|ROW|ROWS|SECOND|SELECT|SERIAL|SERIAL8|SET|SKIP|SMALLINT|SOME|SUBSTRING|SUM|TABLE|TEXT|THEN|TIME|TIMESTAMP|TO|TODAY|TOP|TRAILING|TRIGGER|TRIM|TRUE|UNBOUNDED|UNION|UNIQUE|UPDATE|USER|USING|VALUES|VARCHAR|VIEW|WHEN|WHERE|WINDOW|WITH|YEAR|ZONE)\\b"
+    },
+    {
+      "name": "keyword.operator.sql",
+      "match": "<=|>=|<>|!=|\\|\\||[-+*/%=<>]"
+    }
+  ]
+}

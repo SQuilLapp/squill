@@ -186,11 +186,33 @@ internal sealed class SelectParser(SqlParserCore core)
         return new UnknownStatement(null, core.LastEnd, 0);
     }
 
+    // Informix SKIP n / FIRST n after SELECT; only when a count follows, so a column named first still parses.
+    private bool IsRowCountClause(out bool isSkip)
+    {
+        isSkip = core.IsWord(core.Peek(), "SKIP");
+        return (isSkip || core.IsWord(core.Peek(), "FIRST")) && core.Peek(1).Kind is TokenKind.NumberLiteral or TokenKind.Parameter;
+    }
+
     private SelectStatement ParseSelect()
     {
         var start = core.Next().Start;
+        Expression? top = null, skip = null;
+        while (core.Dialect == DatabaseDialect.Informix && IsRowCountClause(out var isSkip))
+        {
+            core.Next();
+            var count = _expressions.ParseOperand();
+            if (isSkip)
+            {
+                skip = count;
+            }
+            else
+            {
+                top = count;
+            }
+        }
+
         var distinct = false;
-        if (core.Match("DISTINCT"))
+        if (core.Match("DISTINCT") || (core.Dialect == DatabaseDialect.Informix && core.Match("UNIQUE")))
         {
             distinct = true;
             if (core.Match("ON") && core.MatchPunct('('))
@@ -209,7 +231,6 @@ internal sealed class SelectParser(SqlParserCore core)
         {
         }
 
-        Expression? top = null;
         if (core.Dialect == DatabaseDialect.SqlServer && core.Match("TOP"))
         {
             top = _expressions.ParseOperand();
@@ -264,7 +285,7 @@ internal sealed class SelectParser(SqlParserCore core)
             ParseOrderItems(orderBy);
         }
 
-        Expression? limit = null, offset = null;
+        Expression? limit = null, offset = skip;
         if (core.Match("LIMIT"))
         {
             limit = _expressions.ParseExpression();

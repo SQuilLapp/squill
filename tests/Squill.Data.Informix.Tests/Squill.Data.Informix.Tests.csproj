@@ -11,5 +11,12 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Testcontainers" />
     <ProjectReference Include="..\..\src\Squill.Data.Informix\Squill.Data.Informix.csproj" />
+    <ProjectReference Include="..\..\src\Squill.Sql\Squill.Sql.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/MultiResultScenario.cs" Link="MultiResultScenario.cs" />
+    <Compile Include="../Shared/SqlCorpusScenario.cs" Link="SqlCorpusScenario.cs" />
+    <Compile Include="../Shared/SqlCorpus.cs" Link="SqlCorpus.cs" />
+    <Content Include="../Shared/SqlCorpus/*.sql" Link="SqlCorpus/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

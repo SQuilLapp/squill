@@ -92,6 +92,7 @@ internal static class AliasGenerator
         DatabaseDialect.SqlServer => TSqlKeywords.Words,
         DatabaseDialect.Sqlite => SqliteKeywords.Words,
         DatabaseDialect.Oracle => OracleKeywords.Words,
+        DatabaseDialect.Informix => InformixKeywords.Words,
         _ => AnsiKeywords.Words,
     };
 

@@ -32,6 +32,7 @@ public static class SqlGrammarGenerator
             DatabaseDialect.MySql => MySqlKeywords.Words,
             DatabaseDialect.SqlServer => TSqlKeywords.Words,
             DatabaseDialect.Oracle => OracleKeywords.Words,
+            DatabaseDialect.Informix => InformixKeywords.Words,
             _ => SqliteKeywords.Words,
         };
 
@@ -85,6 +86,11 @@ public static class SqlGrammarGenerator
                     Range(w, "string.quoted.single.sql", "[Nn]?'", "'", "''");
                     Range(w, "variable.other.quoted.sql", "\"", "\"", "\"\"");
                     break;
+                case DatabaseDialect.Informix:
+                    Range(w, "comment.block.sql", "\\{", "\\}");
+                    Range(w, "string.quoted.single.sql", "'", "'", "''");
+                    Range(w, "variable.other.quoted.sql", "\"", "\"", "\"\"");
+                    break;
                 default:
                     Range(w, "string.quoted.single.sql", "'", "'", "''");
                     Range(w, "variable.other.quoted.sql", "\"", "\"", "\"\"");
@@ -99,6 +105,7 @@ public static class SqlGrammarGenerator
                 DatabaseDialect.MySql => "\\?|@@?[A-Za-z_][A-Za-z0-9_$]*",
                 DatabaseDialect.SqlServer => "@[A-Za-z_][A-Za-z0-9_$#]*",
                 DatabaseDialect.Oracle => ":[A-Za-z0-9_][A-Za-z0-9_$#]*",
+                DatabaseDialect.Informix => "\\?|:[A-Za-z_][A-Za-z0-9_]*",
                 _ => "\\?\\d*|[:@$][A-Za-z_][A-Za-z0-9_]*",
             };
             Match(w, "variable.parameter.sql", parameter);

@@ -176,6 +176,30 @@ public static class FunctionCatalog
         F("LEAD", "expr, offset, default", "any", "Value of a following row of the partition."),
     ];
 
+    private static readonly FunctionSignature[] Informix =
+    [
+        F("NVL", "expr, fallback", "any", "Fallback when the expression is NULL."),
+        F("DECODE", "expr, search, result, ..., default", "any", "Compares the expression with each search value."),
+        F("TODAY", "", "date", "Current date of the database server."),
+        F("MDY", "month, day, year", "date", "Builds a date from its parts."),
+        F("EXTEND", "datetime, first TO last", "datetime", "Adjusts the qualifier of a DATETIME value."),
+        F("DAY", "date", "int", "Day of the month."),
+        F("MONTH", "date", "int", "Month of the year."),
+        F("YEAR", "date", "int", "Year of a date."),
+        F("WEEKDAY", "date", "int", "Day of the week, 0 for Sunday."),
+        F("TO_CHAR", "value, format", "text", "Formats a date or a number as text."),
+        F("TO_DATE", "text, format", "date", "Parses text into a date."),
+        F("LENGTH", "text", "int", "Number of characters without trailing blanks."),
+        F("CHAR_LENGTH", "text", "int", "Number of characters."),
+        F("SUBSTR", "text, start, length", "text", "Extracts part of a string."),
+        F("LPAD", "text, length, pad", "text", "Pads on the left."),
+        F("RPAD", "text, length, pad", "text", "Pads on the right."),
+        F("TRUNC", "value, precision", "any", "Truncates a number or a date."),
+        F("MOD", "a, b", "number", "Remainder of a division."),
+        F("DBINFO", "option", "any", "Information about the database server and the last statement."),
+        F("ROW_NUMBER", "", "int8", "Sequential number of the row within its window partition."),
+    ];
+
     private static readonly FunctionSignature[] Sqlite =
     [
         F("LENGTH", "text", "int", "Number of characters."),
@@ -214,6 +238,7 @@ public static class FunctionCatalog
         [DatabaseDialect.SqlServer] = [.. Common, .. TSql],
         [DatabaseDialect.Sqlite] = [.. Common, .. Sqlite],
         [DatabaseDialect.Oracle] = [.. Common, .. Oracle],
+        [DatabaseDialect.Informix] = [.. Common, .. Informix],
     };
 
     /// <summary>Lists the functions of a dialect: the common ones, then those specific to the engine.</summary>

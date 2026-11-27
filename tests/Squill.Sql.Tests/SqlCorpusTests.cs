@@ -18,6 +18,7 @@ public sealed class SqlCorpusTests
         ("sqlserver", DatabaseDialect.SqlServer, "sample"),
         ("sqlite", DatabaseDialect.Sqlite, null),
         ("oracle", DatabaseDialect.Oracle, null),
+        ("informix", DatabaseDialect.Informix, null),
     ];
 
     private static ColumnDefinition Col(string name, string type = "int") => new(name, type, true, false, null);

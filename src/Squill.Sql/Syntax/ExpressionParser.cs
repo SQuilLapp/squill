@@ -153,6 +153,8 @@ internal sealed class ExpressionParser(SqlParserCore core)
                 return ("AND", And, 1);
             case "IN" or "BETWEEN" or "LIKE" or "ILIKE" or "REGEXP" or "RLIKE" or "GLOB":
                 return (core.TextOf(token).ToUpperInvariant(), Comparison, 1);
+            case "MATCHES" when core.Dialect == DatabaseDialect.Informix:
+                return ("MATCHES", Comparison, 1);
             case "SIMILAR" when core.IsWord(core.Peek(1), "TO"):
                 return ("SIMILAR TO", Comparison, 2);
             case "COLLATE":
@@ -175,7 +177,7 @@ internal sealed class ExpressionParser(SqlParserCore core)
                 return (op, Comparison, count);
             case "NOT" when token.Kind == TokenKind.Keyword:
                 var next = core.Peek(1);
-                foreach (var word in (ReadOnlySpan<string>)["IN", "BETWEEN", "LIKE", "ILIKE", "REGEXP", "RLIKE", "GLOB"])
+                foreach (var word in (ReadOnlySpan<string>)["IN", "BETWEEN", "LIKE", "ILIKE", "REGEXP", "RLIKE", "GLOB", "MATCHES"])
                 {
                     if (core.IsWord(next, word))
                     {
@@ -268,6 +270,10 @@ internal sealed class ExpressionParser(SqlParserCore core)
                 return new UnaryExpr("EXISTS", query, token.Start, Math.Max(core.LastEnd, query.End) - token.Start);
             case "CASE":
                 return ParseCase();
+            case "CURRENT" when core.Dialect == DatabaseDialect.Informix:
+                core.Next();
+                TryDatetimeQualifier();
+                return new FunctionCall("CURRENT", [], false, token.Start, core.LastEnd - token.Start);
             case "CAST":
                 return ParseCast();
             default:
@@ -372,7 +378,7 @@ internal sealed class ExpressionParser(SqlParserCore core)
             var first = true;
             do
             {
-                args.Add(first ? ParseFirstArgument(name) : ParseExpression());
+                args.Add(TryDatetimeQualifier() ?? (first ? ParseFirstArgument(name) : ParseExpression()));
                 first = false;
                 while (IsSeparatorWord(name))
                 {
@@ -393,6 +399,32 @@ internal sealed class ExpressionParser(SqlParserCore core)
         ParseCallTail(extra);
         return new FunctionCall(name, args, distinct, start, core.LastEnd - start, extra.Count == 0 ? null : extra);
     }
+
+    // Informix DATETIME qualifier (YEAR TO SECOND, FRACTION(3)) after CURRENT or as an EXTEND argument; null when none follows.
+    private LiteralExpr? TryDatetimeQualifier()
+    {
+        var token = core.Peek();
+        if (core.Dialect != DatabaseDialect.Informix || !IsQualifierWord(token) || !core.IsWord(core.Peek(1), "TO") || !IsQualifierWord(core.Peek(2)))
+        {
+            return null;
+        }
+
+        core.Next();
+        core.Next();
+        core.Next();
+        if (core.IsPunct(core.Peek(), '(') && core.Peek(1).Kind == TokenKind.NumberLiteral && core.IsPunct(core.Peek(2), ')'))
+        {
+            core.Next();
+            core.Next();
+            core.Next();
+        }
+
+        return new LiteralExpr(LiteralKind.Text, token.Start, core.LastEnd - token.Start);
+    }
+
+    private bool IsQualifierWord(Token token) =>
+        token.Kind is TokenKind.Identifier or TokenKind.Keyword
+        && core.TextOf(token).ToUpperInvariant() is "YEAR" or "MONTH" or "DAY" or "HOUR" or "MINUTE" or "SECOND" or "FRACTION";
 
     // First argument: a bare date part, a T-SQL CONVERT type or a TRIM direction is not an expression.
     private Expression ParseFirstArgument(string name)

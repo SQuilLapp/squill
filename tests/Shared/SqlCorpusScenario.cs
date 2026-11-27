@@ -24,7 +24,7 @@ internal static class SqlCorpusScenario
                 continue;
 
             // GO and DELIMITER are client directives: the pieces the splitter finds are sent one by one, anything else as one batch (a T-SQL DECLARE must reach its SELECT).
-            var pieces = HasDirective(entry.Sql) || (dialect == DatabaseDialect.Oracle && entry.Statements > 1)
+            var pieces = HasDirective(entry.Sql) || (dialect is DatabaseDialect.Oracle or DatabaseDialect.Informix && entry.Statements > 1)
                 ? SqlStatementSplitter.Split(entry.Sql, dialect).Select(s => entry.Sql.Substring(s.Start, s.Length)).ToList()
                 : [entry.Sql];
             await RunQuietlyAsync(connection, begin);

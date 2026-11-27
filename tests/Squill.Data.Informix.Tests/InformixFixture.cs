@@ -53,6 +53,9 @@ public sealed class InformixFixture : IAsyncLifetime
     /// <summary>Gets a logged database holding the sample schema of the schema reader test.</summary>
     public const string SchemaDatabase = "sqschema";
 
+    /// <summary>Gets a logged database for the SQL corpus run.</summary>
+    public const string CorpusDatabase = "sqcorpus";
+
     public string ConnectionString(string password = Password, string database = Database) => OdbcConnectionString.Build(Host, Port, database, UserName, password);
 
     public async ValueTask InitializeAsync()
@@ -77,6 +80,7 @@ public sealed class InformixFixture : IAsyncLifetime
                 (await connection.ExecuteAsync("create database " + LoggedDatabase + " with log", TestContext.Current.CancellationToken)).Dispose();
                 (await connection.ExecuteAsync("create database " + UnloggedDatabase, TestContext.Current.CancellationToken)).Dispose();
                 (await connection.ExecuteAsync("create database " + SchemaDatabase + " with log", TestContext.Current.CancellationToken)).Dispose();
+                (await connection.ExecuteAsync("create database " + CorpusDatabase + " with log", TestContext.Current.CancellationToken)).Dispose();
                 return;
             }
             catch (OdbcException) when (DateTime.UtcNow < deadline)

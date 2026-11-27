@@ -24,6 +24,7 @@ public sealed class GrammarTests
     [InlineData(DatabaseDialect.SqlServer, "tsql")]
     [InlineData(DatabaseDialect.Sqlite, "sqlite")]
     [InlineData(DatabaseDialect.Oracle, "oracle")]
+    [InlineData(DatabaseDialect.Informix, "informix")]
     public void Committed_grammar_matches_generator(DatabaseDialect d, string name)
     {
         var generated = SqlGrammarGenerator.Generate(d);
