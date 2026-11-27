@@ -46,7 +46,7 @@ public sealed class CellPreviewPanelUiTests
             await using var connection = await new SqliteDatabaseProvider().OpenAsync(profile, null, CancellationToken.None);
             var schema = await connection.ReadSchemaAsync(CancellationToken.None);
             var editor = new AvaloniaSqlEditor { Text = "SELECT replace(hex(zeroblob(75000)), '0', 'k') AS t;" };
-            var tab = new QueryTabViewModel(new ConnectionSession(profile, connection, schema, null), editor, new History(), new Settings(), new ImmediateDispatcher(), new Dialogs());
+            var tab = new QueryTabViewModel(new ConnectionSession(profile, connection, schema, null), editor, new History(), new Settings(), new UiThreadDispatcher(), new Dialogs());
             await tab.RunCommand.ExecuteAsync(null);
             var result = tab.Results[0];
             var pane = new CellPreviewPanel();

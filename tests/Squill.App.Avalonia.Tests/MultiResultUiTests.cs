@@ -83,7 +83,7 @@ public sealed class MultiResultUiTests
         {
             var profile = new ConnectionProfile(Guid.NewGuid(), "p", DatabaseDialect.PostgreSql, "h", 1, "d", "u", null, null);
             var editor = new AvaloniaSqlEditor { Text = "SELECT 1;" };
-            var tab = new QueryTabViewModel(new ConnectionSession(profile, new Connection(), SchemaSnapshot.Empty, null), editor, new History(), new Settings(), new ImmediateDispatcher(), new Dialogs());
+            var tab = new QueryTabViewModel(new ConnectionSession(profile, new Connection(), SchemaSnapshot.Empty, null), editor, new History(), new Settings(), new UiThreadDispatcher(), new Dialogs());
             var view = new QueryTabView { DataContext = tab };
             var window = new Window { Width = 900, Height = 500, Content = view };
             window.Show();

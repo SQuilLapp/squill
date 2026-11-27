@@ -177,7 +177,7 @@ public sealed class ConnectionUiTests
 
     private sealed class Platform(ProviderRegistry providers) : IPlatformServices
     {
-        public IUiDispatcher Dispatcher { get; } = new ImmediateDispatcher();
+        public IUiDispatcher Dispatcher { get; } = new UiThreadDispatcher();
         public IDialogService Dialogs { get; } = new ConnectionUiTests.Dialogs();
         public Func<Squill.Presentation.Editor.ISqlEditor> EditorFactory { get; } = () => new Squill.App.Avalonia.Editors.AvaloniaSqlEditor();
         public ProviderRegistry Providers { get; } = providers;

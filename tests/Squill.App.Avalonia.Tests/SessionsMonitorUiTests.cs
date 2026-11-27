@@ -41,7 +41,7 @@ public sealed class SessionsMonitorUiTests
         await Headless.Session.Dispatch(async () =>
         {
             var profile = new ConnectionProfile(Guid.NewGuid(), "main", DatabaseDialect.PostgreSql, "h", 1, "appdb", "u", null, null, ConnectionEnvironment.Staging);
-            using var vm = new SessionsMonitorViewModel(profile, new Reader(extraRows), new Dialogs(), new ImmediateDispatcher(), TimeProvider.System);
+            using var vm = new SessionsMonitorViewModel(profile, new Reader(extraRows), new Dialogs(), new UiThreadDispatcher(), TimeProvider.System);
             await vm.RefreshAsync();
             var view = new SessionsMonitorView { DataContext = vm };
             var window = new Window { Content = view, Width = 1280, Height = 800 };

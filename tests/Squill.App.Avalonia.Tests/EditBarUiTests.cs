@@ -83,7 +83,7 @@ public sealed class EditBarUiTests
             })
                 await (await f._connection.ExecuteAsync(sql, [], CancellationToken.None)).DisposeAsync();
             var schema = await f._connection.ReadSchemaAsync(CancellationToken.None);
-            f.Tab = new QueryTabViewModel(new ConnectionSession(profile, f._connection, schema, null), new AvaloniaSqlEditor(), new History(), new Settings(), new ImmediateDispatcher(), new RecordingDialogs(f.Extensions));
+            f.Tab = new QueryTabViewModel(new ConnectionSession(profile, f._connection, schema, null), new AvaloniaSqlEditor(), new History(), new Settings(), new UiThreadDispatcher(), new RecordingDialogs(f.Extensions));
             f.Tab.ScriptRequested += f.Scripts.Add;
             f.View.DataContext = f.Tab;
             f.Window = new Window { Width = 900, Height = 500, Content = f.View };

@@ -1,6 +1,6 @@
 # P21-113 - Avalonia tests hang intermittently (DesignerUiTests)
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -15,4 +15,5 @@ Depends on: none
 - 2026-11-27 (P21-23): no hang, but a different failure on the same project: 3 consecutive runs each failed exactly one UI test with `InvalidOperationException: The calling thread cannot access this object because a different thread owns it` (`EditBarUiTests.PreviewSql_RequestsTheGeneratedScript`, then `WindowChromeTests.StatusBar_EnvironmentBlock_ShowsEnvironmentBrush` Local and Development variants); the baseline without the P21-23 changes (stashed) failed once the same way (`ExplorerAndTabsTests.ContextMenu_OffersDefinitionAndScriptCommands_ForTheRightNodes`). A UI-thread affinity flake, unrelated to the card.
 
 ## Done notes
-Open: reproduce, capture a dump, fix.
+- Method: run the test exe (`-reporter verbose`) five at a time (parallel load makes the race frequent: 4 failures in 20 runs, 2 in 6). The stack of every failure is the same: `HeadlessUnitTestSession.EnsureIsolatedApplication` -> `AppBuilder.SetupUnsafe` -> `AvaloniaHeadlessPlatform.Initialize` -> `Compositor..ctor` -> `DefaultRenderLoop.Add` -> `Dispatcher.VerifyAccess` throws. The session ran every test in a fresh isolated application (`AvaloniaTestIsolationLevel.PerTest`, the default); the reset between two tests leaves `Dispatcher.UIThread` unbound until the next access, and anything that reads `Dispatcher.UIThread` from a pool thread in that window (late continuations and timer ticks of the previous test, views such as `StatusBar`, `PlanTabView`, `SchemaCompareView` call `Dispatcher.UIThread` from property-changed handlers) binds it to that thread, so the next test fails at its setup with this exception (a different test each run) or, when the UI work then waits for a dispatcher nobody pumps, hangs. Product code is unaffected: the real app has one fixed UI thread and no reset.
+- Fix (test infrastructure): `Headless.Session` is started with `AvaloniaTestIsolationLevel.PerAssembly`, one application for the whole run, so there is no reset window. Together with P21-114 the project passed 30 runs out of 30 with 5 parallel runs at a time (and the sequential loop), against about 1 failure per run before.

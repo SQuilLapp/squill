@@ -44,7 +44,7 @@ public sealed class AutoRefreshButtonUiTests
             var profile = new ConnectionProfile(Guid.NewGuid(), "p", DatabaseDialect.Sqlite, null, null, null, null, file, null);
             await using var connection = await new SqliteDatabaseProvider().OpenAsync(profile, null, CancellationToken.None);
             var schema = await connection.ReadSchemaAsync(CancellationToken.None);
-            var tab = new QueryTabViewModel(new ConnectionSession(profile, connection, schema, null), new AvaloniaSqlEditor { Text = "SELECT 1 AS a;" }, new History(), new Settings(), new ImmediateDispatcher(), new Dialogs());
+            var tab = new QueryTabViewModel(new ConnectionSession(profile, connection, schema, null), new AvaloniaSqlEditor { Text = "SELECT 1 AS a;" }, new History(), new Settings(), new UiThreadDispatcher(), new Dialogs());
             var view = new QueryTabView { DataContext = tab };
             var window = new Window { Width = 900, Height = 500, Content = view };
             window.Show();

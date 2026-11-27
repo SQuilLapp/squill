@@ -50,7 +50,7 @@ public sealed class FilterBarUiTests
             foreach (var sql in Setup)
                 await (await connection.ExecuteAsync(sql, [], CancellationToken.None)).DisposeAsync();
             var schema = await connection.ReadSchemaAsync(CancellationToken.None);
-            var tab = new QueryTabViewModel(new ConnectionSession(profile, connection, schema, null), new AvaloniaSqlEditor(), new History(), new Settings(), new ImmediateDispatcher(), new Dialogs());
+            var tab = new QueryTabViewModel(new ConnectionSession(profile, connection, schema, null), new AvaloniaSqlEditor(), new History(), new Settings(), new UiThreadDispatcher(), new Dialogs());
             var view = new QueryTabView { DataContext = tab };
             var window = new Window { Width = 900, Height = 500, Content = view };
             window.Show();
