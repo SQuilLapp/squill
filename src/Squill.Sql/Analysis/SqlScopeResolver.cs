@@ -19,18 +19,7 @@ public static class SqlScopeResolver
     /// <returns>The sources, and the clause when requested.</returns>
     internal static ScopeInfo Resolve(SqlScript script, int offset, bool withClause)
     {
-        var text = script.Text;
-        offset = Math.Clamp(offset, 0, text.Length);
-        var chain = new List<Frame>();
-        foreach (var statement in script.Statements)
-        {
-            if (Contains(statement, offset, text, nested: false))
-            {
-                Descend(statement, [], text, offset, chain);
-                break;
-            }
-        }
-
+        var chain = BuildChain(script, offset);
         if (chain.Count == 0)
         {
             return new ScopeInfo(ClauseKind.None, []);
@@ -48,6 +37,26 @@ public static class SqlScopeResolver
         }
 
         return new ScopeInfo(withClause ? ClauseOf(chain[^1].Statement, script, offset) : ClauseKind.None, sources) { LocalCount = local };
+    }
+
+    /// <summary>Gets the select, insert, update and delete statements around <paramref name="offset"/>, outermost first.</summary>
+    internal static List<Statement> Chain(SqlScript script, int offset) => [.. BuildChain(script, offset).Select(f => f.Statement)];
+
+    private static List<Frame> BuildChain(SqlScript script, int offset)
+    {
+        var text = script.Text;
+        offset = Math.Clamp(offset, 0, text.Length);
+        var chain = new List<Frame>();
+        foreach (var statement in script.Statements)
+        {
+            if (Contains(statement, offset, text, nested: false))
+            {
+                Descend(statement, [], text, offset, chain);
+                break;
+            }
+        }
+
+        return chain;
     }
 
     private sealed record Frame(Statement Statement, IReadOnlyList<CommonTableExpr> Visible);
@@ -285,11 +294,11 @@ public static class SqlScopeResolver
                     ? ctes.LastOrDefault(c => string.Equals(c.Name, t.Name, StringComparison.OrdinalIgnoreCase))
                     : null;
                 sources.Add(cte is null
-                    ? new VisibleSource(t.Schema, t.Name, t.Alias, null)
-                    : new VisibleSource(null, cte.Name, t.Alias, cte.Columns.Count > 0 ? cte.Columns : OutputNames(cte.Query)));
+                    ? new VisibleSource(t.Schema, t.Name, t.Alias, null) { Origin = t }
+                    : new VisibleSource(null, cte.Name, t.Alias, cte.Columns.Count > 0 ? cte.Columns : OutputNames(cte.Query)) { Origin = t, Cte = cte });
                 break;
             case SubquerySource s:
-                sources.Add(new VisibleSource(null, s.Alias ?? string.Empty, s.Alias, OutputNames(s.Query)));
+                sources.Add(new VisibleSource(null, s.Alias ?? string.Empty, s.Alias, OutputNames(s.Query)) { Origin = s });
                 break;
             case JoinSource j:
                 Flatten(j.Left, ctes, sources);
@@ -299,7 +308,7 @@ public static class SqlScopeResolver
     }
 
     /// <summary>Gets the output names of a query, or <see langword="null"/> when a star or a non-select makes them unknown.</summary>
-    private static IReadOnlyList<string>? OutputNames(Statement query)
+    internal static IReadOnlyList<string>? OutputNames(Statement query)
     {
         switch (query)
         {

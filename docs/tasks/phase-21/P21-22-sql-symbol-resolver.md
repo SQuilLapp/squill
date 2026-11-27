@@ -1,6 +1,6 @@
 # P21-22 - Sql: symbol resolution for go to definition and find usages
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -19,8 +19,8 @@ Exists today: `SqlScopeResolver.Resolve(script, offset)` returns the clause and 
 - Editor commands (P21-23), cross-file usages (P21-27 does rename across files).
 
 ## Tasks
-- [ ] Table-driven tests per dialect: alias, CTE (also recursive), sub-query in `FROM`, correlated sub-query, `JOIN ... USING`, select alias in `ORDER BY`, quoted mixed-case names, ambiguous column, unknown table.
-- [ ] Implement over the existing parser and walker (make `SqlTreeWalker` reusable, no second walker).
+- [x] Table-driven tests per dialect: alias, CTE (also recursive), sub-query in `FROM`, correlated sub-query, `JOIN ... USING`, select alias in `ORDER BY`, quoted mixed-case names, ambiguous column, unknown table.
+- [x] Implement over the existing parser and walker (make `SqlTreeWalker` reusable, no second walker).
 
 ## Acceptance criteria
 - Recipe 2 common acceptance.
@@ -33,3 +33,13 @@ Exists today: `SqlScopeResolver.Resolve(script, offset)` returns the clause and 
 
 ## Suggested commit message
 Resolve the symbol under the caret and its usages in a SQL script
+
+## Done notes
+- Premise checked: `SqlScopeResolver`, `SqlTreeWalker` (internal), `VisibleSource` and `SqlHoverProvider` exist as stated; the syntax tree keeps names as strings without positions (aliases, CTE names, select aliases), so declarations are located by tokens inside the node span. "P19-01 quoting rules" are about writing quoted names, there is no dialect case-folding helper and the tree drops the quotes: names are compared ignoring case, as completion, hover and diagnostics already do.
+- No second walker. `SqlTreeWalker.References` finds the table or column reference under the caret; `SqlScopeResolver` supplies the sources. Changes there: `VisibleSource` gets internal `Origin` (the `TableRef` / `SubquerySource`) and `Cte`, `SqlScopeResolver.Chain` (the statements around an offset) and `OutputNames` became internal.
+- New: `SqlSymbol` / `SqlSymbolKind` and `SqlSymbolResolver.SymbolAt` / `Usages` in `Squill.Sql/Analysis`. `Usages` takes an optional third argument `SchemaSnapshot? schema` (not in the card) so unqualified columns resolve the same way as in `SymbolAt`. Usages re-resolve every identifier of the same name and keep those that resolve to the same symbol, so aliases and derived names stay in their statement (their declaration differs) and tables, views and columns span the script (a missing schema or table on either side matches any).
+- Rules beyond the card: with a `FROM` source the snapshot does not describe, a column is attributed to it only when nothing else could own it (qualified, or the only candidate), otherwise `null`; a sub-query or CTE whose select list has a star gives `null` (no star expansion); in `ORDER BY` a select alias wins over a column, elsewhere it is the last resort; a recursive CTE refers to itself when the `RECURSIVE` keyword is present or, for Oracle and SQL Server, when its body is a set operation (`SqlScopeResolver` does not make a CTE visible inside its own body, so the resolver finds it through `Chain`).
+- Not covered (returns `null` or is skipped): column names in `INSERT` column lists and `UPDATE ... SET` targets, schema parts of a name, three-part names, quoted names containing a dot.
+- Tests: `SymbolResolverTests` (6 dialects, alias, qualified column, table/view/unknown, CTE and its columns, nested CTEs, recursive CTE per dialect, sub-query, correlated sub-query, `JOIN ... USING` ambiguity, select alias in `ORDER BY`, quoted mixed-case names, usages, truncation fuzz at every 5th character for every dialect, 5,000-line script under 50 ms).
+
+- Verification: `Squill.slnx` and `Squill.Windows.slnx` build with 0 warnings; `dotnet test --solution Squill.slnx`: every project green (Sql 2158) except that the Avalonia UI test host stopped answering after 149 passed tests, twice, and had to be ended by hand (known flaky area, no test failed, code unrelated to `Squill.Sql`). No AOT publish (the card asks none, no head code changed).

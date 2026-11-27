@@ -458,7 +458,7 @@ Depends on: <card ids, ranges allowed>
 | [P21-19](phase-21/P21-19-proxy-ui.md) | Connection editor: proxy fields (Presentation, WinUI, Avalonia) | P21-18 | done |
 | [P21-20](phase-21/P21-20-password-sources.md) | Platform and Presentation: password sources (stored, ask on connect, external command) | none | done |
 | [P21-21](phase-21/P21-21-password-sources-ui.md) | Password sources in both heads (editor choice and the password prompt) | P21-20 | done |
-| [P21-22](phase-21/P21-22-sql-symbol-resolver.md) | Sql: symbol resolution for go to definition and find usages | none | todo |
+| [P21-22](phase-21/P21-22-sql-symbol-resolver.md) | Sql: symbol resolution for go to definition and find usages | none | done |
 | [P21-23](phase-21/P21-23-presentation-definition-and-usages.md) | Presentation: go to definition and find usages commands | P21-22 | todo |
 | [P21-24](phase-21/P21-24-winui-definition-and-usages.md) | WinUI: F12, Ctrl+click and usage highlights in the LoomEditor | P21-23 | todo |
 | [P21-25](phase-21/P21-25-avalonia-definition-and-usages.md) | Avalonia: F12, Ctrl+click and usage highlights | P21-23, P21-24 | todo |

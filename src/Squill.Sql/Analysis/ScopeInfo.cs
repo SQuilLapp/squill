@@ -1,3 +1,5 @@
+using Squill.Sql.Syntax;
+
 namespace Squill.Sql.Analysis;
 
 /// <summary>What is visible at a caret position.</summary>
@@ -14,4 +16,11 @@ public sealed record ScopeInfo(ClauseKind Clause, IReadOnlyList<VisibleSource> S
 /// <param name="Name">The table or CTE name; the alias for a derived table, empty when it has none.</param>
 /// <param name="Alias">The alias, or <see langword="null"/>.</param>
 /// <param name="DerivedColumns">The output names of a CTE or derived table; <see langword="null"/> for a real table or when unknown (<c>*</c>).</param>
-public sealed record VisibleSource(string? Schema, string Name, string? Alias, IReadOnlyList<string>? DerivedColumns);
+public sealed record VisibleSource(string? Schema, string Name, string? Alias, IReadOnlyList<string>? DerivedColumns)
+{
+    /// <summary>The <see cref="TableRef"/> or <see cref="SubquerySource"/> of the <c>FROM</c> clause this source was built from.</summary>
+    internal TableSource? Origin { get; init; }
+
+    /// <summary>The common table expression a <see cref="TableRef"/> names, or <see langword="null"/> for a real table.</summary>
+    internal CommonTableExpr? Cte { get; init; }
+}
