@@ -92,6 +92,7 @@ internal sealed class OracleSession : IAsyncDisposable
         _command = _connection.CreateCommand();
         _command.CommandText = Normalize(request.Sql ?? "");
         _command.BindByName = true;
+        _command.InitialLONGFetchSize = -1; // whole LONG values (data_default, view text), not just the length
         _command.CommandTimeout = _commandTimeout;
         _command.Transaction = _transaction;
         foreach (var p in request.Parameters ?? [])

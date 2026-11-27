@@ -440,7 +440,7 @@ Depends on: <card ids, ranges allowed>
 | [P21-01](phase-21/P21-01-mariadb-container-verification.md) | MariaDB: container tests and the dialect differences | none | done |
 | [P21-02](phase-21/P21-02-mariadb-plan-and-transactions.md) | MariaDB: execution plan, transaction probe and the support matrix | P21-01 | done |
 | [P21-03](phase-21/P21-03-oracle-bridge-protocol.md) | Oracle bridge: cancel, transactions, several result sets and DBMS_OUTPUT | none | done |
-| [P21-04](phase-21/P21-04-oracle-schema-objects.md) | Data.Oracle: indexes, foreign keys, defaults, routines, triggers and view definitions | P21-03 | todo |
+| [P21-04](phase-21/P21-04-oracle-schema-objects.md) | Data.Oracle: indexes, foreign keys, defaults, routines, triggers and view definitions | P21-03 | done |
 | [P21-05](phase-21/P21-05-sql-oracle-dialect.md) | Sql: Oracle dialect (tokenizer, splitter, keywords, quoting, types, functions) | none | todo |
 | [P21-06](phase-21/P21-06-sql-oracle-ddl-generator.md) | Sql: Oracle DDL generator (CREATE, ALTER, DROP) for the table designer | P21-04, P21-05 | todo |
 | [P21-07](phase-21/P21-07-oracle-grid-editing.md) | Oracle: grid editing, generated keys and column types | P21-03, P21-05 | todo |

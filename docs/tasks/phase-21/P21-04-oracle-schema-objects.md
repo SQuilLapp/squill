@@ -1,6 +1,6 @@
 # P21-04 - Data.Oracle: indexes, foreign keys, defaults, routines, triggers and view definitions
 
-Status: todo
+Status: done
 Depends on: P21-03
 
 ## Goal
@@ -17,8 +17,8 @@ Exists today: the Oracle schema reader lists schemas, tables, views, columns (`N
 - DDL generation (P21-06).
 
 ## Tasks
-- [ ] Unit tests with the fake bridge (mapping of each catalogue row).
-- [ ] Docker-gated test on a sample Oracle schema (two tables with a FK, an index, an identity, a view, a function, a trigger) added to the verification scenario.
+- [x] Unit tests with the fake bridge (mapping of each catalogue row).
+- [x] Docker-gated test on a sample Oracle schema (two tables with a FK, an index, an identity, a view, a function, a trigger) added to the verification scenario.
 
 ## Acceptance criteria
 - Recipe 2 common acceptance; `-Engine oracle` green; the ER diagram opens on the sample schema (checked through the ER view-model test, not by hand).
@@ -31,3 +31,9 @@ Exists today: the Oracle schema reader lists schemas, tables, views, columns (`N
 
 ## Suggested commit message
 Read Oracle indexes, foreign keys, defaults, routines, triggers and view definitions
+
+## Done notes
+- `OracleSchemaReader` now issues 13 catalogue queries (all through the generic `execute`): indexes (the index backing the primary key and the hidden columns of function-based indexes are skipped), foreign keys (`delete_rule` mapped, Oracle has no `on update`), defaults (own query, `NULL` text dropped), identities (`all_tab_identity_cols` -> `IsAutoIncrement`, default dropped), view text, materialized views (`TableKind.MaterializedView`, query as definition), routines (`all_procedures` + `all_arguments` for the signature and return type), triggers.
+- Routine and trigger definitions come from `all_source` (also used for triggers, which avoids the `LONG` body of `all_triggers`) prefixed with `CREATE OR REPLACE`. A package is listed as one routine of kind procedure (specification only); package members are not listed.
+- The `LONG` risk was real: the bridge returned `null` for `data_default` until `InitialLONGFetchSize = -1` was set on the command (one line in `OracleSession`).
+- Tests: fake-bridge mapping test extended (13 catalogue queries counted), Docker test `Schema_SampleObjects_AreRead` (two tables with FK, unique index, identity, defaults, view, materialized view, function, trigger) that also builds the `ErModel` of the sample schema (the test project references `Squill.Presentation` for it). `-Engine oracle`: 64 pass.

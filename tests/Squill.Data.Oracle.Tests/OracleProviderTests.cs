@@ -322,8 +322,8 @@ public sealed class OracleProviderTests
         var sets = new Dictionary<string, (WireColumn[], WireCell?[][])>
         {
             ["from dual"] = (one, [[Text("HR")]]),
-            ["from all_constraints"] = (one, [[Text("HR"), Text("EMP"), Text("EMP_PK"), Text("ID")]]),
-            ["from all_tab_columns"] = (one,
+            ["c.constraint_type = 'P'"] = (one, [[Text("HR"), Text("EMP"), Text("EMP_PK"), Text("ID")]]),
+            ["column_id"] = (one,
             [
                 [Text("HR"), Text("EMP"), Text("ID"), Text("NUMBER"), null, Num(10), Num(0), Text("N")],
                 [Text("HR"), Text("EMP"), Text("NAME"), Text("VARCHAR2"), Num(40), null, null, Text("Y")],
@@ -331,7 +331,44 @@ public sealed class OracleProviderTests
                 [Text("HR"), Text("EMP"), Text("HIRED"), Text("DATE"), Num(7), null, null, Text("Y")],
                 [Text("HR"), Text("EMP_V"), Text("ID"), Text("NUMBER"), null, null, null, Text("Y")],
             ]),
-            ["from all_objects"] = (one, [[Text("HR"), Text("EMP"), Text("TABLE")], [Text("HR"), Text("EMP_V"), Text("VIEW")]]),
+            ["from all_objects"] = (one, [[Text("HR"), Text("EMP"), Text("TABLE")], [Text("HR"), Text("EMP_V"), Text("VIEW")], [Text("HR"), Text("DEPT"), Text("TABLE")], [Text("HR"), Text("EMP_MV"), Text("TABLE")]]),
+            ["data_default"] = (one,
+            [
+                [Text("HR"), Text("EMP"), Text("NAME"), Text("'n/a' ")],
+                [Text("HR"), Text("EMP"), Text("SALARY"), Text("NULL")],
+                [Text("HR"), Text("EMP"), Text("ID"), Text("\"HR\".\"ISEQ$$_1\".nextval")],
+            ]),
+            ["from all_tab_identity_cols"] = (one, [[Text("HR"), Text("EMP"), Text("ID")]]),
+            ["from all_indexes"] = (one,
+            [
+                [Text("HR"), Text("EMP"), Text("EMP_NAME_UK"), Text("UNIQUE"), Text("NAME")],
+                [Text("HR"), Text("EMP"), Text("EMP_SAL_HIRED"), Text("NONUNIQUE"), Text("SALARY")],
+                [Text("HR"), Text("EMP"), Text("EMP_SAL_HIRED"), Text("NONUNIQUE"), Text("HIRED")],
+            ]),
+            ["c.constraint_type = 'R'"] = (one,
+            [
+                [Text("HR"), Text("EMP"), Text("EMP_DEPT_FK"), Text("DEPT_ID"), Text("HR"), Text("DEPT"), Text("ID"), Text("CASCADE")],
+                [Text("HR"), Text("EMP"), Text("EMP_MGR_FK"), Text("MGR_A"), Text("HR"), Text("EMP"), Text("ID"), Text("SET NULL")],
+                [Text("HR"), Text("EMP"), Text("EMP_MGR_FK"), Text("MGR_B"), Text("HR"), Text("EMP"), Text("ID2"), Text("SET NULL")],
+                [Text("HR"), Text("EMP"), Text("EMP_X_FK"), Text("X"), Text("HR"), Text("DEPT"), Text("ID"), Text("NO ACTION")],
+            ]),
+            ["from all_views"] = (one, [[Text("HR"), Text("EMP_V"), Text("select id from emp\n")]]),
+            ["from all_mviews"] = (one, [[Text("HR"), Text("EMP_MV"), Text("select id from emp")]]),
+            ["from all_procedures"] = (one, [[Text("HR"), Text("RAISE_PAY"), Text("FUNCTION")], [Text("HR"), Text("CLEAN"), Text("PROCEDURE")], [Text("HR"), Text("PAY_PKG"), Text("PACKAGE")]]),
+            ["from all_arguments"] = (one,
+            [
+                [Text("HR"), Text("RAISE_PAY"), null, Text("OUT"), Text("NUMBER"), Num(0)],
+                [Text("HR"), Text("RAISE_PAY"), Text("P_ID"), Text("IN"), Text("NUMBER"), Num(1)],
+                [Text("HR"), Text("RAISE_PAY"), Text("P_PCT"), Text("IN/OUT"), Text("NUMBER"), Num(2)],
+            ]),
+            ["from all_source"] = (one,
+            [
+                [Text("HR"), Text("RAISE_PAY"), Text("FUNCTION"), Text("FUNCTION raise_pay(p_id number, p_pct in out number) return number is\n")],
+                [Text("HR"), Text("RAISE_PAY"), Text("FUNCTION"), Text("begin return 1; end;\n")],
+                [Text("HR"), Text("EMP_BI"), Text("TRIGGER"), Text("TRIGGER emp_bi before insert on emp\n")],
+            ]),
+            ["from all_triggers"] = (one, [[Text("HR"), Text("HR"), Text("EMP"), Text("EMP_BI"), Text("BEFORE EACH ROW"), Text("INSERT OR UPDATE")]]),
+            ["from all_"] = (one, []),
         };
         await using var bridge = new FakeBridge(FakeBridge.Scripted(sets));
         await using var connection = await OpenAsync(bridge);
@@ -346,6 +383,24 @@ public sealed class OracleProviderTests
         Assert.Equal([true, false, false, false], emp.Columns.Select(c => c.IsPrimaryKey));
         Assert.Equal([false, true, true, true], emp.Columns.Select(c => c.IsNullable));
         Assert.Equal(TableKind.View, schema.FindTable("HR", "EMP_V")!.Kind);
+        Assert.Equal("select id from emp", schema.FindTable("HR", "EMP_V")!.Definition);
+
+        Assert.Equal([null, "'n/a'", null, null], emp.Columns.Select(c => c.DefaultExpression));
+        Assert.Equal([true, false, false, false], emp.Columns.Select(c => c.IsAutoIncrement));
+        Assert.Equal([("EMP_NAME_UK", true, "NAME"), ("EMP_SAL_HIRED", false, "SALARY,HIRED")], emp.Indexes.Select(i => (i.Name, i.IsUnique, string.Join(',', i.Columns))));
+        Assert.Equal(["EMP_DEPT_FK", "EMP_MGR_FK", "EMP_X_FK"], emp.ForeignKeys.Select(f => f.Name));
+        var mgr = emp.ForeignKeys[1];
+        Assert.Equal("MGR_A,MGR_B>HR.EMP(ID,ID2)", $"{string.Join(',', mgr.Columns)}>{mgr.ReferencedSchema}.{mgr.ReferencedTable}({string.Join(',', mgr.ReferencedColumns)})");
+        Assert.Equal([ReferentialAction.Cascade, ReferentialAction.SetNull, ReferentialAction.NoAction], emp.ForeignKeys.Select(f => f.OnDelete));
+        Assert.Equal(TableKind.MaterializedView, schema.FindTable("HR", "EMP_MV")!.Kind);
+        Assert.Equal("select id from emp", schema.FindTable("HR", "EMP_MV")!.Definition);
+
+        Assert.Equal([("RAISE_PAY", RoutineKind.Function, "RAISE_PAY(P_ID NUMBER, IN/OUT P_PCT NUMBER)", "NUMBER"), ("CLEAN", RoutineKind.Procedure, "CLEAN()", null), ("PAY_PKG", RoutineKind.Procedure, "PAY_PKG", null)],
+            schema.Routines.Select(r => (r.Name, r.Kind, r.Signature, r.ReturnType)));
+        Assert.Equal("CREATE OR REPLACE FUNCTION raise_pay(p_id number, p_pct in out number) return number is\nbegin return 1; end;", schema.Routines[0].Definition);
+        Assert.Null(schema.Routines[1].Definition);
+        var trigger = Assert.Single(schema.Triggers);
+        Assert.Equal(("HR", "EMP", "EMP_BI", "BEFORE", "INSERT OR UPDATE", "CREATE OR REPLACE TRIGGER emp_bi before insert on emp"), (trigger.Schema, trigger.Table, trigger.Name, trigger.Timing, trigger.Events, trigger.Definition));
     }
 
     [Fact]
@@ -367,7 +422,7 @@ public sealed class OracleProviderTests
         await connection.ReadSchemaAsync(CancellationToken.None);
 
         var catalogQueries = bridge.Requests.Where(r => r.Op == "execute" && r.Sql!.Contains("from all_", StringComparison.Ordinal)).Select(r => r.Sql!).ToList();
-        Assert.Equal(3, catalogQueries.Count);
+        Assert.Equal(13, catalogQueries.Count);
         Assert.All(catalogQueries, q =>
         {
             Assert.DoesNotContain("oracle_maintained", q, StringComparison.Ordinal);

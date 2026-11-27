@@ -169,4 +169,59 @@ public sealed class OracleContainerTests(OracleFixture server) : IClassFixture<O
         await again.ReadAllAsync(10, CancellationToken.None);
         Assert.Empty(again.Messages);
     }
+
+    [Fact(Skip = DockerGate.SkipReason, SkipUnless = nameof(DockerGate.Enabled), SkipType = typeof(DockerGate))]
+    public async Task Schema_SampleObjects_AreRead()
+    {
+        await using var connection = await OpenAsync();
+        var owner = OracleFixture.UserName.ToUpperInvariant();
+        foreach (var sql in new[]
+        {
+            "create table squill_dept (id number(10) primary key, name varchar2(40) default 'none' not null)",
+            "create table squill_emp (id number generated always as identity primary key, dept_id number(10) not null, salary number(8,2) default 0, " +
+            "constraint squill_emp_dept_fk foreign key (dept_id) references squill_dept (id) on delete cascade)",
+            "create unique index squill_emp_ix on squill_emp (dept_id, salary)",
+            "create view squill_emp_v as select id, dept_id from squill_emp",
+            "create materialized view squill_emp_mv as select id from squill_emp",
+            "create function squill_twice(p_n in number) return number is begin return p_n * 2; end;",
+            "create trigger squill_emp_bi before insert on squill_emp for each row begin null; end;",
+        })
+        {
+            await RunAsync(connection, sql, CancellationToken.None);
+        }
+        try
+        {
+            var schema = await connection.ReadSchemaAsync(CancellationToken.None);
+
+            var emp = Assert.IsType<TableInfo>(schema.FindTable(owner, "SQUILL_EMP"));
+            Assert.True(emp.Columns[0].IsAutoIncrement);
+            Assert.Null(emp.Columns[0].DefaultExpression);
+            Assert.Equal("0", emp.Columns[2].DefaultExpression);
+            Assert.Equal("'none'", schema.FindTable(owner, "SQUILL_DEPT")!.Columns[1].DefaultExpression);
+            var index = Assert.Single(emp.Indexes);
+            Assert.Equal(("SQUILL_EMP_IX", true, "DEPT_ID,SALARY"), (index.Name, index.IsUnique, string.Join(',', index.Columns)));
+            var fk = Assert.Single(emp.ForeignKeys);
+            Assert.Equal(("SQUILL_EMP_DEPT_FK", owner, "SQUILL_DEPT", ReferentialAction.Cascade), (fk.Name, fk.ReferencedSchema, fk.ReferencedTable, fk.OnDelete));
+            Assert.Contains("select", schema.FindTable(owner, "SQUILL_EMP_V")!.Definition, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal(TableKind.View, schema.FindTable(owner, "SQUILL_EMP_V")!.Kind);
+            Assert.Equal(TableKind.MaterializedView, schema.FindTable(owner, "SQUILL_EMP_MV")!.Kind);
+            Assert.False(string.IsNullOrWhiteSpace(schema.FindTable(owner, "SQUILL_EMP_MV")!.Definition));
+            var function = Assert.Single(schema.Routines, r => r.Name == "SQUILL_TWICE");
+            Assert.Equal((RoutineKind.Function, "SQUILL_TWICE(P_N NUMBER)", "NUMBER"), (function.Kind, function.Signature, function.ReturnType));
+            Assert.StartsWith("CREATE OR REPLACE FUNCTION", function.Definition, StringComparison.OrdinalIgnoreCase);
+            var trigger = Assert.Single(schema.Triggers, t => t.Name == "SQUILL_EMP_BI");
+            Assert.Equal(("SQUILL_EMP", "BEFORE"), (trigger.Table, trigger.Timing));
+            Assert.Contains("TRIGGER", trigger.Definition, StringComparison.OrdinalIgnoreCase);
+
+            // The ER diagram has the relation (view-model level, no window).
+            var model = Squill.Presentation.Diagram.ErModel.Build(schema, new Squill.Presentation.Diagram.ErFilter(new HashSet<string>([$"{owner}.SQUILL_EMP", $"{owner}.SQUILL_DEPT"], StringComparer.OrdinalIgnoreCase), false));
+            Assert.Single(model.Relations);
+            Assert.Equal(0, model.UnresolvedRelations);
+        }
+        finally
+        {
+            foreach (var sql in new[] { "drop materialized view squill_emp_mv", "drop view squill_emp_v", "drop function squill_twice", "drop table squill_emp", "drop table squill_dept" })
+                await RunAsync(connection, sql, CancellationToken.None);
+        }
+    }
 }
