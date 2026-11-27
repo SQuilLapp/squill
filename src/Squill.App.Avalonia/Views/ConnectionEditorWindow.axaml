@@ -186,6 +186,39 @@
                       <TextBlock Text="{loc:Text connections.tls}" Classes="lbl" />
                       <ComboBox Name="TlsBox" HorizontalAlignment="Stretch" SelectionChanged="OnTlsChanged" />
                       <CheckBox Name="TrustBox" Content="{loc:Text connections.trustCertificate}" IsChecked="{Binding TrustServerCertificate, Mode=TwoWay}" />
+                      <Expander Name="TlsFilesExpander" Header="{loc:Text connections.tlsAdvanced}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <StackPanel Spacing="12">
+                          <StackPanel Spacing="6">
+                            <TextBlock Text="{loc:Text connections.tlsCaFile}" Classes="lbl" />
+                            <Grid ColumnDefinitions="*,Auto">
+                              <TextBox Name="TlsCaBox" Text="{Binding TlsCaFile, Mode=TwoWay}" />
+                              <Button Name="TlsCaBrowse" Grid.Column="1" Content="{loc:Text connections.browse}" Margin="6,0,0,0" Command="{Binding BrowseTlsCaCommand}" />
+                            </Grid>
+                          </StackPanel>
+                        <StackPanel Spacing="6">
+                          <TextBlock Text="{loc:Text connections.tlsClientCert}" Classes="lbl" />
+                          <Grid ColumnDefinitions="*,Auto">
+                            <TextBox Name="TlsCertBox" Text="{Binding TlsClientCertFile, Mode=TwoWay}" IsEnabled="{Binding SupportsTlsClientFiles}" ToolTip.Tip="{Binding TlsClientFilesDisabledReason}" />
+                            <Button Name="TlsCertBrowse" Grid.Column="1" Content="{loc:Text connections.browse}" Margin="6,0,0,0" Command="{Binding BrowseTlsClientCertCommand}" IsEnabled="{Binding SupportsTlsClientFiles}" ToolTip.Tip="{Binding TlsClientFilesDisabledReason}" />
+                          </Grid>
+                        </StackPanel>
+                        <StackPanel Spacing="6">
+                          <TextBlock Text="{loc:Text connections.tlsClientKey}" Classes="lbl" />
+                          <Grid ColumnDefinitions="*,Auto">
+                            <TextBox Name="TlsKeyBox" Text="{Binding TlsClientKeyFile, Mode=TwoWay}" IsEnabled="{Binding SupportsTlsClientFiles}" ToolTip.Tip="{Binding TlsClientFilesDisabledReason}" />
+                            <Button Name="TlsKeyBrowse" Grid.Column="1" Content="{loc:Text connections.browse}" Margin="6,0,0,0" Command="{Binding BrowseTlsClientKeyCommand}" IsEnabled="{Binding SupportsTlsClientFiles}" ToolTip.Tip="{Binding TlsClientFilesDisabledReason}" />
+                          </Grid>
+                        </StackPanel>
+                          <StackPanel Name="TlsNameFields" Spacing="6" IsVisible="{Binding SupportsTlsServerName}">
+                            <TextBlock Text="{loc:Text connections.tlsServerName}" Classes="lbl" />
+                            <TextBox Name="TlsNameBox" Text="{Binding TlsServerName, Mode=TwoWay}" />
+                          </StackPanel>
+                          <StackPanel Name="TlsPassFields" Spacing="6" IsVisible="{Binding SupportsTlsKeyPassphrase}">
+                            <TextBlock Text="{loc:Text connections.tlsKeyPassphrase}" Classes="lbl" />
+                            <TextBox Name="TlsPassBox" PasswordChar="&#x25CF;" Text="{Binding TlsKeyPassphrase, Mode=TwoWay}" />
+                          </StackPanel>
+                        </StackPanel>
+                      </Expander>
                     </StackPanel>
                     <Grid ColumnDefinitions="*,16,*">
                       <StackPanel Name="ConnectTimeoutFields" Spacing="6">

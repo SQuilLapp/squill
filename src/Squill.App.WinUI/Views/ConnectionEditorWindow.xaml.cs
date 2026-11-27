@@ -232,6 +232,12 @@ public sealed partial class ConnectionEditorWindow : Window
             SyncText(CommandTimeoutBox, editor.CommandTimeoutText);
             TlsBox.SelectedIndex = (int)editor.Tls;
             TrustBox.IsChecked = editor.TrustServerCertificate;
+            SyncText(TlsCaBox, editor.TlsCaFile);
+            SyncText(TlsCertBox, editor.TlsClientCertFile);
+            SyncText(TlsKeyBox, editor.TlsClientKeyFile);
+            SyncText(TlsNameBox, editor.TlsServerName);
+            if (TlsPassInput.Password != editor.TlsKeyPassphrase)
+                TlsPassInput.Password = editor.TlsKeyPassphrase;
             UseSshBox.IsChecked = editor.UseSsh;
             SshAuthBox.SelectedIndex = editor.SshAuthMethod == SshAuthMethod.PrivateKey ? 1 : 0;
         }
@@ -245,6 +251,14 @@ public sealed partial class ConnectionEditorWindow : Window
         ServerFields.Visibility = sqlite ? Visibility.Collapsed : Visibility.Visible;
         TlsFields.Visibility = editor.SupportsTls ? Visibility.Visible : Visibility.Collapsed;
         TrustBox.Visibility = editor.SupportsTrustCertificate ? Visibility.Visible : Visibility.Collapsed;
+        TlsFilesExpander.Visibility = editor.SupportsTlsFiles ? Visibility.Visible : Visibility.Collapsed;
+        TlsNameFields.Visibility = editor.SupportsTlsServerName ? Visibility.Visible : Visibility.Collapsed;
+        TlsPassFields.Visibility = editor.SupportsTlsKeyPassphrase ? Visibility.Visible : Visibility.Collapsed;
+        foreach (var input in new Control[] { TlsCertBox, TlsCertBrowse, TlsKeyBox, TlsKeyBrowse })
+        {
+            input.IsEnabled = editor.SupportsTlsClientFiles;
+            ToolTipService.SetToolTip(input, editor.TlsClientFilesDisabledReason);
+        }
         ConnectTimeoutFields.Visibility = editor.SupportsTimeouts ? Visibility.Visible : Visibility.Collapsed;
         SshFields.Visibility = editor.UseSsh ? Visibility.Visible : Visibility.Collapsed;
         SshCard.Visibility = editor.UseSsh ? Visibility.Visible : Visibility.Collapsed;
@@ -423,6 +437,22 @@ public sealed partial class ConnectionEditorWindow : Window
 
     private void OnTlsChanged(object sender, SelectionChangedEventArgs e) =>
         Edit(editor => editor.Tls = TlsBox.SelectedIndex is >= 0 and <= 3 ? (TlsMode)TlsBox.SelectedIndex : TlsMode.Default);
+
+    private void OnTlsCaChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.TlsCaFile = TlsCaBox.Text);
+
+    private void OnTlsCertChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.TlsClientCertFile = TlsCertBox.Text);
+
+    private void OnTlsKeyChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.TlsClientKeyFile = TlsKeyBox.Text);
+
+    private void OnTlsNameChanged(object sender, TextChangedEventArgs e) => Edit(editor => editor.TlsServerName = TlsNameBox.Text);
+
+    private void OnTlsPassChanged(object sender, RoutedEventArgs e) => Edit(editor => editor.TlsKeyPassphrase = TlsPassInput.Password);
+
+    private void OnTlsCaBrowse(object sender, RoutedEventArgs e) => _editor?.BrowseTlsCaCommand.Execute(null);
+
+    private void OnTlsCertBrowse(object sender, RoutedEventArgs e) => _editor?.BrowseTlsClientCertCommand.Execute(null);
+
+    private void OnTlsKeyBrowse(object sender, RoutedEventArgs e) => _editor?.BrowseTlsClientKeyCommand.Execute(null);
 
     private void OnTrustClicked(object sender, RoutedEventArgs e) => Edit(editor => editor.TrustServerCertificate = TrustBox.IsChecked == true);
 

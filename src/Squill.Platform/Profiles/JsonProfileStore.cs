@@ -67,6 +67,10 @@ public sealed class JsonProfileStore : IProfileStore, IDisposable
     public ValueTask<string?> GetTlsKeyPassphraseAsync(Guid id, CancellationToken ct) =>
         _secrets.GetAsync(SecretKeys.TlsKeyPassphrase(id), ct);
 
+    /// <inheritdoc/>
+    public ValueTask SaveTlsKeyPassphraseAsync(Guid id, string? passphrase, CancellationToken ct) =>
+        ApplySecretAsync(SecretKeys.TlsKeyPassphrase(id), passphrase, ct);
+
     private ValueTask ApplySecretAsync(string key, string? value, CancellationToken ct) => value switch
     {
         null => ValueTask.CompletedTask,

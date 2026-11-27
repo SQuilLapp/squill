@@ -111,6 +111,39 @@
                   <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.tls" />
                   <ComboBox x:Name="TlsBox" HorizontalAlignment="Stretch" MinHeight="30" SelectionChanged="OnTlsChanged" />
                   <CheckBox x:Name="TrustBox" Click="OnTrustClicked" loc:Loc.Key="connections.trustCertificate" />
+                  <Expander x:Name="TlsFilesExpander" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" loc:Loc.HeaderKey="connections.tlsAdvanced">
+                    <StackPanel Spacing="12">
+                      <StackPanel x:Name="TlsCaFields" Spacing="6">
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.tlsCaFile" />
+                        <Grid ColumnDefinitions="*,8,Auto">
+                          <TextBox x:Name="TlsCaBox" Style="{StaticResource FieldBoxStyle}" TextChanged="OnTlsCaChanged" />
+                          <Button x:Name="TlsCaBrowse" Grid.Column="2" Height="30" MinHeight="30" Click="OnTlsCaBrowse" loc:Loc.Key="connections.browse" />
+                        </Grid>
+                      </StackPanel>
+                      <StackPanel x:Name="TlsCertFields" Spacing="6">
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.tlsClientCert" />
+                        <Grid ColumnDefinitions="*,8,Auto">
+                          <TextBox x:Name="TlsCertBox" Style="{StaticResource FieldBoxStyle}" TextChanged="OnTlsCertChanged" />
+                          <Button x:Name="TlsCertBrowse" Grid.Column="2" Height="30" MinHeight="30" Click="OnTlsCertBrowse" loc:Loc.Key="connections.browse" />
+                        </Grid>
+                      </StackPanel>
+                      <StackPanel x:Name="TlsKeyFields" Spacing="6">
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.tlsClientKey" />
+                        <Grid ColumnDefinitions="*,8,Auto">
+                          <TextBox x:Name="TlsKeyBox" Style="{StaticResource FieldBoxStyle}" TextChanged="OnTlsKeyChanged" />
+                          <Button x:Name="TlsKeyBrowse" Grid.Column="2" Height="30" MinHeight="30" Click="OnTlsKeyBrowse" loc:Loc.Key="connections.browse" />
+                        </Grid>
+                      </StackPanel>
+                      <StackPanel x:Name="TlsNameFields" Spacing="6">
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.tlsServerName" />
+                        <TextBox x:Name="TlsNameBox" Style="{StaticResource FieldBoxStyle}" TextChanged="OnTlsNameChanged" />
+                      </StackPanel>
+                      <StackPanel x:Name="TlsPassFields" Spacing="6">
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" loc:Loc.Key="connections.tlsKeyPassphrase" />
+                        <PasswordBox x:Name="TlsPassInput" MinHeight="30" PasswordChanged="OnTlsPassChanged" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Expander>
                 </StackPanel>
                 <Grid ColumnDefinitions="*,16,*">
                   <StackPanel x:Name="ConnectTimeoutFields" Spacing="6">

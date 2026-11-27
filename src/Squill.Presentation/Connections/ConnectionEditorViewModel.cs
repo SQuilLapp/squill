@@ -18,6 +18,7 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     private readonly IDialogService _dialogs;
     private string? _loadedPassword;
     private string? _loadedSshSecret;
+    private string? _loadedTlsPassphrase;
 
     /// <summary>Creates an editor for a new profile, or for <paramref name="existing"/> when it is not <see langword="null"/>.</summary>
     /// <param name="existing">Profile to edit, or <see langword="null"/> to create one.</param>
@@ -59,6 +60,10 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
 
         Tls = existing.Tls;
         TrustServerCertificate = existing.TrustServerCertificate;
+        TlsCaFile = existing.TlsCaFile ?? "";
+        TlsClientCertFile = existing.TlsClientCertFile ?? "";
+        TlsClientKeyFile = existing.TlsClientKeyFile ?? "";
+        TlsServerName = existing.TlsServerName ?? "";
         ConnectTimeoutText = existing.ConnectTimeoutSeconds.ToString(CultureInfo.InvariantCulture);
         CommandTimeoutText = existing.CommandTimeoutSeconds.ToString(CultureInfo.InvariantCulture);
     }
@@ -150,6 +155,26 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool TrustServerCertificate { get; set; }
 
+    /// <summary>Gets or sets the path of the certificate authority file (PEM or CRT) that signs the server certificate; blank for the system roots.</summary>
+    [ObservableProperty]
+    public partial string TlsCaFile { get; set; } = "";
+
+    /// <summary>Gets or sets the path of the client certificate file.</summary>
+    [ObservableProperty]
+    public partial string TlsClientCertFile { get; set; } = "";
+
+    /// <summary>Gets or sets the path of the client private key file.</summary>
+    [ObservableProperty]
+    public partial string TlsClientKeyFile { get; set; } = "";
+
+    /// <summary>Gets or sets the host name the server certificate is checked against; blank means the connection host.</summary>
+    [ObservableProperty]
+    public partial string TlsServerName { get; set; } = "";
+
+    /// <summary>Gets or sets the passphrase of the client key; kept in the secret store, saved as <see langword="null"/> (kept) while it equals the loaded value.</summary>
+    [ObservableProperty]
+    public partial string TlsKeyPassphrase { get; set; } = "";
+
     /// <summary>Gets or sets the connect timeout in seconds as typed; 0 means no timeout.</summary>
     [ObservableProperty]
     public partial string ConnectTimeoutText { get; set; } = "15";
@@ -163,6 +188,21 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
 
     /// <summary>Gets whether <see cref="TrustServerCertificate"/> applies to the selected engine.</summary>
     public bool SupportsTrustCertificate => Dialect == DatabaseDialect.SqlServer;
+
+    /// <summary>Gets whether the CA file applies to the selected engine (PostgreSQL, MySQL and SQL Server).</summary>
+    public bool SupportsTlsFiles => Dialect is DatabaseDialect.PostgreSql or DatabaseDialect.MySql or DatabaseDialect.SqlServer;
+
+    /// <summary>Gets whether the client certificate and key apply to the selected engine (PostgreSQL and MySQL).</summary>
+    public bool SupportsTlsClientFiles => Dialect is DatabaseDialect.PostgreSql or DatabaseDialect.MySql;
+
+    /// <summary>Gets whether the certificate server name applies to the selected engine (PostgreSQL and SQL Server; MySqlConnector has no override).</summary>
+    public bool SupportsTlsServerName => Dialect is DatabaseDialect.PostgreSql or DatabaseDialect.SqlServer;
+
+    /// <summary>Gets whether the key passphrase applies to the selected engine (PostgreSQL; MySqlConnector cannot read encrypted keys).</summary>
+    public bool SupportsTlsKeyPassphrase => Dialect == DatabaseDialect.PostgreSql;
+
+    /// <summary>Gets why the client certificate fields are disabled for the selected engine, or <see langword="null"/> when they are enabled.</summary>
+    public string? TlsClientFilesDisabledReason => SupportsTlsClientFiles ? null : UiText.Get("connections.tlsClientUnsupported");
 
     /// <summary>Gets whether the connect timeout applies to the selected engine; the command timeout always does.</summary>
     public bool SupportsTimeouts => Dialect != DatabaseDialect.Sqlite;
@@ -204,6 +244,8 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             return;
         _loadedPassword = await _store.GetPasswordAsync(_existing.Id, ct);
         _loadedSshSecret = await _store.GetSshSecretAsync(_existing.Id, ct);
+        _loadedTlsPassphrase = await _store.GetTlsKeyPassphraseAsync(_existing.Id, ct);
+        TlsKeyPassphrase = _loadedTlsPassphrase ?? "";
         Password = _loadedPassword ?? "";
         SshSecret = _loadedSshSecret ?? "";
     }
@@ -232,6 +274,7 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             errors.Add(UiText.Format("connections.errFolder", MaxFolderLength));
 
         AddTimeoutErrors(errors);
+        AddTlsErrors(errors);
 
         if (UseSsh)
         {
@@ -260,6 +303,11 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         OnPropertyChanged(nameof(SupportsTls));
         OnPropertyChanged(nameof(SupportsTrustCertificate));
         OnPropertyChanged(nameof(SupportsTimeouts));
+        OnPropertyChanged(nameof(SupportsTlsFiles));
+        OnPropertyChanged(nameof(SupportsTlsClientFiles));
+        OnPropertyChanged(nameof(SupportsTlsServerName));
+        OnPropertyChanged(nameof(SupportsTlsKeyPassphrase));
+        OnPropertyChanged(nameof(TlsClientFilesDisabledReason));
         MariaDb = false;
         if (Port is null || Port == DefaultPort(oldValue))
             Port = DefaultPort(newValue);
@@ -287,6 +335,29 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             errors.Add(IssueText.Format(issue.Code, issue.Args, issue.Message));
     }
 
+    private void AddTlsErrors(List<string> errors)
+    {
+        // Only what BuildProfile keeps is checked, so a hidden leftover cannot block the save.
+        foreach (var issue in BuildProfile(withSsh: false).ValidateOptions()
+                     .Where(i => i.Code is CoreMessageCodes.ConnectionTlsFileMissing or CoreMessageCodes.ConnectionTlsKeyWithoutCertificate))
+            errors.Add(IssueText.Format(issue.Code, issue.Args, issue.Message));
+    }
+
+    [RelayCommand]
+    private Task BrowseTlsCaAsync() => PickAsync("connections.pickTlsCa", ["pem", "crt", "cer"], path => TlsCaFile = path);
+
+    [RelayCommand]
+    private Task BrowseTlsClientCertAsync() => PickAsync("connections.pickTlsCert", ["pem", "crt", "cer"], path => TlsClientCertFile = path);
+
+    [RelayCommand]
+    private Task BrowseTlsClientKeyAsync() => PickAsync("connections.pickTlsKey", ["pem", "key"], path => TlsClientKeyFile = path);
+
+    private async Task PickAsync(string titleKey, string[] extensions, Action<string> apply)
+    {
+        if (await _dialogs.PickOpenFileAsync(UiText.Get(titleKey), extensions) is { } path)
+            apply(path);
+    }
+
     private ConnectionProfile BuildProfile(bool withSsh)
     {
         var sqlite = Dialect == DatabaseDialect.Sqlite;
@@ -311,7 +382,14 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
             sqlite || !TryParseTimeout(ConnectTimeoutText, out var connect) ? _existing?.ConnectTimeoutSeconds ?? 15 : connect,
             TryParseTimeout(CommandTimeoutText, out var command) ? command : 0,
             Dialect == DatabaseDialect.MySql && MariaDb,
-            Dialect == DatabaseDialect.Oracle ? NullIfBlank(WalletPath) : null);
+            Dialect == DatabaseDialect.Oracle ? NullIfBlank(WalletPath) : null,
+            SupportsTlsFiles ? NullIfBlank(TlsCaFile) : null,
+            SupportsTlsClientFiles ? NullIfBlank(TlsClientCertFile) : null,
+            SupportsTlsClientFiles ? NullIfBlank(TlsClientKeyFile) : null,
+            SupportsTlsServerName ? NullIfBlank(TlsServerName) : null)
+        {
+            TlsKeyPassphrase = SupportsTlsKeyPassphrase ? NullIfBlank(TlsKeyPassphrase) : null,
+        };
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]
@@ -320,7 +398,9 @@ public sealed partial class ConnectionEditorViewModel : ViewModelBase
         var profile = BuildProfile(withSsh: true);
         var password = Password == (_loadedPassword ?? "") ? null : Password;
         var sshSecret = SshSecret == (_loadedSshSecret ?? "") ? null : SshSecret;
-        await _store.SaveAsync(profile, password, sshSecret, ct);
+        await _store.SaveAsync(profile with { TlsKeyPassphrase = null }, password, sshSecret, ct);
+        var passphrase = !SupportsTlsKeyPassphrase ? "" : TlsKeyPassphrase == (_loadedTlsPassphrase ?? "") ? null : TlsKeyPassphrase;
+        await _store.SaveTlsKeyPassphraseAsync(profile.Id, passphrase, ct);
         Saved?.Invoke(this, EventArgs.Empty);
     }
 

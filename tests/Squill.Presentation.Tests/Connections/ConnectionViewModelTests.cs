@@ -252,6 +252,124 @@ public sealed class ConnectionViewModelTests
         Assert.Null(saved.SshSecret);
     }
 
+    [Theory]
+    [InlineData(DatabaseDialect.PostgreSql, true, true, true, true)]
+    [InlineData(DatabaseDialect.MySql, true, true, false, false)]
+    [InlineData(DatabaseDialect.SqlServer, true, false, true, false)]
+    [InlineData(DatabaseDialect.Sqlite, false, false, false, false)]
+    [InlineData(DatabaseDialect.Oracle, false, false, false, false)]
+    public void Dialect_SetsTlsFileRules(DatabaseDialect dialect, bool ca, bool client, bool serverName, bool passphrase)
+    {
+        var editor = NewEditor();
+        editor.Dialect = dialect;
+
+        Assert.Equal(ca, editor.SupportsTlsFiles);
+        Assert.Equal(client, editor.SupportsTlsClientFiles);
+        Assert.Equal(serverName, editor.SupportsTlsServerName);
+        Assert.Equal(passphrase, editor.SupportsTlsKeyPassphrase);
+        Assert.Equal(client, editor.TlsClientFilesDisabledReason is null);
+    }
+
+    [Fact]
+    public void Validate_TlsFiles_ReportsMissingFileAndKeyWithoutCertificate()
+    {
+        var editor = NewEditor(Existing());
+        var missing = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".pem");
+        editor.TlsCaFile = missing;
+        Assert.Contains(UiText.Format("issue.connection.tlsFileMissing", missing), editor.Validate());
+
+        editor.TlsCaFile = "";
+        var key = Path.GetTempFileName();
+        try
+        {
+            editor.TlsClientKeyFile = key;
+            Assert.Contains(UiText.Get("issue.connection.tlsKeyWithoutCertificate"), editor.Validate());
+            editor.Dialect = DatabaseDialect.SqlServer; // client files are dropped for SQL Server, so the leftover cannot block the save
+            Assert.DoesNotContain(UiText.Get("issue.connection.tlsKeyWithoutCertificate"), editor.Validate());
+        }
+        finally
+        {
+            File.Delete(key);
+        }
+    }
+
+    [Fact]
+    public async Task BrowseTls_FillsThePickedPath()
+    {
+        var editor = NewEditor(Existing());
+        _dialogs.OpenFileResult = "C:/pki/ca.pem";
+
+        await editor.BrowseTlsCaCommand.ExecuteAsync(null);
+        await editor.BrowseTlsClientCertCommand.ExecuteAsync(null);
+        await editor.BrowseTlsClientKeyCommand.ExecuteAsync(null);
+
+        Assert.Equal("C:/pki/ca.pem", editor.TlsCaFile);
+        Assert.Equal("C:/pki/ca.pem", editor.TlsClientCertFile);
+        Assert.Equal("C:/pki/ca.pem", editor.TlsClientKeyFile);
+
+        _dialogs.OpenFileResult = null;
+        editor.TlsCaFile = "kept";
+        await editor.BrowseTlsCaCommand.ExecuteAsync(null);
+        Assert.Equal("kept", editor.TlsCaFile);
+    }
+
+    [Fact]
+    public async Task Save_TlsFiles_AreSavedAndPassphraseGoesToTheSecretStore()
+    {
+        var dir = Directory.CreateTempSubdirectory();
+        try
+        {
+            var ca = Path.Combine(dir.FullName, "ca.pem");
+            var cert = Path.Combine(dir.FullName, "c.crt");
+            var key = Path.Combine(dir.FullName, "c.key");
+            foreach (var file in new[] { ca, cert, key })
+                File.WriteAllText(file, "x");
+            var editor = NewEditor(Existing());
+            editor.TlsCaFile = ca;
+            editor.TlsClientCertFile = cert;
+            editor.TlsClientKeyFile = key;
+            editor.TlsServerName = " db.example ";
+            editor.TlsKeyPassphrase = "pw";
+
+            await editor.SaveCommand.ExecuteAsync(null);
+
+            var profile = Assert.Single(_store.Saved).Profile;
+            Assert.Equal((ca, cert, key, "db.example"), (profile.TlsCaFile, profile.TlsClientCertFile, profile.TlsClientKeyFile, profile.TlsServerName));
+            Assert.Null(profile.TlsKeyPassphrase);
+            Assert.Equal(["pw"], _store.SavedPassphrases);
+        }
+        finally
+        {
+            dir.Delete(true);
+        }
+    }
+
+    [Fact]
+    public async Task Save_TlsPassphraseUnchangedOrCleared_KeepsOrDeletesTheSecret()
+    {
+        _store.TlsPassphrase = "old";
+        var editor = NewEditor(Existing());
+        await editor.LoadSecretsAsync(CancellationToken.None);
+        Assert.Equal("old", editor.TlsKeyPassphrase);
+
+        await editor.SaveCommand.ExecuteAsync(null);
+        editor.TlsKeyPassphrase = "";
+        await editor.SaveCommand.ExecuteAsync(null);
+
+        Assert.Equal([null, ""], _store.SavedPassphrases);
+    }
+
+    [Fact]
+    public async Task Test_PassesThePassphraseToTheProvider()
+    {
+        var editor = NewEditor(Existing());
+        editor.TlsKeyPassphrase = "pw";
+
+        await editor.TestCommand.ExecuteAsync(null);
+
+        Assert.Equal("pw", _provider.LastProfile?.TlsKeyPassphrase);
+    }
+
     [Fact]
     public async Task Save_PasswordChanged_PassesNewValue()
     {
@@ -465,6 +583,17 @@ public sealed class ConnectionViewModelTests
         public ValueTask<string?> GetPasswordAsync(Guid id, CancellationToken ct) => ValueTask.FromResult(Password);
 
         public ValueTask<string?> GetSshSecretAsync(Guid id, CancellationToken ct) => ValueTask.FromResult(SshSecret);
+
+        public string? TlsPassphrase { get; set; }
+        public List<string?> SavedPassphrases { get; } = [];
+
+        public ValueTask<string?> GetTlsKeyPassphraseAsync(Guid id, CancellationToken ct) => ValueTask.FromResult(TlsPassphrase);
+
+        public ValueTask SaveTlsKeyPassphraseAsync(Guid id, string? passphrase, CancellationToken ct)
+        {
+            SavedPassphrases.Add(passphrase);
+            return ValueTask.CompletedTask;
+        }
     }
 
     private sealed class FakeProvider : IDatabaseProvider
@@ -473,8 +602,13 @@ public sealed class ConnectionViewModelTests
         public FakeConnection Connection { get; } = new();
         public Exception? Failure { get; set; }
 
-        public ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken) =>
-            Failure is { } failure ? throw failure : ValueTask.FromResult<IDatabaseConnection>(Connection);
+        public ConnectionProfile? LastProfile { get; private set; }
+
+        public ValueTask<IDatabaseConnection> OpenAsync(ConnectionProfile profile, string? password, CancellationToken cancellationToken)
+        {
+            LastProfile = profile;
+            return Failure is { } failure ? throw failure : ValueTask.FromResult<IDatabaseConnection>(Connection);
+        }
     }
 
     private sealed class FakeConnection : IDatabaseConnection

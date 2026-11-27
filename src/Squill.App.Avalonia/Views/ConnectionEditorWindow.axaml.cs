@@ -141,6 +141,7 @@ public sealed partial class ConnectionEditorWindow : Window
         TlsBox.SelectedIndex = (int)editor.Tls;
         TlsFields.IsVisible = editor.SupportsTls;
         TrustBox.IsVisible = editor.SupportsTrustCertificate;
+        TlsFilesExpander.IsVisible = editor.SupportsTlsFiles;
         ConnectTimeoutFields.IsVisible = editor.SupportsTimeouts;
 
         SshSummary.Text = $"{editor.SshHost}:{editor.SshPort} · {editor.SshUserName}";

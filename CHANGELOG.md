@@ -8,6 +8,7 @@
 
 ### Added
 
+- TLS certificate files in the connection editor (`Advanced` > `Advanced TLS`): CA file, client certificate and key with `Browse...` buttons, server name and key passphrase (stored in the OS secret store), enabled per engine.
 - Informix is a supported engine (Windows x64): connect over the DRDA listener, explorer from the system catalogue, queries, grid, cancel and transactions, through IBM's `clidriver`, which the app ships in `clidriver/` with its licence text (`clidriver/license`). Grid editing, the designer, plans and the terminal are not done yet.
 - Oracle is a supported engine through a bridge process (the .NET runtime is required): several result sets, manual transactions, cancel, grid editing with generated keys, table designer, execution plans, `sqlplus` terminal and TCPS, verified end to end on an Oracle Free container.
 - MariaDB: `Explain` and `Analyze` show the execution plan (`EXPLAIN FORMAT=JSON` and `ANALYZE FORMAT=JSON`), the manual transaction state is read from the server, and MariaDB 11.4 joins the support matrix of the engine-parity record.
