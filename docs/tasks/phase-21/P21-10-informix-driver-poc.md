@@ -1,6 +1,6 @@
 # P21-10 - Informix: driver proof of concept under Native AOT (decision card)
 
-Status: todo
+Status: done
 Depends on: none
 
 ## Goal
@@ -27,9 +27,9 @@ Exists today: nothing for Informix (no dialect, no provider, no container).
 - Provider code (P21-11), SQL dialect (P21-12).
 
 ## Tasks
-- [ ] Container and `-Engine informix`, DRDA listener.
-- [ ] Probe A, then C; quote the publish warnings and the query output.
-- [ ] Write the report and propose the rewrite of P21-11 if the verdict differs from its default.
+- [x] Container and `-Engine informix`, DRDA listener.
+- [x] Probe A, then C; quote the publish warnings and the query output.
+- [x] Write the report and propose the rewrite of P21-11 if the verdict differs from its default.
 
 ## Acceptance criteria
 - Report committed with measured results; probe published and run (or the reason it could not); nothing added to `src/`.
@@ -44,3 +44,10 @@ Exists today: nothing for Informix (no dialect, no provider, no container).
 
 ## Suggested commit message
 Measure the Informix driver options under Native AOT and record the verdict
+
+## Done notes (2026-11-27)
+- Report: [docs/poc/informix-driver.md](../../poc/informix-driver.md). Verdict: **own ODBC layer (D)**, bridge (E) as the fallback. A (`Net.IBM.Data.Db2` 10.0.0.400) works under JIT but its published Native AOT exe throws `NotSupportedException` (`Assembly.CodeBase`, IL3002) at `Open()`; C (`System.Data.Odbc`) is AOT-capable but was not verified against the IBM driver (registering it needs a registry change, not done without the owner); D was measured end to end (connect, query, DECIMAL, DATETIME, LVARCHAR, diagnostics) with 0 warnings from its own code.
+- Desk research corrections: the DRDA listener is already enabled in the developer image (`informix_dr`, port 9089); no `--privileged` needed; DRDA reports the server version as 12.10 (real 15.0.1.0.3).
+- P21-11 rewritten for the verdict (own ODBC layer instead of in-process `Net.IBM.Data.Db2`).
+- `-Engine informix` was added to `eng/run-docker-tests.ps1` (stops with a message until P21-11 creates `tests/Squill.Data.Informix.Tests`). Probes `tools/Squill.AotProbe.Informix` and `tools/Squill.AotProbe.InformixOdbc` are throw-away, in no solution.
+- Not verified: IBM driver through `odbc32` (needs `db2cli install -setup`), `BYTE` and long data and `SQLCancel` through D, Linux and macOS packages, Db2 Connect licence terms for z/OS and IBM i, a trial of the `ILC` warnings with a modified package.

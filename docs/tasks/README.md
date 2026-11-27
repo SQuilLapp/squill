@@ -446,8 +446,8 @@ Depends on: <card ids, ranges allowed>
 | [P21-07](phase-21/P21-07-oracle-grid-editing.md) | Oracle: grid editing, generated keys and column types | P21-03, P21-05 | done |
 | [P21-08](phase-21/P21-08-oracle-plan-terminal-tls.md) | Oracle: execution plan, sqlplus terminal and TCPS | P21-03 | done |
 | [P21-09](phase-21/P21-09-oracle-verification-and-docs.md) | Oracle: end-to-end verification in both heads and the support matrix | P21-03 ... P21-08 | done |
-| [P21-10](phase-21/P21-10-informix-driver-poc.md) | Informix: driver proof of concept under Native AOT (decision card) | none | todo |
-| [P21-11](phase-21/P21-11-informix-provider.md) | Data.Informix: provider (connect, execute, stream, schema reading) | P21-10 | todo |
+| [P21-10](phase-21/P21-10-informix-driver-poc.md) | Informix: driver proof of concept under Native AOT (decision card) | none | done |
+| [P21-11](phase-21/P21-11-informix-provider.md) | Data.Informix: own ODBC layer and provider (connect, execute, stream, schema reading) | P21-10 | todo |
 | [P21-12](phase-21/P21-12-sql-informix-dialect.md) | Sql: Informix dialect (tokenizer, splitter, keywords, quoting, types, functions) | P21-11 | todo |
 | [P21-13](phase-21/P21-13-other-engines-feasibility.md) | Other engines: DB2, ClickHouse, Snowflake and BigQuery feasibility report | P21-10 | todo |
 | [P21-14](phase-21/P21-14-nosql-feasibility.md) | NoSQL: MongoDB and Redis feasibility report | none | todo |

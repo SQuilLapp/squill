@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <PublishAot>true</PublishAot>
+    <!-- Throw-away P21-10 probe, not part of any solution: the warnings of the IBM package are counted in docs/poc/informix-driver.md, not fixed. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Net.IBM.Data.Db2" Version="10.0.0.400" />
+  </ItemGroup>
+</Project>
